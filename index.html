@@ -481,6 +481,9 @@ body.presenting .top,body.presenting .notice{display:none}
   .sstats{width:100%}
   .sstats > div{flex:1;min-width:0}
   .sgrid{grid-template-columns:1fr}
+  .npbtn{flex:1 1 100%}
+  .ngrid{grid-template-columns:repeat(2,1fr)}
+  .lb-img img{max-height:62vh}
   .cta .btn{width:100%}
   .wall-sec{margin-top:20px}
 }
@@ -504,6 +507,43 @@ body.presenting .top,body.presenting .notice{display:none}
 .chip[title]{cursor:help}
 .stools{display:grid;gap:10px}
 .stools input[type=search]{width:100%;border:1px solid var(--line);background:var(--paper);border-radius:10px;padding:10px 14px;font-size:16px}
+/* ---------- 오늘의 필기 ---------- */
+.ngrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:8px}
+.nthumb{position:relative;aspect-ratio:3/4;border:1px solid var(--line);border-radius:10px;overflow:hidden;background:var(--sunk);padding:0;margin:0;cursor:pointer;display:block;font:inherit;color:var(--fg)}
+.nthumb img{width:100%;height:100%;object-fit:cover;display:block}
+.nthumb .nzoom{all:unset;display:block;width:100%;height:100%;cursor:zoom-in}
+.nthumb .npg{position:absolute;left:6px;top:6px;background:rgba(0,0,0,.62);color:#fff;font-size:12px;border-radius:999px;padding:1px 8px;pointer-events:none}
+.nact{position:absolute;right:5px;bottom:5px;display:flex;gap:5px}
+.nact button{width:34px;height:34px;border-radius:999px;border:0;background:rgba(0,0,0,.68);color:#fff;cursor:pointer;font-size:14px}
+.nthumb.more{display:grid;place-items:center;font-size:22px;font-weight:700;color:var(--muted)}
+.nload{display:grid;place-items:center;height:100%;min-height:80px;font-size:12.5px;color:var(--muted);padding:6px;text-align:center}
+.npick{display:flex;flex-wrap:wrap;gap:10px}
+.npbtn{cursor:pointer;min-height:50px;display:inline-flex;align-items:center;justify-content:center;font-size:16px;padding:0 18px}
+.nempty{border:2px dashed var(--line);border-radius:12px;padding:22px;text-align:center;color:var(--muted);line-height:1.7}
+.nsub,.nup{margin-top:14px;display:grid;gap:12px}
+.nsub-h{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:8px}
+.modal.lb{max-width:min(980px,100%);padding:14px;gap:10px}
+.lb-h{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.lb-h .btn{margin-left:auto}
+.lb-img{background:#16181a;border-radius:10px;display:grid;place-items:center;min-height:40vh;overflow:auto}
+.lb-img img{max-width:100%;max-height:72vh;object-fit:contain;display:block}
+.lb-img .nload{color:#bbb}
+.lb-nav{justify-content:space-between}
+.ncards{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px;margin-top:6px}
+.ncard{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px 14px;display:grid;gap:8px;align-content:start}
+.ncard.none{border-style:dashed;background:transparent}
+.ncard.redo{border-color:var(--warn)}
+.ncard-h{display:flex;flex-wrap:wrap;align-items:center;gap:6px}
+.ncard-h b{margin-right:auto}
+.ncard .ngrid{grid-template-columns:repeat(3,1fr)}
+.ncard-memo{white-space:pre-wrap;overflow-wrap:anywhere}
+.nchip.done{background:var(--accent-soft);color:var(--accent)}
+.nchip.none{background:var(--sunk);color:var(--muted)}
+.nchip.redo{background:var(--warn-soft);color:var(--warn)}
+.nbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:14px 0 6px}
+.nbar input[type=search]{min-height:40px;flex:1 1 180px;max-width:280px;border:1px solid var(--line);border-radius:10px;padding:8px 12px;background:var(--surface);color:var(--fg);font:inherit}
+.nbar select{flex:0 0 auto;width:auto;min-height:40px}
+a.btn{text-decoration:none;color:inherit;display:inline-flex;align-items:center}
 /* ---------- 학생 첫 화면 ---------- */
 .shome{display:grid;gap:16px}
 .shome-hi{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:16px}
@@ -884,6 +924,10 @@ const TEMPLATES = {
     phaseDefs:[{k:"think", l:"스케치하기", steps:["write"]}, {k:"meet", l:"친구 스케치", steps:["read"]}, {k:"rethink", l:"돌아보기", steps:["reflect"]}],
     titles:{write:"내 생각을 키워드 지도로 그려 볼까요?"}, stepNames:{write:"키워드 스케치", read:"친구 스케치 보기"},
     descs:{write:"가운데에 생각을 하나 두고, 떠오르는 키워드를 적은 뒤 서로 이어 보세요. 적는 대로 생각 지도가 그려져요."}},
+  /* 오늘의 필기: 필기 사진을 여러 장 올려 제출한다. 선생님만 보고, 필요하면 다시 제출을 요청한다 */
+  notes:{icon:"📸", label:"오늘의 필기", desc:"수업 중 필기한 공책·태블릿 화면을 사진으로 찍어 올려요. 선생님이 확인하고, 필요하면 다시 제출을 요청해요.", flowSummary:"필기하기 → 사진 찍기 → 제출",
+    stances:[], reveal:"teacher", anonymous:false, tool:"free", depth:"normal", minChars:0,
+    flow:["write"], phaseDefs:[{k:"think", l:"필기 제출", steps:["write"]}], stepNames:{write:"필기 제출"}},
   /* AI 가상 인물 대화: 교사가 정한 인물(예: 고종, 그레타 툰베리)을 AI가 연기하고, 학생은 대화한 뒤 자기 생각을 정리한다 */
   chat:{icon:"🎭", label:"가상 인물 대화", desc:"AI가 연기하는 역사·시사 인물과 대화하고, 대화에서 알게 된 것과 확인할 것을 정리해요.", flowSummary:"인물과 대화 → 대화 후 내 생각 → 친구 생각 → 돌아보기",
     stances:[], reveal:"after", anonymous:false, tool:"chatReflect", depth:"normal", minChars:20,
@@ -919,6 +963,7 @@ const GOALS = [
   {k:"write",    icon:"📝", l:"논술",         d:"자료와 근거를 바탕으로 자신의 생각을 글로 표현해요.",              t:["essay"]},
   {k:"look",     icon:"🌱", l:"감상·성찰",     d:"활동 후 자신의 생각과 느낌을 돌아봐요.",                         t:["reflect"]},
   {k:"sketch",   icon:"✏️", l:"생각 스케치",   d:"그림, 도식, 키워드로 생각을 눈에 보이게 표현해요.",                t:["sketch","draw"], q:"어떤 방식으로 표현할까요?"},
+  {k:"notes",    icon:"📸", l:"오늘의 필기", d:"수업 중 공책·태블릿에 필기한 것을 사진으로 찍어 올려요.", t:["notes"]},
   {k:"chat",     icon:"🎭", l:"가상 인물 대화", d:"AI가 연기하는 역사·시사 인물과 대화하며 생각을 넓혀요.",             t:["chat"]}
 ];
 /* 예전 활동 목적 이름(질문으로 생각하기 'concept', 질문이음 'ask')은 질문 활동으로 읽는다 — 이 기기에 남은 작성 중 내용 호환 */
@@ -1052,7 +1097,7 @@ const Auth = (() => { let t = null; return Object.freeze({ set(v){ if(t === null
 Object.defineProperty(S, "canTeach", {get: () => Auth.teacher, set(){} });        // 예전 코드 호환: 읽기만
 const isTeacher = () => Auth.teacher && S.role === "teacher";                       // 교사 권한 + 교사 화면(학생 화면 미리보기 중이면 false)
 /* 교사만 쓰는 동작: 학생 권한으로는 버튼이 없을 뿐 아니라 호출해도 실행되지 않는다 */
-const TEACHER_ACTS = new Set(["create","edit-room","dup","dup-list","del","del-yes","del-ask","del-room","status","toggle","save-feedback","class-fb","pin","pin-move","pin-clear",
+const TEACHER_ACTS = new Set(["note-filter","note-req","note-req-send","note-req-cancel","note-dup","create","edit-room","dup","dup-list","del","del-yes","del-ask","del-room","status","toggle","save-feedback","class-fb","pin","pin-move","pin-clear",
   "present","present-exit","pmode","pnav","prand","fullscreen","export","export-go","save-tset","tpl-save-open","tpl-save","tpl-cancel","use-tpl","create-save","draft-save","publish-draft","discard-form",
   "preview","preview-form","preview-home","qr","copy-link","save-share","mcourse","course-new","course-edit","course-gadd","course-gdel","course-save","course-del","course-del-yes",
   "roster-open","roster-add","roster-reissue","roster-del","roster-print","gsel","asg-add-open","asg-add-cancel","asg-add","asg-st","racts","mview","sview","sfilter","sgo","snav","ttab","mfilter","open-student","goal","tpl","st-add","st-del","depth"]);
@@ -1571,6 +1616,11 @@ const subjLabel = r => `${(r.subject||"").trim() || "과목 미정"}${r.teacherN
 const subjTone = k => { let h = 0; for(const c of k) h = (h*31 + c.charCodeAt(0)) >>> 0; return SC[h%4] };
 function homeState(r){
   const mine = myPost(r), open = r.open !== false && statusOf(r) === "open";
+  if(isNotes(r)){
+    if(mine?.notes && noteRedoReq(mine)) return {k:"todo", l:"↻ 다시 제출해 주세요", o:0};
+    if(mine?.notes) return {k:"done", l:"✓ 제출 완료", o:3};
+    return open ? {k:"todo", l:"📸 아직 안 냈어요", o:0} : {k:"closed", l:"🔒 마감", o:4};
+  }
   if(submitted(mine)){
     const phs = phasesOf(r), done = phs.filter(ph => phaseState(r,mine,ph) === "done").length;
     if(done >= phs.length || !open) return {k:"done", l:"✓ 다 했어요", o:3};
@@ -1685,6 +1735,7 @@ function viewRoomStudent(r){
   if(r._ready){ const a = r.assign[r._gid]; return roomHead(r) + `<div class="stage" id="stage"><div class="empty">⏳ 아직 시작 전인 활동이에요.${a?.startAt ? `<br>${esc(fmt(a.startAt))}에 열려요.` : " 선생님이 시작하면 참여할 수 있어요."}</div></div>` }
   const p = myPost(r);
   if(!S.name) return roomHead(r) + `<div class="stage" id="stage">${nameForm()}</div>`;
+  if(isNotes(r)) return viewNotesStudent(r, p);                      // 오늘의 필기: 사진 제출 화면
   if(S.work !== r.id) return roomHead(r, {sourceOpen:false}) + roomTabs(r, "board") + roomBoard(r, p);   // 처음에는 우리 반 게시판
   const sel = selectedStep(r, p), phs = phasesOf(r);
   const curPh = sel === "record" ? null : phaseOfStep(r, sel);
@@ -1731,6 +1782,184 @@ function viewRoomStudent(r){
   if(sel !== "record" && submitted(p)) h += `<div class="row end" style="margin-top:14px"><button class="linkbtn" type="button" data-a="step" data-v="record">나의 생각 흐름 보기</button></div>`;
   if(!submitted(p) && !["read","respond","take","back"].includes(sel)) h += writeMapHTML(r);   // 쓰는 동안: 흐린 게시판·생각 지도
   return h;
+}
+/* =========================================================
+   📸 오늘의 필기: 필기 사진 여러 장 제출 → 선생님 확인 → 필요하면 재제출 요청
+   - Supabase: 사진은 Storage ‘notes’ 보관함의 {활동id}/{학생id}/{시각}-{쪽}.jpg
+     (서버 규칙: 학생은 자기 폴더만 올리고 보고 지우며, 선생님은 자기 활동의 사진만 본다)
+   - 그 밖(미리보기 등): 작게 줄인 사진을 글 안에 저장
+   ========================================================= */
+const isNotes = r => r?.template === "notes";
+const NOTE_MAX = r => Math.max(1, Math.min(20, Number(r?.noteCfg?.maxPages) || 10));
+const noteRedoReq = p => p?.resubmitReq && p.resubmitReq.at > (p.notes?.submittedAt || 0) ? p.resubmitReq : null;
+const NDRAFT = {};                    // 활동 id → 제출 전 고른 사진 [{blob, url, w, h}] (이 화면에만)
+const NURL = {};                      // 저장된 사진 경로 → 잠깐 쓰는 주소
+let NURL_Q = new Set(), NURL_T = null;
+const useStorage = () => S.mode === "supa" && !S.preview && !!SB;
+function noteSrc(img){
+  if(!img) return "";
+  if(img.d) return img.d;
+  if(!img.p || !SB) return "";
+  const c = NURL[img.p];
+  if(c && c.exp > Date.now()) return c.url;
+  if(!NURL_Q.has(img.p)){ NURL_Q.add(img.p); clearTimeout(NURL_T); NURL_T = setTimeout(loadNoteUrls, 30) }
+  return "";
+}
+async function loadNoteUrls(){
+  const paths = [...NURL_Q]; NURL_Q = new Set();
+  for(let i = 0; i < paths.length; i += 100){
+    const part = paths.slice(i, i + 100), now = Date.now();
+    try{
+      const r = await SB.storage.from("notes").createSignedUrls(part, 6 * 3600);
+      const got = new Map((r.data || []).filter(x => x.signedUrl).map(x => [x.path, x.signedUrl]));
+      part.forEach(p => { NURL[p] = got.has(p) ? {url:got.get(p), exp:now + 6*3600*1000 - 60000} : {url:"", exp:now + 60000, bad:true} });
+    }catch(e){ part.forEach(p => { NURL[p] = {url:"", exp:now + 60000, bad:true} }) }
+  }
+  dataChanged();
+}
+async function shrinkImage(file, maxSide, q){
+  let bmp;
+  try{ bmp = await createImageBitmap(file, {imageOrientation:"from-image"}) }
+  catch(e){ bmp = await new Promise((ok, bad) => { const im = new Image(); im.onload = () => ok(im); im.onerror = bad; im.src = URL.createObjectURL(file) }) }
+  const w0 = bmp.width, h0 = bmp.height, k = Math.min(1, maxSide / Math.max(w0, h0)), w = Math.round(w0 * k), h = Math.round(h0 * k);
+  const c = document.createElement("canvas"); c.width = w; c.height = h;
+  const g = c.getContext("2d"); g.fillStyle = "#fff"; g.fillRect(0, 0, w, h); g.drawImage(bmp, 0, 0, w, h);
+  const blob = await new Promise(ok => c.toBlob(ok, "image/jpeg", q));
+  if(!blob) throw new Error("이미지 변환 실패");
+  return {blob, w, h};
+}
+const blobToDataURL = b => new Promise(ok => { const fr = new FileReader(); fr.onload = () => ok(fr.result); fr.readAsDataURL(b) });
+async function noteAddFiles(r, files){
+  const list = NDRAFT[r.id] = NDRAFT[r.id] || [], max = NOTE_MAX(r);
+  const arr = [...files].filter(f => /^image\//.test(f.type) || /\.(heic|heif|jpe?g|png|webp)$/i.test(f.name));
+  if(!arr.length){ toast("사진 파일을 골라 주세요."); return }
+  S.noteBusy = "사진을 준비하는 중…"; render();
+  let bad = 0, over = false;
+  for(const f of arr){
+    if(list.length >= max){ over = true; break }
+    try{ const x = await shrinkImage(f, useStorage() ? 1800 : 1100, useStorage() ? 0.8 : 0.7); list.push({...x, url:URL.createObjectURL(x.blob)}) }
+    catch(e){ bad++ }
+  }
+  S.noteBusy = "";
+  if(over) toast(`한 번에 ${max}장까지 올릴 수 있어요.`);
+  else if(bad) toast(`${bad}장은 열 수 없는 사진 형식이에요. ‘사진 찍기’로 다시 시도해 보세요.`);
+  render();
+}
+async function noteSubmit(r){
+  const list = NDRAFT[r.id] || [], p = myPost(r);
+  if(!list.length){ toast("필기 사진을 한 장 이상 골라 주세요."); return }
+  if(r.open === false){ toast("마감된 활동이에요."); return }
+  const imgs = [];
+  S.noteBusy = "올리는 중… 화면을 닫지 마세요"; render();
+  try{
+    if(useStorage()){
+      const sid = (await SB.rpc("my_student_id", {p_room:r.id})).data;
+      if(!sid) throw new Error("no student");
+      const stamp = Date.now().toString(36);
+      for(let i = 0; i < list.length; i++){
+        S.noteBusy = `올리는 중… (${i+1}/${list.length}) 화면을 닫지 마세요`; render();
+        const path = `${r.id}/${sid}/${stamp}-${i+1}.jpg`;
+        const up = await SB.storage.from("notes").upload(path, list[i].blob, {contentType:"image/jpeg", upsert:false});
+        if(up.error) throw up.error;
+        imgs.push({p:path, w:list[i].w, h:list[i].h});
+      }
+    }else{
+      for(const x of list) imgs.push({d:await blobToDataURL(x.blob), w:x.w, h:x.h});
+    }
+  }catch(e){
+    if(useStorage() && imgs.length) SB.storage.from("notes").remove(imgs.map(x => x.p));
+    S.noteBusy = ""; toast("사진을 올리지 못했어요. 인터넷 연결을 확인하고 다시 눌러 주세요."); render(); return;
+  }
+  const old = (p?.notes?.images || []).filter(x => x.p), now = Date.now();
+  const history = p?.notes ? [...(p.notes.history || []), {count:p.notes.images.length, submittedAt:p.notes.submittedAt}].slice(-10) : [];
+  const memo = (F("note:" + r.id).memo || "").trim().slice(0, 300);
+  const ok = await savePost(r, {status:"submitted", submittedAt:p?.submittedAt || now, resubmitReq:null,
+    notes:{images:imgs, memo, submittedAt:now, version:(p?.notes?.version || 0) + 1, history}});
+  S.noteBusy = "";
+  if(!ok){ if(useStorage()) SB.storage.from("notes").remove(imgs.map(x => x.p)); render(); return }
+  if(useStorage() && old.length) SB.storage.from("notes").remove(old.map(x => x.p));       // 바꾼 예전 사진은 지운다
+  list.forEach(x => URL.revokeObjectURL(x.url)); delete NDRAFT[r.id]; S.noteRedo = null;
+  if(S.form["note:" + r.id]) S.form["note:" + r.id].memo = "";
+  toast(p?.notes ? "새 사진으로 다시 제출했어요." : "제출했어요! 선생님이 확인할 거예요.");
+  render();
+}
+function noteThumbs(p, imgs, max){
+  const list = max ? imgs.slice(0, max) : imgs;
+  return `<div class="ngrid">${list.map((x, i) => { const src = noteSrc(x); return `<button type="button" class="nthumb" data-a="note-view" data-pid="${esc(p.id)}" data-i="${i}" aria-label="${i+1}쪽 크게 보기">${src ? `<img src="${esc(src)}" alt="" loading="lazy">` : `<span class="nload">${x.p && NURL[x.p]?.bad ? "볼 수 없음" : "불러오는 중…"}</span>`}<span class="npg">${i+1}</span></button>` }).join("")}${max && imgs.length > max ? `<button type="button" class="nthumb more" data-a="note-view" data-pid="${esc(p.id)}" data-i="${max}">+${imgs.length - max}</button>` : ""}</div>`;
+}
+function noteViewerHTML(m){
+  const p = m.pid ? S.posts.find(x => x.id === m.pid) : null;
+  const imgs = m.draft ? (NDRAFT[m.draft] || []).map(x => ({u:x.url})) : (p?.notes?.images || []).map(x => ({u:noteSrc(x), bad:x.p && NURL[x.p]?.bad}));
+  const i = Math.max(0, Math.min(imgs.length - 1, m.i || 0)), cur = imgs[i];
+  m.i = i;
+  return `<div class="lb-h"><b>${m.draft ? "제출 전 미리보기" : esc(p?.author || "")}</b><span class="muted small">${imgs.length ? `${i+1} / ${imgs.length}쪽` : ""}</span><button class="btn sm" type="button" data-a="modal-close">닫기 ✕</button></div>
+    <div class="lb-img">${cur?.u ? `<img src="${esc(cur.u)}" alt="${i+1}쪽">` : `<span class="nload">${cur?.bad ? "사진을 볼 수 없어요" : "불러오는 중…"}</span>`}</div>
+    <div class="row lb-nav"><button class="btn" type="button" data-a="note-nav" data-d="-1" ${i > 0 ? "" : "disabled"}>◀ 앞 쪽</button>
+      ${cur?.u && !m.draft ? `<a class="btn" href="${esc(cur.u)}" target="_blank" rel="noopener">원본 열기</a>` : ""}
+      <button class="btn" type="button" data-a="note-nav" data-d="1" ${i < imgs.length - 1 ? "" : "disabled"}>뒤 쪽 ▶</button></div>
+    ${p?.notes?.memo ? `<p class="txt small"><span class="muted">메모 · </span>${esc(p.notes.memo)}</p>` : ""}
+    ${isTeacher() && p && !m.draft ? `<div class="row end">${noteRedoReq(p) ? `<span class="chip nchip redo">↻ 재제출 요청 중</span><button class="btn sm" type="button" data-a="note-req-cancel" data-pid="${esc(p.id)}">요청 취소</button>` : `<button class="btn sm" type="button" data-a="note-req" data-pid="${esc(p.id)}">↻ 재제출 요청</button>`}</div>` : ""}`;
+}
+/* 학생: 필기 사진 제출 */
+function viewNotesStudent(r, p){
+  const open = r.open !== false, n = p?.notes, req = noteRedoReq(p), draft = NDRAFT[r.id] || [];
+  const showUp = !n || !!req || S.noteRedo === r.id;
+  let h = roomHead(r, {sourceOpen:true});
+  h += !n ? `<div class="cta todo"><div><b>📸 아직 제출하지 않았어요</b><span>필기한 공책이나 태블릿 화면을 사진으로 찍어 올려 주세요.${r.dueAt ? ` · ${esc(fmtDue(r.dueAt))}까지` : ""}</span></div></div>`
+     : req ? `<div class="cta todo"><div><b>↻ 선생님이 다시 제출해 달라고 했어요</b><span>${req.msg ? "💬 " + esc(req.msg) : "아래에서 내 사진을 확인하고, 새 사진으로 다시 올려 주세요."}</span></div></div>`
+     : `<div class="cta done"><div><b>✓ 제출 완료</b><span>${esc(fmt(n.submittedAt))} · ${n.images.length}장${n.version > 1 ? ` · ${n.version}번째 제출` : ""}</span></div></div>`;
+  if(n) h += `<section class="card nsub"><div class="nsub-h"><b>내가 제출한 필기</b>${open && S.canWrite && !showUp ? `<button class="btn sm" type="button" data-a="note-redo">↻ 새 사진으로 다시 제출</button>` : ""}</div>
+    ${noteThumbs(p, n.images)}${n.memo ? `<p class="txt small"><span class="muted">메모 · </span>${esc(n.memo)}</p>` : ""}</section>`;
+  if(!open) return h + (n ? "" : closedNote());
+  if(!S.canWrite) return h + readonlyNote();
+  if(!showUp) return h;
+  const max = NOTE_MAX(r), busy = S.noteBusy, key = "note:" + r.id;
+  F(key, () => ({memo:""}));
+  return h + `<section class="card nup" id="stage"><h3>${n ? "새 사진으로 다시 제출하기" : "필기 사진 올리기"}</h3>
+    <p class="muted small">${n ? "다시 제출하면 지금 낸 사진은 새 사진으로 바뀌어요. " : ""}여러 쪽이면 여러 장을 골라도 돼요. (최대 ${max}장 · 글씨가 잘 보이게 밝은 곳에서 찍어 주세요)</p>
+    <div class="npick">
+      <label class="btn pri npbtn">📷 사진 찍기<input type="file" accept="image/*" capture="environment" data-note-file="${esc(r.id)}" hidden ${busy ? "disabled" : ""}></label>
+      <label class="btn npbtn">🖼 앨범에서 고르기<input type="file" accept="image/*" multiple data-note-file="${esc(r.id)}" hidden ${busy ? "disabled" : ""}></label></div>
+    ${draft.length ? `<div class="ngrid">${draft.map((x, i) => `<figure class="nthumb"><button type="button" class="nzoom" data-a="note-view" data-draft="${esc(r.id)}" data-i="${i}" aria-label="${i+1}쪽 크게 보기"><img src="${x.url}" alt=""></button><span class="npg">${i+1}쪽</span>
+        <span class="nact">${i ? `<button type="button" data-a="note-move" data-i="${i}" data-d="-1" aria-label="${i+1}쪽을 앞으로">◀</button>` : ""}${i < draft.length - 1 ? `<button type="button" data-a="note-move" data-i="${i}" data-d="1" aria-label="${i+1}쪽을 뒤로">▶</button>` : ""}<button type="button" data-a="note-rm" data-i="${i}" aria-label="${i+1}쪽 빼기">✕</button></span></figure>`).join("")}</div>
+      <p class="muted small">사진을 누르면 크게 볼 수 있어요. ◀ ▶로 순서를 바꾸고, ✕로 뺄 수 있어요.</p>` : `<div class="nempty">아직 고른 사진이 없어요.<br>위의 버튼으로 필기 사진을 찍거나 골라 주세요.</div>`}
+    <div class="q"><label for="${key}-memo">한 줄 메모 <span class="opt">(선택)</span></label>${ta(key, "memo", {rows:2, ph:"예: 오늘 배운 것 중 가장 중요한 것은 ___"})}</div>
+    <div class="foot"><span class="muted small" role="status">${busy ? esc(busy) : draft.length ? `${draft.length}장 골랐어요` : ""}</span><div class="row">
+      ${draft.length && !busy ? `<button class="btn" type="button" data-a="note-clear">모두 빼고 다시 고르기</button>` : ""}${n && !req && !busy ? `<button class="btn" type="button" data-a="note-redo-cancel">취소</button>` : ""}
+      <button class="btn pri" type="button" data-a="note-submit" ${busy || !draft.length ? "disabled" : ""}>${n ? "다시 제출하기" : `제출하기${draft.length ? ` (${draft.length}장)` : ""}`}</button></div></div></section>`;
+}
+/* 선생님: 학생별 필기 확인 · 미제출 · 재제출 요청 */
+const clsOf = num => { const d = String(num||"").trim(); return /^\d{5}$/.test(d) ? `${d[0]}학년 ${+d.slice(1,3)}반` : /^\d{4}$/.test(d) ? `${d[0]}학년 ${+d[1]}반` : "" };
+function viewNotesTeacher(r){
+  if(S.mode === "supa" && S.roster === undefined && !S.rosterLoading){ S.rosterLoading = true; loadRoster().then(() => { S.rosterLoading = false; render() }) }
+  const gs = S.gsel && S.gselRoom === r.id ? S.gsel : "";
+  const ps = allPostsOf(r.id).filter(p => !gs || p.groupId === gs);
+  const names = S.mode === "supa" ? (S.roster || []).map(x => `${x.number} ${x.name}`) : (tnote(r).roster || []);
+  const byName = new Map(ps.map(p => [p.author, p]));
+  const rows = [...new Set([...(gs ? [] : names), ...ps.map(p => p.author)])].map(nm => {
+    const p = byName.get(nm), st = !p?.notes ? "none" : noteRedoReq(p) ? "redo" : "done";
+    return {nm, p, st, cls:clsOf(nm.split(/\s+/)[0])};
+  }).sort((a, b) => koCmp(a.nm, b.nm));
+  const clss = [...new Set(rows.map(x => x.cls).filter(Boolean))].sort(koCmp);
+  const cls = clss.includes(S.ncls) ? S.ncls : "";
+  const inCls = rows.filter(x => !cls || x.cls === cls);
+  const c = k => inCls.filter(x => x.st === k).length;
+  const nf = ["all","done","none","redo"].includes(S.nf) ? S.nf : "all", q = (S.nq || "").trim();
+  const list = inCls.filter(x => (nf === "all" || x.st === nf) && (!q || x.nm.includes(q)));
+  const LBL = {done:"✓ 제출 완료", none:"미제출", redo:"↻ 재제출 요청"};
+  let h = `<div class="kpis"><div class="kpi"><b>${c("done") + c("redo")}${names.length && !gs ? `<small> / ${inCls.length}</small>` : ""}</b><span>제출</span></div>
+    <div class="kpi"><b>${names.length || gs ? c("none") : "–"}</b><span>미제출</span></div><div class="kpi"><b>${c("redo")}</b><span>재제출 요청</span></div></div>
+    <div class="row" style="margin-top:12px;flex-wrap:wrap;gap:8px"><button class="btn" type="button" data-a="note-dup" data-id="${esc(r.id)}">📋 다음 시간용으로 복제</button>
+      ${S.mode === "supa" ? `<button class="btn" type="button" data-a="roster-open">👥 학생 명단</button>` : ""}<span class="muted small">복제하면 제목과 안내만 바꿔 바로 쓸 수 있어요.</span></div>`;
+  if(!names.length && !gs) h += `<p class="notice" style="margin-top:12px">${S.mode === "supa" ? (S.roster === undefined ? "학생 명단을 불러오는 중…" : "👥 학생 명단(학생 코드)에 학생을 넣으면 미제출 학생도 함께 보여요.") : "설정 탭의 학생 명단을 넣으면 미제출 학생도 함께 보여요."}</p>`;
+  h += `<div class="nbar"><div class="mfilters">${[["all","전체",inCls.length],["done","제출 완료",c("done")],["none","미제출",c("none")],["redo","재제출 요청",c("redo")]].map(([k,l,n]) => `<button type="button" data-a="note-filter" data-v="${k}" aria-pressed="${nf===k}">${l} <span class="mono">${n}</span></button>`).join("")}</div>
+    ${clss.length > 1 ? `<select id="n-cls" aria-label="반"><option value="">모든 반</option>${clss.map(x => `<option ${x===cls?"selected":""}>${esc(x)}</option>`).join("")}</select>` : ""}
+    <input type="search" id="n-q" placeholder="이름·학번 찾기" value="${esc(S.nq||"")}" aria-label="학생 찾기"></div>`;
+  if(!list.length) return h + `<div class="empty">${rows.length ? "조건에 맞는 학생이 없어요." : "아직 제출한 학생이 없어요."}</div>`;
+  return h + `<div class="ncards">${list.map(({nm, p, st}) => `<article class="ncard ${st}"><div class="ncard-h"><b>${esc(nm)}</b><span class="chip nchip ${st}">${LBL[st]}</span></div>
+      ${p?.notes ? `<span class="muted small">${esc(fmt(p.notes.submittedAt))} · ${p.notes.images.length}장${p.notes.version > 1 ? ` · ${p.notes.version}번째 제출` : ""}</span>${noteThumbs(p, p.notes.images, 3)}${p.notes.memo ? `<p class="small ncard-memo">${esc(p.notes.memo)}</p>` : ""}
+        <div class="row end">${st === "redo" ? `<button class="btn sm" type="button" data-a="note-req-cancel" data-pid="${esc(p.id)}">요청 취소</button>` : `<button class="btn sm" type="button" data-a="note-req" data-pid="${esc(p.id)}">↻ 재제출 요청</button>`}<button class="btn sm pri" type="button" data-a="note-view" data-pid="${esc(p.id)}" data-i="0">크게 보기</button></div>`
+      : `<p class="muted small">${p ? "올리는 중이거나 아직 제출 전이에요." : "아직 제출하지 않았어요."}</p>`}</article>`).join("")}</div>`;
 }
 /* 활동 안의 두 화면: 우리 반 게시판 ↔ 내 활동 */
 function roomTabs(r, cur){
@@ -2546,7 +2775,7 @@ function viewRoomTeacher(r){
       <button class="btn sm" type="button" data-a="copy-link" data-id="${esc(r.id)}">🔗 학생 링크 복사</button>
       <button class="btn sm" type="button" data-a="qr" data-id="${esc(r.id)}">QR 코드</button>
       <button class="btn sm" type="button" data-a="preview" data-id="${esc(r.id)}">👀 학생 화면 미리보기</button>
-      <button class="btn sm" type="button" data-a="present" data-id="${esc(r.id)}">📽 수업에서 함께 보기</button>
+      ${isNotes(r) ? "" : `<button class="btn sm" type="button" data-a="present" data-id="${esc(r.id)}">📽 수업에서 함께 보기</button>`}
       <span class="sp"></span>
       <button class="btn sm" type="button" data-a="edit-room" data-id="${esc(r.id)}">수정</button>
       <button class="btn sm" type="button" data-a="dup" data-id="${esc(r.id)}">복제</button>
@@ -2554,6 +2783,7 @@ function viewRoomTeacher(r){
       <button class="btn sm danger" type="button" data-a="del-ask" data-id="${esc(r.id)}">🗑 삭제</button>
     </div></section>`;
   h += gselBar(r);
+  if(isNotes(r)) return h + viewNotesTeacher(r);                    // 오늘의 필기: 학생별 사진 확인
   // 상단 요약: 활동에 맞는 숫자만
   const k = [];
   k.push(`<div class="kpi"><b>${st.participants}${st.total?`<small> / ${st.total}</small>`:""}</b><span>참여</span></div>`);
@@ -3603,6 +3833,13 @@ function renderModal(){
       <div class="row end"><button class="btn" type="button" data-a="modal-close">취소</button><button class="btn danger" type="button" data-a="course-del-yes" data-id="${esc(m.id)}">수업 삭제</button></div>`;
   }else if(m.type === "roster"){
     h = rosterModalHTML();
+  }else if(m.type === "note"){
+    h = noteViewerHTML(m);
+  }else if(m.type === "noteReq"){
+    const p = S.posts.find(x => x.id === m.pid);
+    h = `<h3>↻ 다시 제출 요청</h3><p><b>${esc(p?.author||"")}</b> 학생에게 필기를 다시 올려 달라고 알려요. 학생 화면에 요청과 메시지가 보여요.</p>
+      <div class="q"><label for="nreq-msg">학생에게 보낼 말 <span class="opt">(선택)</span></label><textarea id="nreq-msg" rows="3" maxlength="200" placeholder="예: 두 번째 쪽 글씨가 흐려서 잘 안 보여요. 밝은 곳에서 다시 찍어 주세요."></textarea></div>
+      <div class="row end"><button class="btn" type="button" data-a="modal-close">취소</button><button class="btn pri" type="button" data-a="note-req-send" data-pid="${esc(m.pid)}">요청 보내기</button></div>`;
   }else if(m.type === "status"){
     const r = S.rooms.find(x=>x.id===m.id);
     const txt = m.v === "closed" ? ["활동을 마감할까요?", "마감하면 학생이 더 이상 제출하거나 고칠 수 없어요. 지금까지의 결과와 응답은 계속 볼 수 있고, 언제든 ‘다시 열기’로 되돌릴 수 있어요.", "마감하기"]
@@ -3637,7 +3874,7 @@ function renderModal(){
       <input type="text" id="share-url" placeholder="https://claude.ai/…" aria-label="공유 링크">
       <div class="row end"><button class="btn" type="button" data-a="modal-close">취소</button><button class="btn pri" type="button" data-a="save-share">저장</button></div>`;
   }
-  el.innerHTML = `<div class="modal-bg" data-a="modal-bg"><div class="modal" role="dialog" aria-modal="true">${h}</div></div>`;
+  el.innerHTML = `<div class="modal-bg" data-a="modal-bg"><div class="modal${m.type === "note" ? " lb" : ""}" role="dialog" aria-modal="true">${h}</div></div>`;
   if(m.type === "qr"){
     const link = linkFor(m.kind || "room", m.id, m.g);
     loadQR().then(ok => { const box = document.getElementById("qrbox"); if(!box) return; box.innerHTML = "";
@@ -3664,7 +3901,7 @@ function formFromRoom(r){
   const f = featuresOf(r), t = TEMPLATES[r.template] || {};
   const form = {editId:r.id, goal:(GOALS.find(g=>g.t.includes(r.template))||{}).k, template:r.template, tool:toolOf(r), depth:depthOf(r),
     prompt:r.prompt||"", title:r.title||"", context:r.context||"", intro:r.intro||"",
-    personaName:r.persona?.name||"", personaAbout:r.persona?.about||"", personaStyle:r.persona?.style||"persona", maxTurns:String(r.persona?.maxTurns||8),
+    maxPages:String(r.noteCfg?.maxPages||10), personaName:r.persona?.name||"", personaAbout:r.persona?.about||"", personaStyle:r.persona?.style||"persona", maxTurns:String(r.persona?.maxTurns||8),
     subject:r.subject||"", unit:r.unit||"", year:r.year||"", grade:r.grade||"", duration:String(r.duration||""), dueAt:dtv(r.dueAt), stage:r.stage||"", memo:tnote(r).memo||"",
     qtype:r.qtype||t.qtype||"", reveal:r.reveal||t.reveal, anonymous:!!r.anonymous, minChars:String(r.minChars||0),
     stances:(r.stances||[]).join(", "), nst:(r.stances||[]).length,
@@ -3860,6 +4097,7 @@ function applyDepth(k){
 function applyTemplate(k){
   const t = TEMPLATES[k], f = F("create");
   Object.assign(f, {template:k, tool:t.tool, stances:t.stances.join(", "), reveal:t.reveal, anonymous:t.anonymous, qtype:t.qtype||"", predict:false, develop:false, nst:t.stances.length});
+  if(k === "notes" && !(f.prompt||"").trim()) f.prompt = "오늘 수업에서 배운 내용을 공책이나 태블릿에 정리하고, 사진을 찍어 올려 주세요.";
   t.stances.forEach((x,i) => { f["st"+i] = x });
   applyDepth(t.depth);
 }
@@ -3877,13 +4115,14 @@ function roomFromForm(f){
                                                 : String(f.stances||"").split(",").map(s=>s.trim()).filter(Boolean)).slice(0,4);
   const prompt = (f.prompt||"").trim();
   const isDebate = f.template === "debate2" || f.template === "debateN";
+  const noteCfg = f.template === "notes" ? {maxPages:Math.max(1, Math.min(20, parseInt(f.maxPages)||10))} : undefined;
   const persona = f.template === "chat" ? {name:(f.personaName||"").trim(), about:(f.personaAbout||"").trim(), style:f.personaStyle === "easy" ? "easy" : "persona", maxTurns:Math.max(1, Math.min(30, parseInt(f.maxTurns)||8))} : undefined;
   return {
-    title:(f.title||"").trim() || (prompt.length > 28 ? prompt.slice(0,28) + "…" : prompt),
+    title:(f.title||"").trim() || (f.template === "notes" ? `오늘의 필기 · ${new Date().getMonth()+1}월 ${new Date().getDate()}일` : (prompt.length > 28 ? prompt.slice(0,28) + "…" : prompt)),
     subject:(f.subject||"").trim(), unit:(f.unit||"").trim(), year:(f.year||"").trim(),
     prompt, context:(f.context||"").trim(),
     template: isDebate ? (stances.length >= 3 ? "debateN" : "debate2") : f.template, depth:f.depth, tool, stances, reveal: relay ? "immediate" : f.reveal,
-    ...(persona ? {persona} : {}),
+    ...(persona ? {persona} : {}), ...(noteCfg ? {noteCfg} : {}),
     qtype: (f.template==="inquiry" || relay) ? (f.qtype || t.qtype) : "",
     interact: relay ? "comment" : (f.rebuttal ? "rebuttal" : (f.comment ? "comment" : "none")),
     anonymous:!!f.anonymous, minChars: relay ? 0 : Math.max(0, parseInt(f.minChars)||0), revisit:false,
@@ -3909,9 +4148,9 @@ function viewCreate(){
   const nResp = editR ? allPostsOf(editR.id).length : 0, locked = nResp > 0;
   const isDraft = editR && statusOf(editR) === "draft";
   const preview = roomFromForm(f), phs = phasesOf(preview), tool = TOOLS[preview.tool];
-  const isChat = f.template === "chat";
-  const promptLabel = isChat ? "대화 주제 (학생에게 보이는 안내)" : relay ? "질문을 만들 주제" : (f.template==="inquiry" ? "학생들에게 던질 질문" : "논제 (학생들에게 던질 질문)");
-  const promptPh = isChat ? "예: 고종에게 대한제국을 선포한 까닭과 그때의 고민을 물어보자." : relay ? "예: 유신 체제에 대해 궁금한 것을 질문으로 만들어 보자." : (f.template==="inquiry" ? "예: 박정희 정부가 말한 ‘근대화’란 무엇을 의미했을까?" : "예: 유신 헌법은 필요했을까?");
+  const isChat = f.template === "chat", isNoteT = f.template === "notes";
+  const promptLabel = isNoteT ? "학생에게 보일 안내" : isChat ? "대화 주제 (학생에게 보이는 안내)" : relay ? "질문을 만들 주제" : (f.template==="inquiry" ? "학생들에게 던질 질문" : "논제 (학생들에게 던질 질문)");
+  const promptPh = isNoteT ? "예: 오늘 배운 3·1 운동의 전개 과정을 정리하고 사진으로 올려 주세요." : isChat ? "예: 고종에게 대한제국을 선포한 까닭과 그때의 고민을 물어보자." : relay ? "예: 유신 체제에 대해 궁금한 것을 질문으로 만들어 보자." : (f.template==="inquiry" ? "예: 박정희 정부가 말한 ‘근대화’란 무엇을 의미했을까?" : "예: 유신 헌법은 필요했을까?");
   const qopts = (relay ? [{k:"student", l:"학생이 고르기"}] : []).concat(Object.entries(QTYPES).map(([k,v]) => ({k, l:`${v.mark} ${v.short}`})));
   const etBoxes = EVIDENCE_TYPES.map(e => `<label class="choice"><input type="checkbox" data-form="create" data-k="evidenceTypes" data-multi value="${esc(e)}" ${(f.evidenceTypes||[]).includes(e)?"checked":""}><span>${esc(e)}</span></label>`).join("");
   const hasReason = tool.fields.some(x=>x.k==="reason");
@@ -3936,7 +4175,9 @@ function viewCreate(){
       <div class="q"><label for="c-pstyle">말투</label><select id="c-pstyle" data-form="create" data-k="personaStyle"><option value="persona" ${f.personaStyle!=="easy"?"selected":""}>인물다운 말투 (학생이 알아듣게)</option><option value="easy" ${f.personaStyle==="easy"?"selected":""}>쉬운 존댓말</option></select></div>
       <div class="q wide"><label for="c-pabout">인물 소개 <span class="opt">(학생에게도 보여요 · AI가 이 설정대로 말해요)</span></label><input type="text" id="c-pabout" data-form="create" data-k="personaAbout" maxlength="200" value="${esc(f.personaAbout||"")}" placeholder="예: 조선의 26대 왕이자 대한제국 황제. 1897년 대한제국을 선포했다."></div>
       <div class="q"><label for="c-pmax">학생 한 명이 할 수 있는 질문 수</label><input type="number" id="c-pmax" data-form="create" data-k="maxTurns" min="1" max="30" value="${esc(f.maxTurns||"8")}"></div>
-      <p class="hint wide">AI는 교사가 넣은 ‘자료’를 먼저 참고해요. 교과서·사료 요약을 넣으면 틀린 말이 줄어요. 학생 화면에는 ‘AI가 연기하는 가상 인물이에요’ 안내가 늘 함께 보여요.</p>` : ""}
+      <p class="hint wide" data-x>AI는 교사가 넣은 ‘자료’를 먼저 참고해요. 교과서·사료 요약을 넣으면 틀린 말이 줄어요. 학생 화면에는 ‘AI가 연기하는 가상 인물이에요’ 안내가 늘 함께 보여요.</p>` : ""}
+    ${isNoteT ? `<div class="q"><label for="c-maxp">한 번에 올릴 수 있는 사진 수</label><input type="number" id="c-maxp" data-form="create" data-k="maxPages" min="1" max="20" value="${esc(f.maxPages||"10")}"></div>
+      <p class="hint wide">학생은 📷 사진 찍기나 🖼 앨범에서 여러 장을 골라, 미리 보고 순서를 바꾸거나 뺀 뒤 제출해요. 제출한 필기는 선생님만 볼 수 있어요. 활동 이름을 비워 두면 ‘오늘의 필기 · 날짜’로 정해져요.</p>` : ""}
     ${(f.template==="inquiry" || relay) ? `<div class="wide">${lockWrap(locked, `<fieldset class="q"><legend style="font-size:15px">질문 유형은 무엇인가요?</legend>${radios("create","qtype",qopts,{label:"질문 유형"})}${qtypeHelp("질문 유형 설명 보기")}</fieldset>`)}</div>` : ""}
     ${t.stances.length ? `<div class="wide">${lockWrap(locked, `<fieldset class="q"><legend style="font-size:15px">입장 <span class="opt">(이름을 바꿀 수 있어요)</span></legend>
       <div class="form-grid" style="gap:8px">${Array.from({length:f.nst||t.stances.length}, (_,i) => `<div class="stance-ins"><span aria-hidden="true">${BADGES[i%4]}</span><input type="text" id="c-st${i}" data-form="create" data-k="st${i}" maxlength="30" aria-label="입장 ${i+1}" value="${esc(f["st"+i]||"")}"></div>`).join("")}</div>
@@ -3947,7 +4188,8 @@ function viewCreate(){
     <div class="q wide"><label for="c-context">${isChat ? "AI가 참고할 자료" : "자료"} <span class="opt">(선택)</span></label>${ta("create","context",{rows:2, ph:"배경 설명, 사료 요약, 통계 등", id:"c-context"})}</div>
   </div></div>
 
-  <div class="card" style="margin-top:16px"><h3>③ 어느 정도 깊이로 할까요?</h3>${lockWrap(locked, `
+  ${isNoteT ? `<style>.depth-card,.preview-steps,details[data-adv]{display:none!important}</style>` : ""}
+  <div class="card depth-card" style="margin-top:16px"><h3>③ 어느 정도 깊이로 할까요?</h3>${lockWrap(locked, `
     <div class="depths" role="group" aria-label="활동 깊이">${Object.entries(DEPTHS).map(([k,d])=>`<button type="button" class="depth" data-a="depth" data-v="${k}" aria-pressed="${k===f.depth}">
       <b><span aria-hidden="true">${d.mark}</span>${d.label}</b><span class="fl">${esc(d.sum)}</span><span class="use">${esc(d.use)}</span></button>`).join("")}</div>`)}</div>
 
@@ -4039,6 +4281,7 @@ function onFormValue(el){
 document.addEventListener("input", e => {
   const el = e.target;
   if(el.id === "roster-q"){ S.rosterQ = el.value; const box = el.closest(".modal"); if(box){ const at = el.selectionStart; render(); const n = document.getElementById("roster-q"); if(n){ n.focus(); n.setSelectionRange(at, at) } } return }
+  if(el.id === "n-q"){ S.nq = el.value; const at = el.selectionStart; render(); const n = document.getElementById("n-q"); if(n){ n.focus(); n.setSelectionRange(at, at) } return }
   if(el.id === "m-q"){ S.mq = el.value; const box = document.getElementById("mlist"); if(box) box.innerHTML = manageList(); return }
   if(el.id === "s-q"){ S.sq = el.value; const r = room(), box = document.getElementById("slist"); if(r && box){ const st = teacherStats(r); box.innerHTML = studentListHTML(r, st, studentView(r, st)) } return }
   if(!el.dataset.form || el.type==="checkbox" || el.type==="radio" || el.tagName==="SELECT") return;
@@ -4048,6 +4291,8 @@ document.addEventListener("input", e => {
 });
 document.addEventListener("change", e => {
   const el = e.target;
+  if(el.dataset.noteFile){ const r = S.rooms.find(x => x.id === el.dataset.noteFile); if(r && el.files?.length) noteAddFiles(r, el.files); el.value = ""; return }
+  if(el.id === "n-cls"){ S.ncls = el.value; render(); return }
   if(el.id === "m-sub" || el.id === "m-grade"){ S[el.id === "m-sub" ? "msub" : "mgrade"] = el.value; render(); return }
   if(el.dataset.asg){                                        // 그룹별 시작·마감 시각
     if(!Auth.teacher) return;
@@ -4318,6 +4563,36 @@ async function act(a, b){
     case "to-stage": S.work = S.roomId; S.openPost = null; scrollTo(0,0); break;
     case "rmode": S.work = b.dataset.v === "work" ? S.roomId : null; S.openPost = null; break;
     case "due-clear": { const f = createForm(); f.dueAt = ""; saveFormsSoon(); break }
+    /* ---- 오늘의 필기 ---- */
+    case "note-redo": S.noteRedo = r?.id; break;
+    case "note-redo-cancel": S.noteRedo = null; (NDRAFT[r.id]||[]).forEach(x => URL.revokeObjectURL(x.url)); delete NDRAFT[r.id]; break;
+    case "note-rm": { const l = NDRAFT[r.id] || [], i = +b.dataset.i; if(l[i]){ URL.revokeObjectURL(l[i].url); l.splice(i, 1) } break }
+    case "note-move": { const l = NDRAFT[r.id] || [], i = +b.dataset.i, j = i + (+b.dataset.d); if(l[i] && l[j]) [l[i], l[j]] = [l[j], l[i]]; break }
+    case "note-clear": (NDRAFT[r.id]||[]).forEach(x => URL.revokeObjectURL(x.url)); NDRAFT[r.id] = []; break;
+    case "note-submit": await noteSubmit(r); return;
+    case "note-view": S.modal = {type:"note", pid:b.dataset.pid || null, draft:b.dataset.draft || null, i:+b.dataset.i || 0}; break;
+    case "note-nav": if(S.modal) S.modal.i = (S.modal.i||0) + (+b.dataset.d); break;
+    case "note-filter": S.nf = b.dataset.v; break;
+    case "note-req": S.modal = {type:"noteReq", pid:b.dataset.pid}; break;
+    case "note-req-send": {
+      const p = S.posts.find(x => x.id === b.dataset.pid), msg = (document.getElementById("nreq-msg")?.value || "").trim().slice(0, 200);
+      if(!p) return;
+      const req = {at:Date.now(), msg};
+      if(await write(db => db.doc("posts/"+p.id).update({resubmitReq:req}), () => { p.resubmitReq = req })){ S.modal = null; toast(`${p.author} 학생에게 다시 제출을 요청했어요.`) }
+      break;
+    }
+    case "note-req-cancel": {
+      const p = S.posts.find(x => x.id === b.dataset.pid); if(!p) return;
+      if(await write(db => db.doc("posts/"+p.id).update({resubmitReq:null}), () => { p.resubmitReq = null })) toast("요청을 취소했어요.");
+      break;
+    }
+    case "note-dup": {
+      const rr = S.rooms.find(x => x.id === b.dataset.id), nr = rr && await duplicateRoom(rr);
+      if(!nr) return;
+      const nf = formFromRoom(nr); nf.title = ""; S.form.create = nf; saveFormsSoon(); S.view = "create"; S.tplNaming = false; scrollTo(0,0);
+      toast("복제했어요. 제목과 안내만 바꾸고 ‘공개하기’를 누르세요.");
+      break;
+    }
     case "hsub": S.hsub = b.dataset.v; lsSet("nonjae.hsub", S.hsub); break;
     case "map-more": S.mapMore = {...(S.mapMore||{}), [r.id+":"+b.dataset.v]:true}; break;
     case "unpick": { F("meet:"+r.id).diffPostId = ""; saveFormsSoon(); break }
@@ -4682,7 +4957,7 @@ async function act(a, b){
       if(editR){
         id = editR.id;
         // 학생 응답이 있으면 글자로 된 안내만 바꾼다 (구조는 그대로)
-        doc = locked ? {title:data.title, prompt:data.prompt, context:data.context, subject:data.subject, unit:data.unit, year:data.year, ...(data.persona ? {persona:data.persona} : {}), ...meta, ...asg, updatedAt:now}
+        doc = locked ? {title:data.title, prompt:data.prompt, context:data.context, subject:data.subject, unit:data.unit, year:data.year, ...(data.persona ? {persona:data.persona} : {}), ...(data.noteCfg ? {noteCfg:data.noteCfg} : {}), ...meta, ...asg, updatedAt:now}
                      : {...data, ...meta, ...asg, updatedAt:now};
         if(a === "publish-draft") Object.assign(doc, {status:"open", open:true});
         ok = await write(db => db.doc("rooms/"+id).update(doc), () => Object.assign(editR, doc));
