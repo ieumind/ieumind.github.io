@@ -492,6 +492,8 @@ body.presenting .top,body.presenting .notice{display:none}
   .top-r > *{flex:0 0 auto;white-space:nowrap}
   .top-r .btn{min-height:38px;padding:6px 12px;font-size:14px}
   .wall{grid-template-columns:1fr}
+  .wl-hero{padding:20px 16px}
+  .wl-big{width:100%}
   .sstats{width:100%}
   .sstats > div{flex:1;min-width:0}
   .sgrid{grid-template-columns:1fr}
@@ -522,6 +524,26 @@ body.presenting .top,body.presenting .notice{display:none}
 .stools{display:grid;gap:10px}
 .stools input[type=search]{width:100%;border:1px solid var(--line);background:var(--paper);border-radius:10px;padding:10px 14px;font-size:16px}
 input[type=datetime-local]{min-height:44px;border:1px solid var(--line);border-radius:10px;padding:8px 12px;background:var(--surface);color:var(--fg);font:inherit;max-width:100%}
+/* ---------- 처음 온 선생님 ---------- */
+.welcome{display:grid;gap:22px}
+.wl-hero{display:grid;gap:12px;padding:26px 26px 22px;border-radius:18px;background:linear-gradient(135deg,var(--accent-soft),var(--surface));border:1px solid var(--line)}
+.wl-hero h1{font-family:var(--f-display);font-size:clamp(28px,5vw,44px);line-height:1.25}
+.wl-hero p{max-width:60ch}
+.wl-cta{display:flex;flex-wrap:wrap;gap:10px;margin-top:4px}
+.wl-big{min-height:52px;font-size:16.5px;padding:0 22px}
+.wl-big .g{display:inline-grid;place-items:center;width:24px;height:24px;border-radius:999px;background:#fff;color:#1a73e8;font-weight:700;margin-right:6px}
+.wl-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:12px}
+.wl-f{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:16px;display:grid;gap:6px;align-content:start}
+.wl-f .ic{font-size:26px}
+.wl-f b{font-size:16.5px}
+.wl-f p{font-size:14.5px;color:var(--muted);line-height:1.6}
+.wl-two{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:14px}
+.wl-steps ol{margin:10px 0 0;padding-left:22px;display:grid;gap:10px}
+.wl-steps li span{display:block;font-size:14px;color:var(--muted);margin-top:2px}
+.wl-safe{border-left:5px solid var(--accent)}
+.wl-safe ul{margin:10px 0;padding-left:18px;display:grid;gap:8px;font-size:14.5px;line-height:1.6}
+.wl-foot{text-align:center}
+.demo-bar{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px;background:var(--warn-soft);border-color:transparent}
 /* ---------- 교사 관리 ---------- */
 .tadm{display:grid;gap:8px;max-height:60vh;overflow:auto}
 .tadm-row{display:grid;grid-template-columns:1fr auto;gap:4px 12px;align-items:center;border:1px solid var(--line);border-radius:10px;padding:10px 12px}
@@ -1063,6 +1085,48 @@ const SAMPLE_ROOMS = [
    stances:[], reveal:"immediate", interact:"comment", anonymous:true, minChars:0, fields:[]}
 ];
 
+/* 🧪 체험 모드 예시 데이터 (주소에 ?demo=1) */
+const IS_DEMO = new URLSearchParams(location.search).has("demo");
+function demoNote(n, tone){
+  const c = document.createElement("canvas"); c.width = 600; c.height = 800;
+  const g = c.getContext("2d"); g.fillStyle = tone; g.fillRect(0, 0, 600, 800);
+  g.strokeStyle = "#b9c8e0"; g.lineWidth = 2; for(let y = 90; y < 780; y += 36){ g.beginPath(); g.moveTo(30, y); g.lineTo(570, y); g.stroke() }
+  g.fillStyle = "#223"; g.font = "bold 30px sans-serif"; g.fillText(`3·1 운동 정리 (${n}쪽)`, 40, 60);
+  g.font = "24px sans-serif";
+  const L = n === 1 ? ["1. 배경: 민족 자결주의, 2·8 독립 선언", "2. 전개: 3월 1일 탑골 공원 독립 선언", "   → 도시에서 농촌으로, 국외로 확산", "3. 의의: 대한민국 임시 정부 수립", "※ 비폭력 만세 운동"] : ["4. 일제의 탄압: 제암리 학살", "5. 영향: 중국 5·4 운동 등", "   느낀 점: 같은 나이 학생들의 용기", "질문: 왜 비폭력을 택했을까?"];
+  L.forEach((t, i) => g.fillText(t, 40, 122 + i * 72));
+  return c.toDataURL("image/jpeg", 0.75);
+}
+function demoData(){
+  const now = Date.now(), m = 60000;
+  const names = ["10301 김가온","10302 나다은","10303 박서준","10304 이하린","10305 정우진","10306 최서아"];
+  const notesRoom = {id:"demo-notes", template:"notes", title:"오늘의 필기 · 3·1 운동", subject:"한국사", unit:"근대 · 3·1 운동", year:"1919",
+    prompt:"오늘 배운 3·1 운동의 전개 과정을 공책에 정리하고 사진으로 올려 주세요.", stances:[], reveal:"teacher", anonymous:false, tool:"free", depth:"normal",
+    fields:TOOLS.free.fields, noteCfg:{maxPages:10}, open:true, status:"open", dueAt:now + 26 * 60 * m, teacherName:"체험"};
+  S.rooms = [notesRoom, ...SAMPLE_ROOMS.map(r => ({...r, status:"open", teacherName:"체험", subject:r.subject || "한국사"}))].map((r, i) => ({...r, createdAt:now - (i + 1) * 3600000, updatedAt:now - i * 60000}));
+  const P = [];
+  const deb = [["불가피했다","경제 개발을 위한 자금이 급했기 때문에 불가피했다고 생각한다.","당시 한국은 1인당 소득이 매우 낮았고, 일본의 자금이 경부 고속 도로와 포항 제철 건설에 쓰였다."],
+    ["다른 길이 있었다","사과와 배상 없이 서두른 협정이라 다른 길이 있었다고 본다.","6·3 시위처럼 많은 국민이 반대했고, 피해자 개인의 배상 문제가 오늘날까지 남아 있다."],
+    ["다른 길이 있었다","국민의 동의를 얻는 과정이 부족했다.","정부는 비상계엄까지 선포하며 반대 목소리를 막았다."],
+    ["불가피했다","냉전 속에서 미국이 한일 국교 정상화를 강하게 요구했다.","미국은 한국과 일본이 협력해 공산주의에 맞서기를 원했다."]];
+  deb.forEach(([st, c, rs], i) => P.push({id:"dp" + i, roomId:"park-1965", author:names[i], stance:st, body:{claim:c, reason:rs}, status:"submitted", createdAt:now - (90 - i * 7) * m, updatedAt:now - (80 - i * 7) * m}));
+  [["근대화는 공장과 도로처럼 눈에 보이는 경제 성장을 뜻했다.","5개년 계획의 목표가 공업화와 수출이었다."],["생활 방식까지 바꾸려는 운동이었다고 생각한다.","새마을 운동은 초가집 개량과 근면·자조·협동을 강조했다."]]
+    .forEach(([c, rs], i) => P.push({id:"dq" + i, roomId:"park-modern", author:names[i + 2], body:{claim:c, reason:rs}, status:"submitted", createdAt:now - (50 - i * 9) * m, updatedAt:now - (45 - i * 9) * m}));
+  const pg1 = demoNote(1, "#fbf8ee"), pg2 = demoNote(2, "#fbf8ee"), pg3 = demoNote(1, "#eef4fb");
+  P.push({id:"dn0", roomId:"demo-notes", author:names[0], status:"submitted", body:{}, createdAt:now - 30 * m, updatedAt:now - 30 * m,
+    notes:{images:[{d:pg1, w:600, h:800}, {d:pg2, w:600, h:800}], memo:"3·1 운동은 전국으로, 국외로 퍼져 나갔다.", submittedAt:now - 30 * m, version:1, history:[]}});
+  P.push({id:"dn1", roomId:"demo-notes", author:names[1], status:"submitted", body:{}, createdAt:now - 22 * m, updatedAt:now - 22 * m,
+    notes:{images:[{d:pg3, w:600, h:800}], memo:"", submittedAt:now - 22 * m, version:1, history:[]}});
+  P.push({id:"dn2", roomId:"demo-notes", author:names[2], status:"submitted", body:{}, createdAt:now - 15 * m, updatedAt:now - 15 * m, resubmitReq:{at:now - 5 * m, msg:"두 번째 쪽이 흐려요. 밝은 곳에서 다시 찍어 주세요."},
+    notes:{images:[{d:pg2, w:600, h:800}], memo:"", submittedAt:now - 15 * m, version:1, history:[]}});
+  S.posts = P;
+  S.replies = [{id:"dr0", roomId:"park-1965", postId:"dp0", author:names[1], kind:"rebuttal", text:"경제 성장은 맞지만 피해자 배상이 빠진 점은 문제라고 생각해.", evidence:"지금도 강제 동원 배상 문제가 이어지고 있어.", createdAt:now - 40 * m},
+               {id:"dr1", roomId:"park-1965", postId:"dp1", author:names[3], kind:"comment", text:"6·3 시위 사례가 설득력 있어!", createdAt:now - 35 * m}];
+  S._rep = S.replies; S._trep = [];
+  S.tnotes = ["demo-notes", "park-1965", "park-modern", "park-relay"].map(id => ({id, roster:names}));
+  S.loaded = {rooms:1, posts:1, replies:1, courses:1, treplies:1, config:1, tnotes:1, ttemplates:1};
+}
+
 /* =========================================================
    2. 상태와 유틸
    ========================================================= */
@@ -1370,9 +1434,9 @@ function goNext(r){ delete S.step[r.id]; S.anim = true; S.openPost = null }
    ========================================================= */
 function F(key, init){ if(!S.form[key]) S.form[key] = init ? init() : {}; return S.form[key] }
 function formKey(){ return "nonjae.form." + hash(S.name || "-") }
-function loadForms(){ try{ S.form = JSON.parse(lsGet(formKey()) || "{}") || {} }catch(e){ S.form = {} } }
+function loadForms(){ if(S.demo){ S.form = {}; return } try{ S.form = JSON.parse(lsGet(formKey()) || "{}") || {} }catch(e){ S.form = {} } }
 let formTimer;
-function saveFormsSoon(){ if(S.preview) return; clearTimeout(formTimer); formTimer = setTimeout(()=> lsSet(formKey(), JSON.stringify(S.form)), 500) }
+function saveFormsSoon(){ if(S.preview || S.demo) return; clearTimeout(formTimer); formTimer = setTimeout(()=> lsSet(formKey(), JSON.stringify(S.form)), 500) }
 function dropForm(key){ delete S.form[key]; saveFormsSoon() }
 
 /* 입력 요소 만들기 */
@@ -1519,7 +1583,11 @@ async function init(){
   if(window.claude && typeof claude.use === "function"){
     try{ [db, user] = await Promise.all([claude.use("db"), claude.use("user")]) }catch(e){}
   }
-  if(db){
+  if(IS_DEMO){
+    /* 🧪 체험 모드: 로그인 없이 예시 반 데이터로 교사 화면을 써 본다. 아무것도 저장되지 않는다 */
+    S.mode = "local"; S.demo = true; Auth.set(true);
+    demoData();
+  }else if(db){
     S.mode = "db"; S.db = db;
     Auth.set(user ? await user.canEdit() : false);                // 교사 인증: 플랫폼이 확인한 편집 권한
     const cw = user ? await user.can("data.write") : null;
@@ -1568,8 +1636,9 @@ function render(){
   let h = "";
   document.body.classList.toggle("presenting", S.view === "present");
   if(S.preview) h += `<div class="preview-banner" role="status"><span>👀 <b>학생 화면 미리보기 중</b> · 실제 학생 데이터에는 영향을 주지 않습니다. 여기서 쓴 내용은 저장되지 않아요.</span><button class="btn sm pri" type="button" data-a="preview-exit">교사 화면으로 돌아가기</button></div>`;
+  else if(S.demo) h += `<div class="notice demo-bar"><span>🧪 <b>체험 모드</b> · 예시 반(학생 6명)으로 마음껏 눌러 보세요. 만들거나 고친 것은 저장되지 않아요.</span><button class="btn sm pri" type="button" data-a="demo-exit">체험 끝내고 시작하기 →</button></div>`;
   else if(S.mode === "local") h += `<div class="notice"><b>미리보기 모드</b> · 이 화면에서는 글이 저장되지 않아요. ${window.claude ? "공유 링크로 열면 반 전체가 같은 활동을 씁니다." : "학생 글을 모으려면 README의 Supabase 설정을 마쳐 주세요."}${S.supaError ? ` (연결 오류: ${esc(S.supaError)})` : ""}</div>`;
-  else if(!S.canWrite) h += `<div class="notice"><b>보기 전용</b> · 이 계정은 글을 읽을 수만 있어요. 선생님께 참여 권한을 요청하세요.</div>`;
+  else if(!S.canWrite && !(S.mode === "supa" && S.wantTeacher && !Auth.teacher)) h += `<div class="notice"><b>보기 전용</b> · 이 계정은 글을 읽을 수만 있어요. 선생님께 참여 권한을 요청하세요.</div>`;
 
   if(S.mode === "supa" && S.wantTeacher && !Auth.teacher) h += viewTeacherLogin();
   else if(S.mode === "supa" && !Auth.teacher && !S.name) h += viewCodeGate();          // 이 선생님 반 학생으로 확인되기 전에는 활동이 보이지 않는다
@@ -1602,6 +1671,7 @@ function afterRender(){
 }
 function renderTop(){
   let h = "";
+  if(S.mode === "supa" && S.wantTeacher && !Auth.teacher){ document.getElementById("topr").innerHTML = ""; return }   // 교사 소개 화면: 학생 버튼은 숨긴다
   if(S.preview){ document.getElementById("topr").innerHTML = `<button class="btn sm" type="button" data-a="preview-exit">교사 화면으로 돌아가기</button>`; return }
   if(isTeacher()) h += `<button class="btn sm" type="button" data-a="home">📋 내 수업</button>`;
   if(isTeacher()) h += `<button class="btn sm" type="button" data-a="preview-home" title="학생에게 보이는 화면을 확인해요. 여기서 쓴 내용은 저장되지 않아요.">👀 학생 화면 미리보기</button>`;
@@ -3173,6 +3243,7 @@ function supaDB(sb){
 }
 /* 교사 로그인 화면 (주소 끝에 #teacher) — 학생 화면에는 이 화면으로 가는 버튼이 없다 */
 function viewTeacherLogin(){
+  if(!S.sbEmail || S.sbAnon) return viewWelcome();
   return `<div class="home-head"><div><div class="eyebrow">교사</div><h1>교사 로그인</h1><p>구글 계정으로 로그인하면 바로 나만의 교사 공간이 만들어져요. 다른 선생님의 활동과 학생 자료는 서로 보이지 않아요.</p></div></div>
     <div class="card" style="max-width:520px">
       ${S.sbEmail ? `<p><b>${esc(S.sbEmail)}</b> 계정은 ${S.sbBlocked ? "관리자가 사용을 중지한 계정이에요." : "지금 교사 화면을 쓸 수 없어요."}</p><p class="muted small" style="margin-top:6px">${S.sbBlocked ? "잘못 막혔다면 생각이음 관리자 선생님께 알려 주세요." : "잠시 뒤 새로고침해 보세요."}</p>
@@ -3180,10 +3251,45 @@ function viewTeacherLogin(){
       : `<button class="btn pri" type="button" data-a="t-login">G&nbsp; 구글 계정으로 로그인</button>`}
       <p class="muted small" style="margin-top:14px"><button class="linkbtn" type="button" data-a="t-cancel">← 학생 화면으로</button></p></div>`;
 }
+/* 처음 온 선생님을 위한 소개 · 체험 · 시작 */
+const WELCOME_FEATURES = [
+  ["🗣️","생각을 나누는 활동","토론, 질문 활동, 논술, 감상·성찰, 생각 스케치까지. 주제만 적으면 단계별 활동이 만들어져요."],
+  ["📌","우리 반 게시판","학생 생각이 패들렛처럼 카드로 모여요. 내 생각을 올리기 전에는 친구 글이 흐리게 가려져요."],
+  ["📸","오늘의 필기","공책·태블릿 필기를 사진으로 여러 장 제출해요. 미제출자 확인과 재제출 요청도 한 화면에서."],
+  ["🧭","생각의 변화","처음 생각 → 친구 생각 → 지금 생각. 학생마다 생각이 어떻게 자랐는지 한눈에 보여요."],
+  ["👥","로그인 없는 학생 참여","학생은 학번·이름·개인 코드로 들어와요. 링크나 QR만 나눠 주면 되고, 휴대폰에 앱처럼 설치할 수 있어요."],
+  ["⏰","수업 운영 도구","마감 시각이 되면 자동 마감, 수업에서 함께 보기, 피드백, 결과 내보내기(CSV)."]];
+function viewWelcome(){
+  return `<section class="welcome">
+    <div class="wl-hero">
+      <div class="eyebrow">선생님을 위한 생각 수업 플랫폼</div>
+      <h1>생각하고, 만나고,<br>다시 생각하는 수업</h1>
+      <p>학생이 자기 생각을 쓰고, 친구 생각을 만나고, 다시 생각을 고쳐 쓰는 과정을 한곳에서 운영해요.</p>
+      <div class="wl-cta"><button class="btn pri wl-big" type="button" data-a="t-login"><span class="g" aria-hidden="true">G</span> 구글 계정으로 시작하기</button>
+        <button class="btn wl-big" type="button" data-a="demo-start">🧪 로그인 없이 체험해 보기</button></div>
+      <p class="muted small">체험하기는 예시 반 데이터로 교사 화면을 그대로 써 보는 기능이에요. 아무것도 저장되지 않아요.</p>
+    </div>
+    <div class="wl-grid">${WELCOME_FEATURES.map(([ic, t, d]) => `<div class="wl-f"><span class="ic" aria-hidden="true">${ic}</span><b>${t}</b><p>${d}</p></div>`).join("")}</div>
+    <div class="wl-two">
+      <div class="card wl-steps"><h3>🚀 이렇게 시작해요</h3><ol>
+        <li><b>구글 계정으로 시작하기</b><span>바로 나만의 교사 공간이 만들어져요. 가입 신청이나 승인은 필요 없어요.</span></li>
+        <li><b>👥 학생 코드 만들기</b><span>나이스에서 ‘학번 이름’을 복사해 붙여 넣으면 개인 코드가 만들어지고, 쪽지로 인쇄할 수 있어요.</span></li>
+        <li><b>활동 만들고 링크·QR 공유</b><span>학생은 처음 한 번만 학번·이름·코드를 넣으면 돼요.</span></li></ol></div>
+      <div class="card wl-safe"><h3>🔒 안심하고 쓰세요</h3><ul>
+        <li><b>구글 비밀번호는 생각이음에 전달되지 않아요.</b> 로그인은 구글 화면에서 하고, 생각이음은 로그인 확인 결과와 이메일·이름만 받아요.</li>
+        <li><b>내 수업 자료는 나만 봐요.</b> 활동, 학생 명단·코드, 학생 글, 필기 사진은 다른 선생님에게 보이지 않도록 서버에서 막혀 있어요.</li>
+        <li><b>관리자 화면에도 수업 자료는 보이지 않아요.</b> 관리자 화면에는 가입한 선생님의 이름·이메일과 사용량(활동 수·사진 용량)만 보여요.</li>
+        <li><b>학생은 구글 계정이 필요 없어요.</b> 학번과 이름만 저장되고, 개인 코드는 학생에게 보이지 않아요.</li></ul>
+        <p class="muted small">데이터는 생각이음 운영자의 Supabase 저장소(서울)에 보관돼요. 학교 개인정보 담당자에게 사용 사실을 알려 두세요.</p></div>
+    </div>
+    <p class="wl-foot muted small">학생이신가요? <button class="linkbtn" type="button" data-a="t-cancel">학생 화면으로 가기 →</button></p>
+  </section>`;
+}
 /* 학생: 선생님 반 확인 화면 (처음 들어올 때, 또는 다른 선생님의 활동 링크로 들어올 때) */
 function viewCodeGate(){
   return `<div class="home-head"><div><div class="eyebrow">생각이음</div><h1>반갑습니다!</h1><p>선생님이 나눠 준 개인 코드로 처음 한 번만 확인할게요.</p></div></div>
-    <div id="stage" style="max-width:560px">${codeForm()}</div>`;
+    <div id="stage" style="max-width:560px">${codeForm()}</div>
+    <p class="muted small" style="margin-top:18px">선생님이신가요? <button class="linkbtn" type="button" data-a="t-start">교사로 시작하기 →</button></p>`;
 }
 /* 관리자: 가입한 교사 목록 · 막기/풀기 */
 async function loadTadmin(){
@@ -4454,7 +4560,8 @@ async function act(a, b){
     /* ---- Supabase: 교사 로그인 · 학생 명단 ---- */
     case "t-login": { await SB.auth.signInWithOAuth({provider:"google", options:{redirectTo: location.origin + location.pathname + "#teacher"}}); return }
     case "t-logout": { await SB.auth.signOut(); location.hash = ""; location.reload(); return }
-    case "t-cancel": S.wantTeacher = false; break;
+    case "t-cancel": S.wantTeacher = false; if(location.hash === "#teacher") history.replaceState(null, "", location.pathname); break;
+    case "t-start": S.wantTeacher = true; history.replaceState(null, "", location.pathname + "#teacher"); scrollTo(0,0); break;
     case "roster-open": S.modal = {type:"roster"}; S.roster = undefined; S.rosterQ = ""; loadRoster(); break;
     case "roster-add": {
       const {ok, bad} = parseRoster(document.getElementById("roster-add")?.value);
@@ -4674,6 +4781,8 @@ async function act(a, b){
       toast(on ? `${em} 계정을 막았어요. 이 계정과 학생들은 더 이상 글·사진을 올릴 수 없어요.` : `${em} 계정을 다시 쓸 수 있게 했어요.`);
       await loadTadmin(); return;
     }
+    case "demo-start": location.href = location.origin + location.pathname + "?demo=1"; return;
+    case "demo-exit": location.href = location.origin + location.pathname + "#teacher"; return;
     case "install-help": S.modal = {type:"install", os:deviceOS()}; break;
     case "install-os": if(S.modal) S.modal.os = b.dataset.v; break;
     case "install-now": if(INSTALL_EVT){ INSTALL_EVT.prompt(); const c = await INSTALL_EVT.userChoice.catch(() => null); INSTALL_EVT = null; S.modal = null; if(c?.outcome === "accepted") toast("설치했어요! 홈 화면에서 생각이음을 찾아보세요.") } break;
