@@ -1407,6 +1407,7 @@ function render(){
   else if(!S.canWrite) h += `<div class="notice"><b>보기 전용</b> · 이 계정은 글을 읽을 수만 있어요. 선생님께 참여 권한을 요청하세요.</div>`;
 
   if(S.mode === "supa" && S.wantTeacher && !Auth.teacher) h += viewTeacherLogin();
+  else if(S.mode === "supa" && !Auth.teacher && !S.name) h += viewCodeGate();          // 이 선생님 반 학생으로 확인되기 전에는 활동이 보이지 않는다
   else if(S.mode !== "local" && !S.loaded.rooms) h += `<p class="who">활동을 불러오는 중…</p>`;
   else if(S.view === "present" && room() && isTeacher()) h += viewPresent(room());
   else if(S.view === "room" && room()){ S.pendingRoom = null; h += isTeacher() ? viewRoomTeacher(room()) : viewRoomStudent(room()) }
@@ -2597,6 +2598,7 @@ function teacherCard(r, p, ps, nav){
    Supabase 연결 (GitHub Pages 등)
    - 학생: 로그인 없이 익명 세션 → 학번·이름·개인 코드로 본인 확인(claim_student)
    - 교사: 구글 로그인 + teachers 표에 등록된 이메일만 교사(whoami)
+   - 교사마다 자기 활동·학생 명단·학생 글만 본다. 학생은 코드로 확인된 선생님 반의 활동만 본다
    - 권한은 Supabase 규칙(RLS)이 서버에서 지킨다. 앱의 저장 방식(collection/doc)은 그대로 쓴다.
    ========================================================= */
 let SB = null;
@@ -2614,7 +2616,8 @@ async function initSupa(){
       session = r.data.session;
     }
     if(/[?&]code=/.test(location.search)) history.replaceState(null, "", location.pathname + location.hash);   // 구글 로그인에서 돌아온 주소 정리
-    const who = (await SB.rpc("whoami")).data || {};
+    const ref = decodeURIComponent((location.hash || "").slice(1)).replace(/^c:/, "").split("/")[0];   // 학생 링크의 활동·수업 → 그 선생님 반 학생인지 묻는다
+    const who = (await SB.rpc("whoami", {p_ref: ref && ref !== "teacher" ? ref : null})).data || {};
     S.mode = "supa";
     Auth.set(!!who.teacher);
     S.sbEmail = who.email || "";
@@ -2681,10 +2684,15 @@ function supaDB(sb){
 function viewTeacherLogin(){
   return `<div class="home-head"><div><div class="eyebrow">교사</div><h1>교사 로그인</h1><p>학교에서 쓰는 구글 계정으로 로그인해요. 교사로 등록된 계정만 교사 화면을 쓸 수 있어요.</p></div></div>
     <div class="card" style="max-width:520px">
-      ${S.sbEmail ? `<p><b>${esc(S.sbEmail)}</b> 계정은 교사로 등록되어 있지 않아요.</p><p class="muted small" style="margin-top:6px">Supabase의 teachers 표에 이 이메일을 넣었는지 확인해 주세요. (README 6단계)</p>
+      ${S.sbEmail ? `<p><b>${esc(S.sbEmail)}</b> 계정은 교사로 등록되어 있지 않아요.</p><p class="muted small" style="margin-top:6px">Supabase의 teachers 표에 이 이메일을 넣었는지 확인해 주세요. (README 7단계)</p>
         <div class="row" style="margin-top:12px"><button class="btn" type="button" data-a="t-logout">로그아웃</button><button class="btn pri" type="button" data-a="t-login">다른 구글 계정으로 로그인</button></div>`
       : `<button class="btn pri" type="button" data-a="t-login">G&nbsp; 구글 계정으로 로그인</button>`}
       <p class="muted small" style="margin-top:14px"><button class="linkbtn" type="button" data-a="t-cancel">← 학생 화면으로</button></p></div>`;
+}
+/* 학생: 선생님 반 확인 화면 (처음 들어올 때, 또는 다른 선생님의 활동 링크로 들어올 때) */
+function viewCodeGate(){
+  return `<div class="home-head"><div><div class="eyebrow">생각이음</div><h1>반갑습니다!</h1><p>선생님이 나눠 준 개인 코드로 처음 한 번만 확인할게요.</p></div></div>
+    <div id="stage" style="max-width:560px">${codeForm()}</div>`;
 }
 /* 학생: 학번 · 이름 · 개인 코드 */
 function codeForm(){
@@ -3914,7 +3922,7 @@ async function act(a, b){
       if(!ok.length){ toast(bad.length ? "‘학번 이름’ 꼴로 적어 주세요." : "추가할 학생을 적어 주세요."); return }
       const have = new Set((S.roster || []).map(x => x.number + " " + x.name));
       const rows = ok.filter(x => { const k = x.number + " " + x.name; if(have.has(k)) return false; have.add(k); return true }).map(x => ({...x, code:newCode()}));   // 이미 있거나 겹친 줄은 빼고
-      if(rows.length){ const r2 = await SB.from("students").upsert(rows, {onConflict:"number,name", ignoreDuplicates:true}); if(r2.error){ toast("추가하지 못했어요: " + r2.error.message); return } }
+      if(rows.length){ const r2 = await SB.from("students").upsert(rows, {onConflict:"tid,number,name", ignoreDuplicates:true}); if(r2.error){ toast("추가하지 못했어요: " + r2.error.message); return } }
       toast(`${rows.length}명을 추가했어요.${ok.length - rows.length ? ` (이미 있는 ${ok.length - rows.length}명은 그대로)` : ""}${bad.length ? ` 읽지 못한 줄 ${bad.length}개` : ""}`);
       await loadRoster(); break;
     }
@@ -3993,9 +4001,7 @@ async function act(a, b){
         if(b) b.disabled = true;
         const res = await SB.rpc("claim_student", {p_number:num, p_name:nm, p_code:code});
         if(res.error || !res.data){ if(b) b.disabled = false; toast("학번·이름·코드가 맞지 않아요. 다시 확인해 주세요."); return }
-        S.name = res.data.name; lsSet("nonjae.name", S.name); S.canWrite = true;
-        loadForms(); S.seenTeacher = null; checkNewFeedback(); S.anim = true;
-        break;
+        lsSet("nonjae.name", res.data.name); location.reload(); return;   // 그 선생님 반의 활동을 새로 불러온다
       }
       const v = (document.getElementById("f-name")?.value || "").trim();
       if(!v){ toast("번호와 이름을 써 주세요."); return }
