@@ -428,6 +428,42 @@ begin
     'student_name', nm);
 end $$;
 
+-- ---------------------------------------------------------------------
+-- 🎭 가상 인물 대화: AI에 묻기 전에 서버가 확인 (활동·학생·마감·질문 수). 중계 프로그램은 supabase/functions/chat
+-- ---------------------------------------------------------------------
+create table if not exists public.chat_usage (
+  room_id text not null, who text not null, n int not null default 0, updated_at timestamptz not null default now(),
+  primary key (room_id, who));
+alter table public.chat_usage enable row level security;
+create or replace function public.chat_begin(p_room text) returns json
+language plpgsql volatile security definer set search_path = public as $$
+declare d public.docs; v_sid uuid; v_who text; v_lim int; v_used int; v_st text; p jsonb;
+begin
+  select * into d from public.docs where col = 'rooms' and id = p_room limit 1;
+  if not found or coalesce(d.data ->> 'template', '') <> 'chat' then return json_build_object('ok', false, 'reason', 'denied'); end if;
+  p := coalesce(d.data -> 'persona', '{}'::jsonb);
+  if public.is_teacher() and d.tid = auth.uid() then
+    v_who := 'T:' || auth.uid(); v_lim := 200;
+  else
+    v_sid := public.my_student(d.tid);
+    if v_sid is null or not public.tid_active(d.tid) then return json_build_object('ok', false, 'reason', 'denied'); end if;
+    v_st := coalesce(d.data ->> 'status', 'open');
+    if v_st in ('draft', 'archived', 'closed') or d.data ->> 'open' = 'false'
+       or (jsonb_typeof(d.data -> 'dueAt') = 'number' and (d.data ->> 'dueAt')::numeric <= extract(epoch from now()) * 1000) then
+      return json_build_object('ok', false, 'reason', 'closed'); end if;
+    v_who := v_sid::text;
+    v_lim := least(30, greatest(1, coalesce(nullif(p ->> 'maxTurns', '')::int, 8))) + 2;
+  end if;
+  insert into public.chat_usage (room_id, who, n) values (p_room, v_who, 0) on conflict do nothing;
+  select n into v_used from public.chat_usage where room_id = p_room and who = v_who for update;
+  if v_used >= v_lim then return json_build_object('ok', false, 'reason', 'limit'); end if;
+  update public.chat_usage set n = n + 1, updated_at = now() where room_id = p_room and who = v_who;
+  return json_build_object('ok', true, 'name', coalesce(nullif(p ->> 'name', ''), '인물'), 'about', coalesce(p ->> 'about', ''), 'style', coalesce(p ->> 'style', 'persona'),
+    'prompt', coalesce(d.data ->> 'prompt', ''), 'context', left(coalesce(d.data ->> 'context', ''), 6000), 'remaining', v_lim - v_used - 1);
+end $$;
+revoke execute on function public.chat_begin(text) from public, anon;
+grant execute on function public.chat_begin(text) to authenticated;
+
 -- =====================================================================
 -- 마지막으로 관리자(나)의 구글 이메일을 등록하세요 (따옴표 안을 바꿔서 실행)
 -- 다른 선생님은 등록하지 않아도 구글로 로그인하면 바로 교사가 돼요

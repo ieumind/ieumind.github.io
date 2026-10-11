@@ -3439,8 +3439,24 @@ function printRoster(){
    API 키가 필요 없다. 다른 곳(GitHub 등)에 올리면 getSample()만 다른 AI 연결로 바꾸면 된다.
    ========================================================= */
 let SAMPLE;                                   // undefined: 아직 모름 · null: 쓸 수 없음 · 함수: 쓸 수 있음
+/* GitHub(Supabase) 버전: AI 대화는 Supabase의 중계 프로그램(chat)을 거쳐 Cloudflare Workers AI가 답한다.
+   열쇠는 서버에만 있고, 누가 몇 번 묻는지·안전 규칙은 서버가 정한다 */
+async function supaSample(turns, {signal, onText} = {}){
+  const r = room(), history = turns.slice(1).map(t => ({role:t.role, content:t.content}));   // 첫 줄(화면의 규칙)은 보내지 않는다 — 서버가 따로 만든다
+  const res = await SB.functions.invoke("chat", {body:{room:r?.id, history}});
+  if(signal?.aborted) throw {code:"cancelled", text:""};
+  const d = res.data || {};
+  if(res.error || d.error || !d.text){ if(r && d.error !== "limit") S.chatErr = {...(S.chatErr || {}), [r.id]:d.error || "ai_error"}; throw {code:d.error || "ai_error"} }
+  if(r && S.chatErr) delete S.chatErr[r.id];
+  onText?.({text:d.text});
+  return {text:d.text};
+}
 async function getSample(){
   if(SAMPLE !== undefined) return SAMPLE;
+  if(S.mode === "supa" && SB){
+    try{ const r = await SB.functions.invoke("chat", {body:{op:"status"}}); SAMPLE = r.data?.ready ? supaSample : null }catch(e){ SAMPLE = null }
+    return SAMPLE;
+  }
   try{ SAMPLE = window.claude && typeof claude.use === "function" ? (await claude.use("sample")) || null : null }catch(e){ SAMPLE = null }
   return SAMPLE;
 }
@@ -3464,7 +3480,10 @@ ${r.context ? `[선생님이 준 참고 자료 — 이 범위를 가장 먼저 �
 7. 가끔 학생에게 되물어서 학생이 스스로 생각해 보게 해.
 이제 학생의 말에 ${P.name}로서 답해.`;
 }
-const CHAT_ERR = {not_granted:"AI 대화를 허용해야 쓸 수 있어요. 새로고침한 뒤 허용을 눌러 주세요.", rate_limited:"질문이 몰렸어요. 잠시 뒤 다시 보내 주세요.",
+const CHAT_ERR = {limit:"질문을 모두 했어요. ‘대화 마치기’를 눌러 정리해 볼까요?", closed:"마감된 활동이라 더 대화할 수 없어요.",
+  denied:"이 활동에서는 대화할 수 없어요. 새로고침해 보세요.", not_configured:"선생님이 아직 AI를 연결하지 않았어요.",
+  quota:"오늘 쓸 수 있는 AI 대화량을 다 썼어요. 내일 다시 하거나 ‘대화 없이 다음 단계로’를 눌러 주세요.", ai_error:"AI가 답하지 못했어요. 잠시 뒤 다시 보내 주세요.",
+  bad_request:"질문을 보내지 못했어요. 다시 보내 주세요.",not_granted:"AI 대화를 허용해야 쓸 수 있어요. 새로고침한 뒤 허용을 눌러 주세요.", rate_limited:"질문이 몰렸어요. 잠시 뒤 다시 보내 주세요.",
   refused:"이 질문에는 답할 수 없어요. 다른 질문을 해 볼까요?", prompt_too_large:"대화가 너무 길어졌어요. ‘대화 마치기’를 눌러 정리해 볼까요?",
   session_expired:"로그인이 끝났어요. 다시 로그인해 주세요.", sampling_disabled:"이 화면에서는 AI 대화를 쓸 수 없어요.", capability_disabled:"이 화면에서는 AI 대화를 쓸 수 없어요.",
   capability_removed:"이 화면에서는 AI 대화를 쓸 수 없어요.", queue_overflow:"질문이 몰렸어요. 잠시 뒤 다시 보내 주세요."};
@@ -3480,7 +3499,7 @@ function stepChat(r, p, open){
   const pend = st?.busy ? `<div class="bub ai"><b>🎭 ${esc(P.name)} (AI)</b><p id="chatstream">${st.stream ? esc(st.stream) : "생각하는 중…"}</p></div>` : "";
   h += `<div id="chatbox">${chatLogHTML(r, log, pend)}${!log.length && !st?.busy ? `<p class="muted small" style="text-align:center;margin:14px 0">${esc(P.name)}에게 첫 질문을 해 보세요.</p>` : ""}</div>`;
   if(SAMPLE === null && !done){
-    h += `<div class="empty" style="margin-top:10px">이 화면에서는 AI 대화를 쓸 수 없어요. 선생님께 알려 주세요.${open && S.canWrite ? `<br><button class="linkbtn" type="button" data-a="chat-skip">대화 없이 다음 단계로</button>` : ""}</div>`;
+    h += `<div class="empty" style="margin-top:10px">${S.mode === "supa" ? "지금은 AI 대화를 쓸 수 없어요. (선생님이 아직 AI를 연결하지 않았어요)" : "이 화면에서는 AI 대화를 쓸 수 없어요. 선생님께 알려 주세요."}${open && S.canWrite ? `<br><button class="linkbtn" type="button" data-a="chat-skip">대화 없이 다음 단계로</button>` : ""}</div>`;
   }else if(st?.busy){
     h += `<div class="row end" style="margin-top:8px"><button class="btn sm" type="button" data-a="chat-stop">■ 멈추기</button></div>`;
   }else if(!done && open && S.canWrite){
@@ -3492,6 +3511,7 @@ function stepChat(r, p, open){
     }else h += `<p class="muted" style="margin-top:10px">질문을 ${P.maxTurns}번 모두 했어요. 이제 대화를 정리해 볼까요?</p>`;
   }
   if(!open && !done) h += closedNote();
+  if(!done && open && S.canWrite && !asked && S.chatErr?.[r.id] === "quota") h += `<p class="muted small" style="margin-top:8px">오늘 AI 대화량을 다 썼어요. <button class="linkbtn" type="button" data-a="chat-skip">대화 없이 다음 단계로</button></p>`;
   h += `<div class="foot"><span class="small muted">질문 ${asked} / ${P.maxTurns}</span><div class="row">${done
       ? `<button class="btn pri" type="button" data-a="step" data-v="write">대화 후 내 생각 쓰기 →</button>`
       : open && S.canWrite ? `<button class="btn ${asked ? "pri" : ""}" type="button" data-a="chat-done" ${asked && !st?.busy ? "" : "disabled"}>대화 마치기 → 내 생각 정리</button>` : ""}</div></div></div>`;

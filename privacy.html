@@ -58,6 +58,7 @@ footer{margin-top:40px;padding-top:16px;border-top:1px solid var(--line);font-si
 <tr><td>학생</td><td>학번, 이름, 개인 코드</td><td>담당 교사가 명단에 입력해요</td></tr>
 <tr><td>학생</td><td>학생이 쓴 생각·댓글·반응·질문, 손 그림, ‘오늘의 필기’ 사진과 메모, 제출·수정 시각</td><td>학생이 활동에서 직접 작성·제출해요</td></tr>
 <tr><td>학생</td><td>기기를 구분하는 임의의 식별자(이름·연락처와 무관)</td><td>처음 접속할 때 자동으로 만들어져요</td></tr>
+<tr><td>학생</td><td>‘가상 인물 대화’ 활동의 질문과 AI의 답, 활동별 질문 횟수</td><td>학생이 AI 인물에게 질문할 때 저장돼요</td></tr>
 </table></div>
 <p><b>저장하지 않는 정보:</b> 구글 비밀번호, 학생의 연락처·주민등록번호·주소, 위치 정보, 광고 식별자.</p>
 <p><b>내 기기에만 남는 정보:</b> 화면 밝기 설정, 작성 중인 글(임시 저장), 고른 그룹, 목록 정렬 방식 같은 편의 정보는 서버가 아니라 그 기기의 브라우저 저장 공간에만 남아요.</p>
@@ -84,9 +85,18 @@ footer{margin-top:40px;padding-top:16px;border-top:1px solid var(--line);font-si
 <tr><td>Supabase Inc.</td><td>데이터·사진 저장, 로그인 처리</td><td>서울 리전(AWS ap-northeast-2)</td></tr>
 <tr><td>Google LLC</td><td>교사의 구글 로그인 확인, 글꼴(Google Fonts) 제공</td><td>미국 등</td></tr>
 <tr><td>GitHub, Inc.</td><td>생각이음 화면 파일 제공(GitHub Pages)</td><td>미국 등</td></tr>
+<tr><td>Cloudflare, Inc. (Workers AI)</td><td>‘가상 인물 대화’에서 AI 답 만들기 — 학생이 쓴 질문과 그 활동의 주제·자료가 전달돼요. 학생의 이름·학번은 보내지 않아요</td><td>미국 등</td></tr>
 <tr><td>jsDelivr · cdnjs(Cloudflare)</td><td>프로그램 파일(Supabase 연결, QR 코드) 제공</td><td>전 세계 CDN</td></tr>
 </table></div>
 <p class="muted">화면·글꼴·프로그램 파일을 불러올 때 위 업체에 접속 정보(IP 주소, 브라우저 정보)가 전달될 수 있어요. 학생 글과 사진은 Supabase에만 저장돼요.</p>
+
+<h2><span class="n">5-1.</span>AI 가상 인물 대화</h2>
+<ul>
+<li>‘가상 인물 대화’ 활동에서는 공개된 AI 모델이 역사·시사 인물을 <b>연기</b>해요. 화면에 늘 “AI가 연기하는 가상 인물이며 틀린 내용이 있을 수 있다”는 안내가 보여요.</li>
+<li>AI에게는 학생이 쓴 질문과 활동의 주제·자료만 전달되고, 학생의 이름·학번은 보내지 않아요. 질문에 개인정보를 쓰지 않도록 지도해 주세요.</li>
+<li>인물 설정과 안전 규칙(폭력·혐오·성적 내용·개인정보 거절, 가해 행위 미화 금지)은 서버에서 정해 학생이 바꿀 수 없어요. 학생 한 명이 할 수 있는 질문 수도 서버가 제한해요.</li>
+<li>모든 대화는 저장되어 담당 교사가 확인할 수 있어요.</li>
+</ul>
 
 <h2><span class="n">6.</span>언제까지 보관하나요</h2>
 <ul>
@@ -115,5 +125,5 @@ footer{margin-top:40px;padding-top:16px;border-top:1px solid var(--line);font-si
 
 <h2><span class="n">11.</span>바뀌는 경우</h2>
 <p>이 방침이 바뀌면 이 페이지에 시행일과 함께 알려요.</p>
-<footer><span>시행일 2026년 10월 11일</span><a href="./">생각이음으로 돌아가기</a><a href="privacy.html">개인정보처리방침</a><a href="terms.html">이용약관</a></footer>
+<footer><span>시행일 2026년 10월 11일 (AI 대화 내용 추가)</span><a href="./">생각이음으로 돌아가기</a><a href="privacy.html">개인정보처리방침</a><a href="terms.html">이용약관</a></footer>
 </div>
