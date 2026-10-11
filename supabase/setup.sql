@@ -464,6 +464,81 @@ end $$;
 revoke execute on function public.chat_begin(text) from public, anon;
 grant execute on function public.chat_begin(text) to authenticated;
 
+-- ---------------------------------------------------------------------
+-- 🔔 학생 앱 알림 (Web Push): 공지·새 활동을 선생님 반 학생 기기로 보낸다. 보내는 프로그램은 supabase/functions/notify
+--   push_subs : 학생 기기가 알림을 받겠다고 한 주소 (본인만 저장·삭제, 선생님은 자기 반 학생 주소만 받아 감)
+--   notify_log: 한 선생님이 1시간에 30번까지만 보내도록 기록
+--   app_secrets: VAPID 키 (서버 프로그램만 읽음) — 아래 README의 ‘알림 키 만들기’ 참고
+-- ---------------------------------------------------------------------
+create table if not exists public.push_subs (
+  endpoint text primary key, uid uuid not null, p256dh text not null, auth text not null, created_at timestamptz not null default now());
+create index if not exists push_subs_uid_idx on public.push_subs (uid);
+create table if not exists public.notify_log (tid uuid not null, at timestamptz not null default now());
+create table if not exists public.app_secrets (k text primary key, v text not null);
+alter table public.push_subs enable row level security;
+alter table public.notify_log enable row level security;
+alter table public.app_secrets enable row level security;
+revoke all on public.app_secrets from anon, authenticated;
+
+create or replace function public.push_save(p_endpoint text, p_p256dh text, p_auth text) returns void
+language plpgsql security definer set search_path = public as $$
+begin
+  if auth.uid() is null or coalesce(p_endpoint, '') !~ '^https://' or length(p_endpoint) > 1000 then return; end if;
+  insert into public.push_subs (endpoint, uid, p256dh, auth) values (p_endpoint, auth.uid(), left(p_p256dh, 200), left(p_auth, 100))
+  on conflict (endpoint) do update set uid = excluded.uid, p256dh = excluded.p256dh, auth = excluded.auth, created_at = now();
+end $$;
+create or replace function public.push_forget(p_endpoint text) returns void
+language sql security definer set search_path = public as $$
+  delete from public.push_subs where endpoint = p_endpoint and uid = auth.uid();
+$$;
+create or replace function public.push_targets() returns table(endpoint text, p256dh text, auth text)
+language plpgsql security definer set search_path = public as $$
+begin
+  if not public.is_teacher() then return; end if;
+  if (select count(*) from public.notify_log where tid = auth.uid() and at > now() - interval '1 hour') >= 30 then return; end if;
+  insert into public.notify_log (tid) values (auth.uid());
+  return query select s.endpoint, s.p256dh, s.auth from public.push_subs s
+    where s.uid in (select ss.uid from public.student_sessions ss where ss.tid = auth.uid());
+end $$;
+create or replace function public.push_drop(p_endpoint text) returns void
+language sql security definer set search_path = public as $$
+  delete from public.push_subs s where s.endpoint = p_endpoint and public.is_teacher()
+    and s.uid in (select ss.uid from public.student_sessions ss where ss.tid = auth.uid());
+$$;
+
+-- ---------------------------------------------------------------------
+-- 💬 오류·건의하기: 누구나 보내고(하루 10번), 관리자만 읽는다
+-- ---------------------------------------------------------------------
+create table if not exists public.feedback (
+  id bigint generated always as identity primary key, uid uuid, who text, kind text, body text not null, page text,
+  done boolean not null default false, created_at timestamptz not null default now());
+alter table public.feedback enable row level security;
+create or replace function public.feedback_send(p_kind text, p_body text, p_page text) returns json
+language plpgsql security definer set search_path = public as $$
+declare w json; nm text;
+begin
+  if auth.uid() is null or length(trim(coalesce(p_body, ''))) < 2 then return json_build_object('ok', false, 'reason', 'empty'); end if;
+  if (select count(*) from public.feedback where uid = auth.uid() and created_at > now() - interval '1 day') >= 10 then
+    return json_build_object('ok', false, 'reason', 'limit'); end if;
+  w := public.whoami(null);
+  nm := coalesce(w ->> 'student_name', case when (w ->> 'teacher')::boolean then '교사 ' || coalesce(w ->> 'email', '') end, '이름 없음');
+  insert into public.feedback (uid, who, kind, body, page)
+  values (auth.uid(), nm, case when p_kind in ('오류', '건의', '기타') then p_kind else '기타' end, left(trim(p_body), 2000), left(coalesce(p_page, ''), 200));
+  return json_build_object('ok', true);
+end $$;
+create or replace function public.admin_list_feedback() returns table(id bigint, who text, kind text, body text, page text, done boolean, created_at timestamptz)
+language sql stable security definer set search_path = public as $$
+  select f.id, f.who, f.kind, f.body, f.page, f.done, f.created_at from public.feedback f where public.is_admin() order by f.done, f.created_at desc limit 200;
+$$;
+create or replace function public.admin_feedback_done(p_id bigint, p_done boolean) returns void
+language sql security definer set search_path = public as $$
+  update public.feedback set done = coalesce(p_done, true) where id = p_id and public.is_admin();
+$$;
+revoke execute on function public.push_save(text,text,text), public.push_forget(text), public.push_targets(), public.push_drop(text),
+  public.feedback_send(text,text,text), public.admin_list_feedback(), public.admin_feedback_done(bigint,boolean) from public, anon;
+grant execute on function public.push_save(text,text,text), public.push_forget(text), public.push_targets(), public.push_drop(text),
+  public.feedback_send(text,text,text), public.admin_list_feedback(), public.admin_feedback_done(bigint,boolean) to authenticated;
+
 -- =====================================================================
 -- 마지막으로 관리자(나)의 구글 이메일을 등록하세요 (따옴표 안을 바꿔서 실행)
 -- 다른 선생님은 등록하지 않아도 구글로 로그인하면 바로 교사가 돼요
