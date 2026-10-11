@@ -126,7 +126,13 @@ Supabase 무료 프로젝트는 **1주일 동안 아무도 안 쓰면 일시 정
 
 ## 알아 두면 좋은 점
 
-- **AI 가상 인물 대화**는 Claude 안에서만 무료로 동작해요. GitHub 버전에서는 이 활동의 대화 단계에 ‘대화 없이 다음 단계로’가 보여요. (AI 연결은 Supabase Edge Function + Groq/유료 API로 따로 붙일 수 있어요)
+- **🎭 AI 가상 인물 대화 (무료 · Cloudflare Workers AI)**
+  1. <https://dash.cloudflare.com/sign-up> 에서 무료 가입 (카드 필요 없음)
+  2. 대시보드 왼쪽 **AI → Workers AI** → **REST API 사용(Use REST API)** → **Workers AI API 토큰 만들기** → 나오는 **API 토큰**과 **계정 ID(Account ID)** 를 복사
+  3. Supabase 대시보드 → **Edge Functions → Secrets** 에 두 개 추가: `CF_ACCOUNT_ID`, `CF_API_TOKEN` (열쇠는 index.html에 절대 넣지 마세요)
+  4. 중계 프로그램 `supabase/functions/chat` 을 Supabase에 올려 두면 끝 (`supabase functions deploy chat`)
+  - 무료 범위: 하루 10,000 뉴런 ≈ 질문 약 600번(기본 모델 Qwen3 30B). 다 쓰면 그날은 ‘대화 없이 다음 단계로’가 보여요. 모델을 바꾸려면 Secrets에 `CF_MODEL` 추가
+  - 누가·몇 번 묻는지, 인물 설정과 안전 규칙은 서버가 정해요. 모든 대화는 저장되어 선생님이 볼 수 있어요
 - **학생 개인정보**: 학번·이름만 저장해요. 학교 개인정보 담당자에게 사용 사실을 알려 두세요.
 - **백업**: 활동 설정 탭의 **⬇ 결과 내보내기(CSV)** 로 주기적으로 받아 두세요.
 - **📸 오늘의 필기 사진**: 사진은 Supabase Storage(무료 1GB)의 비공개 보관함 `notes`에 저장돼요. 학생 기기에서 한 장에 0.2~0.4MB로 줄여 올리니 대략 3,000~5,000장까지 담겨요. 학기가 끝나면 지난 활동을 삭제하거나 Storage에서 정리해 주세요.
