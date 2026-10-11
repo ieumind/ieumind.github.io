@@ -545,6 +545,41 @@ input[type=datetime-local]{min-height:44px;border:1px solid var(--line);border-r
 .wl-safe ul{margin:10px 0;padding-left:18px;display:grid;gap:8px;font-size:14.5px;line-height:1.6}
 .wl-foot{text-align:center}
 .demo-bar{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px;background:var(--warn-soft);border-color:transparent}
+/* ---------- 하단 · 건의 · 알림 · 과목 대시보드 ---------- */
+.appfoot{margin-top:48px;padding-top:14px;border-top:1px solid var(--line);display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:6px 8px;font-size:12.5px;color:var(--muted)}
+.appfoot .linkbtn{font-size:12.5px;color:var(--muted)}
+.fb-kinds{display:flex;gap:8px;flex-wrap:wrap}
+.fb-kinds .btn[aria-pressed="true"]{background:var(--fg);color:var(--bg);border-color:var(--fg)}
+.sec-h{font-size:17px;margin:6px 0 -4px;display:flex;align-items:baseline;gap:8px}
+.fbrow p{white-space:pre-wrap;overflow-wrap:anywhere;margin-top:4px;line-height:1.6}
+.pushbar{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px 12px;background:var(--surface);border:1px dashed var(--line);border-radius:12px;padding:10px 14px;font-size:14px}
+.pushbar.on{border-style:solid;background:var(--accent-soft);border-color:transparent}
+.dgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:14px}
+.dcard{display:grid;gap:8px;text-align:left;background:var(--surface);border:1px solid var(--line);border-left:7px solid var(--c);border-radius:16px;padding:16px 18px;cursor:pointer;color:var(--fg);font:inherit;position:relative;transition:transform .12s,box-shadow .12s}
+.dcard:hover{transform:translateY(-2px);box-shadow:0 6px 18px rgba(0,0,0,.08)}
+.dcard .dt{font-family:var(--f-display);font-size:21px;font-weight:700;line-height:1.3}
+.dcard .dw{font-size:13.5px;color:var(--muted)}
+.dcard .dn{font-size:14px;background:var(--warn-soft);color:var(--fg);border-radius:10px;padding:6px 10px;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+.dcard .ds{display:flex;flex-wrap:wrap;gap:6px}
+.dcard .ds span{font-size:12.5px;font-weight:600;border-radius:999px;padding:3px 10px;background:var(--sunk);color:var(--muted)}
+.dcard .ds .todo{background:var(--warn-soft);color:var(--warn)}
+.dcard .ds .new,.newdot{background:var(--s2);color:#fff}
+.newdot{font-size:11.5px;font-weight:700;border-radius:999px;padding:2px 7px;margin-left:6px;vertical-align:middle}
+.dhead{display:grid;gap:6px;border-left:7px solid var(--c);padding:4px 0 4px 14px}
+.dhead h1{font-family:var(--f-display);font-size:clamp(26px,4vw,34px);line-height:1.25}
+.notices{display:grid;gap:8px}
+.notice-item{background:var(--warn-soft);border-radius:12px;padding:12px 14px;display:grid;gap:4px;border:1px solid transparent}
+.notice-item.fresh{border-color:var(--warn)}
+.notice-item b{font-size:13px;color:var(--warn)}
+.notice-item p{white-space:pre-wrap;overflow-wrap:anywhere;line-height:1.6}
+.notice-item .nm{font-size:12.5px;color:var(--muted)}
+.todolist{display:grid;gap:8px}
+.todolist button{display:flex;gap:10px;align-items:center;justify-content:space-between;text-align:left;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:10px 14px;cursor:pointer;font:inherit;color:var(--fg)}
+.todolist .tl{display:grid;gap:2px;min-width:0}
+.todolist .tl span{font-size:12.5px;color:var(--muted)}
+.todolist b{font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tnotice{margin-top:12px;display:grid;gap:8px}
+.tnotice textarea{width:100%}
 /* ---------- 교사 관리 ---------- */
 .tadm{display:grid;gap:8px;max-height:60vh;overflow:auto}
 .tadm-row{display:grid;grid-template-columns:1fr auto;gap:4px 12px;align-items:center;border:1px solid var(--line);border-radius:10px;padding:10px 12px}
@@ -812,6 +847,7 @@ a.btn{text-decoration:none;color:inherit;display:inline-flex;align-items:center}
       <div class="theme" id="theme" role="group" aria-label="화면 밝기"><button type="button" data-a="theme-set" data-v="light" title="라이트 모드" aria-label="라이트 모드">☀️</button><button type="button" data-a="theme-set" data-v="dark" title="다크 모드" aria-label="다크 모드">🌙</button></div></div>
   </header>
   <main id="app"><p class="who">불러오는 중…</p></main>
+  <footer class="appfoot"><span>제작 : 이태형T(한백고)</span><span aria-hidden="true">·</span><button type="button" class="linkbtn" data-a="feedback-open">오류·건의하기</button></footer>
 </div>
 <div id="modal"></div>
 <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
@@ -1117,6 +1153,10 @@ function demoData(){
     persona:{name:"아돌프 아이히만", about:"나치 독일 친위대 장교. 유대인 강제 이송을 실무로 맡았고, 1961년 예루살렘 재판에서 ‘명령에 따랐을 뿐’이라고 주장했다.", style:"persona", maxTurns:6},
     stances:[], reveal:"after", anonymous:false, tool:"chatReflect", depth:"normal", minChars:20, fields:TOOLS.chatReflect.fields, open:true, status:"open", teacherName:"체험"};
   S.rooms = [notesRoom, drawRoom, chatRoom, ...SAMPLE_ROOMS.map(r => ({...r, status:"open", teacherName:"체험", subject:r.subject || "한국사"}))].map((r, i) => ({...r, createdAt:now - (i + 1) * 3600000, updatedAt:now - i * 60000}));
+  /* 과목 대시보드 체험: 한국사 활동을 ‘1학년 한국사’ 과목에 넣고 공지 하나를 띄워 둔다 */
+  S.courses = [{id:"c-demo", title:"1학년 한국사", subject:"한국사", year:"2026-2", teacherName:"체험", groups:[], createdAt:now - 864e5, updatedAt:now,
+    notices:[{id:"n-demo", text:"다음 시간에는 컴퓨터실에서 수업해요. 이어폰을 챙겨 오세요.", at:now - 2 * 3600000}]}];
+  S.rooms.forEach(r => { if((r.subject || "") === "한국사") r.courseId = "c-demo" });
   const P = [];
   const deb = [["불가피했다","경제 개발을 위한 자금이 급했기 때문에 불가피했다고 생각한다.","당시 한국은 1인당 소득이 매우 낮았고, 일본의 자금이 경부 고속 도로와 포항 제철 건설에 쓰였다."],
     ["다른 길이 있었다","사과와 배상 없이 서두른 협정이라 다른 길이 있었다고 본다.","6·3 시위처럼 많은 국민이 반대했고, 피해자 개인의 배상 문제가 오늘날까지 남아 있다."],
@@ -1224,7 +1264,7 @@ const Auth = (() => { let t = null; return Object.freeze({ set(v){ if(t === null
 Object.defineProperty(S, "canTeach", {get: () => Auth.teacher, set(){} });        // 예전 코드 호환: 읽기만
 const isTeacher = () => Auth.teacher && S.role === "teacher";                       // 교사 권한 + 교사 화면(학생 화면 미리보기 중이면 false)
 /* 교사만 쓰는 동작: 학생 권한으로는 버튼이 없을 뿐 아니라 호출해도 실행되지 않는다 */
-const TEACHER_ACTS = new Set(["tadmin-open","tadmin-block","note-filter","note-req","note-req-send","note-req-cancel","note-dup","create","edit-room","dup","dup-list","del","del-yes","del-ask","del-room","status","toggle","save-feedback","class-fb","pin","pin-move","pin-clear",
+const TEACHER_ACTS = new Set(["tadmin-open","tadmin-block","tadmin-tab","fbadmin-done","notice-add","notice-del","note-filter","note-req","note-req-send","note-req-cancel","note-dup","create","edit-room","dup","dup-list","del","del-yes","del-ask","del-room","status","toggle","save-feedback","class-fb","pin","pin-move","pin-clear",
   "present","present-exit","pmode","pnav","prand","fullscreen","export","export-go","save-tset","tpl-save-open","tpl-save","tpl-cancel","use-tpl","create-save","draft-save","publish-draft","discard-form",
   "preview","preview-form","preview-home","qr","copy-link","save-share","mcourse","course-new","course-edit","course-gadd","course-gdel","course-save","course-del","course-del-yes",
   "roster-open","roster-add","roster-reissue","roster-del","roster-print","gsel","asg-add-open","asg-add-cancel","asg-add","asg-st","racts","mview","sview","sfilter","sgo","snav","ttab","mfilter","open-student","goal","tpl","st-add","st-del","depth"]);
@@ -1236,7 +1276,7 @@ const TEACHER_ACTS = new Set(["tadmin-open","tadmin-block","note-filter","note-r
 const STATUS = {draft:{l:"작성 중", d:"학생에게 아직 보이지 않아요. 다 만든 뒤 공개하세요."},
                 open:{l:"진행 중", d:"학생이 참여하고 제출할 수 있어요."},
                 closed:{l:"마감", d:"학생이 더 이상 제출할 수 없어요. 결과는 계속 볼 수 있어요."},
-                archived:{l:"보관", d:"내 수업 목록과 학생 화면에서 숨겨요. 결과와 응답은 그대로 남아요."}};
+                archived:{l:"보관", d:"내 과목 목록과 학생 화면에서 숨겨요. 결과와 응답은 그대로 남아요."}};
 /* 마감 일시(dueAt)가 지나면 ‘진행 중’ 활동은 저절로 ‘마감’이 된다 */
 const pastDue = r => !!(r?.dueAt && Date.now() >= r.dueAt);
 const statusOf = r => { const s = STATUS[r?.status] ? r.status : (r?.open === false ? "closed" : "open"); return s === "open" && pastDue(r) ? "closed" : s };
@@ -1261,7 +1301,7 @@ const tnote = r => S.tnotes.find(x => x.id === r.id) || {};             // 교�
 const courseOf = id => S.courses.find(c => c.id === id) || null;
 const groupsOf = c => (c && Array.isArray(c.groups)) ? c.groups : [];
 const groupName = (cid, gid) => groupsOf(courseOf(cid)).find(g => g.id === gid)?.name || (gid === "_none" ? "그룹 미지정" : "삭제된 그룹");
-const courseIcon = c => c?.icon || (/온라인|공동|원격/.test(c?.title||"") ? "🌐" : "📘");
+const courseIcon = c => c?.icon || (/온라인|공동|원격/.test(c?.title||"") ? "🌐" : subjIcon(c?.subject || c?.title));
 const asgIds = r => r && r.assign ? Object.keys(r.assign).filter(g => r.assign[g]) : [];
 const ASG = {ready:{l:"시작 전", ic:"○"}, open:{l:"진행 중", ic:"●"}, closed:{l:"종료", ic:"●"}};
 /* 그룹별 상태: 교사가 고른 상태 + (있으면) 시작·마감 시각 */
@@ -1575,6 +1615,7 @@ function checkNewFeedback(){
 /* 입력 중에는 다시 그리지 않고, 입력이 끝나면 그린다 */
 function dataChanged(){
   if(S.hashRoom) applyHash();
+  checkNews();
   if(S.view === "create") return;
   const a = document.activeElement;
   if(a && /^(TEXTAREA|INPUT|SELECT)$/.test(a.tagName) && a.type!=="radio" && a.type!=="checkbox" && a.type!=="range" && document.getElementById("app").contains(a)){ S.pending = true; return }
@@ -1709,7 +1750,7 @@ function renderTop(){
   let h = "";
   if(S.mode === "supa" && S.wantTeacher && !Auth.teacher){ document.getElementById("topr").innerHTML = ""; return }   // 교사 소개 화면: 학생 버튼은 숨긴다
   if(S.preview){ document.getElementById("topr").innerHTML = `<button class="btn sm" type="button" data-a="preview-exit">교사 화면으로 돌아가기</button>`; return }
-  if(isTeacher()) h += `<button class="btn sm" type="button" data-a="home">📋 내 수업</button>`;
+  if(isTeacher()) h += `<button class="btn sm" type="button" data-a="home">📋 내 과목</button>`;
   if(isTeacher()) h += `<button class="btn sm" type="button" data-a="preview-home" title="학생에게 보이는 화면을 확인해요. 여기서 쓴 내용은 저장되지 않아요.">👀 학생 화면 미리보기</button>`;
   if(isTeacher() && S.mode === "supa" && S.isAdmin) h += `<button class="btn sm" type="button" data-a="tadmin-open">👩‍🏫 교사 관리</button>`;
   if(isTeacher() && S.mode === "supa") h += `<button class="btn sm" type="button" data-a="t-logout" title="${esc(S.sbEmail)}">로그아웃</button>`;
@@ -1777,35 +1818,107 @@ function cardLabel(r, k){
   if(k === "unit") return r.unit ? `📚 ${r.unit}` : {muted:"단원 정보 없음"};
   return `🗓 ${postedLabel(r.createdAt)}`;
 }
-function viewHomeStudent(crs, rooms){
+/* ---- 학생: 과목 대시보드 ----
+   과목(선생님이 만든 과목 = course)마다 대시보드 하나. 과목에 넣지 않은 활동은 ‘교과 · 선생님’별로 묶는다 */
+const dashKey = r => r.courseId && courseOf(r.courseId) ? "c:" + r.courseId : "s:" + subjKey(r);
+function dashInfo(k, rs){
+  if(k.startsWith("c:")){
+    const c = courseOf(k.slice(2));
+    return {k, c, title:c.title, icon:courseIcon(c), teacher:c.teacherName || rs.find(r => r.teacherName)?.teacherName || "", tone:subjTone(k), notices:noticesOf(c)};
+  }
+  const r = rs[0] || {}, subj = (r.subject||"").trim();
+  return {k, c:null, title:subj || "기타 활동", icon:subj ? subjIcon(subj) : "🗂", teacher:r.teacherName || "", tone:subjTone(k), notices:[]};
+}
+/* 새로 올라온 것 표시: 이 기기에서 이미 본 활동·공지 기억 (처음 쓰는 기기는 지금 있는 것을 다 본 것으로) */
+let SEEN = (() => { try{ const v = JSON.parse(lsGet("nonjae.seen") || "null"); return v && {r:new Set(v.r||[]), n:new Set(v.n||[])} }catch(e){ return null } })();
+function seenInit(){
+  if(SEEN || !S.loaded.rooms) return;
+  SEEN = {r:new Set(S.rooms.map(r => r.id)), n:new Set(S.courses.flatMap(c => noticesOf(c).map(n => n.id)))}; seenSave();
+}
+function seenSave(){ if(SEEN) lsSet("nonjae.seen", JSON.stringify({r:[...SEEN.r].slice(-500), n:[...SEEN.n].slice(-200)})) }
+const isNewRoom = r => !!SEEN && !SEEN.r.has(r.id) && (r.createdAt||0) > Date.now() - 14*864e5;
+const isNewNotice = n => !!SEEN && !SEEN.n.has(n.id);
+function markSeen(kind, ids){ if(!SEEN) return; let ch = false; ids.forEach(id => { if(!SEEN[kind].has(id)){ SEEN[kind].add(id); ch = true } }); if(ch) seenSave() }
+/* 화면을 보고 있는 동안 새 공지·새 활동이 오면 알려 준다 */
+function checkNews(){
+  if(isTeacher() || S.preview || !S.name || !S.loaded.rooms) return;
+  if(!S._pushSynced && S.mode === "supa"){ S._pushSynced = true; pushSync() }   // 이 기기가 이미 알림을 켰으면 주소를 다시 알려 둔다
+  const rs = S.rooms.filter(r => statusOf(r) === "open"), ns = S.courses.flatMap(c => noticesOf(c).map(n => ({...n, c})));
+  if(!S.known){ S.known = {r:new Set(rs.map(r => r.id)), n:new Set(ns.map(n => n.id))}; return }
+  const nr = rs.filter(r => !S.known.r.has(r.id)), nn = ns.filter(n => !S.known.n.has(n.id));
+  nr.forEach(r => S.known.r.add(r.id)); nn.forEach(n => S.known.n.add(n.id));
+  if(nn.length) toast(`📢 ${nn[0].c.title} 새 공지: ${nn[0].text.slice(0, 40)}${nn[0].text.length > 40 ? "…" : ""}`);
+  else if(nr.length) toast(`🆕 새 활동이 올라왔어요 · ${nr[0].title}${nr.length > 1 ? ` 외 ${nr.length - 1}개` : ""}`);
+}
+function viewHomeStudent(all){
+  seenInit();
+  if(S.course && courseOf(S.course)) S.sdash = "c:" + S.course;
+  const groups = new Map();
+  all.forEach(r => { const k = dashKey(r); if(!groups.has(k)) groups.set(k, []); groups.get(k).push(r) });
+  S.courses.forEach(c => { const k = "c:" + c.id; if(!groups.has(k) && (myGroup(c.id) || noticesOf(c).length || S.sdash === k)) groups.set(k, []) });
+  if(S.sdash && groups.has(S.sdash)) return viewDash(dashInfo(S.sdash, groups.get(S.sdash)), groups.get(S.sdash));
+  S.sdash = ""; S.course = "";
+  return viewDashList(groups, all);
+}
+function pushBarHTML(){
+  if(S.mode !== "supa" || S.preview || lsGet("nonjae.pushhide")) return "";
+  const ios = deviceOS() === "ios" && /iPhone|iPad|iPod|Macintosh/.test(navigator.userAgent);
+  if(S.push === "on") return "";
+  if(!pushSupported()){
+    if(ios && !isStandalone()) return `<div class="pushbar"><span>🔔 홈 화면에 <b>앱으로 설치</b>하면 새 활동·공지 알림을 받을 수 있어요.</span><span class="row"><button class="btn sm" type="button" data-a="install-help">설치 방법</button><button class="linkbtn small" type="button" data-a="push-hide">닫기</button></span></div>`;
+    return "";
+  }
+  if(S.push === "denied") return `<div class="pushbar"><span>🔕 이 기기에서 알림이 꺼져 있어요. 휴대폰(브라우저) 설정에서 생각이음 알림을 허용하면 받을 수 있어요.</span><button class="linkbtn small" type="button" data-a="push-hide">닫기</button></div>`;
+  return `<div class="pushbar"><span>🔔 선생님이 <b>새 활동·공지</b>를 올리면 알림으로 알려 드릴까요?</span><span class="row"><button class="btn sm pri" type="button" data-a="push-on">알림 받기</button><button class="linkbtn small" type="button" data-a="push-hide">괜찮아요</button></span></div>`;
+}
+function viewDashList(groups, all){
   const nm = splitAuthor(S.name).name.trim(), now = new Date();
-  const items = rooms.map(r => ({r, st:homeState(r), k:subjKey(r)}));
-  const subs = [...new Map(items.map(x => [x.k, x.r])).entries()].sort((a,b) => koCmp(subjLabel(a[1]), subjLabel(b[1])));
-  const cur = subs.some(([k]) => k === S.hsub) ? S.hsub : "";
-  const sort = HSORTS.some(([k]) => k === S.hsort) ? S.hsort : "todo";
-  const hl = HLABELS.some(([k]) => k === S.hlabel) ? S.hlabel : "posted", hlName = HLABELS.find(([k]) => k === hl)[1];
-  let list = items.filter(x => !cur || x.k === cur);
-  const byNew = (a,b) => (b.r.createdAt||0) - (a.r.createdAt||0);
-  list.sort({todo:(a,b) => a.st.o - b.st.o || (a.r.dueAt||9e15) - (b.r.dueAt||9e15) || byNew(a,b), new:byNew,
-             due:(a,b) => (a.r.dueAt && a.st.o < 3 ? a.r.dueAt : 9e15) - (b.r.dueAt && b.st.o < 3 ? b.r.dueAt : 9e15) || byNew(a,b),
-             subject:(a,b) => koCmp(subjLabel(a.r), subjLabel(b.r)) || a.st.o - b.st.o || byNew(a,b)}[sort]);
-  const cnt = k => items.filter(x => x.st.k === k).length;
+  const items = all.map(r => ({r, st:homeState(r)})), cnt = k => items.filter(x => x.st.k === k).length;
   let h = `<section class="shome">
     <div class="shome-hi"><div><div class="eyebrow">${now.getMonth()+1}월 ${now.getDate()}일 ${"일월화수목금토"[now.getDay()]}요일</div>
-      <h1>${crs ? `${courseIcon(crs)} ${esc(crs.title)}` : nm ? `${esc(nm)}님, 안녕하세요 👋` : "안녕하세요 👋"}</h1>
-      <p>${crs ? (myGroup(crs.id) ? `${esc(groupName(crs.id, myGroup(crs.id)))} · ` : "") + `이 수업의 활동만 보여요. <button class="linkbtn" type="button" data-a="course-all">모든 활동 보기</button>` : "오늘 함께 생각할 활동이에요. 하나를 골라 들어가 보세요."}</p></div>
+      <h1>${nm ? `${esc(nm)}님, 안녕하세요 👋` : "안녕하세요 👋"}</h1><p>과목을 골라 들어가면 공지와 활동을 볼 수 있어요.</p></div>
       <div class="sstats"><div class="todo"><b>${cnt("todo")}</b><span>해야 할 활동</span></div><div><b>${cnt("doing")}</b><span>하는 중</span></div><div><b>${cnt("done")}</b><span>다 했어요</span></div></div></div>`;
-  if(!rooms.length) return h + `<div class="empty">아직 열린 활동이 없어요. 선생님이 활동을 올리면 여기에 나타나요.</div></section>`;
-  if(subs.length) h += `<div class="stabs" role="tablist" aria-label="과목·선생님">
-      <button type="button" role="tab" data-a="hsub" data-v="" aria-selected="${!cur}">전체 <span>${items.length}</span></button>
-      ${subs.map(([k, r]) => `<button type="button" role="tab" data-a="hsub" data-v="${esc(k)}" aria-selected="${cur===k}" style="--c:var(--${subjTone(k)});--cs:var(--${subjTone(k)}-soft)"><span aria-hidden="true">${subjIcon(r.subject)}</span> ${esc(subjLabel(r))} <span>${items.filter(x => x.k === k).length}</span></button>`).join("")}</div>`;
-  h += `<div class="sbar"><span class="muted small">${cur ? esc(subjLabel(subs.find(([k]) => k === cur)[1])) + " · " : ""}활동 ${list.length}개</span>
+  h += pushBarHTML();
+  if(!groups.size) return h + `<div class="empty">아직 열린 활동이 없어요. 선생님이 활동을 올리면 여기에 나타나요.</div></section>`;
+  const dashes = [...groups.entries()].map(([k, rs]) => ({info:dashInfo(k, rs), rs}))
+    .sort((a, b) => (a.info.c ? 0 : 1) - (b.info.c ? 0 : 1) || koCmp(a.info.title, b.info.title));
+  h += `<h2 class="sec-h">📚 내 과목 <span class="muted small">${dashes.length}개</span></h2><div class="dgrid">${dashes.map(({info, rs}) => {
+    const todo = rs.filter(r => homeState(r).k === "todo").length, nNew = rs.filter(isNewRoom).length;
+    const n = [...info.notices].sort((a, b) => (b.at||0) - (a.at||0))[0];
+    return `<button class="dcard" type="button" data-a="dash" data-v="${esc(info.k)}" style="--c:var(--${info.tone})">
+      <span class="dt"><span aria-hidden="true">${info.icon}</span> ${esc(info.title)}</span>
+      <span class="dw">${info.teacher ? `${esc(info.teacher)} 선생님 · ` : ""}활동 ${rs.length}개</span>
+      ${n ? `<span class="dn">📢 ${isNewNotice(n) ? "<b>새 공지</b> · " : ""}${esc(n.text)}</span>` : ""}
+      <span class="ds">${todo ? `<span class="todo">할 일 ${todo}</span>` : `<span>✓ 할 일 없음</span>`}${nNew ? `<span class="new">🆕 새 활동 ${nNew}</span>` : ""}</span></button>`}).join("")}</div>`;
+  const todo = items.filter(x => x.st.o < 2).sort((a, b) => a.st.o - b.st.o || (a.r.dueAt||9e15) - (b.r.dueAt||9e15) || (b.r.createdAt||0) - (a.r.createdAt||0)).slice(0, 8);
+  if(todo.length) h += `<h2 class="sec-h">✏️ 해야 할 활동</h2><div class="todolist">${todo.map(({r, st}) => `<button type="button" data-a="open" data-id="${esc(r.id)}">
+      <span class="tl"><b>${esc(r.title)}${isNewRoom(r) ? `<span class="newdot">NEW</span>` : ""}</b><span>${esc(dashInfo(dashKey(r), [r]).title)}${r.dueAt ? ` · ⏰ ${esc(fmtDue(r.dueAt))}까지` : ""}</span></span>
+      <span class="sst">${esc(st.l)}</span></button>`).join("")}</div>`;
+  return h + `</section>`;
+}
+function viewDash(info, rooms){
+  const crs = info.c, items = rooms.map(r => ({r, st:homeState(r)}));
+  const sort = HSORTS.some(([k]) => k === S.hsort) && S.hsort !== "subject" ? S.hsort : "todo";
+  const hl = HLABELS.some(([k]) => k === S.hlabel) ? S.hlabel : "posted", hlName = HLABELS.find(([k]) => k === hl)[1];
+  const byNew = (a,b) => (b.r.createdAt||0) - (a.r.createdAt||0);
+  const list = [...items].sort({todo:(a,b) => a.st.o - b.st.o || (a.r.dueAt||9e15) - (b.r.dueAt||9e15) || byNew(a,b), new:byNew,
+             due:(a,b) => (a.r.dueAt && a.st.o < 3 ? a.r.dueAt : 9e15) - (b.r.dueAt && b.st.o < 3 ? b.r.dueAt : 9e15) || byNew(a,b)}[sort]);
+  const cnt = k => items.filter(x => x.st.k === k).length;
+  const ns = [...info.notices].sort((a, b) => (b.at||0) - (a.at||0)), fresh = new Set(ns.filter(isNewNotice).map(n => n.id));
+  markSeen("n", ns.map(n => n.id));                                    // 과목 화면을 열면 공지는 읽은 것으로
+  let h = `<section class="shome"><button class="linkbtn back" type="button" data-a="dash-back">← 내 과목</button>
+    <div class="dhead" style="--c:var(--${info.tone})">${info.teacher ? `<div class="eyebrow">${esc(info.teacher)} 선생님</div>` : ""}
+      <h1><span aria-hidden="true">${info.icon}</span> ${esc(info.title)}</h1>
+      <p class="muted">${crs && myGroup(crs.id) ? `${esc(groupName(crs.id, myGroup(crs.id)))} · ` : ""}활동 ${rooms.length}개 · 해야 할 활동 ${cnt("todo")}개${crs?.description ? ` · ${esc(crs.description)}` : ""}</p></div>`;
+  if(ns.length) h += `<div class="notices" aria-label="공지사항">${ns.map(n => `<div class="notice-item ${fresh.has(n.id) ? "fresh" : ""}"><b>📢 공지${fresh.has(n.id) ? " · 새 소식" : ""}</b><p>${esc(n.text)}</p><span class="nm">${esc(fmt(n.at))}</span></div>`).join("")}</div>`;
+  if(!rooms.length) return h + `<div class="empty">아직 이 과목에 열린 활동이 없어요. 선생님이 활동을 올리면 여기에 나타나요.</div></section>`;
+  h += `<div class="sbar"><span class="muted small">활동 ${list.length}개</span>
     <span class="sctl"><button class="btn sm hlbl" type="button" data-a="hlabel" title="카드에 보여 줄 정보 바꾸기 (게시일 → 마감 → 차시 → 단원)">🏷 ${hlName} ⇄</button>
-    <label class="ssort">정렬 <select id="h-sort">${HSORTS.map(([k,l]) => `<option value="${k}" ${sort===k?"selected":""}>${l}</option>`).join("")}</select></label></span></div>`;
-  h += `<div class="sgrid">${list.map(({r, st, k}) => {
+    <label class="ssort">정렬 <select id="h-sort">${HSORTS.filter(([k]) => k !== "subject").map(([k,l]) => `<option value="${k}" ${sort===k?"selected":""}>${l}</option>`).join("")}</select></label></span></div>`;
+  h += `<div class="sgrid">${list.map(({r, st}) => {
     const ps = postsOf(r.id), t = TEMPLATES[r.template] || {};
-    return `<button class="scard ${st.k}" type="button" data-a="open" data-id="${esc(r.id)}" style="--c:var(--${subjTone(k)});--cs:var(--${subjTone(k)}-soft)">
-      <span class="scard-top">${(() => { const v = cardLabel(r, hl); return typeof v === "string" ? `<span class="subj">${esc(v)}</span>` : `<span class="subj none">${esc(v.muted)}</span>` })()}<span class="sst">${esc(st.l)}</span></span>
+    return `<button class="scard ${st.k}" type="button" data-a="open" data-id="${esc(r.id)}" style="--c:var(--${info.tone});--cs:var(--${info.tone}-soft)">
+      <span class="scard-top">${(() => { const v = cardLabel(r, hl); return typeof v === "string" ? `<span class="subj">${esc(v)}</span>` : `<span class="subj none">${esc(v.muted)}</span>` })()}<span class="sst">${isNewRoom(r) ? `<span class="newdot">NEW</span> ` : ""}${esc(st.l)}</span></span>
       <span class="scard-t">${esc(r.title)}</span>
       ${r.prompt && r.prompt !== r.title ? `<span class="scard-p">${esc(r.prompt)}</span>` : ""}
       <span class="scard-m"><span>${t.icon||""} ${esc(t.label||"")}</span>${r.dueAt && st.o < 3 && hl !== "due" ? `<span class="${r.dueAt - Date.now() < 864e5 ? "soon" : ""}">⏰ ${esc(fmtDue(r.dueAt))}까지</span>` : ""}${r.reveal !== "teacher" ? `<span>👥 ${ps.length}명</span>` : ""}</span>
@@ -1817,9 +1930,12 @@ function viewHome(){
   // 학생: 우리 그룹에 배포되지 않았거나 아직 시작 전인 활동은 목록에서 뺀다
   const rooms = isTeacher() ? roomsSorted() : roomsSorted().map(forMe).filter(r => !r._ready && !r._notAssigned);
   const units = [...new Set(rooms.map(r => r.unit || "기타"))];
-  if(crs && !myGroup(crs.id) && groupsOf(crs).length > 1) return `<div class="home-head"><div><div class="eyebrow">학생 화면</div><h1>${courseIcon(crs)} ${esc(crs.title)}</h1></div></div>` + groupPickHTML(crs, null);
+  if(crs && !myGroup(crs.id) && groupsOf(crs).length > 1) return (isTeacher() ? "" : `<button class="linkbtn back" type="button" data-a="dash-back">← 내 과목</button>`) + `<div class="home-head"><div><div class="eyebrow">학생 화면</div><h1>${courseIcon(crs)} ${esc(crs.title)}</h1></div></div>` + groupPickHTML(crs, null);
   if(crs && !myGroup(crs.id) && groupsOf(crs).length === 1) setMyGroup(crs.id, groupsOf(crs)[0].id);
-  if(!isTeacher()) return viewHomeStudent(crs, rooms.filter(r => statusOf(r) !== "archived"));
+  if(!isTeacher()){                                                    // 학생: 과목 대시보드 (목록 ↔ 과목 하나)
+    const all = [...S.rooms].filter(visibleToStudents).map(forMe).filter(r => !r._ready && !r._notAssigned && statusOf(r) !== "archived");
+    return viewHomeStudent(all);
+  }
   let h = `<div class="home-head"><div><div class="eyebrow">${isTeacher()?"교사 화면":"학생 화면"}</div>
     <h1>${crs ? `${courseIcon(crs)} ${esc(crs.title)}` : units.length===1 ? esc(units[0]) : "활동 목록"}</h1>
     <p>${isTeacher() ? "활동을 열고 닫고, 학생들의 생각 흐름과 참여 현황을 확인하세요." : "수업 시간에 내 생각을 적고, 친구와 생각을 나누는 곳이에요."}</p>
@@ -2112,6 +2228,49 @@ function viewNotesTeacher(r){
       : `<p class="muted small">${p ? "올리는 중이거나 아직 제출 전이에요." : "아직 제출하지 않았어요."}</p>`}</article>`).join("")}</div>`;
 }
 /* ---- 📲 휴대폰 홈 화면에 앱처럼 설치 (학생) ---- */
+/* 🔔 알림 받기 (Web Push) — 학생 기기. 공개 키만 여기 둔다 (비밀 키는 서버 app_secrets) */
+const VAPID_PUBLIC = "BCgeRyzyi9jcpKNl1sYQr5rYTTPLt8CdtoevQkV-RMrEHuLFM3mgoWV2RjsVdwLRMQ27TCVhMO6zPJPN_oKNcx4";
+const pushSupported = () => window.isSecureContext && "serviceWorker" in navigator && "PushManager" in window && "Notification" in window;
+function unb64u(t){ t = t.replace(/-/g, "+").replace(/_/g, "/"); while(t.length % 4) t += "="; return Uint8Array.from(atob(t), c => c.charCodeAt(0)) }
+let SW_REG = null;
+async function swReg(){ if(!SW_REG) SW_REG = await navigator.serviceWorker.register("sw.js"); return SW_REG }
+async function pushSave(sub){
+  const j = sub.toJSON(), r = await SB.rpc("push_save", {p_endpoint:j.endpoint, p_p256dh:j.keys?.p256dh || "", p_auth:j.keys?.auth || ""});
+  return !r.error;
+}
+async function pushSync(){
+  if(S.mode !== "supa" || !SB || isTeacher() || S.preview || !pushSupported()) return;
+  if(Notification.permission === "denied"){ S.push = "denied"; return }
+  if(Notification.permission !== "granted") return;
+  try{ const reg = await swReg(), sub = await reg.pushManager.getSubscription(); if(sub && await pushSave(sub)){ S.push = "on"; if(S.view === "home") dataChanged() } }catch(e){}
+}
+async function pushOn(){
+  if(!pushSupported()){ S.modal = {type:"install", os:deviceOS()}; render(); return }
+  try{
+    const perm = await Notification.requestPermission();
+    if(perm !== "granted"){ S.push = perm === "denied" ? "denied" : ""; toast("알림을 허용하지 않았어요. 나중에 다시 켤 수 있어요."); render(); return }
+    const reg = await swReg(); await navigator.serviceWorker.ready;
+    const sub = await reg.pushManager.getSubscription() || await reg.pushManager.subscribe({userVisibleOnly:true, applicationServerKey:unb64u(VAPID_PUBLIC)});
+    if(!await pushSave(sub)) throw new Error("save");
+    S.push = "on"; toast("🔔 알림을 켰어요. 선생님이 새 활동·공지를 올리면 알려 드릴게요.");
+  }catch(e){ toast("알림을 켜지 못했어요. 잠시 뒤 다시 해 보세요.") }
+  render();
+}
+/* 선생님: 내 반 학생 기기로 알림 보내기 (서버 notify가 1시간 30번까지) */
+async function notifyStudents(msg){
+  if(!canPush()) return null;
+  try{ const r = await SB.functions.invoke("notify", {body:msg}); return r.error ? null : (r.data || null) }catch(e){ return null }
+}
+const pushNote = d => !d ? " (알림은 보내지 못했어요)" : d.sent ? ` 학생 기기 ${d.sent}대에 알림을 보냈어요.` : !d.total ? " (아직 알림을 켠 학생이 없어요)" : "";
+function roomPlace(r){ const c = courseOf(r.courseId); return c ? c.title : (r.subject || "").trim() }
+async function notifyNewRoom(r){
+  const d = await notifyStudents({title:"🆕 새 활동이 올라왔어요", body:`${roomPlace(r) ? roomPlace(r) + " · " : ""}${r.title}`, url:"#" + r.id, tag:"r-" + r.id});
+  toast("공개했어요." + pushNote(d));
+}
+/* 알림을 누르거나 주소 뒤(#…)가 바뀌면 그 활동·과목으로 간다 */
+addEventListener("hashchange", () => { const h = location.hash.slice(1); if(!h) return; S.hashRoom = h; applyHash(); render() });
+if("serviceWorker" in navigator) navigator.serviceWorker.addEventListener("message", e => { const u = String(e.data?.open || ""), i = u.indexOf("#"); if(i >= 0) location.hash = u.slice(i) });
+
 let INSTALL_EVT = null;                                   // 안드로이드 크롬: 바로 설치 창
 addEventListener("beforeinstallprompt", e => { e.preventDefault(); INSTALL_EVT = e; if(S.modal?.type === "install") renderModal() });
 addEventListener("appinstalled", () => { INSTALL_EVT = null; renderTop() });
@@ -2937,7 +3096,7 @@ function progressOf(r, p){
 const TTABS = [["overview","개요"],["progress","참여 현황"],["students","학생 생각"],["change","생각의 변화"],["feedback","피드백"],["settings","설정"]];
 function viewRoomTeacher(r){
   const stt = statusOf(r), st = teacherStats(r), tab = S.ttab || "overview", t = TEMPLATES[r.template] || {};
-  let h = `<button class="linkbtn back" type="button" data-a="home">← 내 수업</button>
+  let h = `<button class="linkbtn back" type="button" data-a="home">← 내 과목</button>
   <section class="ahead"><div class="mtop">${courseOf(r.courseId) ? `<span class="chip">${courseIcon(courseOf(r.courseId))} ${esc(courseOf(r.courseId).title)}</span>` : ""}${statusChip(r)}${dueChip(r)}<span class="chip tpl"><span aria-hidden="true">${t.icon||""}</span>${esc(t.label||"")}${t.mode?` · ${esc(t.mode)}`:""}</span><span class="chip">${esc(DEPTHS[depthOf(r)].label)}</span>
       <span class="mmeta">${esc([r.grade, r.subject, r.unit].filter(Boolean).join(" / "))}${r.duration?` · ⏱ ${esc(r.duration)}분`:""}</span></div>
     <h1>${esc(r.title)}</h1>
@@ -3330,7 +3489,7 @@ function viewWelcome(){
       <div class="card wl-safe"><h3>🔒 안심하고 쓰세요</h3><ul>
         <li><b>구글 비밀번호는 생각이음에 전달되지 않아요.</b> 로그인은 구글 화면에서 하고, 생각이음은 로그인 확인 결과와 이메일·이름만 받아요.</li>
         <li><b>내 수업 자료는 나만 봐요.</b> 활동, 학생 명단·코드, 학생 글, 필기 사진은 다른 선생님에게 보이지 않도록 서버에서 막혀 있어요.</li>
-        <li><b>관리자 화면에도 수업 자료는 보이지 않아요.</b> 관리자 화면에는 가입한 선생님의 이름·이메일과 사용량(활동 수·사진 용량)만 보여요.</li>
+        <li><b>관리자 화면에도 수업 자료는 보이지 않아요.</b> 관리자 화면에는 가입한 선생님의 이름·이메일과 사용량(활동 수·사진 용량), ‘오류·건의하기’로 직접 보낸 의견만 보여요.</li>
         <li><b>학생은 구글 계정이 필요 없어요.</b> 학번과 이름만 저장되고, 개인 코드는 학생에게 보이지 않아요.</li></ul>
         <p class="muted small">데이터는 생각이음 운영자의 Supabase 저장소(서울)에 보관돼요. 학교 개인정보 담당자에게 사용 사실을 알려 두세요.</p>
         <p class="small"><a href="privacy.html" target="_blank" rel="noopener">개인정보처리방침</a> · <a href="terms.html" target="_blank" rel="noopener">이용약관</a></p></div>
@@ -3347,13 +3506,24 @@ function viewCodeGate(){
 }
 /* 관리자: 가입한 교사 목록 · 막기/풀기 */
 async function loadTadmin(){
-  const r = await SB.rpc("admin_list_teachers");
+  const [r, f] = await Promise.all([SB.rpc("admin_list_teachers"), SB.rpc("admin_list_feedback")]);
   S.tadmin = r.error ? {err:r.error.message} : (r.data || []);
+  S.tfb = f.error ? {err:f.error.message} : (f.data || []);
   if(S.modal?.type === "tadmin") renderModal();
 }
+function fbAdminHTML(){
+  const L = S.tfb;
+  if(!L) return `<p class="muted">불러오는 중…</p>`;
+  if(L.err) return `<p class="notice">불러오지 못했어요. (${esc(L.err)})</p>`;
+  if(!L.length) return `<p class="muted" style="margin:12px 0">아직 들어온 의견이 없어요.</p>`;
+  return `<div class="tadm">${L.map(x => `<div class="tadm-row fbrow${x.done ? " off" : ""}"><div class="tadm-who" style="grid-column:1/3"><b>${esc(x.kind || "기타")}</b> · ${esc(x.who || "")} <span class="muted small">${esc(fmt(Date.parse(x.created_at)))}${x.page ? ` · ${esc(x.page)}` : ""}</span><p>${esc(x.body)}</p></div>
+    <div class="tadm-act"><button class="btn sm" type="button" data-a="fbadmin-done" data-id="${esc(x.id)}" data-v="${x.done ? 0 : 1}">${x.done ? "다시 열기" : "✓ 처리 완료"}</button></div></div>`).join("")}</div>`;
+}
 function tadminHTML(){
-  const L = S.tadmin;
-  const head = `<h3>👩‍🏫 교사 관리</h3><p class="small muted">구글로 로그인한 선생님은 바로 교사 공간이 생겨요. 모르는 계정이나 문제가 있는 계정은 막을 수 있어요. 막힌 계정은 교사 화면을 쓸 수 없고, 그 선생님 활동의 학생들도 글·사진을 새로 올릴 수 없어요. (자료는 지워지지 않아요)</p>`;
+  const L = S.tadmin, tab = S.modal?.tab || "t", nfb = Array.isArray(S.tfb) ? S.tfb.filter(x => !x.done).length : 0;
+  const tabs = `<div class="fb-kinds" role="group" aria-label="관리 화면" style="margin:8px 0 6px"><button class="btn sm" type="button" data-a="tadmin-tab" data-v="t" aria-pressed="${tab === "t"}">👩‍🏫 교사 목록</button><button class="btn sm" type="button" data-a="tadmin-tab" data-v="f" aria-pressed="${tab === "f"}">💬 오류·건의${nfb ? ` <span class="newdot">${nfb}</span>` : ""}</button></div>`;
+  if(tab === "f") return `<h3>💬 오류·건의</h3>${tabs}<p class="small muted">학생·선생님이 화면 맨 아래 ‘오류·건의하기’로 보낸 의견이에요.</p>${fbAdminHTML()}<div class="row end"><button class="btn" type="button" data-a="modal-close">닫기</button></div>`;
+  const head = `<h3>👩‍🏫 교사 관리</h3>${tabs}<p class="small muted">구글로 로그인한 선생님은 바로 교사 공간이 생겨요. 모르는 계정이나 문제가 있는 계정은 막을 수 있어요. 막힌 계정은 교사 화면을 쓸 수 없고, 그 선생님 활동의 학생들도 글·사진을 새로 올릴 수 없어요. (자료는 지워지지 않아요)</p>`;
   if(!L) return head + `<p class="muted">불러오는 중…</p>`;
   if(L.err) return head + `<p class="notice">목록을 불러오지 못했어요. (${esc(L.err)})</p><div class="row end"><button class="btn" type="button" data-a="modal-close">닫기</button></div>`;
   const totMB = L.reduce((a, x) => a + Number(x.photo_mb || 0), 0);
@@ -3680,26 +3850,42 @@ async function saveAssign(r, assign){
   return write(db => db.doc("rooms/"+r.id).update({assign, updatedAt:Date.now()}), () => { r.assign = assign; r.updatedAt = Date.now() });
 }
 
-/* ---- 내 수업: 수업 고르기 · 수업 머리 ---- */
+/* ---- 내 과목: 과목 고르기 · 과목 머리 ---- */
 function courseRooms(cid){ return S.rooms.filter(r => statusOf(r) !== "archived" && (cid === "_none" ? !courseOf(r.courseId) : r.courseId === cid)) }
 function courseBar(){
-  if(S.mcourse && S.mcourse !== "_none" && !courseOf(S.mcourse)) S.mcourse = "";
+  if(S.mcourse && S.mcourse !== "_none" && !courseOf(S.mcourse) && S.mcourse !== S.pendingCourse) S.mcourse = "";   // 방금 만든 과목은 저장소에서 돌아올 때까지 기다린다
   const none = courseRooms("_none").length;
   const btn = (k, l, n) => `<button type="button" data-a="mcourse" data-v="${esc(k)}" aria-pressed="${S.mcourse===k}">${l} <span class="mono">${n}</span></button>`;
-  return `<div class="cchips" role="group" aria-label="수업">${btn("", "전체 수업", S.rooms.filter(r => statusOf(r) !== "archived").length)}${S.courses.map(c => btn(c.id, `${courseIcon(c)} ${esc(c.title)}`, courseRooms(c.id).length)).join("")}${S.courses.length && none ? btn("_none", "미분류", none) : ""}
-    <button type="button" class="add" data-a="course-new">+ 새 수업</button></div>`;
+  return `<div class="cchips" role="group" aria-label="과목">${btn("", "전체 과목", S.rooms.filter(r => statusOf(r) !== "archived").length)}${S.courses.map(c => btn(c.id, `${courseIcon(c)} ${esc(c.title)}`, courseRooms(c.id).length)).join("")}${S.courses.length && none ? btn("_none", "미분류", none) : ""}
+    <button type="button" class="add" data-a="course-new">+ 새 과목</button></div>`;
 }
 function courseHead(){
   if(!S.mcourse){
-    if(!S.courses.length) return `<p class="muted small" style="margin:-4px 0 14px">‘+ 새 수업’으로 1학년 한국사처럼 수업을 만들고 반·학교 같은 그룹을 넣으면, 활동 하나를 여러 그룹에 나눠 쓸 수 있어요. 지금 활동은 그대로 쓸 수 있어요.</p>`;
-    return `<div class="cgrid">${S.courses.map(c => `<button type="button" class="ccard" data-a="mcourse" data-v="${esc(c.id)}"><b>${courseIcon(c)} ${esc(c.title)}</b><span class="g">${esc(groupsOf(c).map(g => g.name).join(" · ") || "그룹 없음")}</span><span class="g">활동 ${courseRooms(c.id).length}개${c.year ? ` · ${esc(c.year)}` : ""}</span></button>`).join("")}</div>`;
+    if(!S.courses.length) return `<p class="muted small" style="margin:-4px 0 14px">‘+ 새 과목’으로 1학년 한국사처럼 과목을 만들고 반·학교 같은 그룹을 넣으면, 활동 하나를 여러 그룹에 나눠 쓸 수 있어요. 지금 활동은 그대로 쓸 수 있어요.</p>`;
+    return `<div class="cgrid">${S.courses.map(c => `<button type="button" class="ccard" data-a="mcourse" data-v="${esc(c.id)}"><b>${courseIcon(c)} ${esc(c.title)}</b><span class="g">${esc(groupsOf(c).map(g => g.name).join(" · ") || "그룹 없음")}</span><span class="g">활동 ${courseRooms(c.id).length}개${c.year ? ` · ${esc(c.year)}` : ""}${noticesOf(c).length ? ` · 📢 공지 ${noticesOf(c).length}` : ""}</span></button>`).join("")}</div>`;
   }
-  if(S.mcourse === "_none") return `<p class="muted small" style="margin:-4px 0 14px">수업에 연결되지 않은 활동이에요. 지금처럼 하나의 링크로 쓸 수 있고, 활동 ‘수정’에서 수업과 그룹을 고를 수 있어요.</p>`;
-  const c = courseOf(S.mcourse), id = esc(c.id);
+  if(S.mcourse === "_none") return `<p class="muted small" style="margin:-4px 0 14px">과목에 연결되지 않은 활동이에요. 지금처럼 하나의 링크로 쓸 수 있고, 활동 ‘수정’에서 과목과 그룹을 고를 수 있어요.</p>`;
+  const c = courseOf(S.mcourse);
+  if(!c) return `<p class="muted small" style="margin:-4px 0 14px">과목을 저장하는 중…</p>`;
+  const id = esc(c.id);
   return `<section class="chead"><div class="cardh"><h2>${courseIcon(c)} ${esc(c.title)}</h2><span class="row">
-      <button class="btn sm" type="button" data-a="copy-link" data-kind="course" data-id="${id}">🔗 수업 링크</button><button class="btn sm" type="button" data-a="qr" data-kind="course" data-id="${id}">수업 QR</button><button class="btn sm" type="button" data-a="course-edit" data-id="${id}">수업 수정</button></span></div>
+      <button class="btn sm" type="button" data-a="copy-link" data-kind="course" data-id="${id}">🔗 과목 링크</button><button class="btn sm" type="button" data-a="qr" data-kind="course" data-id="${id}">과목 QR</button><button class="btn sm" type="button" data-a="course-edit" data-id="${id}">과목 수정</button></span></div>
     <p class="mmeta">${esc([c.subject, c.year].filter(Boolean).join(" · "))}${c.description ? ` · ${esc(c.description)}` : ""}</p>
-    <div class="gchips"><span class="small muted">그룹</span>${groupsOf(c).map(g => `<span class="gchip">${esc(g.name)}</span>`).join("") || `<span class="muted small">아직 없어요. ‘수업 수정’에서 반·학교 같은 그룹을 넣어 주세요.</span>`}</div></section>`;
+    <div class="gchips"><span class="small muted">그룹</span>${groupsOf(c).map(g => `<span class="gchip">${esc(g.name)}</span>`).join("") || `<span class="muted small">아직 없어요. ‘과목 수정’에서 반·학교 같은 그룹을 넣어 주세요.</span>`}</div>
+    ${noticePanel(c)}</section>`;
+}
+/* 📢 과목 공지: 학생의 과목 화면 맨 위에 1~2개 띄운다 (과목 문서의 notices에 저장) */
+const NOTICE_MAX = 2;
+const noticesOf = c => (Array.isArray(c?.notices) ? c.notices : []).filter(n => n && n.id && n.text).slice(0, NOTICE_MAX);
+const canPush = () => S.mode === "supa" && !!SB && !S.demo && !S.preview;
+function noticePanel(c){
+  const ns = noticesOf(c), key = "notice:" + c.id, nf = F(key), id = esc(c.id);
+  return `<div class="tnotice"><div><b>📢 공지사항</b> <span class="muted small">학생의 과목 화면 맨 위에 보여요 · 최대 ${NOTICE_MAX}개</span></div>
+    ${ns.map(n => `<div class="notice-item"><p>${esc(n.text)}</p><span class="nm">${esc(fmt(n.at))} 올림 · <button class="linkbtn" type="button" data-a="notice-del" data-c="${id}" data-id="${esc(n.id)}">내리기</button></span></div>`).join("")}
+    ${ns.length < NOTICE_MAX ? `<textarea id="notice-text" rows="2" maxlength="300" data-form="${esc(key)}" data-k="text" placeholder="예: 다음 시간에는 컴퓨터실에서 수업해요. 이어폰을 챙겨 오세요." aria-label="새 공지 내용">${esc(nf.text||"")}</textarea>
+      <div class="row" style="justify-content:space-between;flex-wrap:wrap;gap:8px">${canPush() ? `<label class="choice" style="min-height:36px"><input type="checkbox" data-form="${esc(key)}" data-k="push" ${nf.push === false ? "" : "checked"}><span>🔔 학생 앱에 알림 보내기</span></label>` : "<span></span>"}
+        <button class="btn sm pri" type="button" data-a="notice-add" data-c="${id}">공지 올리기</button></div>`
+      : `<p class="muted small">공지는 ${NOTICE_MAX}개까지 띄울 수 있어요. 하나를 내리면 새로 올릴 수 있어요.</p>`}</div>`;
 }
 function asgSummary(r){
   const ids = asgIds(r); if(!ids.length) return "";
@@ -4026,10 +4212,10 @@ function viewManage(){
   Object.keys(STATUS).forEach(k => counts[k] = S.rooms.filter(r=>statusOf(r)===k && inC(r)).length);
   const subs = [...new Set(S.rooms.map(r=>r.subject).filter(Boolean))], grades = [...new Set(S.rooms.map(r=>r.grade).filter(Boolean))];
   const local = S.form.create && !S.form.create.editId && ((S.form.create.prompt||"").trim() || (S.form.create.title||"").trim()) ? S.form.create : null;
-  let h = `<div class="home-head"><div><div class="eyebrow">교사 화면</div><h1>내 수업</h1><p>수업 ${S.courses.length}개 · 활동 ${counts.all}개${counts.archived ? ` · 보관 ${counts.archived}개` : ""}</p></div>
+  let h = `<div class="home-head"><div><div class="eyebrow">교사 화면</div><h1>내 과목</h1><p>과목 ${S.courses.length}개 · 활동 ${counts.all}개${counts.archived ? ` · 보관 ${counts.archived}개` : ""}</p></div>
     <span class="row">${S.mode === "supa" ? `<button class="btn" type="button" data-a="roster-open">👥 학생 코드</button>` : ""}<button class="btn pri" type="button" data-a="create">+ 새 활동 만들기</button></span></div>`;
   h += courseBar() + courseHead();
-  h += `<h2 style="font-size:16px;margin:4px 0 10px">${S.mcourse && S.mcourse !== "_none" ? "이 수업의 활동" : S.mcourse === "_none" ? "미분류 활동" : "모든 활동"}</h2>`;
+  h += `<h2 style="font-size:16px;margin:4px 0 10px">${S.mcourse && S.mcourse !== "_none" ? "이 과목의 활동" : S.mcourse === "_none" ? "미분류 활동" : "모든 활동"}</h2>`;
   if(!shareBase()) h += `<div class="setup"><b>🔗 학생 링크 설정 (처음 한 번)</b><p class="small">화면 오른쪽 위의 <b>공유</b>에서 이 페이지 링크를 만든 뒤 아래에 붙여 넣으면, 활동마다 학생 링크와 QR 코드를 바로 만들 수 있어요. 학생이 들어올 수 있도록 공유 범위도 확인해 주세요.</p>
     <div class="row"><input type="text" id="share-url" placeholder="https://claude.ai/…" aria-label="공유 링크"><button class="btn sm pri" type="button" data-a="save-share">저장</button></div></div>`;
   h += `<div class="mtools"><input type="search" id="m-q" placeholder="활동 제목·과목·단원·유형으로 찾기" value="${esc(S.mq)}" aria-label="활동 검색">
@@ -4065,8 +4251,8 @@ function renderModal(){
     const kind = m.kind || "room", link = linkFor(kind, m.id, m.g);
     const c = kind === "course" ? courseOf(m.id) : null, r = kind === "room" ? S.rooms.find(x=>x.id===m.id) : null;
     const cid = c ? c.id : r?.courseId, gids = c ? groupsOf(c).map(g => g.id) : asgIds(r);
-    const title = c ? `${courseIcon(c)} ${c.title} 수업 참여` : `오늘의 활동 참여 · ${r.title}`;
-    h = `<h3>📱 ${kind === "course" ? "수업 QR" : "활동 QR"}</h3><p><b>${esc(title)}</b>${m.g ? ` · ${esc(groupName(cid, m.g))}` : ""}</p>
+    const title = c ? `${courseIcon(c)} ${c.title} 과목 참여` : `오늘의 활동 참여 · ${r.title}`;
+    h = `<h3>📱 ${kind === "course" ? "과목 QR" : "활동 QR"}</h3><p><b>${esc(title)}</b>${m.g ? ` · ${esc(groupName(cid, m.g))}` : ""}</p>
       ${gids.length ? `<div class="gsel" style="margin-top:0" role="group" aria-label="그룹"><span>그룹</span><button type="button" data-a="qr" data-kind="${kind}" data-id="${esc(m.id)}" aria-pressed="${!m.g}">${kind === "course" ? "그룹 고르기" : "모든 그룹"}</button>${gids.map(g => `<button type="button" data-a="qr" data-kind="${kind}" data-id="${esc(m.id)}" data-g="${esc(g)}" aria-pressed="${m.g===g}">${esc(groupName(cid, g))}</button>`).join("")}</div>
         <p class="small muted">${m.g ? "이 그룹 학생은 그룹을 고르지 않고 바로 들어와요." : "학생이 처음 들어올 때 한 번 그룹을 골라요."}</p>` : ""}
       <div id="qrbox">QR 코드를 만드는 중…</div><p class="linkline">${esc(link)}</p>
@@ -4080,8 +4266,8 @@ function renderModal(){
       <div class="row end">${n && statusOf(r)!=="archived" ? `<button class="btn pri" type="button" data-a="status" data-id="${esc(m.id)}" data-v="archived" data-ok="1">보관하기 (추천)</button>` : ""}<button class="btn" type="button" data-a="modal-close">취소</button><button class="btn danger" type="button" data-a="del-room" data-id="${esc(m.id)}">그래도 삭제</button></div>`;
   }else if(m.type === "course"){
     const f = F("course"), used = new Set(S.rooms.filter(r => r.courseId === f.id).flatMap(r => [...asgIds(r), ...S.posts.filter(p => p.roomId === r.id && p.groupId).map(p => p.groupId)]));
-    h = `<h3>${f.id ? "수업 수정" : "새 수업 만들기"}</h3>
-      <div class="q"><label for="course-title">수업 이름</label><input type="text" id="course-title" data-form="course" data-k="title" maxlength="40" value="${esc(f.title||"")}" placeholder="예: 1학년 한국사, 한국사2 온라인 공동교육과정"></div>
+    h = `<h3>${f.id ? "과목 수정" : "새 과목 만들기"}</h3>
+      <div class="q"><label for="course-title">과목 이름</label><input type="text" id="course-title" data-form="course" data-k="title" maxlength="40" value="${esc(f.title||"")}" placeholder="예: 1학년 한국사, 한국사2 온라인 공동교육과정"></div>
       <div class="form-grid"><div class="q"><label for="course-subject">교과</label><input type="text" id="course-subject" data-form="course" data-k="subject" maxlength="20" value="${esc(f.subject||"")}" placeholder="예: 한국사"></div>
         <div class="q"><label for="course-year">연도·학기</label><input type="text" id="course-year" data-form="course" data-k="year" maxlength="20" value="${esc(f.year||"")}" placeholder="예: 2026-2"></div></div>
       <div class="q"><label for="course-desc">설명 <span class="opt">(선택)</span></label><input type="text" id="course-desc" data-form="course" data-k="description" maxlength="80" value="${esc(f.description||"")}" placeholder="예: 화·목 3교시"></div>
@@ -4089,13 +4275,20 @@ function renderModal(){
         ${(f.groups||[]).map(g => `<div class="grow"><input type="text" data-form="course" data-k="gn:${esc(g.id)}" maxlength="30" value="${esc(f["gn:"+g.id] ?? g.name)}" aria-label="그룹 이름">${used.has(g.id) ? `<span class="muted small" title="이 그룹에 배포한 활동이나 응답이 있어 뺄 수 없어요">사용 중</span>` : `<button class="btn sm" type="button" data-a="course-gdel" data-v="${esc(g.id)}" aria-label="그룹 빼기">✕</button>`}</div>`).join("")}
         <div class="grow"><textarea id="course-gadd" rows="2" placeholder="예: 1-1, 1-2, 1-3  또는  한백고, 동탄고" aria-label="그룹 추가" style="flex:1;min-height:0"></textarea><button class="btn sm" type="button" data-a="course-gadd">추가</button></div>
         <p class="hint">쉼표나 줄바꿈으로 여러 개를 한 번에 넣을 수 있어요.</p></div>
-      <div class="row end">${f.id ? `<button class="btn danger" type="button" data-a="course-del" style="margin-right:auto">수업 삭제…</button>` : ""}<button class="btn" type="button" data-a="modal-close">취소</button><button class="btn pri" type="button" data-a="course-save">${f.id ? "저장" : "수업 만들기"}</button></div>`;
+      <div class="row end">${f.id ? `<button class="btn danger" type="button" data-a="course-del" style="margin-right:auto">과목 삭제…</button>` : ""}<button class="btn" type="button" data-a="modal-close">취소</button><button class="btn pri" type="button" data-a="course-save">${f.id ? "저장" : "과목 만들기"}</button></div>`;
   }else if(m.type === "course-del"){
     const c = courseOf(m.id), n = S.rooms.filter(r => r.courseId === m.id).length;
-    h = `<h3>수업을 삭제할까요?</h3><p><b>${esc(c?.title||"")}</b></p><p>${n ? `이 수업의 활동 ${n}개와 학생 응답은 지워지지 않고 ‘미분류’로 옮겨져요. 그룹별 배포 정보는 남지만 그룹 이름은 보이지 않게 돼요.` : "이 수업에는 활동이 없어요."}</p>
-      <div class="row end"><button class="btn" type="button" data-a="modal-close">취소</button><button class="btn danger" type="button" data-a="course-del-yes" data-id="${esc(m.id)}">수업 삭제</button></div>`;
+    h = `<h3>과목을 삭제할까요?</h3><p><b>${esc(c?.title||"")}</b></p><p>${n ? `이 과목의 활동 ${n}개와 학생 응답은 지워지지 않고 ‘미분류’로 옮겨져요. 그룹별 배포 정보는 남지만 그룹 이름은 보이지 않게 돼요.` : "이 과목에는 활동이 없어요."}</p>
+      <div class="row end"><button class="btn" type="button" data-a="modal-close">취소</button><button class="btn danger" type="button" data-a="course-del-yes" data-id="${esc(m.id)}">과목 삭제</button></div>`;
   }else if(m.type === "tadmin"){
     h = tadminHTML();
+  }else if(m.type === "feedback"){
+    const K = {"오류":"🐞 오류", "건의":"💡 건의", "기타":"💬 기타"};
+    h = `<h3>💬 오류·건의하기</h3><p class="small muted">고장 난 곳, 불편한 점, 있었으면 하는 기능을 알려 주세요. 만든 사람(관리자)에게만 전달돼요.</p>
+      <div class="fb-kinds" role="group" aria-label="종류" style="margin-top:10px">${Object.entries(K).map(([k, l]) => `<button class="btn sm" type="button" data-a="fb-kind" data-v="${k}" aria-pressed="${m.kind === k}">${l}</button>`).join("")}</div>
+      <div class="q" style="margin-top:10px"><textarea id="fb-body" rows="5" maxlength="2000" aria-label="내용" placeholder="${m.kind === "오류" ? "예: 필기 사진을 올리면 ‘저장하지 못했어요’라고 떠요. (아이폰, 사파리)" : m.kind === "건의" ? "예: 친구 글에 공감 버튼이 있으면 좋겠어요." : "자유롭게 적어 주세요."}">${esc(m.body || "")}</textarea></div>
+      <p class="hint">보낸 사람(학생은 학번·이름, 선생님은 이메일)과 보던 화면 위치가 함께 전달돼요. 비밀번호 같은 개인정보는 적지 말아 주세요.</p>
+      <div class="row end"><button class="btn" type="button" data-a="modal-close">취소</button><button class="btn pri" type="button" data-a="fb-send">보내기</button></div>`;
   }else if(m.type === "install"){
     h = installHelpHTML(m.os);
   }else if(m.type === "roster"){
@@ -4110,7 +4303,7 @@ function renderModal(){
   }else if(m.type === "status"){
     const r = S.rooms.find(x=>x.id===m.id);
     const txt = m.v === "closed" ? ["활동을 마감할까요?", "마감하면 학생이 더 이상 제출하거나 고칠 수 없어요. 지금까지의 결과와 응답은 계속 볼 수 있고, 언제든 ‘다시 열기’로 되돌릴 수 있어요.", "마감하기"]
-      : ["활동을 보관할까요?", "보관하면 ‘내 수업’ 목록과 학생 화면에서 숨겨져요. 결과와 학생 응답은 그대로 남고, ‘보관’ 필터에서 언제든 다시 꺼낼 수 있어요.", "보관하기"];
+      : ["활동을 보관할까요?", "보관하면 ‘내 과목’ 목록과 학생 화면에서 숨겨져요. 결과와 학생 응답은 그대로 남고, ‘보관’ 필터에서 언제든 다시 꺼낼 수 있어요.", "보관하기"];
     h = `<h3>${txt[0]}</h3><p class="small muted">${esc(r?.title||"")}</p><p>${txt[1]}</p>
       <div class="row end"><button class="btn" type="button" data-a="modal-close">취소</button><button class="btn pri" type="button" data-a="status" data-id="${esc(m.id)}" data-v="${m.v}" data-ok="1">${txt[2]}</button></div>`;
   }else if(m.type === "dup"){
@@ -4444,7 +4637,7 @@ function viewCreate(){
   const hasReason = tool.fields.some(x=>x.k==="reason");
   const GRADES = ["중1","중2","중3","고1","고2","고3"].concat(f.grade && !["중1","중2","중3","고1","고2","고3"].includes(f.grade) ? [f.grade] : []);   // 예전에 고른 값은 그대로 보여 준다
 
-  let h = `<button class="linkbtn back" type="button" data-a="home">← 내 수업</button>
+  let h = `<button class="linkbtn back" type="button" data-a="home">← 내 과목</button>
   <div class="home-head"><div><div class="eyebrow">교사 화면</div><h1>${editR ? (isDraft ? "작성 중인 활동" : "활동 수정") : "새 활동"}</h1>
     <p>${editR ? "저장된 내용을 불러왔어요. 고친 뒤 저장하세요." : "활동을 고르고 주제만 적으면 바로 만들 수 있어요. 쓰는 내용은 자동으로 이 기기에 저장돼요."}</p></div></div>`;
   if(locked) h += `<div class="notice lockinfo"><b>학생 응답 ${nResp}개가 있는 활동이에요.</b><span>활동 유형·입장·깊이·질문 유형·세부 설정처럼 응답과 연결된 구조는 바꿀 수 없어요. 제목·활동 소개·논제 문구·자료·수업 정보·교사용 메모는 고칠 수 있어요.</span>
@@ -4487,12 +4680,12 @@ function viewCreate(){
     <p class="detail">${phs.map((ph,i)=>`${i+1}. ${esc(ph.l)}`).join("  ━  ")}</p></div>
 
   ${S.courses.length ? (() => { const c = courseOf(f.courseId), usedG = editR ? new Set(allPostsOf(editR.id).map(p => p.groupId).filter(Boolean)) : new Set(), lockC = locked && !!courseOf(editR.courseId);
-    return `<div class="card" style="margin-top:16px"><h3>④ 어떤 수업·그룹에서 쓸까요?</h3>
-      <div class="form-grid"><div class="q"><label for="c-course">사용할 수업</label><select id="c-course" data-form="create" data-k="courseId" ${lockC ? "disabled" : ""}><option value="">수업 없이 (미분류 · 링크 하나로 사용)</option>${S.courses.map(x => `<option value="${esc(x.id)}" ${f.courseId===x.id?"selected":""}>${courseIcon(x)} ${esc(x.title)}</option>`).join("")}</select>
-        ${lockC ? `<p class="hint">학생 응답이 있어 수업은 바꿀 수 없어요. 그룹은 더 추가할 수 있어요.</p>` : ""}</div></div>
+    return `<div class="card" style="margin-top:16px"><h3>④ 어떤 과목·그룹에서 쓸까요?</h3>
+      <div class="form-grid"><div class="q"><label for="c-course">사용할 과목</label><select id="c-course" data-form="create" data-k="courseId" ${lockC ? "disabled" : ""}><option value="">과목 없이 (미분류 · 링크 하나로 사용)</option>${S.courses.map(x => `<option value="${esc(x.id)}" ${f.courseId===x.id?"selected":""}>${courseIcon(x)} ${esc(x.title)}</option>`).join("")}</select>
+        ${lockC ? `<p class="hint">학생 응답이 있어 과목은 바꿀 수 없어요. 그룹은 더 추가할 수 있어요.</p>` : ""}</div></div>
       ${c ? (groupsOf(c).length ? `<fieldset class="q"><legend style="font-size:15px">대상 그룹</legend><div class="row" style="flex-wrap:wrap">${groupsOf(c).map(g => { const on = (f.groups||[]).includes(g.id), keep = usedG.has(g.id);
           return `<label class="choice" style="min-height:36px"><input type="checkbox" data-form="create" data-k="groups" data-multi value="${esc(g.id)}" ${on||keep?"checked":""} ${keep?"disabled":""}><span>${esc(g.name)}${keep?" · 응답 있음":""}</span></label>` }).join("")}</div>
-          <p class="hint">활동은 하나만 만들고, 고른 그룹마다 따로 열고 닫을 수 있어요.</p></fieldset>` : `<p class="muted small">이 수업에는 아직 그룹이 없어요. ‘내 수업’에서 수업 수정으로 그룹을 넣을 수 있어요.</p>`) : ""}</div>` })() : ""}
+          <p class="hint">활동은 하나만 만들고, 고른 그룹마다 따로 열고 닫을 수 있어요.</p></fieldset>` : `<p class="muted small">이 과목에는 아직 그룹이 없어요. ‘내 과목’에서 과목 수정으로 그룹을 넣을 수 있어요.</p>`) : ""}</div>` })() : ""}
 
   <div class="card" style="margin-top:16px"><h3>⏰ 마감 <span class="opt">(선택)</span></h3>
     <div class="q" style="max-width:340px"><label for="c-due">마감 날짜와 시간</label><input type="datetime-local" id="c-due" data-form="create" data-k="dueAt" value="${esc(f.dueAt||"")}">
@@ -4545,7 +4738,7 @@ function viewCreate(){
     <div class="row"><input type="text" id="tpl-name" maxlength="30" placeholder="예: 한국사 토론 기본형" aria-label="템플릿 이름"><button class="btn sm pri" type="button" data-a="tpl-save">저장</button><button class="btn sm" type="button" data-a="tpl-cancel">취소</button></div></div>`;
   h += `<div class="foot"><div class="row"><button class="btn" type="button" data-a="preview-form">👀 학생 화면 미리보기</button>
       ${!locked && !S.tplNaming ? `<button class="linkbtn" type="button" data-a="tpl-save-open">💾 내 템플릿으로 저장</button>` : ""}</div>
-    <div class="row">${!editR || isDraft ? `<button class="btn" type="button" data-a="draft-save">임시 저장</button>` : ""}
+    <div class="row">${(!editR || isDraft) && canPush() ? `<label class="choice" style="min-height:36px" title="공개할 때 우리 반 학생 앱에 알림을 보내요"><input type="checkbox" data-form="create" data-k="notify" ${f.notify === false ? "" : "checked"}><span>🔔 학생 알림</span></label>` : ""}${!editR || isDraft ? `<button class="btn" type="button" data-a="draft-save">임시 저장</button>` : ""}
       <button class="btn pri" type="button" data-a="${editR && !isDraft ? "create-save" : (isDraft ? "publish-draft" : "create-save")}">${editR ? (isDraft ? "공개하기" : "변경사항 저장") : "활동 만들기"}</button></div></div>`;
   return h;
 }
@@ -4612,7 +4805,7 @@ document.addEventListener("change", e => {
     if(k === "depth") applyDepth(f.depth);
     if(k === "tool"){ Object.assign(f, TOOLS[f.tool].force || {}) }   // 사고 도구가 요구하는 기능은 자동으로 켠다
     if(k === "rebuttal" && f.rebuttal) f.comment = true;
-    if(k === "courseId") f.groups = groupsOf(courseOf(f.courseId)).map(g => g.id);   // 수업을 고르면 그 수업의 모든 그룹을 먼저 골라 둔다
+    if(k === "courseId") f.groups = groupsOf(courseOf(f.courseId)).map(g => g.id);   // 과목을 고르면 그 과목의 모든 그룹을 먼저 골라 둔다
     const id = el.id; render(); if(id) document.getElementById(id)?.focus();
   }
 });
@@ -4664,6 +4857,7 @@ async function act(a, b){
   if(TEACHER_ACTS.has(a) && !Auth.teacher){ toast("선생님만 쓸 수 있는 기능이에요."); return }   // 학생 권한: 교사 기능 호출 차단
   if(["phase","step","go-respond","open-record"].includes(a)) S.work = a === "open-record" ? b.dataset.id : S.roomId;   // 단계로 가면 ‘내 활동’ 화면
   if(a === "open" || a === "home" || a === "mine") S.work = null;
+  if(a === "open" && !isTeacher()) markSeen("r", [b.dataset.id]);       // 새 활동 표시(NEW)는 한 번 열면 사라진다
   const r = room(), p = r ? myPost(r) : null;
   switch(a){
     /* ---- 이동 ---- */
@@ -4737,7 +4931,7 @@ async function act(a, b){
     case "create": {
       if(S.form.create?.editId) dropForm("create");
       const fresh = !S.form.create, f = createForm();
-      if(fresh && courseOf(S.mcourse)){ f.courseId = S.mcourse; f.groups = groupsOf(courseOf(S.mcourse)).map(g => g.id); saveFormsSoon() }   // 고른 수업에서 만들면 그 수업으로
+      if(fresh && courseOf(S.mcourse)){ f.courseId = S.mcourse; f.groups = groupsOf(courseOf(S.mcourse)).map(g => g.id); saveFormsSoon() }   // 고른 과목에서 만들면 그 과목으로
       S.tplNaming = false; S.view = "create"; scrollTo(0,0); break;
     }
     case "phase": {
@@ -4888,7 +5082,46 @@ async function act(a, b){
       toast("복제했어요. 제목과 안내만 바꾸고 ‘공개하기’를 누르세요.");
       break;
     }
-    case "tadmin-open": S.modal = {type:"tadmin"}; S.tadmin = null; loadTadmin(); break;
+    case "tadmin-open": S.modal = {type:"tadmin", tab:"t"}; S.tadmin = null; S.tfb = null; loadTadmin(); break;
+    case "tadmin-tab": if(S.modal) S.modal.tab = b.dataset.v; break;
+    case "fbadmin-done": { const r2 = await SB.rpc("admin_feedback_done", {p_id:+b.dataset.id, p_done:b.dataset.v === "1"}); if(r2.error){ toast("바꾸지 못했어요: " + r2.error.message); return } await loadTadmin(); return }
+    /* ---- 과목 대시보드 (학생) ---- */
+    case "dash": S.sdash = b.dataset.v; S.course = S.sdash.startsWith("c:") ? S.sdash.slice(2) : ""; S.view = "home"; scrollTo(0,0); break;
+    case "dash-back": S.sdash = ""; S.course = ""; S.view = "home"; scrollTo(0,0); break;
+    case "push-on": await pushOn(); return;
+    case "push-hide": lsSet("nonjae.pushhide", "1"); break;
+    /* ---- 과목 공지 (교사) ---- */
+    case "notice-add": {
+      const c = courseOf(b.dataset.c), key = "notice:" + b.dataset.c, nf = F(key), text = (nf.text || "").trim();
+      if(!c) return;
+      if(!text){ toast("공지 내용을 적어 주세요."); document.getElementById("notice-text")?.focus(); return }
+      const prev = noticesOf(c); if(prev.length >= NOTICE_MAX){ toast(`공지는 ${NOTICE_MAX}개까지예요. 하나를 내린 뒤 올려 주세요.`); return }
+      const n = {id:"n-" + Date.now().toString(36), text:text.slice(0, 300), at:Date.now()}, notices = [n, ...prev];
+      const ok = await write(db => db.doc("courses/" + c.id).update({notices, updatedAt:Date.now()}), () => { c.notices = notices });
+      if(!ok) return;
+      const push = nf.push !== false && canPush(); delete S.form[key]; saveFormsSoon();
+      if(push){ render(); const d = await notifyStudents({title:`📢 ${c.title} 공지`, body:n.text.slice(0, 120), url:"#c:" + c.id, tag:"n-" + c.id}); toast("공지를 올렸어요." + pushNote(d)); return }
+      toast("공지를 올렸어요. 학생의 과목 화면 맨 위에 보여요."); break;
+    }
+    case "notice-del": {
+      const c = courseOf(b.dataset.c); if(!c) return;
+      const notices = noticesOf(c).filter(n => n.id !== b.dataset.id);
+      if(await write(db => db.doc("courses/" + c.id).update({notices, updatedAt:Date.now()}), () => { c.notices = notices })) toast("공지를 내렸어요.");
+      break;
+    }
+    /* ---- 오류·건의하기 (누구나) ---- */
+    case "feedback-open": S.modal = {type:"feedback", kind:"오류", body:""}; break;
+    case "fb-kind": if(S.modal){ S.modal.body = document.getElementById("fb-body")?.value || ""; S.modal.kind = b.dataset.v } break;
+    case "fb-send": {
+      const body = (document.getElementById("fb-body")?.value || "").trim();
+      if(body.length < 2){ toast("내용을 조금만 더 적어 주세요."); document.getElementById("fb-body")?.focus(); return }
+      if(S.mode !== "supa" || !SB || S.demo){ toast("체험·미리보기 화면에서는 보낼 수 없어요. 실제 생각이음 화면에서 보내 주세요."); return }
+      b.disabled = true;
+      const r2 = await SB.rpc("feedback_send", {p_kind:S.modal?.kind || "기타", p_body:body, p_page:(location.hash || "").slice(0, 200)}).catch(e => ({error:e}));
+      const res = r2.data || {};
+      if(r2.error || !res.ok){ b.disabled = false; toast(res.reason === "limit" ? "오늘은 더 보낼 수 없어요. 내일 다시 보내 주세요." : !r2.error && res.reason === "empty" ? "로그인(또는 학생 코드 입력) 뒤에 보낼 수 있어요." : "보내지 못했어요. 잠시 뒤 다시 해 보세요."); return }
+      S.modal = null; toast("고마워요! 의견을 전달했어요. 🙏"); break;
+    }
     case "tadmin-block": {
       const em = b.dataset.email, on = b.dataset.v === "1";
       if(on && !b.dataset.sure){ b.dataset.sure = "1"; b.textContent = "정말 막기"; setTimeout(() => { if(b.isConnected){ delete b.dataset.sure; b.textContent = "막기" } }, 3000); return }
@@ -5019,20 +5252,20 @@ async function act(a, b){
     case "course-gdel": { const f = F("course"); f.groups = (f.groups||[]).filter(g => g.id !== b.dataset.v); delete f["gn:"+b.dataset.v]; break }
     case "course-save": {
       const f = F("course"), title = (f.title||"").trim();
-      if(!title){ toast("수업 이름을 적어 주세요."); document.getElementById("course-title")?.focus(); return }
+      if(!title){ toast("과목 이름을 적어 주세요."); document.getElementById("course-title")?.focus(); return }
       const groups = (f.groups||[]).map(g => ({id:g.id, name:String(f["gn:"+g.id] ?? g.name).trim() || g.name, createdAt:g.createdAt || Date.now()}));
       const now = Date.now(), id = f.id || "c-" + now.toString(36), prev = courseOf(id);
-      const doc = {title, subject:(f.subject||"").trim(), year:(f.year||"").trim(), description:(f.description||"").trim(), groups, createdAt:prev?.createdAt || now, updatedAt:now};
+      const doc = {title, subject:(f.subject||"").trim(), year:(f.year||"").trim(), description:(f.description||"").trim(), groups, notices:noticesOf(prev), ...(S.sbName ? {teacherName:S.sbName} : prev?.teacherName ? {teacherName:prev.teacherName} : {}), createdAt:prev?.createdAt || now, updatedAt:now};   // 공지는 그대로 둔다
       // TODO: 실제 배포 시 교사 인증 및 권한 검증 필요 (teacherId는 서버에서 확인한 교사 계정으로 채운다)
       const ok = await write(db => db.doc("courses/"+id).set(doc), () => { S.courses = S.courses.filter(x => x.id !== id).concat({id, ...doc}) });
-      if(ok){ delete S.form.course; S.modal = null; S.mcourse = id; toast(f.id ? "수업을 저장했어요." : "수업을 만들었어요. 이제 활동을 만들 때 이 수업과 그룹을 고를 수 있어요.") }
+      if(ok){ delete S.form.course; S.modal = null; S.mcourse = id; S.pendingCourse = id; toast(f.id ? "과목을 저장했어요." : "과목을 만들었어요. 이제 활동을 만들 때 이 과목과 그룹을 고를 수 있어요.") }
       break;
     }
     case "course-del": S.modal = {type:"course-del", id:F("course").id}; break;
     case "course-del-yes": {
       const id = b.dataset.id;
       const ok = await write(db => db.doc("courses/"+id).delete(), () => { S.courses = S.courses.filter(x => x.id !== id) });
-      if(ok){ S.modal = null; S.mcourse = ""; delete S.form.course; toast("수업을 삭제했어요. 활동과 응답은 ‘미분류’에 그대로 있어요.") }
+      if(ok){ S.modal = null; S.mcourse = ""; delete S.form.course; toast("과목을 삭제했어요. 활동과 응답은 ‘미분류’에 그대로 있어요.") }
       break;
     }
     case "gsel": S.gsel = b.dataset.v; S.gselRoom = r.id; S.openPost = null; S.fbSent = null; S.pidx = 0; S.prand = null; break;
@@ -5089,7 +5322,8 @@ async function act(a, b){
     case "status": {
       const rr = S.rooms.find(x=>x.id===b.dataset.id), v = b.dataset.v;
       if(!b.dataset.ok && ((v === "closed" && statusOf(rr) === "open") || v === "archived")){ S.modal = {type:"status", id:rr.id, v}; break }   // 중요한 변경은 한 번 더 묻는다
-      const ok = await setStatus(rr, v);
+      const wasDraft = statusOf(rr) === "draft", ok = await setStatus(rr, v);
+      if(ok && wasDraft && statusOf(rr) === "open" && canPush()){ S.modal = null; render(); notifyNewRoom(rr); return }
       if(ok){ S.modal = null; toast({open: statusOf(rr)==="open" ? "공개했어요. 학생들이 참여할 수 있어요." : "", closed:"마감했어요. 기존 응답은 그대로 남아요.", archived:"보관했어요. ‘보관’에서 다시 꺼낼 수 있어요."}[v] || "바꿨어요.") }
       break;
     }
@@ -5113,7 +5347,7 @@ async function act(a, b){
     case "copy-link": {
       const kind = b.dataset.kind || "room", g = b.dataset.g || "", link = linkFor(kind, b.dataset.id, g);
       if(!link){ S.modal = {type:"share", next:{a:"copy-link", kind, id:b.dataset.id, g}}; break }
-      copyText(link, kind === "course" ? "수업 링크를 복사했어요." : g ? "그룹 학생 링크를 복사했어요." : "학생 링크를 복사했어요."); return;
+      copyText(link, kind === "course" ? "과목 링크를 복사했어요." : g ? "그룹 학생 링크를 복사했어요." : "학생 링크를 복사했어요."); return;
     }
     case "qr": { const kind = b.dataset.kind || "room", g = b.dataset.g || ""; S.modal = linkFor(kind, b.dataset.id, g) ? {type:"qr", kind, id:b.dataset.id, g} : {type:"share", next:{a:"qr", kind, id:b.dataset.id, g}}; break }
     case "save-share": {
@@ -5253,6 +5487,7 @@ async function act(a, b){
     case "create-save": case "draft-save": case "publish-draft": {
       const f = createForm(), data = roomFromForm(f), t = TEMPLATES[data.template], asDraft = a === "draft-save";
       const editR = f.editId ? S.rooms.find(x=>x.id===f.editId) : null, locked = editR && allPostsOf(editR.id).length > 0;
+      const willNotify = !asDraft && (!editR || (a === "publish-draft" && statusOf(editR) === "draft")) && f.notify !== false && canPush();
       if(!data.prompt && !asDraft){ toast("주제나 질문을 적어 주세요."); document.getElementById("c-prompt")?.focus(); return }
       if(!asDraft && !locked && t.stances.length && data.stances.length < 2){ toast("입장 이름을 두 개 이상 적어 주세요."); return }
       if(data.template === "chat" && !asDraft && !data.persona?.name){ toast("대화 상대를 적어 주세요. 예: 고종"); document.getElementById("c-pname")?.focus(); return }
@@ -5278,8 +5513,9 @@ async function act(a, b){
       }
       if(!ok) return;
       if((f.memo||"").trim() !== (tnote({id}).memo||"")) await saveTnote({id}, {memo:(f.memo||"").trim()});
-      if(asDraft){ f.editId = id; saveFormsSoon(); toast("임시 저장했어요. ‘내 수업’의 작성 중에서 이어서 만들 수 있어요."); break }
+      if(asDraft){ f.editId = id; saveFormsSoon(); toast("임시 저장했어요. ‘내 과목’의 작성 중에서 이어서 만들 수 있어요."); break }
       dropForm("create"); S.view = "room"; S.roomId = id; S.ttab = "overview"; S.pendingRoom = id; S.gsel = ""; S.gselRoom = id; S.asgAdd = false;
+      if(willNotify){ scrollTo(0,0); render(); notifyNewRoom({id, ...doc, title:doc.title || data.title}); return }
       toast(editR ? (a === "publish-draft" ? "공개했어요. 학생 링크를 공유해 보세요." : "변경사항을 저장했어요.") : "활동을 만들었어요. 학생 링크를 공유해 보세요.");
       scrollTo(0,0);
       break;
