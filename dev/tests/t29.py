@@ -1,0 +1,80 @@
+import asyncio, re, json
+from playwright.async_api import async_playwright
+U='file:///tmp/claude-0/smoke/p24.html'
+async def main():
+  async with async_playwright() as p:
+    b=await p.chromium.launch(); ctx=await b.new_context(viewport={'width':1280,'height':900})
+    await ctx.route(re.compile(r'https://.*'), lambda r: r.abort())
+    errs=[]; W=lambda pg,ms=250: pg.wait_for_timeout(ms)
+    T=await ctx.new_page(); T.on('pageerror',lambda e:errs.append('T:'+str(e)))
+    await T.goto(U+'?who=teacher'); await T.evaluate('localStorage.clear()'); await T.reload(); await W(T,700)
+    print('footer:', await T.text_content('.appfoot'))
+    print('top home btn:', await T.text_content('#topr [data-a=home]'))
+    await T.click('[data-a=roster-open]'); await W(T); await T.fill('#roster-add','10301 김가온'); await T.click('[data-a=roster-add]'); await W(T,400); await T.keyboard.press('Escape')
+    code=(await T.evaluate('JSON.parse(localStorage.getItem("__sbmock"))'))['students'][0]['code']
+    await T.click('[data-a=course-new]'); await W(T); print('course modal:', await T.text_content('#modal h3'))
+    await T.fill('#course-title','1학년 한국사'); await T.fill('#course-subject','한국사'); await T.click('[data-a=course-save]'); await W(T,500)
+    await T.click('[data-a=mem-all]'); await T.click('[data-a=mem-save]'); await W(T,400)
+    cid=await T.evaluate('S.mcourse'); print('course', cid, '| chips:', await T.eval_on_selector_all('.cchips button','e=>e.map(x=>x.textContent.trim())'))
+    print('notice panel:', bool(await T.query_selector('.tnotice textarea')), '| push chk:', await T.is_checked('.tnotice input[type=checkbox]'))
+    await T.fill('#notice-text','다음 시간에는 컴퓨터실에서 수업해요.'); await T.click('[data-a=notice-add]'); await W(T,500)
+    print('notices after add:', await T.eval_on_selector_all('.tnotice .notice-item p','e=>e.map(x=>x.textContent)'), '| toast:', await T.text_content('#toast') if await T.query_selector('#toast') else '')
+    await T.click('[data-a=create]'); await W(T); await T.fill('#c-prompt','개항은 기회였을까 위기였을까?'); await T.fill('#c-title','개항 토론')
+    print('notify chk:', await T.is_checked('[data-k=notify]'))
+    await T.click('[data-a=create-save]'); await W(T,600)
+    # second activity outside course
+    await T.click('[data-a=home]'); await W(T); await T.click('[data-a=mcourse][data-v=""]'); await W(T)
+    await T.click('[data-a=create]'); await W(T); await T.fill('#c-prompt','시의 화자는 누구일까?'); await T.fill('#c-title','화자 찾기')
+    await T.evaluate('document.querySelectorAll("details.adv").forEach(d=>d.open=true)'); await T.fill('#c-subject','국어')
+    await T.uncheck('[data-k=notify]'); await W(T)
+    await T.click('[data-a=create-save]'); await W(T,600)
+    print('log:', [x for x in await T.evaluate('__sbLog') if x.startswith('notify')])
+    # student
+    S=await ctx.new_page(); S.on('pageerror',lambda e:errs.append('S:'+str(e)))
+    await S.goto(U+'?who=anon'); await W(S,600)
+    await S.fill('#f-num','10301'); await S.fill('#f-name','김가온'); await S.fill('#f-code',code); await S.press('#f-code','Enter'); await W(S,1200)
+    print('stabs gone:', not await S.query_selector('.stabs'))
+    print('dcards:', await S.eval_on_selector_all('.dcard','e=>e.map(x=>x.innerText.replace(/\\n+/g," | "))'))
+    print('todolist:', await S.eval_on_selector_all('.todolist button','e=>e.map(x=>x.innerText.replace(/\\n+/g," | "))'))
+    print('pushbar:', (await S.text_content('.pushbar')) if await S.query_selector('.pushbar') else None)
+    await S.screenshot(path='mob/dash_list.png', full_page=True)
+    await S.click(f'.dcard[data-v="c:{cid}"]'); await W(S,400)
+    print('dash head:', (await S.inner_text('.dhead')).replace('\n',' | '), '| notices:', await S.eval_on_selector_all('.notices .notice-item','e=>e.map(x=>x.className+": "+x.innerText.replace(/\\n+/g," / "))'))
+    print('dash cards:', await S.eval_on_selector_all('.scard .scard-t','e=>e.map(x=>x.textContent)'), '| NEW:', len(await S.query_selector_all('.scard .newdot')))
+    await S.screenshot(path='mob/dash_course.png', full_page=True)
+    # live notice while student watches
+    await T.click('[data-a=home]'); await W(T); await T.click(f'[data-a=mcourse][data-v="{cid}"]'); await W(T)
+    await T.fill('#notice-text','수행평가는 다음 주 화요일까지!'); await T.click('[data-a=notice-add]'); await W(T,700)
+    await W(S,600); print('student toast:', await S.evaluate('document.getElementById("toast")?.textContent'), '| notices now:', len(await S.query_selector_all('.notices .notice-item')))
+    print('teacher can add more:', bool(await T.query_selector('.tnotice textarea')))
+    # open activity -> NEW gone
+    await S.click('.scard'); await W(S,400); await S.click('[data-a=home]'); await W(S,400)
+    print('back to dash:', bool(await S.query_selector('.dhead')), '| NEW left:', len(await S.query_selector_all('.scard .newdot')))
+    await S.click('[data-a=dash-back]'); await W(S,300); print('list again:', len(await S.query_selector_all('.dcard')))
+    # hash navigation (like a notification tap)
+    await S.evaluate(f'location.hash="#c:{cid}"'); await W(S,400); print('hash -> dash:', bool(await S.query_selector('.dhead')))
+    # feedback
+    await S.click('[data-a=feedback-open]'); await W(S); await S.click('[data-a=fb-kind][data-v=건의]'); await W(S)
+    await S.fill('#fb-body','친구 글에 공감 버튼이 있으면 좋겠어요.'); await S.click('[data-a=fb-send]'); await W(S,400)
+    print('fb stored:', await S.evaluate('JSON.parse(localStorage.getItem("__fb"))'))
+    await T.click('[data-a=tadmin-open]'); await W(T,400); await T.click('[data-a=tadmin-tab][data-v=f]'); await W(T,300)
+    print('admin fb:', (await T.inner_text('#modal')).replace('\n',' | ')[:300])
+    await T.click('[data-a=fbadmin-done]'); await W(T,400); print('done:', await T.evaluate('S.tfb.map(x=>x.done)'))
+    await T.keyboard.press('Escape'); await W(T)
+    # take a notice down
+    await T.click('[data-a=notice-del] >> nth=0'); await W(T,500); await W(S,500)
+    print('after del teacher:', len(await T.query_selector_all('.tnotice .notice-item')), '| student:', len(await S.query_selector_all('.notices .notice-item')))
+    # course edit keeps notices
+    await T.click(f'[data-a=course-edit][data-id="{cid}"]'); await W(T); await T.fill('#course-title','1학년 한국사 A'); await T.click('[data-a=course-save]'); await W(T,500)
+    c=[v['data'] for v in (await T.evaluate('JSON.parse(localStorage.getItem("__sbmock"))'))['docs'].values() if v['id']==cid][0]
+    print('course doc after edit:', c['title'], len(c.get('notices',[])), c.get('teacherName'))
+    # mobile
+    M=await ctx.new_page(); await M.set_viewport_size({'width':390,'height':844}); M.on('pageerror',lambda e:errs.append('M:'+str(e)))
+    await M.goto(U+'?who=anon'); await W(M,600)
+    await M.fill('#f-num','10301'); await M.fill('#f-name','김가온'); await M.fill('#f-code',code); await M.press('#f-code','Enter'); await W(M,1200)
+    await M.screenshot(path='mob/dash_m1.png', full_page=True)
+    await M.click(f'.dcard[data-v="c:{cid}"]'); await W(M,400); await M.screenshot(path='mob/dash_m2.png', full_page=True)
+    print('m overflow:', await M.evaluate('document.documentElement.scrollWidth'))
+    await T.screenshot(path='mob/t_course.png', full_page=True)
+    print('errors', errs); await b.close()
+asyncio.run(main())
