@@ -626,6 +626,14 @@ end $$;
 revoke execute on function public.push_targets_for(text) from public, anon;
 grant execute on function public.push_targets_for(text) to authenticated;
 
+-- 학생 기기: 내 학생 번호(선생님마다 하나) — 선생님이 학생으로 정한 그룹을 알아볼 때 쓴다 (내 것만 돌려준다)
+create or replace function public.my_student_ids() returns uuid[]
+language sql stable security definer set search_path = public as $$
+  select coalesce(array_agg(student_id), '{}') from public.student_sessions where uid = auth.uid();
+$$;
+revoke execute on function public.my_student_ids() from public, anon;
+grant execute on function public.my_student_ids() to authenticated;
+
 -- =====================================================================
 -- 마지막으로 관리자(나)의 구글 이메일을 등록하세요 (따옴표 안을 바꿔서 실행)
 -- 다른 선생님은 등록하지 않아도 구글로 로그인하면 바로 교사가 돼요
