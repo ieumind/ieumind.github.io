@@ -43,10 +43,13 @@
       then(res,rej){ return run().then(res,rej) } };
     return api;
   }
+  let rpcImpl;
   const client={
     auth:{ getSession: async()=>({data:{session: {user:{is_anonymous: !isT}}}}), signInAnonymously: async()=>({data:{session:{user:{is_anonymous:true}}}}),
       signInWithOAuth: async(o)=>{ window.__oauth=o; return {data:{}} }, signOut: async()=>{ sessionStorage.removeItem("uid"); window.__signedOut=true; return {} } },
-    rpc: async (fn, p) => { await new Promise(r=>setTimeout(r,5)); D=load(); window.__sbLog.push(fn);
+    rpc: (fn, p) => { const pr = rpcImpl(fn, p); return {then:(a,b) => pr.then(a,b)} },   // 실제 supabase-js처럼 .catch 없음
+    rpcImpl_: 0,
+    _rpc: async (fn, p) => { await new Promise(r=>setTimeout(r,5)); D=load(); window.__sbLog.push(fn);
       if(fn==="whoami") return {data:{teacher:isT, admin:isT, blocked:false, email:isT?"t@school.kr":null, student_name: isT?null:myName()}};
       if(fn==="teacher_checkin") return {data:null,error:null};
       if(fn==="ai_key_status"){ const k=localStorage.getItem("__aikey"); return {data:{teacher:isT, has:!!k && isT, tail:k?k.slice(-4):null, model:k?"gemini-3.5-flash-lite":null}} }
@@ -83,5 +86,6 @@
     })},
     channel(){ const subs=[]; const c={ on(type,f,cb){ subs.push([f,cb]); return c }, subscribe(){ ch.push((ev,row)=>{ for(const [f,cb] of subs){ if(f.event!==ev) continue; if(f.filter && f.filter!=="col=eq."+row.col) continue; if(!canRead(row) && ev!=="DELETE") continue; cb(ev==="DELETE"?{old:row}:{new:{id:row.id,data:row.data,col:row.col}}) } }); return c } }; return c }
   };
+  rpcImpl = client._rpc;
   window.supabase={createClient:()=>client};
 })();

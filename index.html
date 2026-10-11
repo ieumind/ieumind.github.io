@@ -3612,6 +3612,8 @@ function teacherCard(r, p, ps, nav){
    - 권한은 Supabase 규칙(RLS)이 서버에서 지킨다. 앱의 저장 방식(collection/doc)은 그대로 쓴다.
    ========================================================= */
 let SB = null;
+/* Supabase RPC를 안전하게: supabase-js의 rpc()는 .catch가 없는 객체를 돌려주므로 await + try로 감싼다 (실패해도 앱이 멈추지 않게) */
+async function rpcSafe(fn, args){ try{ return await SB.rpc(fn, args) }catch(e){ return {data:null, error:e} } }
 function loadScript(src){
   return new Promise((ok, bad) => { const sc = document.createElement("script"); sc.src = src; sc.onload = ok; sc.onerror = bad; document.head.appendChild(sc) });
 }
@@ -3635,7 +3637,7 @@ async function initSupa(){
     S.sbAnon = !!session?.user?.is_anonymous;
     S.sbName = who.teacher ? (session?.user?.user_metadata?.full_name || session?.user?.user_metadata?.name || "") : "";
     if(!who.teacher){ S.name = who.student_name || ""; lsSet("nonjae.name", S.name)
-      if(S.name){ const ids = await SB.rpc("my_student_ids").catch(() => ({})); S.mySids = new Set(Array.isArray(ids.data) ? ids.data : []) } }   // 선생님이 정한 그룹을 알아보려고 내 학생 번호(들)
+      if(S.name){ const ids = await rpcSafe("my_student_ids"); S.mySids = new Set(Array.isArray(ids.data) ? ids.data : []) } }   // 선생님이 정한 그룹을 알아보려고 내 학생 번호(들)
     S.canWrite = !!who.teacher || !!who.student_name;
     S.db = supaDB(SB);
     ["rooms","posts","replies","treplies","config","courses"].forEach(sub);
@@ -5019,7 +5021,7 @@ async function aiSuggest(body){
 }
 async function loadAiStatus(){
   if(!aiLive()){ S.aiStatus = {off:true}; renderModal(); return }
-  const r = await SB.rpc("ai_key_status").catch(() => ({}));
+  const r = await rpcSafe("ai_key_status");
   S.aiStatus = r.data || {err:true}; if(S.modal?.type === "ai") renderModal();
 }
 function aiSetupHTML(){
@@ -5560,7 +5562,7 @@ async function act(a, b){
       if(body.length < 2){ toast("내용을 조금만 더 적어 주세요."); document.getElementById("fb-body")?.focus(); return }
       if(S.mode !== "supa" || !SB || S.demo){ toast("체험·미리보기 화면에서는 보낼 수 없어요. 실제 생각이음 화면에서 보내 주세요."); return }
       b.disabled = true;
-      const r2 = await SB.rpc("feedback_send", {p_kind:S.modal?.kind || "기타", p_body:body, p_page:(location.hash || "").slice(0, 200)}).catch(e => ({error:e}));
+      const r2 = await rpcSafe("feedback_send", {p_kind:S.modal?.kind || "기타", p_body:body, p_page:(location.hash || "").slice(0, 200)});
       const res = r2.data || {};
       if(r2.error || !res.ok){ b.disabled = false; toast(res.reason === "limit" ? "오늘은 더 보낼 수 없어요. 내일 다시 보내 주세요." : !r2.error && res.reason === "empty" ? "로그인(또는 학생 코드 입력) 뒤에 보낼 수 있어요." : "보내지 못했어요. 잠시 뒤 다시 해 보세요."); return }
       S.modal = null; toast("고마워요! 의견을 전달했어요. 🙏"); break;
@@ -5593,7 +5595,7 @@ async function act(a, b){
       if(!aiLive()){ toast("체험·미리보기 화면에서는 저장할 수 없어요."); return }
       if(key.length < 20){ toast("키가 너무 짧아요. AI 스튜디오에서 복사한 키 전체를 붙여 넣어 주세요."); return }
       b.disabled = true; b.textContent = "확인하는 중…";
-      const r1 = await SB.rpc("ai_key_set", {p_key:key}).catch(() => ({}));
+      const r1 = await rpcSafe("ai_key_set", {p_key:key});
       if(!r1.data?.ok){ b.disabled = false; b.textContent = "저장하고 확인"; toast(r1.data?.reason === "format" ? "키 모양이 이상해요. 띄어쓰기 없이 키만 붙여 넣어 주세요." : "저장하지 못했어요. 다시 해 보세요."); return }
       const r2 = await SB.functions.invoke("suggest", {body:{test:true}}).catch(() => ({}));
       if(r2.data?.ok) toast("✅ 연결됐어요! 이제 🪄 버튼으로 질문을 추천받을 수 있어요.");
