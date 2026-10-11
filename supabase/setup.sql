@@ -539,6 +539,33 @@ revoke execute on function public.push_save(text,text,text), public.push_forget(
 grant execute on function public.push_save(text,text,text), public.push_forget(text), public.push_targets(), public.push_drop(text),
   public.feedback_send(text,text,text), public.admin_list_feedback(), public.admin_feedback_done(bigint,boolean) to authenticated;
 
+-- ---------------------------------------------------------------------
+-- 🪄 AI 질문 추천: 선생님이 구글 AI 스튜디오에서 받은 Gemini API 키를 선생님 계정 전용으로 보관한다
+--   teacher_ai: 학생·다른 선생님·화면에서는 읽을 수 없고, 서버 프로그램(supabase/functions/suggest)만 꺼내 쓴다
+-- ---------------------------------------------------------------------
+create table if not exists public.teacher_ai (
+  uid uuid primary key, gemini_key text not null, model text, updated_at timestamptz not null default now());
+alter table public.teacher_ai enable row level security;
+revoke all on public.teacher_ai from anon, authenticated;
+create or replace function public.ai_key_set(p_key text) returns json
+language plpgsql security definer set search_path = public as $$
+declare k text := trim(coalesce(p_key, ''));
+begin
+  if not public.is_teacher() then return json_build_object('ok', false, 'reason', 'denied'); end if;
+  if k = '' then delete from public.teacher_ai where uid = auth.uid(); return json_build_object('ok', true, 'has', false); end if;
+  if k !~ '^[A-Za-z0-9_.-]{20,200}$' then return json_build_object('ok', false, 'reason', 'format'); end if;
+  insert into public.teacher_ai (uid, gemini_key) values (auth.uid(), k)
+  on conflict (uid) do update set gemini_key = excluded.gemini_key, model = null, updated_at = now();
+  return json_build_object('ok', true, 'has', true, 'tail', right(k, 4));
+end $$;
+create or replace function public.ai_key_status() returns json
+language sql stable security definer set search_path = public as $$
+  select json_build_object('teacher', public.is_teacher(), 'has', t.uid is not null, 'tail', right(t.gemini_key, 4), 'model', t.model)
+  from (select 1) x left join public.teacher_ai t on t.uid = auth.uid() and public.is_teacher();
+$$;
+revoke execute on function public.ai_key_set(text), public.ai_key_status() from public, anon;
+grant execute on function public.ai_key_set(text), public.ai_key_status() to authenticated;
+
 -- =====================================================================
 -- 마지막으로 관리자(나)의 구글 이메일을 등록하세요 (따옴표 안을 바꿔서 실행)
 -- 다른 선생님은 등록하지 않아도 구글로 로그인하면 바로 교사가 돼요
