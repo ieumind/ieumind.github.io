@@ -51,6 +51,7 @@
       if(fn==="teacher_checkin") return {data:null,error:null};
       if(fn==="ai_key_status"){ const k=localStorage.getItem("__aikey"); return {data:{teacher:isT, has:!!k && isT, tail:k?k.slice(-4):null, model:k?"gemini-3.5-flash-lite":null}} }
       if(fn==="ai_key_set"){ if(!isT) return {data:{ok:false,reason:"denied"}}; const k=(p.p_key||"").trim(); if(!k){ localStorage.removeItem("__aikey"); return {data:{ok:true,has:false}} } if(!/^[A-Za-z0-9_.-]{20,200}$/.test(k)) return {data:{ok:false,reason:"format"}}; localStorage.setItem("__aikey",k); return {data:{ok:true,has:true,tail:k.slice(-4)}} }
+      if(fn==="my_student_ids") return {data: D.sessions[uid] ? [D.sessions[uid]] : [], error:null};
       if(fn==="push_save"){ window.__push=p; return {data:null,error:null} }
       if(fn==="feedback_send"){ if(!p.p_body||p.p_body.length<2) return {data:{ok:false,reason:"empty"}}; const fb=JSON.parse(localStorage.getItem("__fb")||"[]"); fb.push({id:fb.length+1, who: isT?"교사 t@school.kr":(myName()||"이름 없음"), kind:p.p_kind, body:p.p_body, page:p.p_page, done:false, created_at:new Date().toISOString()}); localStorage.setItem("__fb",JSON.stringify(fb)); return {data:{ok:true},error:null} }
       if(fn==="admin_list_feedback") return {data:JSON.parse(localStorage.getItem("__fb")||"[]"),error:null};

@@ -13,11 +13,10 @@ async def main():
     await T.click('[data-a=roster-open]'); await W(T); await T.fill('#roster-add','10301 김가온'); await T.click('[data-a=roster-add]'); await W(T,400); await T.keyboard.press('Escape')
     code=(await T.evaluate('JSON.parse(localStorage.getItem("__sbmock"))'))['students'][0]['code']
     await T.click('[data-a=course-new]'); await W(T); print('course modal:', await T.text_content('#modal h3'))
-    await T.fill('#course-title','1학년 한국사'); await T.fill('#course-subject','한국사'); await T.click('[data-a=course-save]'); await W(T,500)
-    await T.click('[data-a=mem-all]'); await T.click('[data-a=mem-save]'); await W(T,400)
+    await T.fill('#course-title','1학년 한국사'); await T.fill('#course-subject','한국사'); await T.click('[data-a=mem-all]'); await T.click('[data-a=course-save]'); await W(T,500)
     cid=await T.evaluate('S.mcourse'); print('course', cid, '| chips:', await T.eval_on_selector_all('.cchips button','e=>e.map(x=>x.textContent.trim())'))
     print('notice panel:', bool(await T.query_selector('.tnotice textarea')), '| push chk:', await T.is_checked('.tnotice input[type=checkbox]'))
-    await T.fill('#notice-text','다음 시간에는 컴퓨터실에서 수업해요.'); await T.click('[data-a=notice-add]'); await W(T,500)
+    await T.evaluate('document.querySelectorAll(".tnotice").forEach(d=>d.open=true)'); await T.fill('#notice-text','다음 시간에는 컴퓨터실에서 수업해요.'); await T.click('[data-a=notice-add]'); await W(T,500)
     print('notices after add:', await T.eval_on_selector_all('.tnotice .notice-item p','e=>e.map(x=>x.textContent)'), '| toast:', await T.text_content('#toast') if await T.query_selector('#toast') else '')
     await T.click('[data-a=create]'); await W(T); await T.fill('#c-prompt','개항은 기회였을까 위기였을까?'); await T.fill('#c-title','개항 토론')
     print('notify chk:', await T.is_checked('[data-k=notify]'))
@@ -44,7 +43,7 @@ async def main():
     await S.screenshot(path='mob/dash_course.png', full_page=True)
     # live notice while student watches
     await T.click('[data-a=home]'); await W(T); await T.click(f'[data-a=mcourse][data-v="{cid}"]'); await W(T)
-    await T.fill('#notice-text','수행평가는 다음 주 화요일까지!'); await T.click('[data-a=notice-add]'); await W(T,700)
+    await T.evaluate('document.querySelectorAll(".tnotice").forEach(d=>d.open=true)'); await T.fill('#notice-text','수행평가는 다음 주 화요일까지!'); await T.click('[data-a=notice-add]'); await W(T,700)
     await W(S,600); print('student toast:', await S.evaluate('document.getElementById("toast")?.textContent'), '| notices now:', len(await S.query_selector_all('.notices .notice-item')))
     print('teacher can add more:', bool(await T.query_selector('.tnotice textarea')))
     # open activity -> NEW gone
