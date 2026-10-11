@@ -334,8 +334,8 @@ details.adv > div{padding:4px 20px 20px;display:grid;gap:18px}
 
 /* ---------- 화면 밝기 ---------- */
 .top-end{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
-.theme{position:relative}
-.theme summary{list-style:none;width:40px;height:40px;border:1px solid var(--line);border-radius:999px;display:grid;place-items:center;cursor:pointer;background:var(--surface);font-size:17px}
+.theme{width:40px;height:40px;border:1px solid var(--line);border-radius:999px;display:grid;place-items:center;cursor:pointer;background:var(--surface);font-size:17px;padding:0;transition:transform .15s}
+.theme:active{transform:scale(.92)}
 .theme summary::-webkit-details-marker{display:none}
 .theme-menu{position:absolute;right:0;top:46px;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:6px;display:grid;gap:2px;min-width:150px;box-shadow:0 8px 24px rgba(0,0,0,.18);z-index:20}
 .theme-menu button{border:0;background:none;text-align:left;padding:8px 10px;border-radius:6px;cursor:pointer;font-size:14px;min-height:38px}
@@ -478,6 +478,10 @@ body.presenting .top,body.presenting .notice{display:none}
   .top-r > *{flex:0 0 auto;white-space:nowrap}
   .top-r .btn{min-height:38px;padding:6px 12px;font-size:14px}
   .wall{grid-template-columns:1fr}
+  .sstats{width:100%}
+  .sstats > div{flex:1;min-width:0}
+  .sgrid{grid-template-columns:1fr}
+  .cta .btn{width:100%}
   .wall-sec{margin-top:20px}
 }
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
@@ -500,6 +504,53 @@ body.presenting .top,body.presenting .notice{display:none}
 .chip[title]{cursor:help}
 .stools{display:grid;gap:10px}
 .stools input[type=search]{width:100%;border:1px solid var(--line);background:var(--paper);border-radius:10px;padding:10px 14px;font-size:16px}
+/* ---------- 학생 첫 화면 ---------- */
+.shome{display:grid;gap:16px}
+.shome-hi{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:16px}
+.shome-hi h1{font-family:var(--f-display);font-size:clamp(26px,4vw,34px);line-height:1.3;margin-top:4px}
+.shome-hi p{color:var(--muted);margin-top:4px}
+.sstats{display:flex;gap:8px}
+.sstats > div{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:10px 14px;min-width:84px;display:grid;gap:2px}
+.sstats b{font-family:var(--f-mono);font-size:24px;font-variant-numeric:tabular-nums;line-height:1.1}
+.sstats span{font-size:12.5px;color:var(--muted)}
+.sstats .todo{background:var(--warn-soft);border-color:transparent}
+.sstats .todo b{color:var(--warn)}
+.stabs{display:flex;gap:8px;overflow-x:auto;padding:2px 2px 6px;scrollbar-width:thin;-webkit-overflow-scrolling:touch}
+.stabs button{flex:0 0 auto;border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:8px 14px;font-size:14.5px;cursor:pointer;min-height:42px;white-space:nowrap;color:var(--fg)}
+.stabs button span:last-child{font-family:var(--f-mono);font-size:12.5px;color:var(--muted);margin-left:2px}
+.stabs button[aria-selected="true"]{background:var(--cs,var(--fg));border-color:var(--c,var(--fg));color:var(--c,var(--bg));font-weight:600}
+.stabs button:first-child[aria-selected="true"]{background:var(--fg);color:var(--bg)}
+.stabs button:first-child[aria-selected="true"] span{color:var(--bg)}
+.sbar{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px}
+.ssort{font-size:14px;color:var(--muted);display:flex;align-items:center;gap:6px;white-space:nowrap}
+.ssort select{min-height:38px}
+.sgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px;align-items:stretch}
+.scard{display:grid;gap:8px;align-content:start;text-align:left;background:var(--surface);border:1px solid var(--line);border-top:6px solid var(--c);border-radius:14px;padding:14px 16px 16px;cursor:pointer;color:var(--fg);font:inherit;transition:transform .12s,box-shadow .12s}
+.scard:hover{transform:translateY(-2px);box-shadow:0 6px 18px rgba(0,0,0,.08)}
+.scard-top{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:6px}
+.scard .subj{font-size:13px;font-weight:600;color:var(--c);background:var(--cs);border-radius:999px;padding:3px 10px}
+.scard .sst{font-size:13px;font-weight:600;border-radius:999px;padding:3px 10px;background:var(--sunk);color:var(--muted)}
+.scard.todo .sst{background:var(--warn-soft);color:var(--warn)}
+.scard.doing .sst{background:var(--accent-soft);color:var(--accent)}
+.scard.done{opacity:.86}
+.scard.closed{opacity:.7}
+.scard-t{font-family:var(--f-display);font-size:19px;font-weight:700;line-height:1.4}
+.scard-p{font-size:14.5px;color:var(--muted);line-height:1.55;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+.scard-m{display:flex;flex-wrap:wrap;gap:4px 12px;font-size:13px;color:var(--muted);margin-top:2px}
+.scard-m .soon{color:var(--warn);font-weight:600}
+.chip.due.soon{background:var(--warn-soft);color:var(--warn)}
+.chip.due.over{opacity:.8}
+/* 활동 안: 게시판 ↔ 내 활동 */
+.rtabs{display:grid;grid-template-columns:1fr 1fr;gap:6px;background:var(--sunk);border-radius:12px;padding:4px;margin-top:16px}
+.rtabs button{border:0;background:none;border-radius:9px;padding:10px 8px;font-size:15px;cursor:pointer;color:var(--muted);min-height:44px;font-weight:600}
+.rtabs button[aria-selected="true"]{background:var(--surface);color:var(--fg);box-shadow:0 1px 3px rgba(0,0,0,.1)}
+.cta{margin-top:14px;display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px;background:var(--surface);border:1px solid var(--line);border-left:6px solid var(--accent);border-radius:12px;padding:14px 16px}
+.cta > div{display:grid;gap:2px}
+.cta b{font-size:16.5px}
+.cta span{font-size:14px;color:var(--muted)}
+.cta.todo{border-left-color:var(--warn);background:var(--warn-soft)}
+.cta.done{border-left-color:var(--accent)}
+.cta.closed{border-left-color:var(--muted)}
 /* ---------- 우리 반 게시판 (패들렛처럼) ---------- */
 .wall-sec{margin-top:26px;display:grid;gap:10px;min-width:0}
 .wall-h{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:6px}
@@ -665,11 +716,7 @@ body.presenting .top,body.presenting .notice{display:none}
   <header class="top">
     <button class="brand" data-a="home" type="button"><b>생각이음</b><span>생각을 잇다, 생각이 자라다</span></button>
     <div class="top-end"><div class="top-r" id="topr"></div>
-      <details class="theme" id="theme"><summary aria-label="화면 밝기 바꾸기" title="화면 밝기"><span id="theme-ic" aria-hidden="true">🌓</span></summary>
-        <div class="theme-menu" role="group" aria-label="화면 밝기">
-          <button type="button" data-a="theme" data-v="system">🌓 기기 설정</button>
-          <button type="button" data-a="theme" data-v="light">☀️ 라이트</button>
-          <button type="button" data-a="theme" data-v="dark">🌙 다크</button></div></details></div>
+      <button class="theme" id="theme" type="button" data-a="theme-toggle" aria-label="다크 모드로 바꾸기" title="다크 모드로 바꾸기"><span id="theme-ic" aria-hidden="true">🌙</span></button></div>
   </header>
   <main id="app"><p class="who">불러오는 중…</p></main>
 </div>
@@ -963,6 +1010,7 @@ const S = {
   tnotes:[], ttemplates:[], config:[],   // 교사 전용 메모·명단 / 내 템플릿 / 앱 설정(학생 공유 링크)
   ttab:"overview", mq:"", mf:"all", msub:"", mgrade:"",
   modal:null, preview:null, hashRoom:(location.hash||"").slice(1),
+  hsub: lsGet("nonjae.hsub") || "", hsort: lsGet("nonjae.hsort") || "todo",   // 학생 첫 화면: 과목 칸·정렬
   msort:"recent", mdur:"", mview: lsGet("nonjae.mview")==="list" ? "list" : "card",      // 내 활동: 정렬·시간·보기 방식
   sq:"", sf:"all", ss:"no", sview: lsGet("nonjae.sview")==="grid" ? "grid" : "card",      // 학생 생각: 검색·필터·정렬·보기 방식
   sidx:0, fbSent:null, qopen:null, pmode:null, pidx:0, prand:null,
@@ -1017,7 +1065,20 @@ const STATUS = {draft:{l:"작성 중", d:"학생에게 아직 보이지 않아�
                 open:{l:"진행 중", d:"학생이 참여하고 제출할 수 있어요."},
                 closed:{l:"마감", d:"학생이 더 이상 제출할 수 없어요. 결과는 계속 볼 수 있어요."},
                 archived:{l:"보관", d:"내 수업 목록과 학생 화면에서 숨겨요. 결과와 응답은 그대로 남아요."}};
-const statusOf = r => STATUS[r?.status] ? r.status : (r?.open === false ? "closed" : "open");
+/* 마감 일시(dueAt)가 지나면 ‘진행 중’ 활동은 저절로 ‘마감’이 된다 */
+const pastDue = r => !!(r?.dueAt && Date.now() >= r.dueAt);
+const statusOf = r => { const s = STATUS[r?.status] ? r.status : (r?.open === false ? "closed" : "open"); return s === "open" && pastDue(r) ? "closed" : s };
+/* 마감 시각 표시: 오늘 18:00 · 내일 9:00 · 10월 12일(월) 18:00 */
+function fmtDue(ts){
+  if(!ts) return "";
+  const d = new Date(ts), now = new Date(), z = n => String(n).padStart(2,"0"), hm = `${d.getHours()}:${z(d.getMinutes())}`;
+  const day = x => new Date(x.getFullYear(), x.getMonth(), x.getDate()).getTime(), diff = Math.round((day(d) - day(now)) / 864e5);
+  if(diff === 0) return `오늘 ${hm}`;
+  if(diff === 1) return `내일 ${hm}`;
+  return `${d.getMonth()+1}월 ${d.getDate()}일(${"일월화수목금토"[d.getDay()]}) ${hm}`;
+}
+const dueChip = r => !r?.dueAt ? "" : pastDue(r) ? `<span class="chip due over">⏰ ${esc(fmtDue(r.dueAt))} 마감됨</span>`
+  : `<span class="chip due${r.dueAt - Date.now() < 864e5 ? " soon" : ""}">⏰ ${esc(fmtDue(r.dueAt))}까지</span>`;
 const statusChip = r => `<span class="chip st-${statusOf(r)}" title="${STATUS[statusOf(r)].d}">${STATUS[statusOf(r)].l}</span>`;
 const visibleToStudents = r => ["open","closed"].includes(statusOf(r));
 const tnote = r => S.tnotes.find(x => x.id === r.id) || {};             // 교사만 읽는 메모·명단
@@ -1052,6 +1113,7 @@ function myGroup(cid){
 function setMyGroup(cid, gid){ if(cid) lsSet("nonjae.group." + cid, gid || "") }
 /* 학생에게 보이는 활동: 우리 그룹의 배포 상태를 활동 상태에 반영한 복사본 */
 function forMe(r){
+  if(r && !isTeacher() && pastDue(r) && r.open !== false && (!r.status || r.status === "open")) r = {...r, status:"closed", open:false};   // 마감 시각이 지났다
   if(!r || isTeacher() || S.preview || !asgIds(r).length || !courseOf(r.courseId)) return r;
   const gid = myGroup(r.courseId);
   if(!gid) return {...r, _needGroup:true};
@@ -1370,18 +1432,16 @@ async function addReply(data){
 }
 
 const HOST_THEME = document.documentElement.getAttribute("data-theme");   // 보는 곳(앱)이 정해 둔 값
+/* 화면 밝기: 라이트 ↔ 다크 한 번 누르면 바로 바뀐다 (처음에는 기기 설정을 따른다) */
+const curTheme = () => { const v = lsGet("nonjae.theme"); return v === "light" || v === "dark" ? v : (HOST_THEME === "dark" || HOST_THEME === "light" ? HOST_THEME : (matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light")) };
 function applyTheme(v){
-  const root = document.documentElement;
-  if(v === "light" || v === "dark") root.setAttribute("data-theme", v);
-  else if(HOST_THEME) root.setAttribute("data-theme", HOST_THEME);
-  else root.removeAttribute("data-theme");
-  const ic = document.getElementById("theme-ic");
-  if(ic) ic.textContent = v === "light" ? "☀️" : v === "dark" ? "🌙" : "🌓";
-  document.querySelectorAll('[data-a="theme"]').forEach(x => x.setAttribute("aria-pressed", String(x.dataset.v === (v || "system"))));
+  document.documentElement.setAttribute("data-theme", v);
+  const ic = document.getElementById("theme-ic"), b = document.getElementById("theme"), nx = v === "dark" ? "라이트 모드로 바꾸기" : "다크 모드로 바꾸기";
+  if(ic) ic.textContent = v === "dark" ? "☀️" : "🌙";
+  if(b){ b.title = nx; b.setAttribute("aria-label", nx) }
 }
 function setTheme(v){ lsSet("nonjae.theme", v); applyTheme(v) }
-applyTheme(lsGet("nonjae.theme") || "system");
-document.addEventListener("click", e => { const t = document.getElementById("theme"); if(t?.open && !t.contains(e.target)) t.open = false });
+applyTheme(curTheme());
 
 async function init(){
   let db = null, user = null;
@@ -1431,6 +1491,7 @@ function applyHash(){
    6. 렌더 — 공통
    ========================================================= */
 function render(){
+  if(typeof dueKey === "function") DUE_KEY = dueKey();
   renderTop();
   const app = document.getElementById("app");
   let h = "";
@@ -1501,6 +1562,57 @@ function readonlyNote(){ return `<div class="empty">보기 전용 계정이라 �
 /* =========================================================
    7. 홈
    ========================================================= */
+/* ---- 학생 첫 화면: 과목·선생님별로 모아 보기, 할 일 먼저 ---- */
+const SUBJ_IC = [[/국어|문학|독서|언어|작문|화법/,"📖"],[/수학|미적|확률|기하|대수/,"➗"],[/영어|English/i,"🔤"],[/물리|화학|생명|지구|과학/,"🔬"],
+  [/한국사|역사|세계사|동아시아/,"📜"],[/사회|지리|정치|경제|법|윤리|도덕|사상/,"🏛️"],[/음악/,"🎵"],[/미술/,"🎨"],[/체육/,"⚽"],[/정보|코딩|인공지능/,"💻"],[/일본어|중국어|독일어|프랑스어|스페인어/,"🌏"]];
+const subjIcon = t => (SUBJ_IC.find(([re]) => re.test(t||"")) || [0,"📘"])[1];
+const subjKey = r => ((r.subject||"").trim() || "-") + "|" + (r.teacherName||"");
+const subjLabel = r => `${(r.subject||"").trim() || "과목 미정"}${r.teacherName ? ` · ${r.teacherName} 선생님` : ""}`;
+const subjTone = k => { let h = 0; for(const c of k) h = (h*31 + c.charCodeAt(0)) >>> 0; return SC[h%4] };
+function homeState(r){
+  const mine = myPost(r), open = r.open !== false && statusOf(r) === "open";
+  if(submitted(mine)){
+    const phs = phasesOf(r), done = phs.filter(ph => phaseState(r,mine,ph) === "done").length;
+    if(done >= phs.length || !open) return {k:"done", l:"✓ 다 했어요", o:3};
+    return {k:"doing", l:`▶ ${phs[done].l} 하는 중`, o:1};
+  }
+  if(!open) return {k:"closed", l:"🔒 마감", o:4};
+  return mine ? {k:"todo", l:"✏️ 쓰는 중", o:0} : {k:"todo", l:"✏️ 아직 안 했어요", o:0};
+}
+const HSORTS = [["todo","할 일 먼저"],["new","새로 올라온 순"],["due","마감 가까운 순"],["subject","과목 순"]];
+function viewHomeStudent(crs, rooms){
+  const nm = (S.name || "").replace(/^\S*\d\S*\s*/, "").trim(), now = new Date();
+  const items = rooms.map(r => ({r, st:homeState(r), k:subjKey(r)}));
+  const subs = [...new Map(items.map(x => [x.k, x.r])).entries()].sort((a,b) => koCmp(subjLabel(a[1]), subjLabel(b[1])));
+  const cur = subs.some(([k]) => k === S.hsub) ? S.hsub : "";
+  const sort = HSORTS.some(([k]) => k === S.hsort) ? S.hsort : "todo";
+  let list = items.filter(x => !cur || x.k === cur);
+  const byNew = (a,b) => (b.r.createdAt||0) - (a.r.createdAt||0);
+  list.sort({todo:(a,b) => a.st.o - b.st.o || (a.r.dueAt||9e15) - (b.r.dueAt||9e15) || byNew(a,b), new:byNew,
+             due:(a,b) => (a.r.dueAt && a.st.o < 3 ? a.r.dueAt : 9e15) - (b.r.dueAt && b.st.o < 3 ? b.r.dueAt : 9e15) || byNew(a,b),
+             subject:(a,b) => koCmp(subjLabel(a.r), subjLabel(b.r)) || a.st.o - b.st.o || byNew(a,b)}[sort]);
+  const cnt = k => items.filter(x => x.st.k === k).length;
+  let h = `<section class="shome">
+    <div class="shome-hi"><div><div class="eyebrow">${now.getMonth()+1}월 ${now.getDate()}일 ${"일월화수목금토"[now.getDay()]}요일</div>
+      <h1>${crs ? `${courseIcon(crs)} ${esc(crs.title)}` : nm ? `${esc(nm)}님, 안녕하세요 👋` : "안녕하세요 👋"}</h1>
+      <p>${crs ? (myGroup(crs.id) ? `${esc(groupName(crs.id, myGroup(crs.id)))} · ` : "") + `이 수업의 활동만 보여요. <button class="linkbtn" type="button" data-a="course-all">모든 활동 보기</button>` : "오늘 함께 생각할 활동이에요. 하나를 골라 들어가 보세요."}</p></div>
+      <div class="sstats"><div class="todo"><b>${cnt("todo")}</b><span>해야 할 활동</span></div><div><b>${cnt("doing")}</b><span>하는 중</span></div><div><b>${cnt("done")}</b><span>다 했어요</span></div></div></div>`;
+  if(!rooms.length) return h + `<div class="empty">아직 열린 활동이 없어요. 선생님이 활동을 올리면 여기에 나타나요.</div></section>`;
+  if(subs.length > 1) h += `<div class="stabs" role="tablist" aria-label="과목·선생님">
+      <button type="button" role="tab" data-a="hsub" data-v="" aria-selected="${!cur}">전체 <span>${items.length}</span></button>
+      ${subs.map(([k, r]) => `<button type="button" role="tab" data-a="hsub" data-v="${esc(k)}" aria-selected="${cur===k}" style="--c:var(--${subjTone(k)});--cs:var(--${subjTone(k)}-soft)"><span aria-hidden="true">${subjIcon(r.subject)}</span> ${esc(subjLabel(r))} <span>${items.filter(x => x.k === k).length}</span></button>`).join("")}</div>`;
+  h += `<div class="sbar"><span class="muted small">${cur ? esc(subjLabel(subs.find(([k]) => k === cur)[1])) + " · " : ""}활동 ${list.length}개</span>
+    <label class="ssort">정렬 <select id="h-sort">${HSORTS.map(([k,l]) => `<option value="${k}" ${sort===k?"selected":""}>${l}</option>`).join("")}</select></label></div>`;
+  h += `<div class="sgrid">${list.map(({r, st, k}) => {
+    const ps = postsOf(r.id), t = TEMPLATES[r.template] || {};
+    return `<button class="scard ${st.k}" type="button" data-a="open" data-id="${esc(r.id)}" style="--c:var(--${subjTone(k)});--cs:var(--${subjTone(k)}-soft)">
+      <span class="scard-top"><span class="subj"><span aria-hidden="true">${subjIcon(r.subject)}</span> ${esc(subjLabel(r))}</span><span class="sst">${esc(st.l)}</span></span>
+      <span class="scard-t">${esc(r.title)}</span>
+      ${r.prompt && r.prompt !== r.title ? `<span class="scard-p">${esc(r.prompt)}</span>` : ""}
+      <span class="scard-m"><span>${t.icon||""} ${esc(t.label||"")}</span>${r.dueAt && st.o < 3 ? `<span class="${r.dueAt - Date.now() < 864e5 ? "soon" : ""}">⏰ ${esc(fmtDue(r.dueAt))}까지</span>` : ""}${r.reveal !== "teacher" ? `<span>👥 ${ps.length}명</span>` : ""}</span>
+    </button>`}).join("")}</div></section>`;
+  return h;
+}
 function viewHome(){
   const crs = !isTeacher() && S.course ? courseOf(S.course) : null;
   // 학생: 우리 그룹에 배포되지 않았거나 아직 시작 전인 활동은 목록에서 뺀다
@@ -1508,6 +1620,7 @@ function viewHome(){
   const units = [...new Set(rooms.map(r => r.unit || "기타"))];
   if(crs && !myGroup(crs.id) && groupsOf(crs).length > 1) return `<div class="home-head"><div><div class="eyebrow">학생 화면</div><h1>${courseIcon(crs)} ${esc(crs.title)}</h1></div></div>` + groupPickHTML(crs, null);
   if(crs && !myGroup(crs.id) && groupsOf(crs).length === 1) setMyGroup(crs.id, groupsOf(crs)[0].id);
+  if(!isTeacher()) return viewHomeStudent(crs, rooms.filter(r => statusOf(r) !== "archived"));
   let h = `<div class="home-head"><div><div class="eyebrow">${isTeacher()?"교사 화면":"학생 화면"}</div>
     <h1>${crs ? `${courseIcon(crs)} ${esc(crs.title)}` : units.length===1 ? esc(units[0]) : "활동 목록"}</h1>
     <p>${isTeacher() ? "활동을 열고 닫고, 학생들의 생각 흐름과 참여 현황을 확인하세요." : "수업 시간에 내 생각을 적고, 친구와 생각을 나누는 곳이에요."}</p>
@@ -1551,7 +1664,7 @@ function roomHead(r, {sourceOpen=true, rules=false}={}){
   return `<button class="linkbtn back" type="button" data-a="home">← 활동 목록</button><div class="room-head">
     <div class="rmeta"><span class="year">${esc(r.year||"")}</span>${r.subject?`<span>${esc(r.subject)}</span>`:""}<span>${esc(r.unit||"")}</span>
       <span class="chip tpl"><span aria-hidden="true">${TEMPLATES[r.template]?.icon||""}</span>${esc(TEMPLATES[r.template]?.label||"")}${TEMPLATES[r.template]?.studentMode ? ` · <span aria-hidden="true">${TEMPLATES[r.template].modeIcon}</span> ${esc(TEMPLATES[r.template].mode)}` : ""}</span>
-      ${statusChip(r)}${r.duration ? `<span class="chip">⏱ ${esc(r.duration)}분</span>` : ""}</div>
+      ${statusChip(r)}${dueChip(r)}${r.duration ? `<span class="chip">⏱ ${esc(r.duration)}분</span>` : ""}</div>
     <h1>${esc(r.title)}</h1>
     ${r.intro ? `<p class="muted" style="margin-top:6px;max-width:62ch">${esc(r.intro)}</p>` : ""}
     ${isRelay(r) ? `<p class="eyebrow" style="margin-top:12px">오늘의 주제</p>` : ""}
@@ -1572,9 +1685,10 @@ function viewRoomStudent(r){
   if(r._ready){ const a = r.assign[r._gid]; return roomHead(r) + `<div class="stage" id="stage"><div class="empty">⏳ 아직 시작 전인 활동이에요.${a?.startAt ? `<br>${esc(fmt(a.startAt))}에 열려요.` : " 선생님이 시작하면 참여할 수 있어요."}</div></div>` }
   const p = myPost(r);
   if(!S.name) return roomHead(r) + `<div class="stage" id="stage">${nameForm()}</div>`;
+  if(S.work !== r.id) return roomHead(r, {sourceOpen:false}) + roomTabs(r, "board") + roomBoard(r, p);   // 처음에는 우리 반 게시판
   const sel = selectedStep(r, p), phs = phasesOf(r);
   const curPh = sel === "record" ? null : phaseOfStep(r, sel);
-  let h = roomHead(r, {sourceOpen: curPh ? curPh.k === "think" : false});
+  let h = roomHead(r, {sourceOpen: curPh ? curPh.k === "think" : false}) + roomTabs(r, "work");
 
   // 큰 3단계 (단계가 하나뿐인 빠른 활동에서는 생략)
   if(phs.length > 1){
@@ -1615,8 +1729,34 @@ function viewRoomStudent(r){
                  ask:stepAsk, take:stepTake, back:stepBack, develop:stepDevelop, see:stepSee, compose:stepCompose, feedback:stepFeedback};
   h += `<div class="stage" id="stage">${views[sel](r, p, open)}</div>`;
   if(sel !== "record" && submitted(p)) h += `<div class="row end" style="margin-top:14px"><button class="linkbtn" type="button" data-a="step" data-v="record">나의 생각 흐름 보기</button></div>`;
-  if(!["read","respond","take","back"].includes(sel)) h += writeMapHTML(r);       // 아래에는 늘 우리 반 게시판
+  if(!submitted(p) && !["read","respond","take","back"].includes(sel)) h += writeMapHTML(r);   // 쓰는 동안: 흐린 게시판·생각 지도
   return h;
+}
+/* 활동 안의 두 화면: 우리 반 게시판 ↔ 내 활동 */
+function roomTabs(r, cur){
+  const p = myPost(r), lbl = submitted(p) ? "✏️ 내 활동" : "✏️ 내 생각 쓰기";
+  return `<div class="rtabs" role="tablist" aria-label="활동 화면">
+    <button type="button" role="tab" data-a="rmode" data-v="board" aria-selected="${cur==="board"}">📌 우리 반 게시판</button>
+    <button type="button" role="tab" data-a="rmode" data-v="work" aria-selected="${cur==="work"}">${lbl}</button></div>`;
+}
+/* 게시판 화면: 지금 할 일 한 줄 + 게시판 */
+function roomBoard(r, p){
+  const open = r.open !== false, phs = phasesOf(r);
+  let cta;
+  if(submitted(p)){
+    const done = phs.filter(ph => phaseState(r,p,ph) === "done").length;
+    cta = done >= phs.length || !open
+      ? `<div class="cta done"><div><b>✓ 이 활동을 다 했어요</b><span>친구들의 생각을 둘러보고 댓글을 남겨 보세요.</span></div><button class="btn" type="button" data-a="open-record" data-id="${esc(r.id)}">🧭 나의 생각 흐름</button></div>`
+      : `<div class="cta"><div><b>▶ 다음 할 일 · ${esc(phs[done].l)}</b><span>내 생각은 게시했어요. 이어서 해 볼까요?</span></div><button class="btn pri" type="button" data-a="to-stage">이어서 하기 →</button></div>`;
+  }else if(!open){
+    cta = `<div class="cta closed"><div><b>🔒 마감된 활동이에요</b><span>${p ? "쓰던 글은 게시되지 않았어요." : "더 이상 글을 쓸 수 없어요."}</span></div></div>`;
+  }else if(!S.canWrite){
+    cta = "";
+  }else{
+    cta = `<div class="cta todo"><div><b>✏️ ${p ? "쓰던 생각이 있어요" : "아직 내 생각을 올리지 않았어요"}</b><span>${r.reveal === "after" ? "내 생각을 게시하면 친구들의 생각이 열려요." : "내 생각을 써서 게시판에 올려 보세요."}${r.dueAt ? ` · ${esc(fmtDue(r.dueAt))}까지` : ""}</span></div>
+      <button class="btn pri" type="button" data-a="to-stage">내 생각 쓰러 가기 →</button></div>`;
+  }
+  return cta + wallHTML(r, p);
 }
 /* 다음 활동으로 가는 버튼 */
 function nextBtn(r, label){
@@ -2399,7 +2539,7 @@ const TTABS = [["overview","개요"],["progress","참여 현황"],["students","�
 function viewRoomTeacher(r){
   const stt = statusOf(r), st = teacherStats(r), tab = S.ttab || "overview", t = TEMPLATES[r.template] || {};
   let h = `<button class="linkbtn back" type="button" data-a="home">← 내 수업</button>
-  <section class="ahead"><div class="mtop">${courseOf(r.courseId) ? `<span class="chip">${courseIcon(courseOf(r.courseId))} ${esc(courseOf(r.courseId).title)}</span>` : ""}${statusChip(r)}<span class="chip tpl"><span aria-hidden="true">${t.icon||""}</span>${esc(t.label||"")}${t.mode?` · ${esc(t.mode)}`:""}</span><span class="chip">${esc(DEPTHS[depthOf(r)].label)}</span>
+  <section class="ahead"><div class="mtop">${courseOf(r.courseId) ? `<span class="chip">${courseIcon(courseOf(r.courseId))} ${esc(courseOf(r.courseId).title)}</span>` : ""}${statusChip(r)}${dueChip(r)}<span class="chip tpl"><span aria-hidden="true">${t.icon||""}</span>${esc(t.label||"")}${t.mode?` · ${esc(t.mode)}`:""}</span><span class="chip">${esc(DEPTHS[depthOf(r)].label)}</span>
       <span class="mmeta">${esc([r.grade, r.subject, r.unit].filter(Boolean).join(" / "))}${r.duration?` · ⏱ ${esc(r.duration)}분`:""}</span></div>
     <h1>${esc(r.title)}</h1>
     <div class="abar">
@@ -2411,6 +2551,7 @@ function viewRoomTeacher(r){
       <button class="btn sm" type="button" data-a="edit-room" data-id="${esc(r.id)}">수정</button>
       <button class="btn sm" type="button" data-a="dup" data-id="${esc(r.id)}">복제</button>
       ${statusButtons(r, true)}
+      <button class="btn sm danger" type="button" data-a="del-ask" data-id="${esc(r.id)}">🗑 삭제</button>
     </div></section>`;
   h += gselBar(r);
   // 상단 요약: 활동에 맞는 숫자만
@@ -2692,6 +2833,7 @@ async function initSupa(){
     Auth.set(!!who.teacher);
     S.sbEmail = who.email || "";
     S.sbAnon = !!session?.user?.is_anonymous;
+    S.sbName = who.teacher ? (session?.user?.user_metadata?.full_name || session?.user?.user_metadata?.name || "") : "";
     if(!who.teacher){ S.name = who.student_name || ""; lsSet("nonjae.name", S.name) }
     S.canWrite = !!who.teacher || !!who.student_name;
     S.db = supaDB(SB);
@@ -3323,7 +3465,7 @@ function manageTable(list, stOf){
         <td data-l="참여" class="mono">${st.participants}${st.total ? ` / ${st.total}` : "명"}</td>
         <td data-l="완료" class="mono">${st.participants ? `${st.complete} / ${st.participants}` : "–"}</td>
         <td data-l="최근 활동" class="small">${fmtRel(lastActivity(r))}</td>
-        <td class="acts"><button class="btn sm ${draft ? "pri" : ""}" type="button" data-a="${draft ? "edit-room" : "open"}" data-id="${esc(r.id)}">${draft ? "이어서 만들기" : "결과 보기"}</button><button class="btn sm" type="button" data-a="racts" data-id="${esc(r.id)}" aria-label="${esc(r.title)} 관리 메뉴">⋯ 관리</button></td></tr>` }).join("")}
+        <td class="acts"><button class="btn sm ${draft ? "pri" : ""}" type="button" data-a="${draft ? "edit-room" : "open"}" data-id="${esc(r.id)}">${draft ? "이어서 만들기" : "결과 보기"}</button><button class="btn sm" type="button" data-a="racts" data-id="${esc(r.id)}" aria-label="${esc(r.title)} 관리 메뉴">⋯ 관리</button><button class="btn sm danger" type="button" data-a="del-ask" data-id="${esc(r.id)}" aria-label="${esc(r.title)} 삭제">🗑</button></td></tr>` }).join("")}
   </tbody></table></div>`;
 }
 
@@ -3367,7 +3509,7 @@ function manageCard(r){
   const t = TEMPLATES[r.template] || {}, st = teacherStats(r), s = statusOf(r);
   const pp = st.total ? Math.round(st.participants/st.total*100) : 0, cp = st.participants ? Math.round(st.complete/st.participants*100) : 0;
   return `<article class="mcard">
-    <div class="mtop">${statusChip(r)}<span class="chip tpl"><span aria-hidden="true">${t.icon||""}</span>${esc(t.label||"")}${t.mode?` · ${esc(t.mode)}`:""}</span>${r.duration?`<span class="chip">⏱ ${esc(r.duration)}분</span>`:""}${asgSummary(r)}</div>
+    <div class="mtop">${statusChip(r)}${dueChip(r)}<span class="chip tpl"><span aria-hidden="true">${t.icon||""}</span>${esc(t.label||"")}${t.mode?` · ${esc(t.mode)}`:""}</span>${r.duration?`<span class="chip">⏱ ${esc(r.duration)}분</span>`:""}${asgSummary(r)}</div>
     <h2><button type="button" data-a="open" data-id="${esc(r.id)}">${esc(r.title || "제목 없는 활동")}</button></h2>
     <div class="mmeta">${!S.mcourse && courseOf(r.courseId) ? `${courseIcon(courseOf(r.courseId))} ${esc(courseOf(r.courseId).title)} · ` : ""}${esc([r.grade, r.subject, r.unit].filter(Boolean).join(" / ") || "수업 정보 없음")}</div>
     <div class="mrates"><span>참여</span><span class="mprog" aria-hidden="true"><i style="width:${st.total ? pp : (st.participants ? 100 : 0)}%"></i></span><span class="mono">${st.participants}${st.total ? ` / ${st.total}` : "명"}</span>
@@ -3377,7 +3519,7 @@ function manageCard(r){
       ? `<button class="btn sm pri" type="button" data-a="edit-room" data-id="${esc(r.id)}">이어서 만들기</button><button class="btn sm" type="button" data-a="preview" data-id="${esc(r.id)}">학생 화면</button><span class="sp"></span><button class="btn sm danger" type="button" data-a="del-ask" data-id="${esc(r.id)}">삭제</button>`
       : `<button class="btn sm pri" type="button" data-a="open" data-id="${esc(r.id)}">결과 보기</button><button class="btn sm" type="button" data-a="preview" data-id="${esc(r.id)}">학생 화면</button><button class="btn sm" type="button" data-a="copy-link" data-id="${esc(r.id)}">링크</button>
          <span class="sp"></span><button class="btn sm" type="button" data-a="edit-room" data-id="${esc(r.id)}">수정</button><button class="btn sm" type="button" data-a="dup" data-id="${esc(r.id)}">복제</button>${statusButtons(r)}
-         ${s !== "archived" ? `<button class="btn sm" type="button" data-a="status" data-id="${esc(r.id)}" data-v="archived" title="${STATUS.archived.d}" aria-label="보관">🗄</button>` : ""}`}</div></article>`;
+         ${s !== "archived" ? `<button class="btn sm" type="button" data-a="status" data-id="${esc(r.id)}" data-v="archived" title="${STATUS.archived.d}" aria-label="보관">🗄</button>` : ""}<button class="btn sm danger" type="button" data-a="del-ask" data-id="${esc(r.id)}" title="활동 삭제" aria-label="${esc(r.title)} 삭제">🗑</button>`}</div></article>`;
 }
 function manageList(){
   const list = manageFiltered();
@@ -3514,6 +3656,7 @@ async function saveTnote(r, patch){
 }
 async function setStatus(r, st){
   const patch = {status:st, open: st==="open", updatedAt:Date.now()};
+  if(st === "open" && pastDue(r)) patch.dueAt = null;                  // 마감 시각이 지난 활동을 다시 열면 마감 시각을 지운다
   return write(db => db.doc("rooms/"+r.id).update(patch), () => Object.assign(r, patch));
 }
 /* 수정: 저장된 활동 → 생성 폼 값 */
@@ -3522,7 +3665,7 @@ function formFromRoom(r){
   const form = {editId:r.id, goal:(GOALS.find(g=>g.t.includes(r.template))||{}).k, template:r.template, tool:toolOf(r), depth:depthOf(r),
     prompt:r.prompt||"", title:r.title||"", context:r.context||"", intro:r.intro||"",
     personaName:r.persona?.name||"", personaAbout:r.persona?.about||"", personaStyle:r.persona?.style||"persona", maxTurns:String(r.persona?.maxTurns||8),
-    subject:r.subject||"", unit:r.unit||"", year:r.year||"", grade:r.grade||"", duration:String(r.duration||""), stage:r.stage||"", memo:tnote(r).memo||"",
+    subject:r.subject||"", unit:r.unit||"", year:r.year||"", grade:r.grade||"", duration:String(r.duration||""), dueAt:dtv(r.dueAt), stage:r.stage||"", memo:tnote(r).memo||"",
     qtype:r.qtype||t.qtype||"", reveal:r.reveal||t.reveal, anonymous:!!r.anonymous, minChars:String(r.minChars||0),
     stances:(r.stances||[]).join(", "), nst:(r.stances||[]).length,
     initial:f.initial, predict:f.predict, evidenceType:f.evidenceType, evidenceTypes:f.evidenceTypes, warrant:f.warrant, counter:f.counter,
@@ -3821,6 +3964,9 @@ function viewCreate(){
           return `<label class="choice" style="min-height:36px"><input type="checkbox" data-form="create" data-k="groups" data-multi value="${esc(g.id)}" ${on||keep?"checked":""} ${keep?"disabled":""}><span>${esc(g.name)}${keep?" · 응답 있음":""}</span></label>` }).join("")}</div>
           <p class="hint">활동은 하나만 만들고, 고른 그룹마다 따로 열고 닫을 수 있어요.</p></fieldset>` : `<p class="muted small">이 수업에는 아직 그룹이 없어요. ‘내 수업’에서 수업 수정으로 그룹을 넣을 수 있어요.</p>`) : ""}</div>` })() : ""}
 
+  <div class="card" style="margin-top:16px"><h3>⏰ 마감 <span class="opt">(선택)</span></h3>
+    <div class="q" style="max-width:340px"><label for="c-due">마감 날짜와 시간</label><input type="datetime-local" id="c-due" data-form="create" data-k="dueAt" value="${esc(f.dueAt||"")}">
+      <p class="hint">이 시각이 되면 저절로 마감돼요. 비워 두면 ‘마감하기’를 누를 때까지 열려 있어요.${f.dueAt ? ` <button class="linkbtn" type="button" data-a="due-clear">마감 시각 지우기</button>` : ""}</p></div></div>
   <details class="adv" ${editR ? "open" : ""}><summary>📋 수업 정보 <span class="opt">학년·과목·단원·시간·교사용 메모</span></summary><div><div class="form-grid">
       <div class="q"><label for="c-grade">학년</label><select id="c-grade" data-form="create" data-k="grade"><option value="">선택 안 함</option>${GRADES.map(g=>`<option ${f.grade===g?"selected":""}>${g}</option>`).join("")}</select></div>
       <div class="q"><label for="c-subject">과목</label><input type="text" id="c-subject" data-form="create" data-k="subject" maxlength="20" value="${esc(f.subject||"")}" placeholder="예: 한국사, 국어, 통합사회"></div>
@@ -3871,7 +4017,11 @@ function viewCreate(){
       <button class="btn pri" type="button" data-a="${editR && !isDraft ? "create-save" : (isDraft ? "publish-draft" : "create-save")}">${editR ? (isDraft ? "공개하기" : "변경사항 저장") : "활동 만들기"}</button></div></div>`;
   return h;
 }
-function roomMeta(f){ return {grade:f.grade||"", duration:parseInt(f.duration)||0, stage:f.stage||"", intro:(f.intro||"").trim()} }
+function roomMeta(f){
+  const m = {grade:f.grade||"", duration:parseInt(f.duration)||0, stage:f.stage||"", intro:(f.intro||"").trim(), dueAt: f.dueAt ? (new Date(f.dueAt).getTime() || null) : null};
+  if(S.sbName) m.teacherName = S.sbName;                                  // 학생 화면에서 선생님별로 모아 보기
+  return m;
+}
 
 /* =========================================================
    13. 이벤트 — 한 번만 등록
@@ -3907,7 +4057,7 @@ document.addEventListener("change", e => {
     saveAssign(r, assign).then(ok => { if(ok){ toast("그룹 시간을 저장했어요."); render() } });
     return;
   }
-  if(el.id === "m-sort" || el.id === "m-dur" || el.id === "s-sort"){ S[{"m-sort":"msort","m-dur":"mdur","s-sort":"ss"}[el.id]] = el.value; render(); document.getElementById(el.id)?.focus(); return }
+  if(el.id === "m-sort" || el.id === "m-dur" || el.id === "s-sort" || el.id === "h-sort"){ S[{"m-sort":"msort","m-dur":"mdur","s-sort":"ss","h-sort":"hsort"}[el.id]] = el.value; if(el.id === "h-sort") lsSet("nonjae.hsort", el.value); render(); document.getElementById(el.id)?.focus(); return }
   // 학급 학생 수 (교사)
   if(el.hasAttribute("data-classsize")){
     const r = room(), v = Math.max(0, parseInt(el.value)||0);
@@ -3974,6 +4124,8 @@ function insertStarter(b){
 
 async function act(a, b){
   if(TEACHER_ACTS.has(a) && !Auth.teacher){ toast("선생님만 쓸 수 있는 기능이에요."); return }   // 학생 권한: 교사 기능 호출 차단
+  if(["phase","step","go-respond","open-record"].includes(a)) S.work = a === "open-record" ? b.dataset.id : S.roomId;   // 단계로 가면 ‘내 활동’ 화면
+  if(a === "open" || a === "home" || a === "mine") S.work = null;
   const r = room(), p = r ? myPost(r) : null;
   switch(a){
     /* ---- 이동 ---- */
@@ -4162,8 +4314,11 @@ async function act(a, b){
       break;
     }
     case "fb-skip": { const ok = await savePost(r, {feedbackSkipped:true}); if(ok) goNext(r); break }
-    case "theme": setTheme(b.dataset.v); document.getElementById("theme").open = false; return;
-    case "to-stage": document.getElementById("stage")?.scrollIntoView({behavior:"smooth", block:"start"}); return;
+    case "theme-toggle": setTheme(curTheme() === "dark" ? "light" : "dark"); return;
+    case "to-stage": S.work = S.roomId; S.openPost = null; scrollTo(0,0); break;
+    case "rmode": S.work = b.dataset.v === "work" ? S.roomId : null; S.openPost = null; break;
+    case "due-clear": { const f = createForm(); f.dueAt = ""; saveFormsSoon(); break }
+    case "hsub": S.hsub = b.dataset.v; lsSet("nonjae.hsub", S.hsub); break;
     case "map-more": S.mapMore = {...(S.mapMore||{}), [r.id+":"+b.dataset.v]:true}; break;
     case "unpick": { F("meet:"+r.id).diffPostId = ""; saveFormsSoon(); break }
     /* 일반 활동: 고른 친구 생각에 한마디 → 기존 답글(반박/댓글) 형식으로 저장 */
@@ -4549,6 +4704,13 @@ async function act(a, b){
   render();
 }
 
+/* 마감·시작 시각이 지나는 순간 화면을 다시 그린다 (자동 마감) */
+function dueKey(){
+  const now = Date.now();
+  return S.rooms.map(r => [r.dueAt && now >= r.dueAt ? r.id : "", ...asgIds(r).map(g => { const a = r.assign[g]; return (a.dueAt && now >= a.dueAt) || (a.startAt && now >= a.startAt) ? r.id + "/" + g : "" })].filter(Boolean).join(",")).join(";");
+}
+let DUE_KEY = "";                                     // 마지막으로 그린 화면의 마감 상태 (render()가 갱신)
+setInterval(() => { if(dueKey() !== DUE_KEY){ render(); toast("시각이 되어 활동 상태가 바뀌었어요.") } }, 10000);
 render();
 init();
 </script>
