@@ -3280,7 +3280,8 @@ function viewWelcome(){
         <li><b>내 수업 자료는 나만 봐요.</b> 활동, 학생 명단·코드, 학생 글, 필기 사진은 다른 선생님에게 보이지 않도록 서버에서 막혀 있어요.</li>
         <li><b>관리자 화면에도 수업 자료는 보이지 않아요.</b> 관리자 화면에는 가입한 선생님의 이름·이메일과 사용량(활동 수·사진 용량)만 보여요.</li>
         <li><b>학생은 구글 계정이 필요 없어요.</b> 학번과 이름만 저장되고, 개인 코드는 학생에게 보이지 않아요.</li></ul>
-        <p class="muted small">데이터는 생각이음 운영자의 Supabase 저장소(서울)에 보관돼요. 학교 개인정보 담당자에게 사용 사실을 알려 두세요.</p></div>
+        <p class="muted small">데이터는 생각이음 운영자의 Supabase 저장소(서울)에 보관돼요. 학교 개인정보 담당자에게 사용 사실을 알려 두세요.</p>
+        <p class="small"><a href="privacy.html" target="_blank" rel="noopener">개인정보처리방침</a> · <a href="terms.html" target="_blank" rel="noopener">이용약관</a></p></div>
     </div>
     <p class="wl-foot muted small">학생이신가요? <button class="linkbtn" type="button" data-a="t-cancel">학생 화면으로 가기 →</button></p>
   </section>`;
@@ -3289,7 +3290,8 @@ function viewWelcome(){
 function viewCodeGate(){
   return `<div class="home-head"><div><div class="eyebrow">생각이음</div><h1>반갑습니다!</h1><p>선생님이 나눠 준 개인 코드로 처음 한 번만 확인할게요.</p></div></div>
     <div id="stage" style="max-width:560px">${codeForm()}</div>
-    <p class="muted small" style="margin-top:18px">선생님이신가요? <button class="linkbtn" type="button" data-a="t-start">교사로 시작하기 →</button></p>`;
+    <p class="muted small" style="margin-top:18px">선생님이신가요? <button class="linkbtn" type="button" data-a="t-start">교사로 시작하기 →</button></p>
+    <p class="muted small" style="margin-top:6px"><a href="privacy.html" target="_blank" rel="noopener">개인정보처리방침</a> · <a href="terms.html" target="_blank" rel="noopener">이용약관</a></p>`;
 }
 /* 관리자: 가입한 교사 목록 · 막기/풀기 */
 async function loadTadmin(){
