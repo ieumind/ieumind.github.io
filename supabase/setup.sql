@@ -270,7 +270,113 @@ create policy notes_insert on storage.objects for insert to authenticated
 create policy notes_delete on storage.objects for delete to authenticated
   using (bucket_id = 'notes' and public.note_can_read(name));
 
+-- ---------------------------------------------------------------------
+-- 교사 가입: 구글로 로그인하면 누구나 교사(자기 공간만). 관리자는 교사 목록을 보고 계정을 막을 수 있다
+-- ---------------------------------------------------------------------
+alter table public.teachers add column if not exists uid uuid;
+alter table public.teachers add column if not exists name text;
+alter table public.teachers add column if not exists first_at timestamptz default now();
+alter table public.teachers add column if not exists last_at timestamptz;
+alter table public.teachers add column if not exists blocked boolean not null default false;
+alter table public.teachers add column if not exists admin boolean not null default false;
+create index if not exists teachers_uid_idx on public.teachers (uid);
+
+create or replace function public.is_teacher() returns boolean
+language sql stable security definer set search_path = public as $$
+  select coalesce((auth.jwt() ->> 'is_anonymous')::boolean, false) = false
+     and coalesce(auth.jwt() ->> 'email', '') <> ''
+     and not exists (select 1 from public.teachers t
+                      where t.blocked and (t.uid = auth.uid() or lower(t.email) = lower(auth.jwt() ->> 'email')));
+$$;
+create or replace function public.is_admin() returns boolean
+language sql stable security definer set search_path = public as $$
+  select public.is_teacher() and exists (select 1 from public.teachers t
+                                          where t.admin and lower(t.email) = lower(coalesce(auth.jwt() ->> 'email', '')));
+$$;
+create or replace function public.tid_active(p_tid uuid) returns boolean
+language sql stable security definer set search_path = public as $$
+  select not exists (select 1 from public.teachers t where t.uid = p_tid and t.blocked);
+$$;
+create or replace function public.teacher_checkin() returns void
+language plpgsql volatile security definer set search_path = public as $$
+begin
+  if coalesce((auth.jwt() ->> 'is_anonymous')::boolean, false) or coalesce(auth.jwt() ->> 'email', '') = '' then return; end if;
+  insert into public.teachers (email, uid, name, first_at, last_at)
+  values (lower(auth.jwt() ->> 'email'), auth.uid(),
+          coalesce(auth.jwt() -> 'user_metadata' ->> 'full_name', auth.jwt() -> 'user_metadata' ->> 'name'), now(), now())
+  on conflict (email) do update set uid = excluded.uid, name = coalesce(excluded.name, public.teachers.name), last_at = now();
+end $$;
+create or replace function public.whoami(p_ref text default null) returns json
+language plpgsql stable security definer set search_path = public as $$
+declare t uuid; nm text; anon boolean := coalesce((auth.jwt() ->> 'is_anonymous')::boolean, false);
+begin
+  if p_ref is not null and p_ref <> '' then
+    select d.tid into t from public.docs d where d.id = p_ref and d.col in ('rooms', 'courses') limit 1;
+  end if;
+  if t is not null then
+    nm := public.my_student_name(t);
+  else
+    select s.number || ' ' || s.name into nm
+      from public.student_sessions ss join public.students s on s.id = ss.student_id
+     where ss.uid = auth.uid() order by ss.created_at desc limit 1;
+  end if;
+  return json_build_object(
+    'teacher', public.is_teacher(),
+    'admin', public.is_admin(),
+    'blocked', (not anon) and exists (select 1 from public.teachers x where x.blocked and lower(x.email) = lower(coalesce(auth.jwt() ->> 'email', ''))),
+    'email', case when anon then null else auth.jwt() ->> 'email' end,
+    'student_name', nm);
+end $$;
+create or replace function public.admin_list_teachers()
+returns table(email text, name text, first_at timestamptz, last_at timestamptz, blocked boolean, admin boolean, rooms bigint, students bigint, photos bigint, photo_mb numeric)
+language sql stable security definer set search_path = public as $$
+  select t.email, t.name, t.first_at, t.last_at, t.blocked, t.admin,
+    (select count(*) from public.docs d where d.col = 'rooms' and d.tid = t.uid),
+    (select count(*) from public.students s where s.tid = t.uid),
+    (select count(*) from storage.objects o where o.bucket_id = 'notes' and public.room_tid((storage.foldername(o.name))[1]) = t.uid),
+    (select round(coalesce(sum((o.metadata ->> 'size')::numeric), 0) / 1048576, 1) from storage.objects o
+      where o.bucket_id = 'notes' and public.room_tid((storage.foldername(o.name))[1]) = t.uid)
+  from public.teachers t
+  where public.is_admin()
+  order by t.last_at desc nulls last;
+$$;
+create or replace function public.admin_set_blocked(p_email text, p_blocked boolean) returns void
+language plpgsql volatile security definer set search_path = public as $$
+begin
+  if not public.is_admin() then raise exception '관리자만 할 수 있어요'; end if;
+  if lower(p_email) = lower(coalesce(auth.jwt() ->> 'email', '')) then raise exception '내 계정은 막을 수 없어요'; end if;
+  update public.teachers set blocked = coalesce(p_blocked, false) where lower(email) = lower(p_email) and not admin;
+end $$;
+create or replace function public.note_can_write(p_name text) returns boolean
+language sql stable security definer set search_path = public as $$
+  select coalesce((storage.foldername(p_name))[2] = public.my_student(public.room_tid((storage.foldername(p_name))[1]))::text
+                  and public.tid_active(public.room_tid((storage.foldername(p_name))[1])), false);
+$$;
+revoke execute on function public.is_admin(), public.tid_active(uuid), public.teacher_checkin(), public.admin_list_teachers(), public.admin_set_blocked(text, boolean) from public, anon;
+grant execute on function public.is_admin(), public.tid_active(uuid), public.teacher_checkin(), public.admin_list_teachers(), public.admin_set_blocked(text, boolean), public.whoami(text) to authenticated;
+
+-- 막힌 교사의 활동: 학생도 보거나 새로 쓸 수 없다
+alter policy docs_read on public.docs using (
+  (public.is_teacher() and tid = auth.uid())
+  or (public.is_my_teacher(tid) and public.tid_active(tid) and (
+        col in ('rooms', 'courses', 'config', 'treplies')
+     or (col = 'posts' and (owner = public.my_student(tid) or public.room_open_to_peers(room_id, tid)))
+     or col = 'replies'))
+);
+alter policy docs_insert on public.docs with check (
+  (public.is_teacher() and tid = auth.uid())
+  or (col in ('posts', 'replies') and owner is not null and owner = public.my_student(tid) and public.tid_active(tid)
+      and data ->> 'author' = public.my_student_name(tid) and coalesce(data ->> 'kind', '') not in ('teacher', 'class'))
+);
+alter policy docs_update on public.docs
+  using ((public.is_teacher() and tid = auth.uid())
+         or (col in ('posts', 'replies') and owner is not null and owner = public.my_student(tid) and public.tid_active(tid)))
+  with check ((public.is_teacher() and tid = auth.uid())
+    or (col in ('posts', 'replies') and owner is not null and owner = public.my_student(tid) and public.tid_active(tid)
+        and data ->> 'author' = public.my_student_name(tid) and coalesce(data ->> 'kind', '') not in ('teacher', 'class')));
+
 -- =====================================================================
--- 마지막으로 교사 구글 계정을 등록하세요 (따옴표 안을 바꿔서 실행, 교사마다 한 줄)
--- insert into public.teachers (email) values ('teacher@school.kr') on conflict do nothing;
+-- 마지막으로 관리자(나)의 구글 이메일을 등록하세요 (따옴표 안을 바꿔서 실행)
+-- 다른 선생님은 등록하지 않아도 구글로 로그인하면 바로 교사가 돼요
+-- insert into public.teachers (email, admin) values ('me@example.com', true) on conflict (email) do update set admin = true;
 -- =====================================================================
