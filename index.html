@@ -300,12 +300,17 @@ details.adv > summary::-webkit-details-marker{display:none}
 details.adv > summary::after{content:"펼치기 ▾";margin-left:auto;flex:0 0 auto;font-size:13px;font-weight:600;color:var(--accent);background:var(--accent-soft);border-radius:999px;padding:4px 12px}
 details.adv[open] > summary::after{content:"접기 ▴"}
 details.adv > summary:hover::after{filter:brightness(.96)}
-details.adv > div{padding:4px 20px 20px;display:grid;gap:18px}
-.adv-sec{display:grid;gap:10px;border-top:1px dashed var(--line);padding-top:14px}
+details.adv > div{padding:2px 20px 16px;display:grid;gap:12px}
+.adv-sec{display:grid;gap:8px;border-top:1px dashed var(--line);padding-top:12px}
 .adv-sec:first-child{border-top:0;padding-top:0}
-.adv-sec h4{font-size:15.5px;font-weight:700}
+.adv-sec h4{font-size:15px;font-weight:700;margin:0}
+.adv-sec .q{margin:0}
+.adv-sec .feat{gap:6px}
+.adv-sec .form-grid{gap:8px 14px}
+.adv-sec .hint{margin-top:2px}
+.mwho{font-size:12.5px;font-weight:700;color:var(--accent);background:var(--accent-soft);border-radius:999px;padding:1px 9px;justify-self:start}
 .tools{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px}
-.toolchip{display:grid;gap:2px;text-align:left;border:1.5px solid var(--line);background:var(--surface);border-radius:10px;padding:9px 12px;cursor:pointer;font:inherit;color:var(--fg)}
+.toolchip{display:grid;gap:1px;text-align:left;border:1.5px solid var(--line);background:var(--surface);border-radius:10px;padding:7px 11px;cursor:pointer;font:inherit;color:var(--fg)}
 .toolchip b{font-size:14.5px}
 .toolchip span{font-size:12.5px;color:var(--muted)}
 .toolchip[aria-pressed="true"]{border-color:var(--accent);background:var(--accent-soft);box-shadow:0 0 0 1px var(--accent)}
@@ -600,7 +605,11 @@ input[type=datetime-local]{min-height:44px;border:1px solid var(--line);border-r
 .tnotice > summary::-webkit-details-marker{display:none}
 .tnotice > summary::after{content:"펼치기 ▾";font-size:12.5px;color:var(--muted);white-space:nowrap}
 .tnotice[open] > summary::after{content:"접기 ▴"}
-.tnotice .nprev{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:14px}
+.tnotice .nprevs{flex:1;min-width:0;display:flex;gap:6px}
+.tnotice .nprev{flex:1 1 0;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:13px}
+.tnotice .nprevs .nprev + .nprev{border-left:1px solid var(--line);padding-left:8px}
+.tnotice .nprev i{font-style:normal;font-family:var(--f-mono);font-size:11px;background:var(--warn-soft);color:var(--warn);border-radius:999px;padding:0 6px;margin-right:4px}
+a.autolink{color:var(--accent);text-decoration:underline;text-underline-offset:2px;overflow-wrap:anywhere}
 .tnotice .ncount{font-family:var(--f-mono);font-size:12px;color:var(--muted)}
 .tnotice-body{display:grid;gap:8px;padding:0 12px 12px}
 .tgl{display:inline-flex;align-items:center;gap:6px;font-size:13.5px;border:1px solid var(--line);border-radius:999px;padding:5px 12px 5px 10px;cursor:pointer;background:var(--surface);min-height:34px}
@@ -1159,7 +1168,7 @@ const TEMPLATES = {
   /* 질문 활동: 교사·학생에게는 '질문 활동' 하나로 보이고, 방식(mode)만 다르다.
      내부 이름 inquiry(깊이 생각하기)·relay(질문이음)는 기존 활동·응답 데이터 호환을 위해 그대로 둔다 */
   inquiry:{icon:"❓", label:"질문 활동", mode:"깊이 생각하기", modeLabel:"깊이 생각하기", modeIcon:"🔎", studentMode:true,
-    modeDesc:"하나의 질문을 붙잡고 내 생각을 깊게 펼쳐요.", desc:"하나의 질문을 붙잡고 내 생각을 깊게 펼쳐요. 질문에 대한 내 생각을 쓰고, 친구 생각을 보고 다시 생각해요.", flowSummary:"내 답 → 친구의 답 → 다시 생각",
+    modeWho:"👩‍🏫 선생님 질문 → 🧑‍🎓 학생 답", modeDesc:"선생님이 던진 질문 하나에 모두가 답하고, 친구 답을 보며 생각을 깊게 해요.", desc:"하나의 질문을 붙잡고 내 생각을 깊게 펼쳐요. 질문에 대한 내 생각을 쓰고, 친구 생각을 보고 다시 생각해요.", flowSummary:"내 답 → 친구의 답 → 다시 생각",
     stances:[], reveal:"after", anonymous:false, tool:"claimEvidence", depth:"normal", qtype:"concept",
     flow:["see","think","write","read","respond","reflect","revise"],
     phaseDefs:[{k:"see", l:"질문 보기", steps:["see"]}, {k:"think", l:"내 생각", steps:["think","write"]},
@@ -1167,7 +1176,7 @@ const TEMPLATES = {
     labels:{claim:{q:"이 질문에 대한 내 생각은?", dl:"질문에 대한 내 생각"}},
     titles:{write:"이 질문에 대해 어떻게 생각하나요?"}},
   relay:{icon:"❓", label:"질문 활동", mode:"질문이음", modeLabel:"질문이음", modeIcon:"🔗", studentMode:true,
-    modeDesc:"질문과 생각을 이어가며 새로운 질문을 만들어요.", desc:"질문과 생각을 이어가며 새로운 질문을 만들어요. 내 질문을 올리고, 친구 질문을 이어받아 답하고, 친구의 답을 보고 질문을 키워요.", flowSummary:"내 질문 → 친구의 생각 → 내가 발견한 점 → 새로운 질문",
+    modeWho:"🧑‍🎓 학생 질문 → 🧑‍🎓 친구 답", modeDesc:"학생이 자기만의 탐구·핵심 질문을 만들고, 친구들이 그 질문에 답해 줘요.", desc:"질문과 생각을 이어가며 새로운 질문을 만들어요. 내 질문을 올리고, 친구 질문을 이어받아 답하고, 친구의 답을 보고 질문을 키워요.", flowSummary:"내 질문 → 친구의 생각 → 내가 발견한 점 → 새로운 질문",
     stances:[], reveal:"after", anonymous:true, tool:"free", depth:"normal", qtype:"student",
     flow:["ask","take","back","develop"],
     phaseDefs:[{k:"ask", l:"질문 만들기", steps:["ask"]}, {k:"take", l:"친구 질문에 답하기", steps:["take"]},
@@ -1412,6 +1421,9 @@ const S = {
 function lsGet(k){ try{ return localStorage.getItem(k) }catch(e){ return null } }
 function lsSet(k,v){ try{ localStorage.setItem(k,v) }catch(e){} }
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+/* 글 속 인터넷 주소(http·https)를 누를 수 있는 링크로 (먼저 esc 한 뒤에 쓴다) */
+const lnk = t => esc(t).replace(/https?:\/\/[^\s<]+/g, u => { const m = u.match(/[.,)\]!?。]+$/), url = m ? u.slice(0, -m[0].length) : u;
+  return `<a href="${url}" target="_blank" rel="noopener noreferrer" class="autolink">${url}</a>${m ? m[0] : ""}` });
 function hash(s){ let h=2166136261; for(const c of s){ h^=c.codePointAt(0); h=Math.imul(h,16777619) } return (h>>>0).toString(36) }
 function fmt(ts){
   if(!ts) return "";
@@ -2129,7 +2141,7 @@ function viewDash(info, rooms){
     <div class="dhead" style="--c:var(--${info.tone})">${info.teacher ? `<div class="eyebrow">${esc(info.teacher)} 선생님</div>` : ""}
       <h1><span aria-hidden="true">${info.icon}</span> ${esc(info.title)}</h1>
       <p class="muted">${crs && myGroup(crs.id) ? `${esc(groupName(crs.id, myGroup(crs.id)))} · ` : ""}활동 ${rooms.length}개 · 해야 할 활동 ${cnt("todo")}개${crs?.description ? ` · ${esc(crs.description)}` : ""}</p></div>`;
-  if(ns.length) h += `<div class="notices" aria-label="공지사항">${ns.map(n => `<div class="notice-item ${fresh.has(n.id) ? "fresh" : ""}"><b>📢 공지${fresh.has(n.id) ? " · 새 소식" : ""}</b><p>${esc(n.text)}</p><span class="nm">${esc(fmt(n.at))}</span></div>`).join("")}</div>`;
+  if(ns.length) h += `<div class="notices" aria-label="공지사항">${ns.map(n => `<div class="notice-item ${fresh.has(n.id) ? "fresh" : ""}"><b>📢 공지${fresh.has(n.id) ? " · 새 소식" : ""}</b><p>${lnk(n.text)}</p><span class="nm">${esc(fmt(n.at))}</span></div>`).join("")}</div>`;
   if(!rooms.length) return h + `<div class="empty">아직 이 과목에 열린 활동이 없어요. 선생님이 활동을 올리면 여기에 나타나요.</div></section>`;
   h += `<div class="sbar"><span class="muted small">활동 ${list.length}개</span>
     <span class="sctl"><button class="btn sm hlbl" type="button" data-a="hlabel" title="카드에 보여 줄 정보 바꾸기 (게시일 → 마감 → 차시 → 단원)">🏷 ${hlName} ⇄</button>
@@ -2200,11 +2212,11 @@ function roomHead(r, {sourceOpen=true, rules=false}={}){
       <span class="chip tpl"><span aria-hidden="true">${TEMPLATES[r.template]?.icon||""}</span>${esc(TEMPLATES[r.template]?.label||"")}${TEMPLATES[r.template]?.studentMode ? ` · <span aria-hidden="true">${TEMPLATES[r.template].modeIcon}</span> ${esc(TEMPLATES[r.template].mode)}` : ""}</span>
       ${statusChip(r)}${dueChip(r)}${r.duration ? `<span class="chip">⏱ ${esc(r.duration)}분</span>` : ""}</div>
     <h1>${esc(r.title)}</h1>
-    ${r.intro ? `<p class="muted" style="margin-top:6px;max-width:62ch">${esc(r.intro)}</p>` : ""}
+    ${r.intro ? `<p class="muted" style="margin-top:6px;max-width:62ch">${lnk(r.intro)}</p>` : ""}
     ${isRelay(r) ? `<p class="eyebrow" style="margin-top:12px">오늘의 주제</p>` : ""}
-    <p class="prompt"${isRelay(r) ? ' style="margin-top:2px"' : ""}>${esc(r.prompt)}</p>
+    <p class="prompt"${isRelay(r) ? ' style="margin-top:2px"' : ""}>${lnk(r.prompt)}</p>
     ${r.template==="inquiry" && QTYPES[r.qtype] ? `<div class="row" style="margin-top:8px">${qtypeChip(r.qtype)}<span class="muted small">${esc(QTYPES[r.qtype].d)}</span></div>` : ""}
-    ${r.context ? `<details class="source" ${sourceOpen?"open":""}><summary>자료 보기</summary><p>${esc(r.context)}</p></details>` : ""}
+    ${r.context ? `<details class="source" ${sourceOpen?"open":""}><summary>자료 보기</summary><p>${lnk(r.context)}</p></details>` : ""}
     ${rules ? rulesHTML(r) : `<details class="help" style="margin-top:10px"><summary>💡 어떻게 하는 활동인가요?</summary><div class="help-body">
       <p>${esc(TEMPLATES[r.template]?.desc || "")}</p><p class="muted small">${phasesOf(r).map((ph,i)=>`${i+1}. ${esc(ph.l)}`).join(" → ")}</p></div></details>`}</div>`;
 }
@@ -2804,7 +2816,7 @@ function replyHTML(r, x, ps){
          + `<div class="part"><em>그렇게 생각하는 이유${x.evidenceType?` · ${esc(x.evidenceType)}`:""}</em><p>${esc(x.evidence)}</p></div>`
          + `<div class="part"><em>내 의견</em><p>${esc(x.text)}</p></div>`;
   }else{
-    body = `<p>${esc(x.text)}</p>` + (x.evidence ? `<div class="part"><em>이유${x.evidenceType?` · ${esc(x.evidenceType)}`:""}</em><p>${esc(x.evidence)}</p></div>` : "");
+    body = `<p>${x.kind === "teacher" ? lnk(x.text) : esc(x.text)}</p>` + (x.evidence ? `<div class="part"><em>이유${x.evidenceType?` · ${esc(x.evidenceType)}`:""}</em><p>${esc(x.evidence)}</p></div>` : "");
   }
   const cls = {rebuttal:" rebut", teacher:" teacher", note:" note"}[x.kind] || "";
   return `<div class="reply${cls}"><div class="rh"><b>${esc(who)}</b>${tag?`<span>${tag}</span>`:""}<span>${fmt(x.createdAt)}</span></div>${body}</div>`;
@@ -3439,9 +3451,9 @@ function statusButtons(r, big){
 /* ---- 탭: 개요 ---- */
 function tabOverview(r, st){
   const f = featuresOf(r), all = st.all;
-  let h = `<section class="card"><div class="eyebrow">${isRelay(r) ? "오늘의 주제" : "논제"}</div><p class="prompt" style="margin-top:4px">${esc(r.prompt)}</p>
-    ${r.intro ? `<p class="muted" style="margin-top:8px"><b>활동 소개</b> · ${esc(r.intro)}</p>` : ""}
-    ${r.context ? `<details class="source"><summary>자료 보기</summary><p>${esc(r.context)}</p></details>` : ""}
+  let h = `<section class="card"><div class="eyebrow">${isRelay(r) ? "오늘의 주제" : "논제"}</div><p class="prompt" style="margin-top:4px">${lnk(r.prompt)}</p>
+    ${r.intro ? `<p class="muted" style="margin-top:8px"><b>활동 소개</b> · ${lnk(r.intro)}</p>` : ""}
+    ${r.context ? `<details class="source"><summary>자료 보기</summary><p>${lnk(r.context)}</p></details>` : ""}
     ${rulesHTML(r)}
     ${tnote(r).memo ? `<p class="small" style="margin-top:12px;background:var(--sunk);border-radius:8px;padding:8px 12px">📝 <b>교사용 메모</b> · ${esc(tnote(r).memo)} <span class="muted">(학생에게 보이지 않아요)</span></p>` : ""}</section>`;
   h = asgCard(r) + hintCard(r, st) + stanceCard(r, st) + rateCard(r, st) + checkCard(r, st) + h;
@@ -3545,7 +3557,7 @@ function classFeedbacks(r){ return S.replies.filter(x => x.kind==="class" && x.r
 function classFeedbackHTML(r){
   const list = classFeedbacks(r);
   if(!list.length) return "";
-  return `<details class="classfb" style="margin-top:14px" open><summary>📣 선생님이 우리 반 전체에게 (${list.length})</summary>${list.map(x=>`<div class="item">${esc(x.text)}<small>${fmt(x.createdAt)}</small></div>`).join("")}</details>`;
+  return `<details class="classfb" style="margin-top:14px" open><summary>📣 선생님이 우리 반 전체에게 (${list.length})</summary>${list.map(x=>`<div class="item">${lnk(x.text)}<small>${fmt(x.createdAt)}</small></div>`).join("")}</details>`;
 }
 function tabFeedback(r, st){
   const list = classFeedbacks(r), key = "cfb:" + r.id;
@@ -3554,7 +3566,7 @@ function tabFeedback(r, st){
   return `<section class="card"><h3>📣 우리 반 전체에게 피드백</h3><p class="muted small">이 활동에 참여한 모든 학생 화면 위쪽에 보여요.</p>
       <div class="q" style="margin-top:8px"><label class="sr" for="${key}-text">전체 피드백</label>${ta(key,"text",{rows:3, ph:"예: 많은 친구들이 근거로 통계를 들었어요. 다음 시간에는 사료도 함께 살펴봐요."})}</div>
       <div class="row end" style="margin-top:8px"><button class="btn pri" type="button" data-a="class-fb">우리 반 전체에게 보내기</button></div>
-      ${list.length ? `<div class="replies">${list.map(x=>`<div class="reply teacher"><div class="rh"><b>우리 반 전체</b><span>${fmt(x.createdAt)}</span></div><p>${esc(x.text)}</p></div>`).join("")}</div>` : ""}</section>
+      ${list.length ? `<div class="replies">${list.map(x=>`<div class="reply teacher"><div class="rh"><b>우리 반 전체</b><span>${fmt(x.createdAt)}</span></div><p>${lnk(x.text)}</p></div>`).join("")}</div>` : ""}</section>
     <section class="card"><h3>🧑‍🏫 개인 피드백</h3><p class="muted small">개인 피드백은 ‘학생 생각’ 탭에서 학생 카드를 펼쳐 남겨요. 그 학생에게만 보여요.</p>
       <p style="margin-top:8px">개인 피드백을 받은 학생 <b class="mono">${got.length}</b> / ${st.sub.length}명</p>
       ${st.sub.length ? `<div class="bars" style="margin-top:8px">${barRow("피드백 완료", got.length, st.sub.length)}</div>` : `<p class="muted small" style="margin-top:6px">아직 제출한 학생이 없어요.</p>`}
@@ -3686,7 +3698,7 @@ function teacherCard(r, p, ps, nav){
    ========================================================= */
 /* 🔄 새 버전 알림: 배포 때마다 APP_VERSION과 version.json의 v를 같은 값으로 올린다.
    GitHub Pages는 화면을 10분쯤 기억하므로, 옛 화면이면 아래쪽에 ‘새로고침’ 띠를 띄우고 주소를 바꿔 새로 받는다 */
-const APP_VERSION = "2026-10-12b";
+const APP_VERSION = "2026-10-12c";
 async function checkVersion(){
   if(!/^https?:$/.test(location.protocol)) return;
   try{
@@ -4328,8 +4340,8 @@ function noticePanel(c){
   const ns = noticesOf(c), key = "notice:" + c.id, nf = F(key), id = esc(c.id), dk = "notice-" + c.id;
   const open = S.advOpen?.[dk] ?? false;                          // 기본은 접어 둔다
   return `<details class="tnotice" data-keep="${esc(dk)}" ${open ? "open" : ""}><summary><b>📢 공지</b>
-      ${ns.length ? `<span class="nprev">${esc(ns[0].text)}</span>` : `<span class="nprev muted">학생의 과목 화면 맨 위에 보여요</span>`}<span class="ncount">${ns.length}/${NOTICE_MAX}</span></summary>
-    <div class="tnotice-body">${ns.map(n => `<div class="notice-item"><p>${esc(n.text)}</p><span class="nm">${esc(fmt(n.at))} 올림 · <button class="linkbtn" type="button" data-a="notice-del" data-c="${id}" data-id="${esc(n.id)}">내리기</button></span></div>`).join("")}
+      <span class="nprevs">${ns.length ? ns.map((n, i) => `<span class="nprev">${ns.length > 1 ? `<i>${i + 1}</i>` : ""}${esc(n.text)}</span>`).join("") : `<span class="nprev muted">학생의 과목 화면 맨 위에 보여요</span>`}</span><span class="ncount">${ns.length}/${NOTICE_MAX}</span></summary>
+    <div class="tnotice-body">${ns.map(n => `<div class="notice-item"><p>${lnk(n.text)}</p><span class="nm">${esc(fmt(n.at))} 올림 · <button class="linkbtn" type="button" data-a="notice-del" data-c="${id}" data-id="${esc(n.id)}">내리기</button></span></div>`).join("")}
     ${ns.length < NOTICE_MAX ? `<textarea id="notice-text" rows="2" maxlength="300" data-form="${esc(key)}" data-k="text" placeholder="예: 다음 시간에는 컴퓨터실에서 수업해요." aria-label="새 공지 내용">${esc(nf.text||"")}</textarea>
       <div class="row end" style="gap:8px">${canPush() ? `<label class="tgl" title="공지를 올릴 때 학생 앱에도 알림을 보내요"><input type="checkbox" data-form="${esc(key)}" data-k="push" ${nf.push === false ? "" : "checked"}><span>🔔 알림도 보내기</span></label>` : ""}
         <button class="btn sm pri" type="button" data-a="notice-add" data-c="${id}">공지 올리기</button></div>`
@@ -5016,7 +5028,7 @@ function applyTemplate(k){
   const t = TEMPLATES[k], f = F("create");
   Object.assign(f, {template:k, tool:t.tool, stances:t.stances.join(", "), reveal:t.reveal, anonymous:t.anonymous, qtype:t.qtype||"", predict:false, develop:false, nst:t.stances.length});
   if(NO_DEEP.includes(k) && f.depth === "deep") applyDepth("normal");
-  if(k === "notes" && !(f.prompt||"").trim()) f.prompt = "오늘 수업에서 배운 내용을 공책이나 태블릿에 정리하고, 사진을 찍어 올려 주세요.";
+  if(k === "notes" && f.prompt === NOTES_PROMPT) f.prompt = "";        // 예전에 자동으로 넣던 안내는 지우고, 빈칸 회색 예시로만 보여 준다
   t.stances.forEach((x,i) => { f["st"+i] = x });
   applyDepth(t.depth);
 }
@@ -5027,6 +5039,7 @@ function createForm(){
   if(TEMPLATES[f.template].stances.length && !f.nst){ f.nst = TEMPLATES[f.template].stances.length; TEMPLATES[f.template].stances.forEach((x,i) => { f["st"+i] = f["st"+i] || x }) }
   return f;
 }
+const NOTES_PROMPT = "오늘 수업에서 배운 내용을 공책이나 태블릿에 정리하고, 사진을 찍어 올려 주세요.";   // 오늘의 필기: 안내를 비워 두면 이 문장으로 저장
 const NO_DEEP = ["chat", "sketch", "draw"];                        // ③(변화)까지는 없이 ①·②만 쓰는 활동
 function roomFromForm(f){
   const t = TEMPLATES[f.template], relay = f.template === "relay";
@@ -5159,7 +5172,7 @@ function viewCreate(){
   const preview = roomFromForm(f), phs = phasesOf(preview), tool = TOOLS[preview.tool];
   const isChat = f.template === "chat", isNoteT = f.template === "notes";
   const promptLabel = isNoteT ? "학생에게 보일 안내" : isChat ? "대화 주제 (학생에게 보이는 안내)" : relay ? "질문을 만들 주제" : (f.template==="inquiry" ? "학생들에게 던질 질문" : "논제 (학생들에게 던질 질문)");
-  const promptPh = isNoteT ? "예: 오늘 배운 3·1 운동의 전개 과정을 정리하고 사진으로 올려 주세요." : isChat ? "예: 고종에게 대한제국을 선포한 까닭과 그때의 고민을 물어보자." : relay ? "예: 유신 체제에 대해 궁금한 것을 질문으로 만들어 보자." : (f.template==="inquiry" ? "예: 일제 강점기에 생긴 철도와 공장은 누구를 위한 ‘근대화’였을까?" : "예: 콜럼버스의 날을 ‘원주민의 날’로 바꿔야 할까?");
+  const promptPh = isNoteT ? "예: " + NOTES_PROMPT + " (비워 두면 이 문장으로 보여요)" : isChat ? "예: 고종에게 대한제국을 선포한 까닭과 그때의 고민을 물어보자." : relay ? "예: 유신 체제에 대해 궁금한 것을 질문으로 만들어 보자." : (f.template==="inquiry" ? "예: 일제 강점기에 생긴 철도와 공장은 누구를 위한 ‘근대화’였을까?" : "예: 콜럼버스의 날을 ‘원주민의 날’로 바꿔야 할까?");
   const qopts = (relay ? [{k:"student", l:"학생이 고르기"}] : []).concat(Object.entries(QTYPES).map(([k,v]) => ({k, l:`${v.mark} ${v.short}`})));
   const etBoxes = EVIDENCE_TYPES.map(e => `<label class="choice"><input type="checkbox" data-form="create" data-k="evidenceTypes" data-multi value="${esc(e)}" ${(f.evidenceTypes||[]).includes(e)?"checked":""}><span>${esc(e)}</span></label>`).join("");
   const hasReason = tool.fields.some(x=>x.k==="reason");
@@ -5177,7 +5190,7 @@ function viewCreate(){
   h += `<div class="card" style="margin-top:16px"><h3>① 어떤 활동을 할까요?</h3>${lockWrap(locked, `
     <div class="types" role="group" aria-label="활동">${GOALS.map(g => `<button type="button" class="tcard" data-a="goal" data-v="${g.k}" aria-pressed="${g.k===goal.k}"><b><span aria-hidden="true">${g.icon}</span> ${esc(g.l)}</b><span>${esc(g.d)}</span></button>`).join("")}</div>
     ${goal.t.length > 1 && !goal.hideModes ? `<h3 style="font-size:15px;margin:16px 0 8px">${esc(goal.q || "어떤 방식으로 할까요?")}</h3>
-      <div class="types" role="group" aria-label="${esc(goal.l)} 방식">${goal.t.map(k => { const v = TEMPLATES[k]; return `<button type="button" class="tcard" data-a="tpl" data-v="${k}" aria-pressed="${k===f.template}"><b><span aria-hidden="true">${v.modeIcon}</span> ${esc(v.modeLabel || v.mode)}</b><span>${esc(v.modeDesc)}</span></button>` }).join("")}</div>` : ""}`)}</div>
+      <div class="types" role="group" aria-label="${esc(goal.l)} 방식">${goal.t.map(k => { const v = TEMPLATES[k]; return `<button type="button" class="tcard" data-a="tpl" data-v="${k}" aria-pressed="${k===f.template}"><b><span aria-hidden="true">${v.modeIcon}</span> ${esc(v.modeLabel || v.mode)}</b>${v.modeWho ? `<span class="mwho">${esc(v.modeWho)}</span>` : ""}<span>${esc(v.modeDesc)}</span></button>` }).join("")}</div>` : ""}`)}</div>
 
   <div class="card" style="margin-top:16px"><h3>② 무엇에 대해 생각할까요?</h3><div class="form-grid">
     <div class="q wide"><label for="c-prompt">${promptLabel}</label>${ta("create","prompt",{rows:2, ph:promptPh, id:"c-prompt"})}</div>
@@ -6099,6 +6112,7 @@ async function act(a, b){
       const f = createForm(), data = roomFromForm(f), t = TEMPLATES[data.template], asDraft = a === "draft-save";
       const editR = f.editId ? S.rooms.find(x=>x.id===f.editId) : null, locked = editR && allPostsOf(editR.id).length > 0;
       const willNotify = !asDraft && (!editR || (a === "publish-draft" && statusOf(editR) === "draft")) && f.notify !== false && canPush();
+      if(!data.prompt && data.template === "notes") data.prompt = NOTES_PROMPT;
       if(!data.prompt && !asDraft){ toast("주제나 질문을 적어 주세요."); document.getElementById("c-prompt")?.focus(); return }
       if(!asDraft && !locked && t.stances.length && data.stances.length < 2){ toast("입장 이름을 두 개 이상 적어 주세요."); return }
       if(data.template === "chat" && !asDraft && !data.persona?.name){ toast("대화 상대를 적어 주세요. 예: 고종"); document.getElementById("c-pname")?.focus(); return }
