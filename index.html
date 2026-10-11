@@ -1729,7 +1729,7 @@ function homeState(r){
 }
 const HSORTS = [["todo","할 일 먼저"],["new","새로 올라온 순"],["due","마감 가까운 순"],["subject","과목 순"]];
 function viewHomeStudent(crs, rooms){
-  const nm = (S.name || "").replace(/^\S*\d\S*\s*/, "").trim(), now = new Date();
+  const nm = splitAuthor(S.name).name.trim(), now = new Date();
   const items = rooms.map(r => ({r, st:homeState(r), k:subjKey(r)}));
   const subs = [...new Map(items.map(x => [x.k, x.r])).entries()].sort((a,b) => koCmp(subjLabel(a[1]), subjLabel(b[1])));
   const cur = subs.some(([k]) => k === S.hsub) ? S.hsub : "";
@@ -2032,11 +2032,12 @@ function viewNotesTeacher(r){
   if(S.mode === "supa" && S.roster === undefined && !S.rosterLoading){ S.rosterLoading = true; loadRoster().then(() => { S.rosterLoading = false; render() }) }
   const gs = S.gsel && S.gselRoom === r.id ? S.gsel : "";
   const ps = allPostsOf(r.id).filter(p => !gs || p.groupId === gs);
-  const names = S.mode === "supa" ? (S.roster || []).map(x => `${x.number} ${x.name}`) : (tnote(r).roster || []);
+  const names = S.mode === "supa" ? (S.roster || []).map(rosterLabel) : (tnote(r).roster || []);
   const byName = new Map(ps.map(p => [p.author, p]));
   const rows = [...new Set([...(gs ? [] : names), ...ps.map(p => p.author)])].map(nm => {
     const p = byName.get(nm), st = !p?.notes ? "none" : noteRedoReq(p) ? "redo" : "done";
-    return {nm, p, st, cls:clsOf(nm.split(/\s+/)[0])};
+    const sa = splitAuthor(nm);
+    return {nm, p, st, cls: sa.school || clsOf(sa.number)};                          // 여러 학교면 학교별, 아니면 학년·반별
   }).sort((a, b) => koCmp(a.nm, b.nm));
   const clss = [...new Set(rows.map(x => x.cls).filter(Boolean))].sort(koCmp);
   const cls = clss.includes(S.ncls) ? S.ncls : "";
@@ -2051,7 +2052,7 @@ function viewNotesTeacher(r){
       ${S.mode === "supa" ? `<button class="btn" type="button" data-a="roster-open">👥 학생 명단</button>` : ""}<span class="muted small">복제하면 제목과 안내만 바꿔 바로 쓸 수 있어요.</span></div>`;
   if(!names.length && !gs) h += `<p class="notice" style="margin-top:12px">${S.mode === "supa" ? (S.roster === undefined ? "학생 명단을 불러오는 중…" : "👥 학생 명단(학생 코드)에 학생을 넣으면 미제출 학생도 함께 보여요.") : "설정 탭의 학생 명단을 넣으면 미제출 학생도 함께 보여요."}</p>`;
   h += `<div class="nbar"><div class="mfilters">${[["all","전체",inCls.length],["done","제출 완료",c("done")],["none","미제출",c("none")],["redo","재제출 요청",c("redo")]].map(([k,l,n]) => `<button type="button" data-a="note-filter" data-v="${k}" aria-pressed="${nf===k}">${l} <span class="mono">${n}</span></button>`).join("")}</div>
-    ${clss.length > 1 ? `<select id="n-cls" aria-label="반"><option value="">모든 반</option>${clss.map(x => `<option ${x===cls?"selected":""}>${esc(x)}</option>`).join("")}</select>` : ""}
+    ${clss.length > 1 ? `<select id="n-cls" aria-label="학교·반"><option value="">모든 학교·반</option>${clss.map(x => `<option ${x===cls?"selected":""}>${esc(x)}</option>`).join("")}</select>` : ""}
     <input type="search" id="n-q" placeholder="이름·학번 찾기" value="${esc(S.nq||"")}" aria-label="학생 찾기"></div>`;
   if(!list.length) return h + `<div class="empty">${rows.length ? "조건에 맞는 학생이 없어요." : "아직 제출한 학생이 없어요."}</div>`;
   return h + `<div class="ncards">${list.map(({nm, p, st}) => `<article class="ncard ${st}"><div class="ncard-h"><b>${esc(nm)}</b><span class="chip nchip ${st}">${LBL[st]}</span></div>
@@ -3325,34 +3326,49 @@ function codeForm(){
 /* 교사: 학생 명단과 개인 코드 */
 const CODE_ABC = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
 function newCode(n = 6){ const a = new Uint32Array(n); crypto.getRandomValues(a); return [...a].map(x => CODE_ABC[x % CODE_ABC.length]).join("") }
-function parseRoster(text){
+/* 명단 한 줄: ‘학번 이름’ 또는 ‘학교 학번 이름’ (학교 이름은 …고·…중·…학교로 끝나면 알아본다). 위 칸의 학교는 학교가 없는 줄에 쓴다 */
+const cleanSchool = t => String(t || "").replace(/\s+/g, "").slice(0, 30);
+function parseRoster(text, defSchool = ""){
   const ok = [], bad = [];
   String(text || "").split(/\n/).map(x => x.trim()).filter(Boolean).forEach(line => {
     const parts = line.split(/[\t,]+|\s+/).filter(Boolean), i = parts.findIndex(x => /^\d{3,10}$/.test(x));
     if(i < 0){ bad.push(line); return }
-    const name = parts.filter((_, j) => j !== i).join(" ").trim();
+    const before = parts.slice(0, i), after = parts.slice(i + 1);
+    const asSchool = after.length > 0;                                   // ‘학교 학번 이름’일 때만 앞을 학교로 본다 (‘이름 학번’이면 앞은 이름)
+    const schoolToks = asSchool ? before : [], nameToks = asSchool ? after : before;
+    const name = nameToks.join(" ").trim();
     if(!name){ bad.push(line); return }
-    ok.push({number:parts[i], name});
+    ok.push({school:cleanSchool(schoolToks.join("") || defSchool), number:parts[i], name});
   });
   return {ok, bad};
 }
+/* 글쓴이 이름표 ‘[학교] 학번 이름’ 나누기 */
+function splitAuthor(a){
+  const t = String(a || "").trim().split(/\s+/), i = t.findIndex(x => /^\d{3,10}$/.test(x));
+  if(i < 0) return {school:"", number:"", name:String(a || "")};
+  return {school:t.slice(0, i).join(" "), number:t[i], name:t.slice(i + 1).join(" ")};
+}
+const rosterLabel = x => `${x.school ? x.school + " " : ""}${x.number} ${x.name}`;
 async function loadRoster(){
-  const r = await SB.from("students").select("id,number,name,code").order("number");
+  const r = await SB.from("students").select("id,school,number,name,code").order("school").order("number");
   if(r.error){ toast("학생 명단을 불러오지 못했어요."); return }
   S.roster = r.data || []; if(S.modal?.type === "roster") render();
 }
 function rosterModalHTML(){
-  const q = (S.rosterQ || "").trim(), list = (S.roster || []).filter(x => !q || (x.number + " " + x.name).includes(q));
+  const q = (S.rosterQ || "").trim(), list = (S.roster || []).filter(x => !q || rosterLabel(x).includes(q)), hasSch = (S.roster || []).some(x => x.school);
   return `<h3>👥 학생 명단 · 개인 코드</h3>
     <p class="small muted">학생은 학번·이름·코드로 들어와요. 코드는 학생에게 보이지 않고, 선생님 화면에서만 볼 수 있어요.</p>
+    <div class="q"><label for="roster-school">학교 <span class="opt">(선택 · 공동교육과정처럼 여러 학교 학생이 함께할 때)</span></label>
+      <input type="text" id="roster-school" maxlength="30" placeholder="예: 가나고등학교" value="${esc(S.rosterSchool || "")}">
+      <p class="hint">적으면 아래에 붙여 넣는 학생 모두에게 이 학교가 붙어요. 학교마다 나눠서 넣거나, 줄마다 ‘가나고 10301 김가온’처럼 적어도 돼요.</p></div>
     <div class="q"><label for="roster-add">학생 추가 <span class="opt">(한 줄에 한 명 · 나이스에서 복사한 ‘학번 이름’ 그대로)</span></label>
-      <textarea id="roster-add" rows="4" placeholder="10301 김가온&#10;10302 나다은"></textarea>
+      <textarea id="roster-add" rows="4" placeholder="10301 김가온&#10;10302 나다은&#10;다라고 20105 박하늘"></textarea>
       <div class="row end" style="margin-top:6px"><button class="btn pri sm" type="button" data-a="roster-add">추가하고 코드 만들기</button></div></div>
     ${S.roster === undefined ? `<p class="muted small">불러오는 중…</p>` : `
-    <div class="row"><input type="search" id="roster-q" placeholder="학번·이름으로 찾기" value="${esc(q)}" style="flex:1" aria-label="학생 찾기"><span class="muted small">${S.roster.length}명</span>
+    <div class="row"><input type="search" id="roster-q" placeholder="학교·학번·이름으로 찾기" value="${esc(q)}" style="flex:1" aria-label="학생 찾기"><span class="muted small">${S.roster.length}명</span>
       <button class="btn sm" type="button" data-a="roster-print" ${S.roster.length ? "" : "disabled"}>🖨 코드 쪽지 인쇄</button></div>
-    <div class="tscroll" style="max-height:46vh;overflow:auto"><table class="ptable"><thead><tr><th>학번</th><th>이름</th><th>코드</th><th><span class="sr">관리</span></th></tr></thead><tbody>
-      ${list.map(x => `<tr><td class="mono">${esc(x.number)}</td><td>${esc(x.name)}</td><td class="mono"><b>${esc(x.code)}</b></td>
+    <div class="tscroll" style="max-height:46vh;overflow:auto"><table class="ptable"><thead><tr>${hasSch ? "<th>학교</th>" : ""}<th>학번</th><th>이름</th><th>코드</th><th><span class="sr">관리</span></th></tr></thead><tbody>
+      ${list.map(x => `<tr>${hasSch ? `<td>${esc(x.school || "–")}</td>` : ""}<td class="mono">${esc(x.number)}</td><td>${esc(x.name)}</td><td class="mono"><b>${esc(x.code)}</b></td>
         <td style="white-space:nowrap"><button class="btn sm" type="button" data-a="roster-reissue" data-id="${esc(x.id)}">새 코드</button> <button class="btn sm danger" type="button" data-a="roster-del" data-id="${esc(x.id)}">빼기</button></td></tr>`).join("") || `<tr><td colspan="4" class="muted">아직 학생이 없어요.</td></tr>`}
     </tbody></table></div>`}
     <div class="row end"><button class="btn" type="button" data-a="modal-close">닫기</button></div>`;
@@ -3364,7 +3380,7 @@ function printRoster(){
   w.document.write(`<!doctype html><meta charset="utf-8"><title>생각이음 학생 코드</title>
     <style>body{font-family:system-ui,sans-serif;margin:12mm}.g{display:grid;grid-template-columns:repeat(3,1fr);gap:0}.s{border:1px dashed #999;padding:10px 12px;min-height:38mm;box-sizing:border-box;break-inside:avoid}
     .t{font-size:11px;color:#555}.n{font-size:16px;font-weight:700;margin:6px 0}.c{font-family:monospace;font-size:24px;letter-spacing:3px;font-weight:700}.u{font-size:10px;color:#555;word-break:break-all;margin-top:6px}</style>
-    <div class="g">${(S.roster || []).map(x => `<div class="s"><div class="t">생각이음 · 개인 코드 (다른 사람에게 보여 주지 마세요)</div><div class="n">${esc(x.number)} ${esc(x.name)}</div><div class="c">${esc(x.code)}</div><div class="u">${esc(url)}</div></div>`).join("")}</div>
+    <div class="g">${(S.roster || []).map(x => `<div class="s"><div class="t">생각이음 · 개인 코드 (다른 사람에게 보여 주지 마세요)</div><div class="n">${esc(rosterLabel(x))}</div><div class="c">${esc(x.code)}</div><div class="u">${esc(url)}</div></div>`).join("")}</div>
     <script>setTimeout(()=>print(),300)<\/script>`);
   w.document.close();
 }
@@ -4566,11 +4582,12 @@ async function act(a, b){
     case "t-start": S.wantTeacher = true; history.replaceState(null, "", location.pathname + "#teacher"); scrollTo(0,0); break;
     case "roster-open": S.modal = {type:"roster"}; S.roster = undefined; S.rosterQ = ""; loadRoster(); break;
     case "roster-add": {
-      const {ok, bad} = parseRoster(document.getElementById("roster-add")?.value);
+      S.rosterSchool = cleanSchool(document.getElementById("roster-school")?.value);
+      const {ok, bad} = parseRoster(document.getElementById("roster-add")?.value, S.rosterSchool);
       if(!ok.length){ toast(bad.length ? "‘학번 이름’ 꼴로 적어 주세요." : "추가할 학생을 적어 주세요."); return }
-      const have = new Set((S.roster || []).map(x => x.number + " " + x.name));
-      const rows = ok.filter(x => { const k = x.number + " " + x.name; if(have.has(k)) return false; have.add(k); return true }).map(x => ({...x, code:newCode()}));   // 이미 있거나 겹친 줄은 빼고
-      if(rows.length){ const r2 = await SB.from("students").upsert(rows, {onConflict:"tid,number,name", ignoreDuplicates:true}); if(r2.error){ toast("추가하지 못했어요: " + r2.error.message); return } }
+      const have = new Set((S.roster || []).map(rosterLabel));
+      const rows = ok.filter(x => { const k = rosterLabel(x); if(have.has(k)) return false; have.add(k); return true }).map(x => ({...x, code:newCode()}));   // 이미 있거나 겹친 줄은 빼고
+      if(rows.length){ const r2 = await SB.from("students").upsert(rows, {onConflict:"tid,school,number,name", ignoreDuplicates:true}); if(r2.error){ toast("추가하지 못했어요: " + r2.error.message); return } }
       toast(`${rows.length}명을 추가했어요.${ok.length - rows.length ? ` (이미 있는 ${ok.length - rows.length}명은 그대로)` : ""}${bad.length ? ` 읽지 못한 줄 ${bad.length}개` : ""}`);
       await loadRoster(); break;
     }

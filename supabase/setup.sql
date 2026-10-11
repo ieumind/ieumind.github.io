@@ -375,6 +375,59 @@ alter policy docs_update on public.docs
     or (col in ('posts', 'replies') and owner is not null and owner = public.my_student(tid) and public.tid_active(tid)
         and data ->> 'author' = public.my_student_name(tid) and coalesce(data ->> 'kind', '') not in ('teacher', 'class')));
 
+-- ---------------------------------------------------------------------
+-- 학교: 공동교육과정처럼 여러 학교 학생이 한 수업에 있을 때 (같은 학번·이름도 학교가 다르면 다른 학생)
+-- 학생 이름표 = ‘학교 학번 이름’ (학교가 없으면 ‘학번 이름’)
+-- ---------------------------------------------------------------------
+alter table public.students add column if not exists school text not null default '';
+create unique index if not exists students_tid_school_number_name on public.students (tid, school, number, name);
+alter table public.students drop constraint if exists students_tid_number_name_key;
+
+create or replace function public.my_student_name(p_tid uuid) returns text
+language sql stable security definer set search_path = public as $$
+  select case when s.school <> '' then s.school || ' ' else '' end || s.number || ' ' || s.name
+    from public.student_sessions ss join public.students s on s.id = ss.student_id
+   where ss.uid = auth.uid() and ss.tid = p_tid;
+$$;
+create or replace function public.claim_student(p_number text, p_name text, p_code text) returns json
+language plpgsql volatile security definer set search_path = public as $$
+declare s public.students;
+begin
+  if auth.uid() is null then return null; end if;
+  select * into s from public.students
+   where number = trim(p_number)
+     and replace(name, ' ', '') = replace(trim(p_name), ' ', '')
+     and upper(code) = upper(trim(p_code));
+  if not found then
+    perform pg_sleep(1);
+    return null;
+  end if;
+  insert into public.student_sessions (uid, tid, student_id) values (auth.uid(), s.tid, s.id)
+  on conflict (uid, tid) do update set student_id = excluded.student_id, created_at = now();
+  return json_build_object('id', s.id, 'name', case when s.school <> '' then s.school || ' ' else '' end || s.number || ' ' || s.name);
+end $$;
+create or replace function public.whoami(p_ref text default null) returns json
+language plpgsql stable security definer set search_path = public as $$
+declare t uuid; nm text; anon boolean := coalesce((auth.jwt() ->> 'is_anonymous')::boolean, false);
+begin
+  if p_ref is not null and p_ref <> '' then
+    select d.tid into t from public.docs d where d.id = p_ref and d.col in ('rooms', 'courses') limit 1;
+  end if;
+  if t is not null then
+    nm := public.my_student_name(t);
+  else
+    select case when s.school <> '' then s.school || ' ' else '' end || s.number || ' ' || s.name into nm
+      from public.student_sessions ss join public.students s on s.id = ss.student_id
+     where ss.uid = auth.uid() order by ss.created_at desc limit 1;
+  end if;
+  return json_build_object(
+    'teacher', public.is_teacher(),
+    'admin', public.is_admin(),
+    'blocked', (not anon) and exists (select 1 from public.teachers x where x.blocked and lower(x.email) = lower(coalesce(auth.jwt() ->> 'email', ''))),
+    'email', case when anon then null else auth.jwt() ->> 'email' end,
+    'student_name', nm);
+end $$;
+
 -- =====================================================================
 -- 마지막으로 관리자(나)의 구글 이메일을 등록하세요 (따옴표 안을 바꿔서 실행)
 -- 다른 선생님은 등록하지 않아도 구글로 로그인하면 바로 교사가 돼요
