@@ -295,6 +295,7 @@ details.adv > summary::after{content:"펼치기 ▾";margin-left:auto;flex:0 0 a
 details.adv[open] > summary::after{content:"접기 ▴"}
 details.adv > summary:hover::after{filter:brightness(.96)}
 details.adv > div{padding:4px 20px 20px;display:grid;gap:18px}
+.adv-combo select{width:100%}
 .feat{display:grid;gap:10px}
 .feat > label{display:flex;align-items:flex-start;gap:10px;font-size:15px;min-height:32px}
 .feat input[type=checkbox]{width:20px;height:20px;margin-top:3px;accent-color:var(--accent);flex:none}
@@ -4404,6 +4405,24 @@ function roomFromForm(f){
     }
   };
 }
+/* 고급 설정: 비슷한 옵션을 하나로 묶은 선택 (안쪽 저장 값은 그대로) */
+function comboVal(f, k){
+  if(k === "start") return f.predict ? "predict" : f.initial ? "initial" : "none";
+  if(k === "react") return f.rebuttal ? "rebut" : f.meet ? "meet" : f.comment ? "comment" : "none";
+  if(k === "end") return f.change && f.revise ? "both" : f.change ? "change" : f.revise ? "revise" : "none";
+  if(k === "evidence") return !!(f.evidenceType || f.warrant || f.counter || f.terms);
+}
+function setCombo(k, v){
+  const f = createForm(), hasReason = (TOOLS[f.tool] || TOOLS[TEMPLATES[f.template]?.tool] || {fields:[]}).fields.some(x => x.k === "reason");
+  if(k === "start") Object.assign(f, {initial: v === "initial", predict: v === "predict"});
+  if(k === "react") Object.assign(f, {meet: v === "meet" || v === "rebut", comment: v !== "none", rebuttal: v === "rebut", missionDeep: false});
+  if(k === "end") Object.assign(f, {change: v === "change" || v === "both", revise: v === "revise" || v === "both"});
+  if(k === "evidence"){
+    const on = !!v;
+    Object.assign(f, {evidenceType: on, warrant: on && hasReason, counter: on && f.depth === "deep", terms: on});
+    if(on && !(f.evidenceTypes || []).length) f.evidenceTypes = [...EVIDENCE_TYPES];
+  }
+}
 function chk(k, label, sub="", disabledNote=""){
   const f = F("create");
   if(disabledNote) return `<label class="muted"><input type="checkbox" disabled><span>${label} <span class="opt">${disabledNote}</span></span></label>`;
@@ -4478,7 +4497,7 @@ function viewCreate(){
   <div class="card" style="margin-top:16px"><h3>⏰ 마감 <span class="opt">(선택)</span></h3>
     <div class="q" style="max-width:340px"><label for="c-due">마감 날짜와 시간</label><input type="datetime-local" id="c-due" data-form="create" data-k="dueAt" value="${esc(f.dueAt||"")}">
       <p class="hint">이 시각이 되면 저절로 마감돼요. 비워 두면 ‘마감하기’를 누를 때까지 열려 있어요.${f.dueAt ? ` <button class="linkbtn" type="button" data-a="due-clear">마감 시각 지우기</button>` : ""}</p></div></div>
-  <details class="adv" ${editR ? "open" : ""}><summary>📋 수업 정보 <span class="opt">학년·과목·단원·시간·교사용 메모</span></summary><div><div class="form-grid">
+  <details class="adv" data-keep="info" ${(S.advOpen?.info ?? !!editR) ? "open" : ""}><summary>📋 수업 정보 <span class="opt">학년·과목·단원·시간·교사용 메모</span></summary><div><div class="form-grid">
       <div class="q"><label for="c-grade">학년</label><select id="c-grade" data-form="create" data-k="grade"><option value="">선택 안 함</option>${GRADES.map(g=>`<option ${f.grade===g?"selected":""}>${g}</option>`).join("")}</select></div>
       <div class="q"><label for="c-subject">과목</label><input type="text" id="c-subject" data-form="create" data-k="subject" maxlength="20" value="${esc(f.subject||"")}" placeholder="예: 한국사, 국어, 통합사회"></div>
       <div class="q"><label for="c-unit">단원</label><input type="text" id="c-unit" data-form="create" data-k="unit" maxlength="40" value="${esc(f.unit||"")}"></div>
@@ -4488,7 +4507,7 @@ function viewCreate(){
       <div class="q wide"><label for="c-memo">📝 교사용 메모 <span class="opt">(학생에게 보이지 않아요)</span></label>${ta("create","memo",{rows:2, ph:"예: 다음 시간 토론 전에 활용", id:"c-memo"})}</div>
     </div></div></details>
 
-  <details class="adv" data-adv><summary>⚙️ 고급 설정 <span class="opt">설정하지 않아도 바로 만들 수 있어요</span></summary><div>`;
+  <details class="adv" data-adv data-keep="adv" ${S.advOpen?.adv ? "open" : ""}><summary>⚙️ 고급 설정 <span class="opt">설정하지 않아도 바로 만들 수 있어요</span></summary><div>`;
   let adv = "";
   if(relay){
     adv += `<div class="feat">
@@ -4503,19 +4522,21 @@ function viewCreate(){
       <div class="q"><label for="c-min">최소 글자 수</label><input type="number" id="c-min" data-form="create" data-k="minChars" min="0" max="3000" step="10" value="${esc(f.minChars||"0")}">
         <p class="hint">300자 미만이면 학생에게 숫자 대신 부드러운 안내만 보여요.</p></div>
     </div>
+    <div class="form-grid adv-combo">
+      <div class="q"><label for="c-start">활동을 시작할 때</label><select id="c-start" data-combo="start">
+        ${[["none","바로 내 생각 쓰기"],["initial","처음 생각을 짧게 남기기"],["predict","먼저 예측하고, 마지막에 비교하기"]].map(([k,l]) => `<option value="${k}" ${comboVal(f,"start")===k?"selected":""}>${l}</option>`).join("")}</select>
+        <p class="hint">처음 생각·예측은 마지막에 ‘지금 생각’과 비교해 볼 수 있어요.</p></div>
+      <div class="q"><label for="c-react">친구 글과 만나기</label><select id="c-react" data-combo="react" ${f.reveal==="teacher" ? "disabled" : ""}>
+        ${[["none","읽기만 하기"],["comment","댓글 달기"],["meet","다른 생각 하나 골라 한마디 하기"],["rebut","다른 생각에 근거를 들어 답하기"]].map(([k,l]) => `<option value="${k}" ${comboVal(f,"react")===k?"selected":""}>${l}</option>`).join("")}</select>
+        <p class="hint">${f.reveal==="teacher" ? "‘선생님만 보기’ 활동은 친구 글이 보이지 않아요." : "‘근거를 들어 답하기’는 학생 화면에서 ‘친구 생각에 답하기’로 보여요."}</p></div>
+      <div class="q"><label for="c-end">활동을 마칠 때</label><select id="c-end" data-combo="end">
+        ${[["none","따로 없음"],["change","생각이 어떻게 바뀌었는지 돌아보기"],["revise","처음 글을 고쳐 쓰기"],["both","돌아보고 고쳐 쓰기"]].map(([k,l]) => `<option value="${k}" ${comboVal(f,"end")===k?"selected":""}>${l}</option>`).join("")}</select>
+        <p class="hint">고쳐 써도 처음 글은 그대로 남아요.</p></div>
+    </div>
     <div class="feat">
-      ${chk("initial","처음 생각 남기기 <span class='opt'>— 글을 쓰기 전 짧은 첫 생각</span>")}
-      ${chk("predict","예측하고 확인하기 <span class='opt'>— 먼저 예측하고, 마지막에 비교</span>")}
-      ${f.depth==="deep" ? chk("counter","다른 생각 예상하기 <span class='opt'>— 보내기 전에 한 번</span>") : chk("counter","다른 생각 예상하기","","(깊이 있게 활동에서 쓸 수 있어요)")}
-      ${chk("evidenceType","근거 선택하기 <span class='opt'>— 교과서·사료·통계 등 이유의 종류</span>", `<div class="choices">${etBoxes}</div>`)}
-      ${hasReason ? chk("warrant","근거 설명 <span class='opt'>— 근거가 주장을 뒷받침하는 이유</span>") : chk("warrant","근거 설명","","(주장–근거 도구에서 쓸 수 있어요)")}
-      ${f.reveal==="teacher" ? chk("meet","친구 글 읽기","","(친구 글을 공개할 때 쓸 수 있어요)") : chk("meet","친구 글 읽기 <span class='opt'>— 다른 생각 하나 고르고 한마디</span>", `<label class="choice"><input type="checkbox" id="c-missionDeep" data-form="create" data-k="missionDeep" ${f.missionDeep?"checked":""}><span>읽기 질문 3개를 선택 질문으로 보여 주기</span></label>`)}
-      ${chk("comment","댓글")}
-      ${chk("rebuttal","반론 <span class='opt'>— 학생 화면에서는 ‘친구 생각에 답하기’</span>")}
-      ${chk("change","생각 변화 기록하기")}
-      ${chk("feedback","교사 피드백")}
-      ${chk("revise","최종 수정 <span class='opt'>— 처음 글은 남기고 다시 쓰기</span>")}
-      ${chk("terms","학생 화면에 학습 용어(주장·근거) 함께 보이기")}
+      <label><input type="checkbox" id="c-evid" data-combo="evidence" ${comboVal(f,"evidence") ? "checked" : ""}><span>근거를 탄탄하게 <span class='opt'>— 근거 종류 고르기${hasReason ? "·근거 설명" : ""}${f.depth==="deep" ? "·반론 예상하기" : ""}·학습 용어(주장·근거) 함께 보이기</span></span></label>
+      ${comboVal(f,"evidence") ? `<div class="sub"><div class="choices">${etBoxes}</div></div>` : ""}
+      ${chk("feedback","교사 피드백 <span class='opt'>— 학생 글에 선생님이 한마디</span>")}
       ${chk("anonymous","학생끼리는 익명으로 보이기 <span class='opt'>(선생님은 이름을 봐요)</span>")}
     </div>`;
   }
@@ -4558,8 +4579,11 @@ document.addEventListener("input", e => {
   if(key.startsWith("write:")) refreshWriteStatus();
   if(key.startsWith("essay:")){ const r = room(), box = document.getElementById("estatus"); if(r && box) box.outerHTML = essayStatusHTML(r) }
 });
+/* 접고 펴는 패널: 화면을 다시 그려도 열린 상태를 기억한다 */
+document.addEventListener("toggle", e => { const d = e.target; if(d?.dataset?.keep) S.advOpen = {...(S.advOpen || {}), [d.dataset.keep]: d.open} }, true);
 document.addEventListener("change", e => {
   const el = e.target;
+  if(el.dataset.combo){ setCombo(el.dataset.combo, el.type === "checkbox" ? el.checked : el.value); saveFormsSoon(); render(); document.getElementById(el.id)?.focus(); return }
   if(el.dataset.noteFile){ const r = S.rooms.find(x => x.id === el.dataset.noteFile); if(r && el.files?.length) noteAddFiles(r, el.files); el.value = ""; return }
   if(el.id === "n-cls"){ S.ncls = el.value; render(); return }
   if(el.id === "m-sub" || el.id === "m-grade"){ S[el.id === "m-sub" ? "msub" : "mgrade"] = el.value; render(); return }
