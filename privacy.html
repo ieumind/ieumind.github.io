@@ -60,6 +60,7 @@ footer{margin-top:40px;padding-top:16px;border-top:1px solid var(--line);font-si
 <tr><td>학생</td><td>기기를 구분하는 임의의 식별자(이름·연락처와 무관)</td><td>처음 접속할 때 자동으로 만들어져요</td></tr>
 <tr><td>학생</td><td>‘가상 인물 대화’ 활동의 질문과 AI의 답, 활동별 질문 횟수</td><td>학생이 AI 인물에게 질문할 때 저장돼요</td></tr>
 <tr><td>학생</td><td>알림을 받을 기기 주소(푸시 알림 구독 정보 — 이름·연락처와 무관한 임의의 주소와 암호화 열쇠)</td><td>학생이 ‘알림 받기’를 눌러 허용했을 때만 저장돼요</td></tr>
+<tr><td>교사</td><td>‘AI 질문 추천’에 쓰는 교사 본인의 Gemini API 키 (교사 계정 전용, 화면에 다시 표시하지 않음)</td><td>교사가 직접 넣을 때만 저장돼요</td></tr>
 <tr><td>교사·학생</td><td>‘오류·건의하기’로 보낸 내용, 보낸 사람(학생은 학번·이름, 교사는 이메일), 보던 화면 위치, 보낸 시각</td><td>직접 보낼 때만 저장돼요</td></tr>
 </table></div>
 <p><b>저장하지 않는 정보:</b> 구글 비밀번호, 학생의 연락처·주민등록번호·주소, 위치 정보, 광고 식별자.</p>
@@ -88,6 +89,7 @@ footer{margin-top:40px;padding-top:16px;border-top:1px solid var(--line);font-si
 <tr><td>Google LLC</td><td>교사의 구글 로그인 확인, 글꼴(Google Fonts) 제공</td><td>미국 등</td></tr>
 <tr><td>GitHub, Inc.</td><td>생각이음 화면 파일 제공(GitHub Pages)</td><td>미국 등</td></tr>
 <tr><td>Cloudflare, Inc. (Workers AI)</td><td>‘가상 인물 대화’에서 AI 답 만들기 — 학생이 쓴 질문과 그 활동의 주제·자료가 전달돼요. 학생의 이름·학번은 보내지 않아요</td><td>미국 등</td></tr>
+<tr><td>Google LLC (Gemini API)</td><td>교사가 ‘🪄 AI 질문 추천’을 누를 때 질문·논제 만들기 — 교사가 넣은 키워드·과목·학년·질문 유형만 전달되고, 학생 정보는 보내지 않아요. 교사 본인의 API 키로 처리돼요</td><td>미국 등</td></tr>
 <tr><td>Google · Apple · Mozilla 등 브라우저 회사의 알림 서버</td><td>알림을 켠 학생 기기에 공지·새 활동 알림 전달 — 알림 제목과 짧은 내용만 암호화해서 보내요</td><td>미국 등</td></tr>
 <tr><td>jsDelivr · cdnjs(Cloudflare)</td><td>프로그램 파일(Supabase 연결, QR 코드) 제공</td><td>전 세계 CDN</td></tr>
 </table></div>

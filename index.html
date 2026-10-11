@@ -180,7 +180,7 @@ details.help[open] summary{margin-bottom:6px}
 .starter:hover{border-style:solid}
 
 /* 줄 노트 입력 칸 */
-textarea,input[type=text],input[type=number],select{width:100%;border:1px solid var(--line);background:var(--paper);border-radius:8px;padding:10px 12px;font-size:16px;line-height:1.7}
+textarea,input[type=text],input[type=number],input[type=password],select{width:100%;border:1px solid var(--line);background:var(--paper);border-radius:8px;padding:10px 12px;font-size:16px;line-height:1.7}
 textarea{resize:vertical;min-height:88px;
   background-image:repeating-linear-gradient(to bottom,transparent 0,transparent calc(1.7em - 1px),var(--rule) calc(1.7em - 1px),var(--rule) 1.7em);
   background-attachment:local;background-position:0 10px}
@@ -544,6 +544,24 @@ input[type=datetime-local]{min-height:44px;border:1px solid var(--line);border-r
 .wl-safe{border-left:5px solid var(--accent)}
 .wl-safe ul{margin:10px 0;padding-left:18px;display:grid;gap:8px;font-size:14.5px;line-height:1.6}
 .wl-foot{text-align:center}
+.wl-spot{display:grid;gap:16px;padding:24px;border-radius:18px;background:var(--surface);border:2px solid var(--s2);position:relative}
+.wl-spot-head h2{font-family:var(--f-display);font-size:clamp(22px,3.6vw,30px);line-height:1.3;margin-top:4px}
+.wl-spot-head h2 em{font-style:normal;color:var(--s2);background:linear-gradient(transparent 62%,var(--s2-soft) 0)}
+.wl-spot-head p{color:var(--muted);margin-top:6px;max-width:64ch}
+.wl-spot-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:14px}
+.wl-spot-card{display:grid;gap:8px;align-content:start;background:var(--sunk);border-radius:14px;padding:16px}
+.wl-spot-card b{font-size:17px}
+.wl-spot-card p{font-size:14.5px;line-height:1.65}
+.wl-spot-card ul{margin:0;padding-left:18px;font-size:13.5px;color:var(--muted);display:grid;gap:3px}
+.wl-spot-art{height:128px;border-radius:12px;background:var(--surface);display:grid;place-items:center;color:var(--s2);overflow:hidden}
+.wl-spot-art svg{width:100%;max-width:260px;height:120px}
+.wl-spot-art .hub{fill:var(--s2-soft);stroke:currentColor}
+.wl-spot-art .hubt{font-weight:700}
+.wl-spot-art .scrib{color:var(--s1);stroke:var(--s1)}
+.chatart{display:flex!important;flex-direction:column;justify-content:center;gap:6px;padding:10px 14px;align-items:stretch}
+.chatart .cb{font-size:12.5px;padding:6px 10px;border-radius:12px;max-width:85%;line-height:1.4;color:var(--fg)}
+.chatart .me{align-self:flex-end;background:var(--accent-soft)}
+.chatart .ai{align-self:flex-start;background:var(--warn-soft)}
 .demo-bar{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px;background:var(--warn-soft);border-color:transparent}
 /* ---------- 하단 · 건의 · 알림 · 과목 대시보드 ---------- */
 .appfoot{margin-top:48px;padding-top:14px;border-top:1px solid var(--line);display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:6px 8px;font-size:12.5px;color:var(--muted)}
@@ -551,6 +569,45 @@ input[type=datetime-local]{min-height:44px;border:1px solid var(--line);border-r
 .fb-kinds{display:flex;gap:8px;flex-wrap:wrap}
 .fb-kinds .btn[aria-pressed="true"]{background:var(--fg);color:var(--bg);border-color:var(--fg)}
 .sec-h{font-size:17px;margin:6px 0 -4px;display:flex;align-items:baseline;gap:8px}
+.thead{display:grid;gap:14px;margin-bottom:18px}
+.aisug{background:var(--sunk);border-radius:12px;padding:12px 14px;display:grid;gap:8px}
+.aisug-row{display:flex;gap:8px;flex-wrap:wrap}
+.aisug-row input{flex:1;min-width:200px}
+.btn.wand{background:linear-gradient(135deg,var(--s4),var(--s1));color:#fff;border-color:transparent;font-weight:600}
+.btn.wand:disabled{opacity:.6}
+.aisug-wait{font-size:14.5px;color:var(--s4);animation:aipulse 1.2s ease-in-out infinite}
+@keyframes aipulse{50%{opacity:.45}}
+.aisug-list{display:grid;gap:8px}
+.aisug-item{display:grid;gap:3px;text-align:left;background:var(--surface);border:1px solid var(--line);border-left:4px solid var(--s4);border-radius:10px;padding:10px 12px;cursor:pointer;font:inherit;color:var(--fg)}
+.aisug-item:hover{border-color:var(--s4)}
+.aisug-item b{font-weight:600;line-height:1.5}
+.aisug-item span{font-size:13px;color:var(--muted)}
+.aisug-item .st{color:var(--s4);font-weight:600}
+.aiguide{margin:12px 0;padding-left:22px;display:grid;gap:9px}
+.aiguide span{display:block;font-size:14px;color:var(--muted);margin-top:2px;line-height:1.55}
+.aikey-ok{font-weight:600;color:var(--accent)}
+#tour .tour-hole{position:fixed;border-radius:12px;box-shadow:0 0 0 9999px rgba(10,16,14,.58);outline:3px solid #F2C14E;z-index:80;pointer-events:none;transition:all .18s}
+#tour .tour-dim{position:fixed;inset:0;background:rgba(10,16,14,.58);z-index:80}
+#tour .tour-card{position:fixed;z-index:81;background:var(--surface);color:var(--fg);border-radius:16px;padding:16px 18px;box-shadow:0 14px 40px rgba(0,0,0,.3);border:1px solid var(--line)}
+#tour .tour-card h3{font-size:18px;margin:2px 0 6px}
+#tour .tour-card p{font-size:14.5px;line-height:1.65}
+#tour .tour-n{font-family:var(--f-mono);font-size:12px;color:var(--muted)}
+.thead-hi{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:12px 16px}
+.thead-hi h1{font-family:var(--f-display);font-size:clamp(26px,4vw,34px);line-height:1.3;margin-top:4px}
+.thead-hi p{color:var(--muted);margin-top:4px}
+.thead-hi p b{color:var(--fg)}
+.tstats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+.tstat{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:12px 14px;display:grid;grid-template-columns:auto 1fr;column-gap:10px;align-items:center}
+.tstat .ic{grid-row:span 3;font-size:22px}
+.tstat b{font-family:var(--f-mono);font-size:24px;line-height:1.1}
+.tstat span:not(.ic){font-size:13.5px;color:var(--muted)}
+.tstat em{font-style:normal;font-size:12px;color:var(--muted)}
+.tstat.warn{background:var(--warn-soft);border-color:transparent}
+.tstat.good{background:var(--accent-soft);border-color:transparent}
+@media (max-width:640px){.tstats{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.dcard.dadd{border-style:dashed;border-left-width:1px;background:transparent;align-content:center}
+.dcard.dadd .dt{font-size:18px;color:var(--accent)}
+.chead{border-left:7px solid var(--c,var(--line))}
 .fbrow p{white-space:pre-wrap;overflow-wrap:anywhere;margin-top:4px;line-height:1.6}
 .pushbar{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px 12px;background:var(--surface);border:1px dashed var(--line);border-radius:12px;padding:10px 14px;font-size:14px}
 .pushbar.on{border-style:solid;background:var(--accent-soft);border-color:transparent}
@@ -560,7 +617,8 @@ input[type=datetime-local]{min-height:44px;border:1px solid var(--line);border-r
 .dcard .dt{font-family:var(--f-display);font-size:21px;font-weight:700;line-height:1.3}
 .dcard .dw{font-size:13.5px;color:var(--muted)}
 .dcard .dn{font-size:14px;background:var(--warn-soft);color:var(--fg);border-radius:10px;padding:6px 10px;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
-.dcard .ds{display:flex;flex-wrap:wrap;gap:6px}
+.dcard{align-content:start}
+.dcard .ds{display:flex;flex-wrap:wrap;gap:6px;align-items:flex-start;align-self:end}
 .dcard .ds span{font-size:12.5px;font-weight:600;border-radius:999px;padding:3px 10px;background:var(--sunk);color:var(--muted)}
 .dcard .ds .todo{background:var(--warn-soft);color:var(--warn)}
 .dcard .ds .new,.newdot{background:var(--s2);color:#fff}
@@ -850,6 +908,7 @@ a.btn{text-decoration:none;color:inherit;display:inline-flex;align-items:center}
   <footer class="appfoot"><span>제작 : 이태형T(한백고)</span><span aria-hidden="true">·</span><button type="button" class="linkbtn" data-a="feedback-open">오류·건의하기</button></footer>
 </div>
 <div id="modal"></div>
+<div id="tour"></div>
 <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
 
 <script>
@@ -1040,9 +1099,9 @@ const TEMPLATES = {
 
 /* 질문 유형: 색 + 아이콘 + 글자로 함께 구분한다 */
 const QTYPES = {
-  fact:   {mark:"🔵", l:"사실적 질문", short:"사실적", d:"자료를 확인하거나 사실을 찾아보면 답할 수 있는 질문", check:"자료를 찾아보면 바로 답이 나오는가?", ex:"3·1 운동은 언제 일어났을까?"},
-  concept:{mark:"🟢", l:"개념적 질문", short:"개념적", d:"여러 사례나 정보를 연결하여 생각해야 하는 질문", check:"여러 사례를 연결해야 하는가?", ex:"사람들은 왜 같은 사건을 다르게 기억할까?"},
-  debate: {mark:"🟣", l:"논쟁적 질문", short:"논쟁적", d:"사람마다 서로 다른 답을 할 수 있는 질문", check:"사람마다 다른 답을 할 수 있는가?", ex:"역사적 인물을 평가할 때 결과와 의도 중 무엇을 더 중요하게 봐야 할까?"}
+  fact:   {mark:"🔵", l:"사실적 질문", short:"사실적", d:"자료를 확인하거나 사실을 찾아보면 답할 수 있는 질문", check:"자료를 찾아보면 바로 답이 나오는가?", ex:"피터 싱어는 동물의 이익을 고려할 때 무엇을 중요하게 보았는가?"},
+  concept:{mark:"🟢", l:"개념적 질문", short:"개념적", d:"여러 사례나 정보를 연결하여 생각해야 하는 질문", check:"여러 사례를 연결해야 하는가?", ex:"사회 질서를 유지하는 것과 부당한 질서에 저항하는 것은 어떻게 조화를 이룰 수 있는가?"},
+  debate: {mark:"🟣", l:"논쟁적 질문", short:"논쟁적", d:"사람마다 서로 다른 답을 할 수 있는 질문", check:"사람마다 다른 답을 할 수 있는가?", ex:"개인의 양심에 따른 행동이 사회 전체에 피해를 준다면 어디까지 정당화될 수 있는가?"}
 };
 
 /* 교사가 처음 고르는 것: 무엇을 하고 싶은가 → 알맞은 활동 유형 */
@@ -1264,7 +1323,7 @@ const Auth = (() => { let t = null; return Object.freeze({ set(v){ if(t === null
 Object.defineProperty(S, "canTeach", {get: () => Auth.teacher, set(){} });        // 예전 코드 호환: 읽기만
 const isTeacher = () => Auth.teacher && S.role === "teacher";                       // 교사 권한 + 교사 화면(학생 화면 미리보기 중이면 false)
 /* 교사만 쓰는 동작: 학생 권한으로는 버튼이 없을 뿐 아니라 호출해도 실행되지 않는다 */
-const TEACHER_ACTS = new Set(["tadmin-open","tadmin-block","tadmin-tab","fbadmin-done","notice-add","notice-del","note-filter","note-req","note-req-send","note-req-cancel","note-dup","create","edit-room","dup","dup-list","del","del-yes","del-ask","del-room","status","toggle","save-feedback","class-fb","pin","pin-move","pin-clear",
+const TEACHER_ACTS = new Set(["ai-setup","ai-key-save","ai-key-del","ai-suggest","ai-pick","tadmin-open","tadmin-block","tadmin-tab","fbadmin-done","notice-add","notice-del","note-filter","note-req","note-req-send","note-req-cancel","note-dup","create","edit-room","dup","dup-list","del","del-yes","del-ask","del-room","status","toggle","save-feedback","class-fb","pin","pin-move","pin-clear",
   "present","present-exit","pmode","pnav","prand","fullscreen","export","export-go","save-tset","tpl-save-open","tpl-save","tpl-cancel","use-tpl","create-save","draft-save","publish-draft","discard-form",
   "preview","preview-form","preview-home","qr","copy-link","save-share","mcourse","course-new","course-edit","course-gadd","course-gdel","course-save","course-del","course-del-yes",
   "roster-open","roster-add","roster-reissue","roster-del","roster-print","gsel","asg-add-open","asg-add-cancel","asg-add","asg-st","racts","mview","sview","sfilter","sgo","snav","ttab","mfilter","open-student","goal","tpl","st-add","st-del","depth"]);
@@ -1678,6 +1737,7 @@ async function init(){
     S.rooms = SAMPLE_ROOMS.map(r => ({...r, createdAt:Date.now()}));
     S.loaded = {rooms:1, posts:1, replies:1, courses:1};
   }
+  if(S.demo && !lsGet("nonjae.tourdone")) S.tour = 0;               // 체험 모드 첫 방문: 둘러보기부터
   S.role = Auth.teacher ? "teacher" : "student";                    // 예전의 ‘학생 화면/교사 화면’ 기억값은 쓰지 않는다
   loadForms();
   applyHash();
@@ -1713,7 +1773,7 @@ function render(){
   let h = "";
   document.body.classList.toggle("presenting", S.view === "present");
   if(S.preview) h += `<div class="preview-banner" role="status"><span>👀 <b>학생 화면 미리보기 중</b> · 실제 학생 데이터에는 영향을 주지 않습니다. 여기서 쓴 내용은 저장되지 않아요.</span><button class="btn sm pri" type="button" data-a="preview-exit">교사 화면으로 돌아가기</button></div>`;
-  else if(S.demo) h += `<div class="notice demo-bar"><span>🧪 <b>체험 모드</b> · 예시 반(학생 6명)으로 마음껏 눌러 보세요. 만들거나 고친 것은 저장되지 않아요.</span><button class="btn sm pri" type="button" data-a="demo-exit">체험 끝내고 시작하기 →</button></div>`;
+  else if(S.demo) h += `<div class="notice demo-bar"><span>🧪 <b>체험 모드</b> · 예시 반(학생 6명)으로 마음껏 눌러 보세요. 만들거나 고친 것은 저장되지 않아요.</span><span class="row"><button class="btn sm" type="button" data-a="tour-start">🧭 둘러보기</button><button class="btn sm pri" type="button" data-a="demo-exit">체험 끝내고 시작하기 →</button></span></div>`;
   else if(S.mode === "local") h += `<div class="notice"><b>미리보기 모드</b> · 이 화면에서는 글이 저장되지 않아요. ${window.claude ? "공유 링크로 열면 반 전체가 같은 활동을 씁니다." : "학생 글을 모으려면 README의 Supabase 설정을 마쳐 주세요."}${S.supaError ? ` (연결 오류: ${esc(S.supaError)})` : ""}</div>`;
   else if(!S.canWrite && !(S.mode === "supa" && S.wantTeacher && !Auth.teacher)) h += `<div class="notice"><b>보기 전용</b> · 이 계정은 글을 읽을 수만 있어요. 선생님께 참여 권한을 요청하세요.</div>`;
 
@@ -1733,6 +1793,7 @@ function render(){
 }
 function afterRender(){
   S.landed = null;
+  tourPlace();
   drawMount();
   const cl = document.querySelector("#chatbox .chatlog"); if(cl) cl.scrollTop = cl.scrollHeight;
   if(S.view === "room" && !isTeacher()) refreshWriteStatus();
@@ -2228,6 +2289,49 @@ function viewNotesTeacher(r){
       : `<p class="muted small">${p ? "올리는 중이거나 아직 제출 전이에요." : "아직 제출하지 않았어요."}</p>`}</article>`).join("")}</div>`;
 }
 /* ---- 📲 휴대폰 홈 화면에 앱처럼 설치 (학생) ---- */
+/* 🧭 체험 모드 둘러보기: 주요 버튼을 하나씩 비추며 짧게 설명한다 */
+const TOUR = [
+  {sel:".demo-bar", t:"🧪 체험 모드예요", d:"예시 반(학생 6명)과 활동이 미리 들어 있어요. 무엇을 눌러도 저장되지 않으니 마음껏 눌러 보세요. 이 안내는 언제든 ‘🧭 둘러보기’로 다시 볼 수 있어요."},
+  {sel:".tstats", t:"📊 오늘 한눈에 보기", d:"과목 수, 진행 중인 활동, 24시간 안에 마감되는 활동, 오늘 들어온 학생 응답을 바로 보여 줘요."},
+  {sel:".dgrid .dcard", t:"📚 과목 대시보드", d:"‘1학년 한국사’처럼 과목을 만들어 활동을 모아요. 반·학교를 그룹으로 넣으면 활동 하나를 여러 반에 따로 열고 닫을 수 있어요. 학생도 같은 과목 카드로 들어와요."},
+  {sel:".tnotice", t:"📢 공지 띄우기", d:"과목 화면 맨 위에 공지를 1~2개 띄워요. ‘학생 앱에 알림 보내기’를 켜 두면 학생 휴대폰으로 알림이 가요.", prep:() => { S.view = "home"; S.mcourse = S.courses[0]?.id || "" }},
+  {sel:".mcard", t:"🗂 활동 카드", d:"참여·완료 현황을 보고 ‘결과 보기’로 학생 생각을 확인해요. 링크·QR 공유, 마감, 수정·복제도 여기서 해요.", prep:() => { S.view = "home"; S.mcourse = "" }},
+  {sel:".thead [data-a=create]", t:"➕ 새 활동 만들기", d:"토론·질문 활동·논술·생각 스케치·오늘의 필기·AI 가상 인물 대화 중에 고르고 주제만 적으면 단계가 자동으로 짜여요. 🪄 키워드로 AI에게 논제·질문을 추천받을 수도 있어요."},
+  {sel:'#topr [data-a="preview-home"]', t:"👀 학생 화면 미리보기", d:"학생에게 어떻게 보이는지 바로 확인해요. 과목 카드 → 게시판 → 내 생각 쓰기 순서로 학생이 활동해요. 미리보기에서 쓴 내용은 저장되지 않아요."},
+  {sel:".appfoot", t:"💬 오류·건의하기", d:"쓰다가 불편한 점이나 바라는 기능이 있으면 화면 맨 아래 버튼으로 알려 주세요. 만든 선생님에게 바로 전달돼요."},
+  {sel:null, t:"🎉 준비 끝!", d:"이제 활동 카드를 눌러 결과 화면을 보거나, ‘+ 새 활동’으로 직접 만들어 보세요. 실제로 쓰려면 구글 계정으로 시작하면 돼요.", last:true}
+];
+function tourGo(i){
+  if(i < 0 || i >= TOUR.length){ tourEnd(); return }
+  S.tour = i; S.tourScrolled = -1; S.modal = null;
+  TOUR[i].prep?.();
+  render();
+}
+function tourEnd(){ S.tour = null; lsSet("nonjae.tourdone", "1"); const el = document.getElementById("tour"); if(el) el.innerHTML = ""; render() }
+function tourPlace(){
+  const box = document.getElementById("tour");
+  if(!box) return;
+  if(S.tour == null || !S.demo || S.preview){ box.innerHTML = ""; return }
+  const st = TOUR[S.tour], el = st.sel ? [...document.querySelectorAll(st.sel)].find(x => x.offsetParent !== null) : null;
+  if(el && S.tourScrolled !== S.tour){ S.tourScrolled = S.tour; el.scrollIntoView({block:"center", behavior:"instant"}) }
+  const r = el?.getBoundingClientRect(), pad = 6, vw = innerWidth, vh = innerHeight;
+  const hole = r ? `<div class="tour-hole" style="left:${r.left - pad}px;top:${r.top - pad}px;width:${r.width + pad*2}px;height:${r.height + pad*2}px"></div>` : `<div class="tour-dim"></div>`;
+  const w = Math.min(360, vw - 32);
+  let pos;
+  if(!r) pos = `left:${(vw - w)/2}px;top:${Math.max(16, vh/2 - 120)}px`;
+  else{
+    const left = Math.min(Math.max(16, r.left), vw - w - 16), below = r.bottom + 14, room = vh - below;
+    pos = room > 200 || r.top < 220 ? `left:${left}px;top:${Math.min(below, vh - 200)}px` : `left:${left}px;bottom:${vh - r.top + 14}px`;
+  }
+  box.innerHTML = `${hole}<div class="tour-card" role="dialog" aria-modal="true" aria-labelledby="tour-t" style="width:${w}px;${pos}">
+    <div class="tour-n">${S.tour + 1} / ${TOUR.length}</div><h3 id="tour-t">${esc(st.t)}</h3><p>${esc(st.d)}</p>
+    <div class="row" style="justify-content:space-between;margin-top:12px"><button class="linkbtn small" type="button" data-a="tour-end">${st.last ? "닫기" : "건너뛰기"}</button>
+      <span class="row">${S.tour ? `<button class="btn sm" type="button" data-a="tour-prev">← 이전</button>` : ""}${st.last ? `<button class="btn sm pri" type="button" data-a="demo-exit">구글로 시작하기</button>` : `<button class="btn sm pri" type="button" data-a="tour-next">다음 →</button>`}</span></div></div>`;
+}
+let TOUR_RAF = 0;
+const tourReplace = () => { if(S.tour == null) return; cancelAnimationFrame(TOUR_RAF); TOUR_RAF = requestAnimationFrame(tourPlace) };
+addEventListener("resize", tourReplace); addEventListener("scroll", tourReplace, {passive:true});
+
 /* 🔔 알림 받기 (Web Push) — 학생 기기. 공개 키만 여기 둔다 (비밀 키는 서버 app_secrets) */
 const VAPID_PUBLIC = "BCgeRyzyi9jcpKNl1sYQr5rYTTPLt8CdtoevQkV-RMrEHuLFM3mgoWV2RjsVdwLRMQ27TCVhMO6zPJPN_oKNcx4";
 const pushSupported = () => window.isSecureContext && "serviceWorker" in navigator && "PushManager" in window && "Notification" in window;
@@ -3469,7 +3573,34 @@ const WELCOME_FEATURES = [
   ["📸","오늘의 필기","공책·태블릿 필기를 사진으로 여러 장 제출해요. 미제출자 확인과 재제출 요청도 한 화면에서."],
   ["🧭","생각의 변화","처음 생각 → 친구 생각 → 지금 생각. 학생마다 생각이 어떻게 자랐는지 한눈에 보여요."],
   ["👥","로그인 없는 학생 참여","학생은 학번·이름·개인 코드로 들어와요. 링크나 QR만 나눠 주면 되고, 휴대폰에 앱처럼 설치할 수 있어요."],
-  ["⏰","수업 운영 도구","마감 시각이 되면 자동 마감, 수업에서 함께 보기, 피드백, 결과 내보내기(CSV)."]];
+  ["⏰","수업 운영 도구","마감 시각이 되면 자동 마감, 수업에서 함께 보기, 피드백, 결과 내보내기(CSV)."],
+  ["🪄","AI 질문 추천","키워드만 넣으면 AI가 토론 논제와 탐구 질문을 여러 개 제안해요. 마음에 드는 걸 눌러 고쳐 쓰면 끝."],
+  ["📚","과목 대시보드 · 알림","과목별로 활동과 공지를 모아 보여 줘요. 공지나 새 활동을 올리면 학생 휴대폰에 알림이 가요."]];
+/* 소개 화면: 생각을 ‘확장’하는 두 활동을 따로 보여 준다 */
+function welcomeSpotlight(){
+  return `<section class="wl-spot" aria-labelledby="wl-spot-t">
+    <div class="wl-spot-head"><div class="eyebrow">생각이음만의 활동</div>
+      <h2 id="wl-spot-t">쓰기만 하는 수업에서, 생각이 <em>뻗어 나가는</em> 수업으로</h2>
+      <p>말로 꺼내기 어려운 생각은 그림과 가지로 펼치고, 교과서 속 인물에게는 직접 물어봐요. 학생의 생각이 한 문장에서 멈추지 않고 넓고 깊게 자라요.</p></div>
+    <div class="wl-spot-grid">
+      <div class="wl-spot-card"><div class="wl-spot-art" aria-hidden="true">
+          <svg viewBox="0 0 220 120" role="img"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+            <path d="M110 60 L48 28 M110 60 L46 92 M110 60 L172 26 M110 60 L176 92 M48 28 L16 16 M48 28 L20 44 M172 26 L204 12"/></g>
+            <g font-size="11" text-anchor="middle" fill="currentColor"><rect x="80" y="46" width="60" height="28" rx="14" class="hub"/><text x="110" y="64" class="hubt">최초의 인류</text>
+            <text x="48" y="24">도구</text><text x="46" y="104">불</text><text x="172" y="20">무리 생활</text><text x="178" y="106">언어?</text></g>
+            <path d="M150 104 q14 -16 30 -2 t28 -6" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" class="scrib"/></svg></div>
+        <b>✏️ 생각 스케치 — 손으로 그리고, 가지로 뻗고</b>
+        <p>“최초의 인류는 어떤 모습이었을까?” 같은 질문에 <b>손으로 그림을 그리거나</b>, 핵심어에서 <b>가지치기(생각 지도)</b>로 생각을 펼쳐요. 글이 서툰 학생도 생각을 꺼낼 수 있고, 친구들의 그림·가지가 게시판에 모여 비교할 거리가 돼요.</p>
+        <ul><li>휴대폰·태블릿에서 손가락이나 펜으로 바로 그리기</li><li>키워드 → 가지 → 연결로 생각의 구조가 보이게</li></ul></div>
+      <div class="wl-spot-card"><div class="wl-spot-art chatart" aria-hidden="true">
+          <span class="cb me">왜 명령을 거부하지 않았나요?</span>
+          <span class="cb ai">🎭 나는 그저 명령에 따랐을 뿐이라고 생각했소…</span>
+          <span class="cb me">그럼 책임은 누구에게 있죠?</span></div>
+        <b>🎭 AI 가상 인물 대화 — 교과서 속 인물에게 직접 묻기</b>
+        <p>AI가 고종, 아이히만, 그레타 툰베리 같은 인물을 <b>연기</b>하고, 학생은 질문을 던지며 그 인물의 생각과 시대를 파고들어요. 대화를 마치면 “내 생각은 어떻게 달라졌나”를 정리하며 <b>비판적으로</b> 돌아봐요.</p>
+        <ul><li>선생님이 넣은 자료를 먼저 참고해 답해요</li><li>질문 수 제한·안전 규칙은 서버가 지키고, 모든 대화는 선생님이 볼 수 있어요</li><li>무료 AI(Cloudflare)로 학생 계정 없이 바로</li></ul></div>
+    </div></section>`;
+}
 function viewWelcome(){
   return `<section class="welcome">
     <div class="wl-hero">
@@ -3480,6 +3611,7 @@ function viewWelcome(){
         <button class="btn wl-big" type="button" data-a="demo-start">🧪 로그인 없이 체험해 보기</button></div>
       <p class="muted small">체험하기는 예시 반 데이터로 교사 화면을 그대로 써 보는 기능이에요. 아무것도 저장되지 않아요.</p>
     </div>
+    ${welcomeSpotlight()}
     <div class="wl-grid">${WELCOME_FEATURES.map(([ic, t, d]) => `<div class="wl-f"><span class="ic" aria-hidden="true">${ic}</span><b>${t}</b><p>${d}</p></div>`).join("")}</div>
     <div class="wl-two">
       <div class="card wl-steps"><h3>🚀 이렇게 시작해요</h3><ol>
@@ -3852,25 +3984,45 @@ async function saveAssign(r, assign){
 
 /* ---- 내 과목: 과목 고르기 · 과목 머리 ---- */
 function courseRooms(cid){ return S.rooms.filter(r => statusOf(r) !== "archived" && (cid === "_none" ? !courseOf(r.courseId) : r.courseId === cid)) }
-function courseBar(){
-  if(S.mcourse && S.mcourse !== "_none" && !courseOf(S.mcourse) && S.mcourse !== S.pendingCourse) S.mcourse = "";   // 방금 만든 과목은 저장소에서 돌아올 때까지 기다린다
-  const none = courseRooms("_none").length;
-  const btn = (k, l, n) => `<button type="button" data-a="mcourse" data-v="${esc(k)}" aria-pressed="${S.mcourse===k}">${l} <span class="mono">${n}</span></button>`;
-  return `<div class="cchips" role="group" aria-label="과목">${btn("", "전체 과목", S.rooms.filter(r => statusOf(r) !== "archived").length)}${S.courses.map(c => btn(c.id, `${courseIcon(c)} ${esc(c.title)}`, courseRooms(c.id).length)).join("")}${S.courses.length && none ? btn("_none", "미분류", none) : ""}
-    <button type="button" class="add" data-a="course-new">+ 새 과목</button></div>`;
+/* 교사 대시보드: 오늘 한눈 요약 · 과목 카드 · 고른 과목의 머리(공지 포함) */
+const dayStart = () => { const d = new Date(); return new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime() };
+const respToday = rs => { const ids = new Set(rs.map(r => r.id)), t0 = dayStart(); return S.posts.filter(p => ids.has(p.roomId) && p.status !== "draft" && Math.max(p.createdAt||0, p.updatedAt||0) >= t0).length };
+function teacherTop(){
+  const now = new Date(), live = S.rooms.filter(r => statusOf(r) !== "archived");
+  const open = live.filter(r => statusOf(r) === "open"), soon = open.filter(r => r.dueAt && r.dueAt > Date.now() && r.dueAt - Date.now() < 864e5);
+  const drafts = live.filter(r => statusOf(r) === "draft").length, today = respToday(live);
+  const nm = S.demo ? "체험" : (S.sbName || "").trim();
+  const tile = (ic, n, l, sub, cls = "") => `<div class="tstat ${cls}"><span class="ic" aria-hidden="true">${ic}</span><b>${n}</b><span>${l}</span>${sub ? `<em>${sub}</em>` : ""}</div>`;
+  return `<section class="thead"><div class="thead-hi"><div><div class="eyebrow">${now.getMonth()+1}월 ${now.getDate()}일 ${"일월화수목금토"[now.getDay()]}요일 · 교사 화면</div>
+      <h1>${nm ? `${esc(nm)} 선생님, 안녕하세요` : "선생님, 안녕하세요"} 👋</h1>
+      <p>${open.length ? `지금 <b>${open.length}개</b> 활동이 열려 있어요.${soon.length ? ` 그중 <b>${soon.length}개</b>는 24시간 안에 마감돼요.` : ""}` : "열린 활동이 없어요. ‘+ 새 활동 만들기’로 시작해 보세요."}</p></div>
+    <span class="row">${S.mode === "supa" ? `<button class="btn" type="button" data-a="roster-open">👥 학생 코드</button>` : ""}<button class="btn pri" type="button" data-a="create">+ 새 활동 만들기</button></span></div>
+    <div class="tstats">${tile("📚", S.courses.length, "과목", `활동 ${live.length}개`)}${tile("▶️", open.length, "진행 중", drafts ? `작성 중 ${drafts}` : "")}${tile("⏰", soon.length, "곧 마감", "24시간 안", soon.length ? "warn" : "")}${tile("✍️", today, "오늘 들어온 응답", "", today ? "good" : "")}</div></section>`;
+}
+function courseCards(){
+  const none = courseRooms("_none");
+  const card = (k, tone, ic, title, sub, rs, extra = "") => { const open = rs.filter(r => statusOf(r) === "open").length, td = respToday(rs);
+    return `<button type="button" class="dcard" data-a="mcourse" data-v="${esc(k)}" style="--c:var(--${tone})"><span class="dt"><span aria-hidden="true">${ic}</span> ${esc(title)}</span>
+      <span class="dw">${esc(sub)}</span>${extra}
+      <span class="ds"><span>활동 ${rs.length}</span>${open ? `<span class="todo">진행 중 ${open}</span>` : ""}${td ? `<span class="new">오늘 응답 ${td}</span>` : ""}</span></button>` };
+  return `<div class="sec-h2"><h2 class="sec-h">📚 내 과목 <span class="muted small">${S.courses.length}개</span></h2></div>
+    <div class="dgrid">${S.courses.map(c => { const ns = noticesOf(c);
+      return card(c.id, subjTone("c:" + c.id), courseIcon(c), c.title, [c.subject, c.year, groupsOf(c).length ? `그룹 ${groupsOf(c).length}개` : ""].filter(Boolean).join(" · ") || "과목", courseRooms(c.id),
+        ns.length ? `<span class="dn">📢 ${esc(ns[0].text)}${ns.length > 1 ? ` 외 ${ns.length - 1}` : ""}</span>` : "") }).join("")}
+      ${none.length ? card("_none", "s4", "🗂", "과목 없는 활동", "과목에 넣지 않은 활동이에요", none) : ""}
+      <button type="button" class="dcard dadd" data-a="course-new"><span class="dt">＋ 새 과목</span><span class="dw">예: 1학년 한국사 · 반이나 학교를 그룹으로 넣으면 활동 하나를 나눠 쓸 수 있어요</span></button></div>`;
 }
 function courseHead(){
-  if(!S.mcourse){
-    if(!S.courses.length) return `<p class="muted small" style="margin:-4px 0 14px">‘+ 새 과목’으로 1학년 한국사처럼 과목을 만들고 반·학교 같은 그룹을 넣으면, 활동 하나를 여러 그룹에 나눠 쓸 수 있어요. 지금 활동은 그대로 쓸 수 있어요.</p>`;
-    return `<div class="cgrid">${S.courses.map(c => `<button type="button" class="ccard" data-a="mcourse" data-v="${esc(c.id)}"><b>${courseIcon(c)} ${esc(c.title)}</b><span class="g">${esc(groupsOf(c).map(g => g.name).join(" · ") || "그룹 없음")}</span><span class="g">활동 ${courseRooms(c.id).length}개${c.year ? ` · ${esc(c.year)}` : ""}${noticesOf(c).length ? ` · 📢 공지 ${noticesOf(c).length}` : ""}</span></button>`).join("")}</div>`;
-  }
-  if(S.mcourse === "_none") return `<p class="muted small" style="margin:-4px 0 14px">과목에 연결되지 않은 활동이에요. 지금처럼 하나의 링크로 쓸 수 있고, 활동 ‘수정’에서 과목과 그룹을 고를 수 있어요.</p>`;
+  if(S.mcourse && S.mcourse !== "_none" && !courseOf(S.mcourse) && S.mcourse !== S.pendingCourse) S.mcourse = "";   // 방금 만든 과목은 저장소에서 돌아올 때까지 기다린다
+  if(!S.mcourse) return courseCards();
+  const back = `<button class="linkbtn back" type="button" data-a="mcourse" data-v="">← 내 과목 전체</button>`;
+  if(S.mcourse === "_none") return back + `<section class="chead" style="--c:var(--s4)"><div class="cardh"><h2>🗂 과목 없는 활동</h2></div><p class="mmeta">과목에 연결되지 않은 활동이에요. 지금처럼 하나의 링크로 쓸 수 있고, 활동 ‘수정’에서 과목과 그룹을 고를 수 있어요.</p></section>`;
   const c = courseOf(S.mcourse);
-  if(!c) return `<p class="muted small" style="margin:-4px 0 14px">과목을 저장하는 중…</p>`;
-  const id = esc(c.id);
-  return `<section class="chead"><div class="cardh"><h2>${courseIcon(c)} ${esc(c.title)}</h2><span class="row">
+  if(!c) return back + `<p class="muted small" style="margin:6px 0 14px">과목을 저장하는 중…</p>`;
+  const id = esc(c.id), rs = courseRooms(c.id), open = rs.filter(r => statusOf(r) === "open").length;
+  return back + `<section class="chead" style="--c:var(--${subjTone("c:" + c.id)})"><div class="cardh"><h2>${courseIcon(c)} ${esc(c.title)}</h2><span class="row">
       <button class="btn sm" type="button" data-a="copy-link" data-kind="course" data-id="${id}">🔗 과목 링크</button><button class="btn sm" type="button" data-a="qr" data-kind="course" data-id="${id}">과목 QR</button><button class="btn sm" type="button" data-a="course-edit" data-id="${id}">과목 수정</button></span></div>
-    <p class="mmeta">${esc([c.subject, c.year].filter(Boolean).join(" · "))}${c.description ? ` · ${esc(c.description)}` : ""}</p>
+    <p class="mmeta">${esc([c.subject, c.year].filter(Boolean).join(" · "))}${c.description ? ` · ${esc(c.description)}` : ""}${c.subject || c.year || c.description ? " · " : ""}활동 ${rs.length}개 · 진행 중 ${open}개 · 오늘 응답 ${respToday(rs)}개</p>
     <div class="gchips"><span class="small muted">그룹</span>${groupsOf(c).map(g => `<span class="gchip">${esc(g.name)}</span>`).join("") || `<span class="muted small">아직 없어요. ‘과목 수정’에서 반·학교 같은 그룹을 넣어 주세요.</span>`}</div>
     ${noticePanel(c)}</section>`;
 }
@@ -4212,10 +4364,8 @@ function viewManage(){
   Object.keys(STATUS).forEach(k => counts[k] = S.rooms.filter(r=>statusOf(r)===k && inC(r)).length);
   const subs = [...new Set(S.rooms.map(r=>r.subject).filter(Boolean))], grades = [...new Set(S.rooms.map(r=>r.grade).filter(Boolean))];
   const local = S.form.create && !S.form.create.editId && ((S.form.create.prompt||"").trim() || (S.form.create.title||"").trim()) ? S.form.create : null;
-  let h = `<div class="home-head"><div><div class="eyebrow">교사 화면</div><h1>내 과목</h1><p>과목 ${S.courses.length}개 · 활동 ${counts.all}개${counts.archived ? ` · 보관 ${counts.archived}개` : ""}</p></div>
-    <span class="row">${S.mode === "supa" ? `<button class="btn" type="button" data-a="roster-open">👥 학생 코드</button>` : ""}<button class="btn pri" type="button" data-a="create">+ 새 활동 만들기</button></span></div>`;
-  h += courseBar() + courseHead();
-  h += `<h2 style="font-size:16px;margin:4px 0 10px">${S.mcourse && S.mcourse !== "_none" ? "이 과목의 활동" : S.mcourse === "_none" ? "미분류 활동" : "모든 활동"}</h2>`;
+  let h = teacherTop() + courseHead();
+  h += `<h2 class="sec-h" style="margin:18px 0 10px">${S.mcourse && S.mcourse !== "_none" ? "📋 이 과목의 활동" : S.mcourse === "_none" ? "📋 과목 없는 활동" : "📋 모든 활동"} <span class="muted small">${counts.all}개${counts.archived ? ` · 보관 ${counts.archived}` : ""}</span></h2>`;
   if(!shareBase()) h += `<div class="setup"><b>🔗 학생 링크 설정 (처음 한 번)</b><p class="small">화면 오른쪽 위의 <b>공유</b>에서 이 페이지 링크를 만든 뒤 아래에 붙여 넣으면, 활동마다 학생 링크와 QR 코드를 바로 만들 수 있어요. 학생이 들어올 수 있도록 공유 범위도 확인해 주세요.</p>
     <div class="row"><input type="text" id="share-url" placeholder="https://claude.ai/…" aria-label="공유 링크"><button class="btn sm pri" type="button" data-a="save-share">저장</button></div></div>`;
   h += `<div class="mtools"><input type="search" id="m-q" placeholder="활동 제목·과목·단원·유형으로 찾기" value="${esc(S.mq)}" aria-label="활동 검색">
@@ -4282,6 +4432,8 @@ function renderModal(){
       <div class="row end"><button class="btn" type="button" data-a="modal-close">취소</button><button class="btn danger" type="button" data-a="course-del-yes" data-id="${esc(m.id)}">과목 삭제</button></div>`;
   }else if(m.type === "tadmin"){
     h = tadminHTML();
+  }else if(m.type === "ai"){
+    h = aiSetupHTML();
   }else if(m.type === "feedback"){
     const K = {"오류":"🐞 오류", "건의":"💡 건의", "기타":"💬 기타"};
     h = `<h3>💬 오류·건의하기</h3><p class="small muted">고장 난 곳, 불편한 점, 있었으면 하는 기능을 알려 주세요. 만든 사람(관리자)에게만 전달돼요.</p>
@@ -4622,6 +4774,69 @@ function chk(k, label, sub="", disabledNote=""){
   return `<label><input type="checkbox" id="c-${k}" data-form="create" data-k="${k}" ${f[k]?"checked":""}><span>${label}</span></label>${f[k] && sub ? `<div class="sub">${sub}</div>` : ""}`;
 }
 function lockWrap(locked, html){ return locked ? `<fieldset class="lockbox" disabled><p class="lockmsg">🔒 학생 응답이 존재하여 수정할 수 없습니다.</p>${html}</fieldset>` : html }
+/* 🪄 AI 질문 추천: 키워드 → 토론 논제·탐구 질문 여러 개 (구글 Gemini, 선생님의 AI 스튜디오 키) */
+const AI_SUG_T = ["debate2", "debateN", "inquiry", "relay"];
+const aiLive = () => S.mode === "supa" && !!SB && !S.demo && !S.preview;
+const AI_ERR = {bad_key:"API 키가 맞지 않아요. ⚙️ AI 연결 설정에서 키를 다시 넣어 주세요.", quota:"무료 사용량을 잠시 다 썼어요. 1~2분 뒤(또는 내일) 다시 해 보세요.",
+  forbidden:"이 키로는 Gemini API를 쓸 수 없어요. AI 스튜디오에서 새 키를 만들어 넣어 주세요.", denied:"선생님 계정으로 로그인해야 쓸 수 있어요.",
+  empty:"키워드를 한두 개 적어 주세요.", no_key:"먼저 구글 AI 스튜디오 키를 연결해 주세요.", network:"연결이 잠시 불안정해요. 다시 눌러 주세요.", ai_error:"AI가 질문을 만들지 못했어요. 키워드를 바꿔 다시 해 보세요."};
+function aiSugHTML(f){
+  if(!AI_SUG_T.includes(f.template)) return "";
+  const st = S.aiSug && S.aiSug.t === f.template ? S.aiSug : null, deb = f.template.startsWith("debate");
+  let list = "";
+  if(st?.loading) list = `<p class="aisug-wait" role="status">🪄 ${deb ? "토론 논제" : "생각 질문"}를 만드는 중…</p>`;
+  else if(st?.items) list = `<div class="aisug-list" role="list">${st.items.map((x, i) => `<button type="button" class="aisug-item" role="listitem" data-a="ai-pick" data-i="${i}"><b>${esc(x.q)}</b>${x.a && x.b && f.template === "debate2" ? `<span class="st">${esc(x.a)} ↔ ${esc(x.b)}</span>` : ""}${x.why ? `<span>${esc(x.why)}</span>` : ""}</button>`).join("")}</div>
+    <p class="hint">눌러서 넣은 뒤 우리 반에 맞게 고쳐 쓰세요.${st.demo ? " (체험 모드라 정해진 예시를 보여 줘요)" : ""} <button class="linkbtn" type="button" data-a="ai-suggest">🔄 다시 추천</button></p>`;
+  return `<div class="q wide aisug"><label for="c-kw">🔑 키워드 <span class="opt">쉼표로 여러 개 · 과목·학년도 함께 참고해요</span></label>
+    <div class="aisug-row"><input type="text" id="c-kw" data-form="create" data-k="aiKw" maxlength="100" autocomplete="off" value="${esc(f.aiKw || "")}" placeholder="${deb ? "예: 콜럼버스, 신항로 개척, 원주민" : f.template === "relay" ? "예: 3·1 운동, 민족 자결주의" : "예: 일제 강점기, 철도, 식민지 근대화"}">
+      <button class="btn wand" type="button" data-a="ai-suggest" ${st?.loading ? "disabled" : ""}>🪄 ${deb ? "토론 논제" : "생각 질문"} 추천 받기</button></div>
+    ${list}
+    <p class="hint">${aiLive() ? `구글 AI(Gemini)가 만들어요. AI에게는 키워드·과목·학년만 보내요. <button class="linkbtn" type="button" data-a="ai-setup">⚙️ AI 연결 설정</button>` : `체험·미리보기에서는 예시 추천을 보여 줘요. 실제로는 <button class="linkbtn" type="button" data-a="ai-setup">구글 AI 스튜디오 키</button>를 한 번 넣으면 돼요.`}</p></div>`;
+}
+const DEMO_SUG = {
+  debate:[{q:"콜럼버스의 날을 ‘원주민의 날’로 바꿔야 할까?", a:"바꿔야 한다", b:"그대로 둬야 한다", why:"기념과 역사 평가의 관계를 따져 봐요"},
+    {q:"콜럼버스의 항해는 ‘발견’인가, ‘침략’의 시작인가?", a:"발견이다", b:"침략의 시작이다", why:"누구의 눈으로 역사를 보는지 드러나요"},
+    {q:"500년 전 인물을 오늘날의 기준으로 평가해도 될까?", a:"평가해도 된다", b:"시대 기준으로 봐야", why:"역사 평가의 기준을 스스로 세워요"},
+    {q:"콜럼버스 동상은 철거해야 할까, 설명을 붙여 남겨야 할까?", a:"철거해야 한다", b:"설명 붙여 남긴다", why:"기억과 반성의 방법을 토론해요"}],
+  inquiry:[{q:"일제 강점기에 놓인 철도와 공장은 누구를 위한 ‘근대화’였을까?", why:"개발의 주체와 이익을 따져 봐요"},
+    {q:"같은 시대를 살았는데 왜 어떤 사람은 저항하고 어떤 사람은 협력했을까?", why:"개인의 선택과 구조를 함께 생각해요"},
+    {q:"식민지 시기의 ‘근대적 변화’를 어떻게 평가해야 공정할까?", why:"식민지 근대화론의 쟁점을 짚어요"},
+    {q:"일제가 ‘문화 통치’로 바꾼 진짜 이유는 무엇이었을까?", why:"정책의 겉과 속을 비교해요"}],
+  relay:[{q:"3·1 운동이 세계에 어떻게 알려졌는지 궁금한 것을 질문으로 만들어 보자.", why:"예: 외국 신문은 어떻게 보도했을까?"},
+    {q:"일제 강점기 학생들의 하루에 대해 궁금한 것을 질문으로 만들어 보자.", why:"예: 학교에서 어떤 말을 썼을까?"},
+    {q:"콜럼버스 이후 아메리카 원주민의 삶에 대해 궁금한 것을 질문으로 만들어 보자.", why:"예: 인구는 왜 크게 줄었을까?"}]
+};
+async function aiSuggest(body){
+  if(!aiLive()){ await new Promise(r => setTimeout(r, 450)); const k = body.kind.startsWith("debate") ? "debate" : body.kind === "relay" ? "relay" : "inquiry"; return {items:DEMO_SUG[k], demo:true} }
+  try{ const r = await SB.functions.invoke("suggest", {body}); return r.error ? {error:"network"} : (r.data || {error:"ai_error"}) }catch(e){ return {error:"network"} }
+}
+async function loadAiStatus(){
+  if(!aiLive()){ S.aiStatus = {off:true}; renderModal(); return }
+  const r = await SB.rpc("ai_key_status").catch(() => ({}));
+  S.aiStatus = r.data || {err:true}; if(S.modal?.type === "ai") renderModal();
+}
+function aiSetupHTML(){
+  const st = S.aiStatus;
+  const line = st === undefined ? `<p class="muted small">연결 상태를 확인하는 중…</p>` : st.off ? `<p class="notice small">체험·미리보기 화면에서는 키를 저장할 수 없어요. 아래 방법을 읽어 두었다가 실제 생각이음에서 넣어 주세요.</p>`
+    : st.has ? `<p class="aikey-ok">✅ 연결됨 · 키 끝자리 …${esc(st.tail || "")}${st.model ? ` · 모델 ${esc(st.model)}` : ""}</p>` : `<p class="muted small">아직 연결되지 않았어요.</p>`;
+  return `<h3>🪄 AI 질문 추천 연결하기</h3>
+    <p class="small">구글의 무료 AI(Gemini)를 쓰려면 <b>구글 AI 스튜디오</b>에서 API 키를 한 번만 받아 넣으면 돼요. 5분이면 끝나요.</p>
+    <ol class="aiguide">
+      <li><b>AI 스튜디오 열기</b><span><a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener">aistudio.google.com/apikey ↗</a>를 열고 선생님 구글 계정으로 로그인해요. (Gemini API는 만 18세 이상 계정만 쓸 수 있어요)</span></li>
+      <li><b>약관 동의</b><span>처음이면 이용약관 창이 떠요. 확인하고 동의하면 기본 프로젝트가 자동으로 만들어져요.</span></li>
+      <li><b>‘API 키 만들기(Create API key)’ 누르기</b><span>프로젝트를 고르라고 하면 기본 프로젝트를 그대로 고르면 돼요. 결제 정보는 넣지 않아도 무료 등급으로 쓸 수 있어요.</span></li>
+      <li><b>키 복사</b><span>영문·숫자로 된 긴 키(대개 AIza로 시작)가 나오면 복사해요. 비밀번호처럼 다른 사람에게 보여 주지 마세요.</span></li>
+      <li><b>아래 칸에 붙여 넣고 ‘저장하고 확인’</b><span>연결되면 ✅ 표시가 나와요. 그다음부터는 활동 만들기에서 🪄 버튼만 누르면 돼요.</span></li></ol>
+    ${line}
+    <div class="row" style="flex-wrap:wrap"><input type="password" id="ai-key" style="flex:1;min-width:200px" placeholder="여기에 API 키 붙여 넣기" autocomplete="off" spellcheck="false" aria-label="Gemini API 키"><button class="btn pri" type="button" data-a="ai-key-save">저장하고 확인</button></div>
+    ${st?.has ? `<p style="margin-top:6px"><button class="linkbtn small" type="button" data-a="ai-key-del">연결 끊기 (키 지우기)</button></p>` : ""}
+    <details class="help" style="margin-top:12px"><summary>💡 알아 두세요</summary><div class="help-body"><ul class="small">
+      <li>키는 생각이음 서버에 <b>선생님 계정 전용</b>으로 보관돼요. 학생·다른 선생님에게 보이지 않고, 화면으로 다시 꺼낼 수도 없어요. 추천을 만들 때 서버 프로그램만 사용해요.</li>
+      <li>무료 등급은 분당·하루 사용 한도가 있어요. 질문 추천 정도는 넉넉하지만, 한도를 넘으면 잠시 뒤 다시 해 보세요.</li>
+      <li>무료 등급에서 보낸 내용은 구글이 서비스 개선에 쓸 수 있어요. 생각이음은 <b>키워드·과목·학년·질문 유형만</b> 보내고 학생 이름이나 글은 보내지 않아요.</li>
+      <li>키가 노출된 것 같으면 AI 스튜디오에서 그 키를 지우고 새로 만들어 여기에 다시 넣으세요.</li></ul></div></details>
+    <div class="row end" style="margin-top:12px"><button class="btn" type="button" data-a="modal-close">닫기</button></div>`;
+}
 function viewCreate(){
   const f = createForm(), t = TEMPLATES[f.template], relay = f.template === "relay";
   const goal = goalOf(f);
@@ -4631,7 +4846,7 @@ function viewCreate(){
   const preview = roomFromForm(f), phs = phasesOf(preview), tool = TOOLS[preview.tool];
   const isChat = f.template === "chat", isNoteT = f.template === "notes";
   const promptLabel = isNoteT ? "학생에게 보일 안내" : isChat ? "대화 주제 (학생에게 보이는 안내)" : relay ? "질문을 만들 주제" : (f.template==="inquiry" ? "학생들에게 던질 질문" : "논제 (학생들에게 던질 질문)");
-  const promptPh = isNoteT ? "예: 오늘 배운 3·1 운동의 전개 과정을 정리하고 사진으로 올려 주세요." : isChat ? "예: 고종에게 대한제국을 선포한 까닭과 그때의 고민을 물어보자." : relay ? "예: 유신 체제에 대해 궁금한 것을 질문으로 만들어 보자." : (f.template==="inquiry" ? "예: 박정희 정부가 말한 ‘근대화’란 무엇을 의미했을까?" : "예: 유신 헌법은 필요했을까?");
+  const promptPh = isNoteT ? "예: 오늘 배운 3·1 운동의 전개 과정을 정리하고 사진으로 올려 주세요." : isChat ? "예: 고종에게 대한제국을 선포한 까닭과 그때의 고민을 물어보자." : relay ? "예: 유신 체제에 대해 궁금한 것을 질문으로 만들어 보자." : (f.template==="inquiry" ? "예: 일제 강점기에 생긴 철도와 공장은 누구를 위한 ‘근대화’였을까?" : "예: 콜럼버스의 날을 ‘원주민의 날’로 바꿔야 할까?");
   const qopts = (relay ? [{k:"student", l:"학생이 고르기"}] : []).concat(Object.entries(QTYPES).map(([k,v]) => ({k, l:`${v.mark} ${v.short}`})));
   const etBoxes = EVIDENCE_TYPES.map(e => `<label class="choice"><input type="checkbox" data-form="create" data-k="evidenceTypes" data-multi value="${esc(e)}" ${(f.evidenceTypes||[]).includes(e)?"checked":""}><span>${esc(e)}</span></label>`).join("");
   const hasReason = tool.fields.some(x=>x.k==="reason");
@@ -4652,6 +4867,7 @@ function viewCreate(){
 
   <div class="card" style="margin-top:16px"><h3>② 무엇에 대해 생각할까요?</h3><div class="form-grid">
     <div class="q wide"><label for="c-prompt">${promptLabel}</label>${ta("create","prompt",{rows:2, ph:promptPh, id:"c-prompt"})}</div>
+    ${aiSugHTML(f)}
     ${isChat ? `<div class="q"><label for="c-pname">대화 상대</label><input type="text" id="c-pname" data-form="create" data-k="personaName" maxlength="30" value="${esc(f.personaName||"")}" placeholder="예: 고종, 그레타 툰베리"></div>
       <div class="q"><label for="c-pstyle">말투</label><select id="c-pstyle" data-form="create" data-k="personaStyle"><option value="persona" ${f.personaStyle!=="easy"?"selected":""}>인물다운 말투 (학생이 알아듣게)</option><option value="easy" ${f.personaStyle==="easy"?"selected":""}>쉬운 존댓말</option></select></div>
       <div class="q wide"><label for="c-pabout">인물 소개 <span class="opt">(학생에게도 보여요 · AI가 이 설정대로 말해요)</span></label><input type="text" id="c-pabout" data-form="create" data-k="personaAbout" maxlength="200" value="${esc(f.personaAbout||"")}" placeholder="예: 조선의 26대 왕이자 대한제국 황제. 1897년 대한제국을 선포했다."></div>
@@ -4834,7 +5050,10 @@ document.addEventListener("click", e => {
   if(b.closest("[data-racts]")) S.modal = null;                 // 관리 메뉴에서 고르면 메뉴는 닫고 그 동작을 한다
   act(b.dataset.a, b);
 });
-document.addEventListener("keydown", e => { if(e.key === "Escape" && S.modal){ S.modal = null; render() } });
+document.addEventListener("keydown", e => { if(e.key === "Enter" && e.target.id === "c-kw" && !e.isComposing){ e.preventDefault(); act("ai-suggest", e.target) } });
+document.addEventListener("keydown", e => {
+  if(S.tour != null){ if(e.key === "Escape") tourEnd(); else if(e.key === "ArrowRight" && !/^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName)) tourGo(S.tour + 1); else if(e.key === "ArrowLeft" && !/^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName)) tourGo(S.tour - 1); return }
+  if(e.key === "Escape" && S.modal){ S.modal = null; render() } });
 /* 발표 화면: 키보드 ← → 로 발표 목록 넘기기 */
 document.addEventListener("keydown", e => {
   if(S.view !== "present" || S.modal || !/^Arrow(Left|Right)$/.test(e.key) || /^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName)) return;
@@ -5130,6 +5349,42 @@ async function act(a, b){
       toast(on ? `${em} 계정을 막았어요. 이 계정과 학생들은 더 이상 글·사진을 올릴 수 없어요.` : `${em} 계정을 다시 쓸 수 있게 했어요.`);
       await loadTadmin(); return;
     }
+    case "ai-setup": S.modal = {type:"ai"}; S.aiStatus = undefined; loadAiStatus(); break;
+    case "ai-key-save": {
+      const key = (document.getElementById("ai-key")?.value || "").trim();
+      if(!aiLive()){ toast("체험·미리보기 화면에서는 저장할 수 없어요."); return }
+      if(key.length < 20){ toast("키가 너무 짧아요. AI 스튜디오에서 복사한 키 전체를 붙여 넣어 주세요."); return }
+      b.disabled = true; b.textContent = "확인하는 중…";
+      const r1 = await SB.rpc("ai_key_set", {p_key:key}).catch(() => ({}));
+      if(!r1.data?.ok){ b.disabled = false; b.textContent = "저장하고 확인"; toast(r1.data?.reason === "format" ? "키 모양이 이상해요. 띄어쓰기 없이 키만 붙여 넣어 주세요." : "저장하지 못했어요. 다시 해 보세요."); return }
+      const r2 = await SB.functions.invoke("suggest", {body:{test:true}}).catch(() => ({}));
+      if(r2.data?.ok) toast("✅ 연결됐어요! 이제 🪄 버튼으로 질문을 추천받을 수 있어요.");
+      else toast("키는 저장했지만 확인에 실패했어요: " + (AI_ERR[r2.data?.error] || "잠시 뒤 다시 해 보세요."));
+      S.aiStatus = undefined; await loadAiStatus(); return;
+    }
+    case "ai-key-del": { if(!aiLive()) return; await SB.rpc("ai_key_set", {p_key:""}); toast("키를 지웠어요."); S.aiStatus = undefined; await loadAiStatus(); return }
+    case "ai-suggest": {
+      const f = createForm(), kw = (f.aiKw || "").trim() || (f.title || "").trim();
+      if(!AI_SUG_T.includes(f.template)) return;
+      if(!kw){ toast("키워드를 한두 개 적어 주세요. 예: 콜럼버스, 원주민"); document.getElementById("c-kw")?.focus(); return }
+      S.aiSug = {t:f.template, loading:true}; render();
+      const res = await aiSuggest({kind:f.template, keywords:kw, subject:(f.subject || courseOf(f.courseId)?.subject || "").trim(), grade:f.grade || "", qtype:f.template === "inquiry" ? (f.qtype || "") : ""});
+      if(res.items?.length) S.aiSug = {t:f.template, items:res.items, demo:res.demo};
+      else{ S.aiSug = null; toast(AI_ERR[res.error] || AI_ERR.ai_error); if(res.error === "no_key" || res.error === "bad_key"){ S.modal = {type:"ai"}; S.aiStatus = undefined; loadAiStatus() } }
+      break;
+    }
+    case "ai-pick": {
+      const x = S.aiSug?.items?.[+b.dataset.i], f = F("create"); if(!x) return;
+      const ed = f.editId ? S.rooms.find(r => r.id === f.editId) : null, lk = ed && allPostsOf(ed.id).length > 0;
+      f.prompt = x.q;
+      if(f.template === "debate2" && x.a && x.b && !lk){ f.st0 = x.a; f.st1 = x.b }
+      saveFormsSoon(); toast(f.template === "debate2" && x.a && !lk ? "논제와 두 입장을 넣었어요. 고쳐 써도 돼요." : "질문을 넣었어요. 고쳐 써도 돼요.");
+      render(); document.getElementById("c-prompt")?.focus(); return;
+    }
+    case "tour-start": tourGo(0); return;
+    case "tour-next": tourGo((S.tour ?? -1) + 1); return;
+    case "tour-prev": tourGo((S.tour ?? 1) - 1); return;
+    case "tour-end": tourEnd(); return;
     case "demo-start": location.href = location.origin + location.pathname + "?demo=1"; return;
     case "demo-exit": location.href = location.origin + location.pathname + "#teacher"; return;
     case "install-help": S.modal = {type:"install", os:deviceOS()}; break;
