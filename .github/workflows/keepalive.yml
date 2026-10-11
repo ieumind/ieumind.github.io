@@ -1,0 +1,21 @@
+# Supabase 무료 프로젝트는 1주일 동안 아무도 쓰지 않으면 잠시 멈춰요.
+# 이 작업이 사흘마다 한 번씩 데이터베이스에 가볍게 접속해서 멈추지 않게 해요.
+# 필요한 설정: 저장소 Settings → Secrets and variables → Actions 에
+#   SUPABASE_URL, SUPABASE_ANON_KEY 두 개를 넣어 주세요 (README 9단계).
+name: supabase-keepalive
+on:
+  schedule:
+    - cron: "17 3 */3 * *"   # 사흘마다 (한국 시각 낮 12시 17분쯤)
+  workflow_dispatch: {}
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping Supabase
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+        run: |
+          if [ -z "$SUPABASE_URL" ] || [ -z "$SUPABASE_ANON_KEY" ]; then echo "Secrets not set"; exit 1; fi
+          curl -sS -o /dev/null -w "%{http_code}\n" "$SUPABASE_URL/rest/v1/docs?select=id&limit=1" \
+            -H "apikey: $SUPABASE_ANON_KEY" -H "Authorization: Bearer $SUPABASE_ANON_KEY"

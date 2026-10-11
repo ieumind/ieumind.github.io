@@ -645,6 +645,13 @@ body.presenting .top,body.presenting .notice{display:none}
 
 <script>
 /* =========================================================
+   0. GitHub 등 다른 곳에 올릴 때: Supabase 연결 설정 (README.md 참고)
+      Claude 안에서 열면 이 값은 쓰지 않는다.
+   ========================================================= */
+const SUPABASE_URL = "https://zgwahesadlejacmxojfg.supabase.co";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inpnd2FoZXNhZGxlamFjbXhvamZnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTE2NjcxOTYsImV4cCI6MjEwNzI0MzE5Nn0.aASBJYE3wpYtL0JxoqG0O0HEohwzcvNnz_1XXrzyjz0";   // anon(공개) 키 — 공개해도 되는 키. service_role 키는 절대 넣지 말 것
+
+/* =========================================================
    1. 상수
    ========================================================= */
 const SHAPES = ["●","■","▲","◆"];            // 입장을 색과 모양 두 가지로 구분
@@ -967,7 +974,7 @@ const isTeacher = () => Auth.teacher && S.role === "teacher";                   
 const TEACHER_ACTS = new Set(["create","edit-room","dup","dup-list","del","del-yes","del-ask","del-room","status","toggle","save-feedback","class-fb","pin","pin-move","pin-clear",
   "present","present-exit","pmode","pnav","prand","fullscreen","export","export-go","save-tset","tpl-save-open","tpl-save","tpl-cancel","use-tpl","create-save","draft-save","publish-draft","discard-form",
   "preview","preview-form","preview-home","qr","copy-link","save-share","mcourse","course-new","course-edit","course-gadd","course-gdel","course-save","course-del","course-del-yes",
-  "gsel","asg-add-open","asg-add-cancel","asg-add","asg-st","racts","mview","sview","sfilter","sgo","snav","ttab","mfilter","open-student","goal","tpl","st-add","st-del","depth"]);
+  "roster-open","roster-add","roster-reissue","roster-del","roster-print","gsel","asg-add-open","asg-add-cancel","asg-add","asg-st","racts","mview","sview","sfilter","sgo","snav","ttab","mfilter","open-student","goal","tpl","st-add","st-del","depth"]);
 // TODO: 실제 배포 시 교사 인증 및 권한 검증 필요
 //   지금은 화면(S.role)과 저장소 규칙(rooms·tnotes·ttemplates·config는 편집자만 쓰기)으로 나눠 두었다.
 //   학생 응답(posts·replies)은 참여자 누구나 쓸 수 있으므로, 실제 서비스에서는 서버에서 작성자·교사 권한을 확인해야 한다.
@@ -1251,7 +1258,7 @@ function question(key, k, {q, frame, tip, starters, rows=3, ph="", opt=false}){
    ========================================================= */
 async function write(dbFn, localFn){
   if(S.preview){ localFn(); render(); return true }        // 학생 화면 미리보기: 실제 데이터에 저장하지 않음
-  if(S.mode === "db"){
+  if(S.mode === "db" || S.mode === "supa"){
     try{ await dbFn(S.db); return true }
     catch(e){ toast(errMsg(e)); return false }
   }
@@ -1355,6 +1362,8 @@ async function init(){
     S.canWrite = cw !== false;
     ["rooms","posts","replies","treplies","config","courses"].forEach(sub);
     if(S.canTeach) ["tnotes","ttemplates"].forEach(sub);
+  }else if(SUPABASE_URL && SUPABASE_ANON_KEY && await initSupa()){
+    /* Supabase 연결 완료 (GitHub 등) */
   }else{
     S.mode = "local"; Auth.set(true);                              // 저장소가 없는 파일 미리보기(혼자 쓰는 화면)는 교사로 연다
     S.rooms = SAMPLE_ROOMS.map(r => ({...r, createdAt:Date.now()}));
@@ -1368,8 +1377,9 @@ async function init(){
 }
 /* 학생 링크(#활동id)로 들어오면 그 활동을 바로 연다 */
 function applyHash(){
-  if(!S.hashRoom || (S.mode==="db" && (!S.loaded.rooms || !S.loaded.courses))) return;
+  if(!S.hashRoom || (S.mode !== "local" && (!S.loaded.rooms || !S.loaded.courses))) return;
   const h = decodeURIComponent(S.hashRoom);
+  if(h === "teacher"){ if(!Auth.teacher) S.wantTeacher = true; S.view = "home"; S.hashRoom = ""; return }   // 교사 로그인 주소
   if(h.startsWith("c:")){                                   // 수업 링크: #c:수업id[/그룹id]
     const [cid, gid] = h.slice(2).split("/"), c = courseOf(cid);
     if(c){
@@ -1393,10 +1403,11 @@ function render(){
   let h = "";
   document.body.classList.toggle("presenting", S.view === "present");
   if(S.preview) h += `<div class="preview-banner" role="status"><span>👀 <b>학생 화면 미리보기 중</b> · 실제 학생 데이터에는 영향을 주지 않습니다. 여기서 쓴 내용은 저장되지 않아요.</span><button class="btn sm pri" type="button" data-a="preview-exit">교사 화면으로 돌아가기</button></div>`;
-  else if(S.mode === "local") h += `<div class="notice"><b>미리보기 모드</b> · 이 화면에서는 글이 저장되지 않아요. 공유 링크로 열면 반 전체가 같은 활동을 씁니다.</div>`;
+  else if(S.mode === "local") h += `<div class="notice"><b>미리보기 모드</b> · 이 화면에서는 글이 저장되지 않아요. ${window.claude ? "공유 링크로 열면 반 전체가 같은 활동을 씁니다." : "학생 글을 모으려면 README의 Supabase 설정을 마쳐 주세요."}${S.supaError ? ` (연결 오류: ${esc(S.supaError)})` : ""}</div>`;
   else if(!S.canWrite) h += `<div class="notice"><b>보기 전용</b> · 이 계정은 글을 읽을 수만 있어요. 선생님께 참여 권한을 요청하세요.</div>`;
 
-  if(S.mode === "db" && !S.loaded.rooms) h += `<p class="who">활동을 불러오는 중…</p>`;
+  if(S.mode === "supa" && S.wantTeacher && !Auth.teacher) h += viewTeacherLogin();
+  else if(S.mode !== "local" && !S.loaded.rooms) h += `<p class="who">활동을 불러오는 중…</p>`;
   else if(S.view === "present" && room() && isTeacher()) h += viewPresent(room());
   else if(S.view === "room" && room()){ S.pendingRoom = null; h += isTeacher() ? viewRoomTeacher(room()) : viewRoomStudent(room()) }
   else if(S.view === "room" && S.pendingRoom === S.roomId) h += `<p class="who">활동을 저장하는 중…</p>`;   // 방금 만든 활동이 저장소에서 돌아오기 전
@@ -1428,8 +1439,9 @@ function renderTop(){
   if(S.preview){ document.getElementById("topr").innerHTML = `<button class="btn sm" type="button" data-a="preview-exit">교사 화면으로 돌아가기</button>`; return }
   if(isTeacher()) h += `<button class="btn sm" type="button" data-a="home">📋 내 수업</button>`;
   if(isTeacher()) h += `<button class="btn sm" type="button" data-a="preview-home" title="학생에게 보이는 화면을 확인해요. 여기서 쓴 내용은 저장되지 않아요.">👀 학생 화면 미리보기</button>`;
+  if(isTeacher() && S.mode === "supa") h += `<button class="btn sm" type="button" data-a="t-logout" title="${esc(S.sbEmail)}">로그아웃</button>`;
   if(!isTeacher()){
-    if(S.name) h += `<span class="who">${esc(S.name)} · <button class="linkbtn" type="button" data-a="rename">이름 바꾸기</button></span>`;
+    if(S.name) h += `<span class="who">${esc(S.name)} · <button class="linkbtn" type="button" data-a="rename">${S.mode === "supa" ? "다른 학생으로" : "이름 바꾸기"}</button></span>`;
     const rr = S.view === "room" ? room() : null, gcid = rr?._gid ? rr.courseId : (S.view === "home" ? S.course : "");
     if(gcid && myGroup(gcid)) h += `<span class="who">${esc(groupName(gcid, myGroup(gcid)))} · <button class="linkbtn" type="button" data-a="regroup" data-c="${esc(gcid)}">그룹 바꾸기</button></span>`;
     h += `<button class="btn sm" type="button" data-a="mine">내 생각 기록</button>`;
@@ -1444,6 +1456,7 @@ function distHTML(r, posts){
   return `<div class="dist" aria-hidden="true">${bars}</div><div class="legend">${lg}</div>`;
 }
 function nameForm(){
+  if(S.mode === "supa") return codeForm();
   return `<div class="card"><div class="q"><label for="f-name">먼저 번호와 이름을 적어 주세요</label><p class="hint">선생님이 누구 글인지 알아볼 수 있게 써 주세요. 예: 2반 14번 김지우</p>
     <input type="text" id="f-name" maxlength="30" autocomplete="off"></div>
     <div class="foot"><span></span><button class="btn pri" type="button" data-a="setname">시작하기</button></div></div>`;
@@ -2579,6 +2592,156 @@ function teacherCard(r, p, ps, nav){
 
 
 
+
+/* =========================================================
+   Supabase 연결 (GitHub Pages 등)
+   - 학생: 로그인 없이 익명 세션 → 학번·이름·개인 코드로 본인 확인(claim_student)
+   - 교사: 구글 로그인 + teachers 표에 등록된 이메일만 교사(whoami)
+   - 권한은 Supabase 규칙(RLS)이 서버에서 지킨다. 앱의 저장 방식(collection/doc)은 그대로 쓴다.
+   ========================================================= */
+let SB = null;
+function loadScript(src){
+  return new Promise((ok, bad) => { const sc = document.createElement("script"); sc.src = src; sc.onload = ok; sc.onerror = bad; document.head.appendChild(sc) });
+}
+async function initSupa(){
+  try{
+    if(!window.supabase) await loadScript("https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2");
+    SB = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {auth:{flowType:"pkce", persistSession:true, autoRefreshToken:true, detectSessionInUrl:true}});
+    let {data:{session}} = await SB.auth.getSession();
+    if(!session){
+      const r = await SB.auth.signInAnonymously();
+      if(r.error) throw r.error;
+      session = r.data.session;
+    }
+    if(/[?&]code=/.test(location.search)) history.replaceState(null, "", location.pathname + location.hash);   // 구글 로그인에서 돌아온 주소 정리
+    const who = (await SB.rpc("whoami")).data || {};
+    S.mode = "supa";
+    Auth.set(!!who.teacher);
+    S.sbEmail = who.email || "";
+    S.sbAnon = !!session?.user?.is_anonymous;
+    if(!who.teacher){ S.name = who.student_name || ""; lsSet("nonjae.name", S.name) }
+    S.canWrite = !!who.teacher || !!who.student_name;
+    S.db = supaDB(SB);
+    ["rooms","posts","replies","treplies","config","courses"].forEach(sub);
+    if(Auth.teacher) ["tnotes","ttemplates"].forEach(sub);
+    return true;
+  }catch(e){
+    S.supaError = (e && e.message) || "연결 실패";
+    return false;
+  }
+}
+/* 앱이 쓰는 저장 방식(collection/doc)을 Supabase의 docs 표 위에 그대로 옮긴다 */
+function supaDB(sb){
+  const live = {};                                        // 모음별 화면 데이터 → 내 저장도 바로 반영
+  const errOf = e => Object.assign(new Error(e?.message || "db"), {code: /row-level security|permission|violates|denied/i.test(e?.message || "") ? "invalid_argument" : "unavailable"});
+  const chk = r => { if(r.error) throw errOf(r.error); return r };
+  const local = (col, fn) => (live[col] || []).forEach(l => { fn(l.map); l.emit() });
+  const docRef = path => {
+    const i = path.indexOf("/"), col = path.slice(0, i), id = path.slice(i + 1);
+    return {
+      set: async data => { chk(await sb.from("docs").upsert({col, id, data})); local(col, m => m.set(id, JSON.parse(JSON.stringify(data)))) },
+      update: async patch => { chk(await sb.rpc("doc_merge", {p_col:col, p_id:id, p_patch:patch})); local(col, m => { if(m.has(id)) m.set(id, {...m.get(id), ...JSON.parse(JSON.stringify(patch))}) }) },
+      delete: async () => { chk(await sb.from("docs").delete().eq("col", col).eq("id", id)); local(col, m => m.delete(id)) }
+    };
+  };
+  return {
+    doc: docRef,
+    collection: col => ({
+      add: async data => {
+        const id = "x" + Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+        chk(await sb.from("docs").insert({col, id, data}));
+        local(col, m => m.set(id, JSON.parse(JSON.stringify(data))));
+        return {id};
+      },
+      onSnapshot(cb, onErr){
+        const map = new Map(); let ready = false, t = null;
+        const emit = () => { if(!ready) return; clearTimeout(t); t = setTimeout(() => cb({docs:[...map.entries()].map(([id, d]) => ({id, data:() => d}))}), 40) };
+        (live[col] = live[col] || []).push({map, emit});
+        (async () => {
+          try{
+            for(let from = 0; ; from += 1000){
+              const r = chk(await sb.from("docs").select("id,data").eq("col", col).range(from, from + 999));
+              r.data.forEach(x => map.set(x.id, x.data));
+              if(r.data.length < 1000) break;
+            }
+            ready = true; emit();
+          }catch(e){ onErr && onErr(e) }
+        })();
+        sb.channel("docs-" + col + "-" + Math.random().toString(36).slice(2, 8))
+          .on("postgres_changes", {event:"INSERT", schema:"public", table:"docs", filter:`col=eq.${col}`}, p => { map.set(p.new.id, p.new.data); emit() })
+          .on("postgres_changes", {event:"UPDATE", schema:"public", table:"docs", filter:`col=eq.${col}`}, p => { map.set(p.new.id, p.new.data); emit() })
+          .on("postgres_changes", {event:"DELETE", schema:"public", table:"docs"}, p => { if(p.old && p.old.col === col){ map.delete(p.old.id); emit() } })
+          .subscribe();
+        return () => {};
+      }
+    })
+  };
+}
+/* 교사 로그인 화면 (주소 끝에 #teacher) — 학생 화면에는 이 화면으로 가는 버튼이 없다 */
+function viewTeacherLogin(){
+  return `<div class="home-head"><div><div class="eyebrow">교사</div><h1>교사 로그인</h1><p>학교에서 쓰는 구글 계정으로 로그인해요. 교사로 등록된 계정만 교사 화면을 쓸 수 있어요.</p></div></div>
+    <div class="card" style="max-width:520px">
+      ${S.sbEmail ? `<p><b>${esc(S.sbEmail)}</b> 계정은 교사로 등록되어 있지 않아요.</p><p class="muted small" style="margin-top:6px">Supabase의 teachers 표에 이 이메일을 넣었는지 확인해 주세요. (README 6단계)</p>
+        <div class="row" style="margin-top:12px"><button class="btn" type="button" data-a="t-logout">로그아웃</button><button class="btn pri" type="button" data-a="t-login">다른 구글 계정으로 로그인</button></div>`
+      : `<button class="btn pri" type="button" data-a="t-login">G&nbsp; 구글 계정으로 로그인</button>`}
+      <p class="muted small" style="margin-top:14px"><button class="linkbtn" type="button" data-a="t-cancel">← 학생 화면으로</button></p></div>`;
+}
+/* 학생: 학번 · 이름 · 개인 코드 */
+function codeForm(){
+  return `<div class="card"><p><b>처음 한 번만 확인할게요.</b> 선생님이 나눠 준 개인 코드를 넣어 주세요.</p>
+    <div class="form-grid" style="margin-top:10px">
+      <div class="q"><label for="f-num">학번</label><input type="text" id="f-num" inputmode="numeric" maxlength="12" autocomplete="off" placeholder="예: 10314"></div>
+      <div class="q"><label for="f-name">이름</label><input type="text" id="f-name" maxlength="20" autocomplete="off" placeholder="예: 김지우"></div>
+      <div class="q"><label for="f-code">개인 코드</label><input type="text" id="f-code" maxlength="12" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="예: K7P2QM"></div></div>
+    <p class="hint">이 기기가 기억해서 다음부터는 묻지 않아요. 코드를 잃어버렸으면 선생님께 말해 주세요.</p>
+    <div class="foot"><span></span><button class="btn pri" type="button" data-a="setname">시작하기</button></div></div>`;
+}
+/* 교사: 학생 명단과 개인 코드 */
+const CODE_ABC = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+function newCode(n = 6){ const a = new Uint32Array(n); crypto.getRandomValues(a); return [...a].map(x => CODE_ABC[x % CODE_ABC.length]).join("") }
+function parseRoster(text){
+  const ok = [], bad = [];
+  String(text || "").split(/\n/).map(x => x.trim()).filter(Boolean).forEach(line => {
+    const parts = line.split(/[\t,]+|\s+/).filter(Boolean), i = parts.findIndex(x => /^\d{3,10}$/.test(x));
+    if(i < 0){ bad.push(line); return }
+    const name = parts.filter((_, j) => j !== i).join(" ").trim();
+    if(!name){ bad.push(line); return }
+    ok.push({number:parts[i], name});
+  });
+  return {ok, bad};
+}
+async function loadRoster(){
+  const r = await SB.from("students").select("id,number,name,code").order("number");
+  if(r.error){ toast("학생 명단을 불러오지 못했어요."); return }
+  S.roster = r.data || []; if(S.modal?.type === "roster") render();
+}
+function rosterModalHTML(){
+  const q = (S.rosterQ || "").trim(), list = (S.roster || []).filter(x => !q || (x.number + " " + x.name).includes(q));
+  return `<h3>👥 학생 명단 · 개인 코드</h3>
+    <p class="small muted">학생은 학번·이름·코드로 들어와요. 코드는 학생에게 보이지 않고, 선생님 화면에서만 볼 수 있어요.</p>
+    <div class="q"><label for="roster-add">학생 추가 <span class="opt">(한 줄에 한 명 · 나이스에서 복사한 ‘학번 이름’ 그대로)</span></label>
+      <textarea id="roster-add" rows="4" placeholder="10301 김가온&#10;10302 나다은"></textarea>
+      <div class="row end" style="margin-top:6px"><button class="btn pri sm" type="button" data-a="roster-add">추가하고 코드 만들기</button></div></div>
+    ${S.roster === undefined ? `<p class="muted small">불러오는 중…</p>` : `
+    <div class="row"><input type="search" id="roster-q" placeholder="학번·이름으로 찾기" value="${esc(q)}" style="flex:1" aria-label="학생 찾기"><span class="muted small">${S.roster.length}명</span>
+      <button class="btn sm" type="button" data-a="roster-print" ${S.roster.length ? "" : "disabled"}>🖨 코드 쪽지 인쇄</button></div>
+    <div class="tscroll" style="max-height:46vh;overflow:auto"><table class="ptable"><thead><tr><th>학번</th><th>이름</th><th>코드</th><th><span class="sr">관리</span></th></tr></thead><tbody>
+      ${list.map(x => `<tr><td class="mono">${esc(x.number)}</td><td>${esc(x.name)}</td><td class="mono"><b>${esc(x.code)}</b></td>
+        <td style="white-space:nowrap"><button class="btn sm" type="button" data-a="roster-reissue" data-id="${esc(x.id)}">새 코드</button> <button class="btn sm danger" type="button" data-a="roster-del" data-id="${esc(x.id)}">빼기</button></td></tr>`).join("") || `<tr><td colspan="4" class="muted">아직 학생이 없어요.</td></tr>`}
+    </tbody></table></div>`}
+    <div class="row end"><button class="btn" type="button" data-a="modal-close">닫기</button></div>`;
+}
+function printRoster(){
+  const w = window.open("", "_blank");
+  if(!w){ toast("팝업이 막혀 있어요. 브라우저에서 팝업을 허용해 주세요."); return }
+  const url = shareBase();
+  w.document.write(`<!doctype html><meta charset="utf-8"><title>생각이음 학생 코드</title>
+    <style>body{font-family:system-ui,sans-serif;margin:12mm}.g{display:grid;grid-template-columns:repeat(3,1fr);gap:0}.s{border:1px dashed #999;padding:10px 12px;min-height:38mm;box-sizing:border-box;break-inside:avoid}
+    .t{font-size:11px;color:#555}.n{font-size:16px;font-weight:700;margin:6px 0}.c{font-family:monospace;font-size:24px;letter-spacing:3px;font-weight:700}.u{font-size:10px;color:#555;word-break:break-all;margin-top:6px}</style>
+    <div class="g">${(S.roster || []).map(x => `<div class="s"><div class="t">생각이음 · 개인 코드 (다른 사람에게 보여 주지 마세요)</div><div class="n">${esc(x.number)} ${esc(x.name)}</div><div class="c">${esc(x.code)}</div><div class="u">${esc(url)}</div></div>`).join("")}</div>
+    <script>setTimeout(()=>print(),300)<\/script>`);
+  w.document.close();
+}
 /* =========================================================
    가상 인물 대화 (AI) — 학생은 자기 Claude 계정의 사용량으로 대화한다(sample 기능).
    API 키가 필요 없다. 다른 곳(GitHub 등)에 올리면 getSample()만 다른 AI 연결로 바꾸면 된다.
@@ -3091,7 +3254,10 @@ const EXPORTS = {all:"전체 결과", progress:"학생별 진행 현황", though
 /* =========================================================
    10-1. 교사: 내 활동 (활동 관리)
    ========================================================= */
-function shareBase(){ const c = S.config.find(x=>x.id==="app"); return (c?.shareUrl || "").split("#")[0] }
+function shareBase(){
+  if(S.mode === "supa") return location.origin + location.pathname;      // GitHub 등: 지금 주소가 곧 학생 주소
+  const c = S.config.find(x=>x.id==="app"); return (c?.shareUrl || "").split("#")[0];
+}
 function studentLink(r){ const b = shareBase(); return b ? b + "#" + r.id : "" }
 function manageFiltered(){
   const q = (S.mq||"").trim().toLowerCase(), dur = MDURS.find(x => x[0] === S.mdur);
@@ -3148,7 +3314,7 @@ function viewManage(){
   const subs = [...new Set(S.rooms.map(r=>r.subject).filter(Boolean))], grades = [...new Set(S.rooms.map(r=>r.grade).filter(Boolean))];
   const local = S.form.create && !S.form.create.editId && ((S.form.create.prompt||"").trim() || (S.form.create.title||"").trim()) ? S.form.create : null;
   let h = `<div class="home-head"><div><div class="eyebrow">교사 화면</div><h1>내 수업</h1><p>수업 ${S.courses.length}개 · 활동 ${counts.all}개${counts.archived ? ` · 보관 ${counts.archived}개` : ""}</p></div>
-    <button class="btn pri" type="button" data-a="create">+ 새 활동 만들기</button></div>`;
+    <span class="row">${S.mode === "supa" ? `<button class="btn" type="button" data-a="roster-open">👥 학생 코드</button>` : ""}<button class="btn pri" type="button" data-a="create">+ 새 활동 만들기</button></span></div>`;
   h += courseBar() + courseHead();
   h += `<h2 style="font-size:16px;margin:4px 0 10px">${S.mcourse && S.mcourse !== "_none" ? "이 수업의 활동" : S.mcourse === "_none" ? "미분류 활동" : "모든 활동"}</h2>`;
   if(!shareBase()) h += `<div class="setup"><b>🔗 학생 링크 설정 (처음 한 번)</b><p class="small">화면 오른쪽 위의 <b>공유</b>에서 이 페이지 링크를 만든 뒤 아래에 붙여 넣으면, 활동마다 학생 링크와 QR 코드를 바로 만들 수 있어요. 학생이 들어올 수 있도록 공유 범위도 확인해 주세요.</p>
@@ -3215,6 +3381,8 @@ function renderModal(){
     const c = courseOf(m.id), n = S.rooms.filter(r => r.courseId === m.id).length;
     h = `<h3>수업을 삭제할까요?</h3><p><b>${esc(c?.title||"")}</b></p><p>${n ? `이 수업의 활동 ${n}개와 학생 응답은 지워지지 않고 ‘미분류’로 옮겨져요. 그룹별 배포 정보는 남지만 그룹 이름은 보이지 않게 돼요.` : "이 수업에는 활동이 없어요."}</p>
       <div class="row end"><button class="btn" type="button" data-a="modal-close">취소</button><button class="btn danger" type="button" data-a="course-del-yes" data-id="${esc(m.id)}">수업 삭제</button></div>`;
+  }else if(m.type === "roster"){
+    h = rosterModalHTML();
   }else if(m.type === "status"){
     const r = S.rooms.find(x=>x.id===m.id);
     const txt = m.v === "closed" ? ["활동을 마감할까요?", "마감하면 학생이 더 이상 제출하거나 고칠 수 없어요. 지금까지의 결과와 응답은 계속 볼 수 있고, 언제든 ‘다시 열기’로 되돌릴 수 있어요.", "마감하기"]
@@ -3642,6 +3810,7 @@ function onFormValue(el){
 }
 document.addEventListener("input", e => {
   const el = e.target;
+  if(el.id === "roster-q"){ S.rosterQ = el.value; const box = el.closest(".modal"); if(box){ const at = el.selectionStart; render(); const n = document.getElementById("roster-q"); if(n){ n.focus(); n.setSelectionRange(at, at) } } return }
   if(el.id === "m-q"){ S.mq = el.value; const box = document.getElementById("mlist"); if(box) box.innerHTML = manageList(); return }
   if(el.id === "s-q"){ S.sq = el.value; const r = room(), box = document.getElementById("slist"); if(r && box){ const st = teacherStats(r); box.innerHTML = studentListHTML(r, st, studentView(r, st)) } return }
   if(!el.dataset.form || el.type==="checkbox" || el.type==="radio" || el.tagName==="SELECT") return;
@@ -3693,7 +3862,7 @@ function refreshWriteStatus(){
   box.outerHTML = statusHTML(r);
   revealFields(r);
 }
-document.addEventListener("keydown", e => { if(e.key==="Enter" && e.target.id==="f-name"){ e.preventDefault(); act("setname") } });
+document.addEventListener("keydown", e => { if(e.key==="Enter" && !e.isComposing && (e.target.id==="f-name" && S.mode !== "supa" || e.target.id==="f-code")){ e.preventDefault(); act("setname") } });
 document.addEventListener("keydown", e => {                       // 가상 인물 대화: Enter로 보내기, Shift+Enter는 줄바꿈 (한글 입력 중에는 보내지 않음)
   if(e.key !== "Enter" || e.shiftKey || e.isComposing || e.keyCode === 229) return;
   if(!(e.target.dataset?.form || "").startsWith("chat:")) return;
@@ -3735,6 +3904,27 @@ async function act(a, b){
     case "open": S.gsel = ""; S.gselRoom = b.dataset.id; S.asgAdd = false; S.sq = ""; S.sf = "all"; S.fbSent = null; S.pmode = null; S.pidx = 0; S.prand = null; S.qopen = null; S.modal = null; S.ttab = "overview"; S.view = "room"; S.roomId = b.dataset.id; S.take = null; S.editing = null; S.confirmDel = false; S.openPost = null; scrollTo(0,0); break;
     case "open-record": S.view = "room"; S.roomId = b.dataset.id; S.step[b.dataset.id] = "record"; S.openPost = null; scrollTo(0,0); break;
     case "role": return;
+    /* ---- Supabase: 교사 로그인 · 학생 명단 ---- */
+    case "t-login": { await SB.auth.signInWithOAuth({provider:"google", options:{redirectTo: location.origin + location.pathname + "#teacher"}}); return }
+    case "t-logout": { await SB.auth.signOut(); location.hash = ""; location.reload(); return }
+    case "t-cancel": S.wantTeacher = false; break;
+    case "roster-open": S.modal = {type:"roster"}; S.roster = undefined; S.rosterQ = ""; loadRoster(); break;
+    case "roster-add": {
+      const {ok, bad} = parseRoster(document.getElementById("roster-add")?.value);
+      if(!ok.length){ toast(bad.length ? "‘학번 이름’ 꼴로 적어 주세요." : "추가할 학생을 적어 주세요."); return }
+      const have = new Set((S.roster || []).map(x => x.number + " " + x.name));
+      const rows = ok.filter(x => { const k = x.number + " " + x.name; if(have.has(k)) return false; have.add(k); return true }).map(x => ({...x, code:newCode()}));   // 이미 있거나 겹친 줄은 빼고
+      if(rows.length){ const r2 = await SB.from("students").upsert(rows, {onConflict:"number,name", ignoreDuplicates:true}); if(r2.error){ toast("추가하지 못했어요: " + r2.error.message); return } }
+      toast(`${rows.length}명을 추가했어요.${ok.length - rows.length ? ` (이미 있는 ${ok.length - rows.length}명은 그대로)` : ""}${bad.length ? ` 읽지 못한 줄 ${bad.length}개` : ""}`);
+      await loadRoster(); break;
+    }
+    case "roster-reissue": { const r2 = await SB.from("students").update({code:newCode()}).eq("id", b.dataset.id); if(r2.error){ toast("바꾸지 못했어요."); return } toast("새 코드를 만들었어요. 예전 코드는 더 이상 쓸 수 없어요."); await loadRoster(); break }
+    case "roster-del": {
+      if(!b.dataset.sure){ b.dataset.sure = "1"; b.textContent = "정말 빼기"; setTimeout(() => { if(b.isConnected){ delete b.dataset.sure; b.textContent = "빼기" } }, 3000); return }
+      const r2 = await SB.from("students").delete().eq("id", b.dataset.id); if(r2.error){ toast("빼지 못했어요."); return }
+      toast("명단에서 뺐어요. 이 학생이 쓴 글은 그대로 남아요."); await loadRoster(); break;
+    }
+    case "roster-print": printRoster(); return;
     /* ---- 가상 인물 대화 ---- */
     case "chat-starter": { const el = document.getElementById(`chat:${r.id}-msg`); if(el){ el.value = b.dataset.text; el.dispatchEvent(new Event("input", {bubbles:true})); el.focus() } return }
     case "chat-stop": { CHAT[r.id]?.ctl?.abort(); return }
@@ -3792,8 +3982,21 @@ async function act(a, b){
     case "starter": insertStarter(b); return;
 
     /* ---- 이름 ---- */
-    case "rename": S.name = ""; lsSet("nonjae.name",""); S.form = {}; S.step = {}; if(S.view!=="room") S.view = "mine"; break;
+    case "rename":
+      if(S.mode === "supa"){ lsSet("nonjae.name", ""); await SB.auth.signOut(); location.reload(); return }   // 다른 학생으로: 이 기기의 연결을 끊는다
+      S.name = ""; lsSet("nonjae.name",""); S.form = {}; S.step = {}; if(S.view!=="room") S.view = "mine"; break;
     case "setname": {
+      if(S.mode === "supa"){
+        const g = id => (document.getElementById(id)?.value || "").trim();
+        const num = g("f-num"), nm = g("f-name"), code = g("f-code");
+        if(!num || !nm || !code){ toast("학번, 이름, 개인 코드를 모두 적어 주세요."); return }
+        if(b) b.disabled = true;
+        const res = await SB.rpc("claim_student", {p_number:num, p_name:nm, p_code:code});
+        if(res.error || !res.data){ if(b) b.disabled = false; toast("학번·이름·코드가 맞지 않아요. 다시 확인해 주세요."); return }
+        S.name = res.data.name; lsSet("nonjae.name", S.name); S.canWrite = true;
+        loadForms(); S.seenTeacher = null; checkNewFeedback(); S.anim = true;
+        break;
+      }
       const v = (document.getElementById("f-name")?.value || "").trim();
       if(!v){ toast("번호와 이름을 써 주세요."); return }
       S.name = v; lsSet("nonjae.name", v); loadForms(); S.seenTeacher = null; checkNewFeedback(); S.anim = true;
