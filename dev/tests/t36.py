@@ -27,9 +27,9 @@ async def main():
     # activity assigned to group 1-4 only
     await T.click('.thead [data-a=create]'); await W(T)
     print('depth cards:', await T.eval_on_selector_all('.depth','e=>e.map(x=>x.innerText.replace(/\\n/g," | "))'))
-    await T.click('[data-a=depth][data-v=normal]'); await W(T); print('normal flow:', (await T.text_content('.preview-steps .flowline')).replace('\n',' '))
-    await T.click('[data-a=depth][data-v=deep]'); await W(T); print('deep flow:', (await T.text_content('.preview-steps .flowline')).replace('\n',' '))
-    await T.click('[data-a=depth][data-v=quick]'); await W(T); print('quick flow:', (await T.text_content('.preview-steps .flowline')).replace('\n',' '))
+    await T.click('[data-a=depth][data-v=normal]'); await W(T); print('normal flow:', (await T.inner_text('.pv-stages')).replace('\n',' '))
+    await T.click('[data-a=depth][data-v=deep]'); await W(T); print('deep flow:', (await T.inner_text('.pv-stages')).replace('\n',' '))
+    await T.click('[data-a=depth][data-v=quick]'); await W(T); print('quick flow:', (await T.inner_text('.pv-stages')).replace('\n',' '))
     await T.click('[data-a=depth][data-v=normal]'); await W(T)
     await T.screenshot(path='/tmp/claude-0/smoke/mob/depth.png')
     await T.fill('#c-prompt','물질의 상태 변화는 왜 일어날까?'); await T.fill('#c-title','상태 변화')

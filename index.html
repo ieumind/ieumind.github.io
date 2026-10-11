@@ -287,7 +287,7 @@ input[type=number]{max-width:140px}
 .dstages i.on{border-style:solid;border-color:transparent;background:var(--accent-soft);color:var(--fg);opacity:1;font-weight:600}
 .depth[aria-pressed="true"] .dstages i.on{background:var(--surface);box-shadow:0 0 0 1px var(--accent) inset}
 .depth .dot{width:12px;height:12px;border-radius:50%;background:var(--c)}
-.depth .fl{font-size:13.5px;color:var(--fg);font-family:var(--f-display)}
+.depth .fl{font-size:14px;color:var(--fg)}
 .depth .use{font-size:13px;color:var(--muted)}
 .depth[aria-pressed="true"]{border-color:var(--accent);background:var(--accent-soft);box-shadow:0 0 0 1px var(--accent)}
 .form-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px}
@@ -301,6 +301,19 @@ details.adv > summary::after{content:"펼치기 ▾";margin-left:auto;flex:0 0 a
 details.adv[open] > summary::after{content:"접기 ▴"}
 details.adv > summary:hover::after{filter:brightness(.96)}
 details.adv > div{padding:4px 20px 20px;display:grid;gap:18px}
+.adv-sec{display:grid;gap:10px;border-top:1px dashed var(--line);padding-top:14px}
+.adv-sec:first-child{border-top:0;padding-top:0}
+.adv-sec h4{font-size:15.5px;font-weight:700}
+.tools{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px}
+.toolchip{display:grid;gap:2px;text-align:left;border:1.5px solid var(--line);background:var(--surface);border-radius:10px;padding:9px 12px;cursor:pointer;font:inherit;color:var(--fg)}
+.toolchip b{font-size:14.5px}
+.toolchip span{font-size:12.5px;color:var(--muted)}
+.toolchip[aria-pressed="true"]{border-color:var(--accent);background:var(--accent-soft);box-shadow:0 0 0 1px var(--accent)}
+.pv-h{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:baseline;gap:6px}
+.pv-stages{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:8px;margin-top:8px}
+.pv-st{display:grid;gap:2px;background:rgba(255,255,255,.08);border-radius:10px;padding:8px 12px}
+.pv-st b{font-size:14px}
+.pv-st span{font-size:14px;opacity:.9}
 .adv-combo select{width:100%}
 .feat{display:grid;gap:10px}
 .feat > label{display:flex;align-items:flex-start;gap:10px;font-size:15px;min-height:32px}
@@ -1082,13 +1095,13 @@ const TOOLS = {
 
 /* 활동 깊이: 교사는 이것만 골라도 활동이 만들어진다 */
 const DEPTHS = {
-  quick: {label:"생각", mark:"①", stages:1, color:"var(--s3)", flow:"생각 → 이유 → 제출", use:"5~10분 · 수업 도입이나 정리", sum:"내 생각 쓰기", minChars:20,
+  quick: {label:"생각", mark:"①", stages:1, color:"var(--s3)", flow:"생각 → 이유 → 제출", use:"5~10분", sum:"내 생각을 쓰고 마쳐요", minChars:20,
     features:{initial:false, evidenceType:false, warrant:false, counter:false, meet:false, readMission:[], change:false, feedback:true, revise:false, terms:false},
     interact:{stance:"none", free:"none"}},
-  normal:{label:"생각 → 만남", mark:"②", stages:2, color:"var(--s1)", flow:"생각 → 이유 → 친구 생각 → 답해보기", use:"한 차시 · 일반 수업", sum:"친구 생각 만나기", minChars:60,
+  normal:{label:"생각 → 만남", mark:"②", stages:2, color:"var(--s1)", flow:"생각 → 이유 → 친구 생각 → 답해보기", use:"한 차시", sum:"친구 생각을 만나고 반응해요", minChars:60,
     features:{initial:false, evidenceType:false, warrant:false, counter:false, meet:true, readMission:[], change:true, feedback:true, revise:false, terms:false},
     interact:{stance:"rebuttal", free:"comment"}},
-  deep:  {label:"생각 → 만남 → 변화", mark:"③", stages:3, color:"var(--s4)", flow:"처음 생각 → 내 생각·이유 → (다른 생각 예상) → 친구 생각 → 답해보기 → 생각 변화 → 다시 생각", use:"한 차시 이상 · 심화 활동", sum:"생각의 변화 돌아보기", minChars:150,
+  deep:  {label:"생각 → 만남 → 변화", mark:"③", stages:3, color:"var(--s4)", flow:"처음 생각 → 내 생각·이유 → (다른 생각 예상) → 친구 생각 → 답해보기 → 생각 변화 → 다시 생각", use:"한 차시 이상", sum:"만난 뒤 달라진 내 생각을 돌아봐요", minChars:150,
     features:{initial:true, evidenceType:true, warrant:true, counter:false, meet:true, readMission:["new","best","diff"], change:true, feedback:true, revise:true, terms:false},
     interact:{stance:"rebuttal", free:"rebuttal"}}
 };
@@ -1394,7 +1407,7 @@ const Auth = (() => { let t = null; return Object.freeze({ set(v){ if(t === null
 Object.defineProperty(S, "canTeach", {get: () => Auth.teacher, set(){} });        // 예전 코드 호환: 읽기만
 const isTeacher = () => Auth.teacher && S.role === "teacher";                       // 교사 권한 + 교사 화면(학생 화면 미리보기 중이면 false)
 /* 교사만 쓰는 동작: 학생 권한으로는 버튼이 없을 뿐 아니라 호출해도 실행되지 않는다 */
-const TEACHER_ACTS = new Set(["mem-open","mem-cls","mem-all","mem-none","course-gsplit","ai-setup","ai-key-save","ai-key-del","ai-suggest","ai-pick","tadmin-open","tadmin-block","tadmin-tab","fbadmin-done","notice-add","notice-del","note-filter","note-req","note-req-send","note-req-cancel","note-dup","create","edit-room","dup","dup-list","del","del-yes","del-ask","del-room","status","toggle","save-feedback","class-fb","pin","pin-move","pin-clear",
+const TEACHER_ACTS = new Set(["pick-tool","mem-open","mem-cls","mem-all","mem-none","course-gsplit","ai-setup","ai-key-save","ai-key-del","ai-suggest","ai-pick","tadmin-open","tadmin-block","tadmin-tab","fbadmin-done","notice-add","notice-del","note-filter","note-req","note-req-send","note-req-cancel","note-dup","create","edit-room","dup","dup-list","del","del-yes","del-ask","del-room","status","toggle","save-feedback","class-fb","pin","pin-move","pin-clear",
   "present","present-exit","pmode","pnav","prand","fullscreen","export","export-go","save-tset","tpl-save-open","tpl-save","tpl-cancel","use-tpl","create-save","draft-save","publish-draft","discard-form",
   "preview","preview-form","preview-home","qr","copy-link","save-share","mcourse","course-new","course-edit","course-gadd","course-gdel","course-save","course-del","course-del-yes",
   "roster-open","roster-add","roster-reissue","roster-del","roster-print","gsel","asg-add-open","asg-add-cancel","asg-add","asg-st","racts","mview","sview","sfilter","sgo","snav","ttab","mfilter","open-student","goal","tpl","st-add","st-del","depth"]);
@@ -3614,6 +3627,11 @@ function teacherCard(r, p, ps, nav){
 let SB = null;
 /* Supabase RPC를 안전하게: supabase-js의 rpc()는 .catch가 없는 객체를 돌려주므로 await + try로 감싼다 (실패해도 앱이 멈추지 않게) */
 async function rpcSafe(fn, args){ try{ return await SB.rpc(fn, args) }catch(e){ return {data:null, error:e} } }
+/* Edge Function 부르기: 오래 걸리면 기다리지 않고 {timeout:true} */
+async function invokeSafe(name, body, ms = 30000){
+  try{ return await Promise.race([SB.functions.invoke(name, {body}), new Promise(r => setTimeout(() => r({timeout:true}), ms))]) }
+  catch(e){ return {data:null, error:e} }
+}
 function loadScript(src){
   return new Promise((ok, bad) => { const sc = document.createElement("script"); sc.src = src; sc.onload = ok; sc.onerror = bad; document.head.appendChild(sc) });
 }
@@ -4960,6 +4978,12 @@ function roomFromForm(f){
   };
 }
 /* 고급 설정: 비슷한 옵션을 하나로 묶은 선택 (안쪽 저장 값은 그대로) */
+/* 학생 단계 → 생각(0)·만남(1)·변화(2) */
+const STAGE_OF = {see:0, chat:0, think:0, write:0, why:0, counter:0, ask:0, compose:0, read:1, respond:1, take:1, back:1, feedback:1, reflect:2, revise:2, develop:2};
+/* 작성 방법: 고를 수 있는 것만 (반론–재반론·생각의 변화·예측–이유는 깊이·세부 설정과 겹쳐 목록에서 뺐다. 예전 활동은 그대로 동작) */
+const TOOL_PICK = ["claimEvidence", "feel", "free", "compare", "causeEffect", "source"];
+const TOOL_NAME = {claimEvidence:"주장과 근거", feel:"생각과 이유", free:"자유롭게", compare:"비교하기", causeEffect:"원인과 결과", source:"자료(사료) 읽기"};
+const REVEAL_L = {after:"내 글을 올린 뒤에 열림 (추천)", immediate:"처음부터 열림", teacher:"선생님만 보기 (게시판 닫힘)"};
 function comboVal(f, k){
   if(k === "start") return f.predict ? "predict" : f.initial ? "initial" : "none";
   if(k === "react") return f.rebuttal ? "rebut" : f.meet ? "meet" : f.comment ? "comment" : "none";
@@ -4968,7 +4992,7 @@ function comboVal(f, k){
 }
 function setCombo(k, v){
   const f = createForm(), hasReason = (TOOLS[f.tool] || TOOLS[TEMPLATES[f.template]?.tool] || {fields:[]}).fields.some(x => x.k === "reason");
-  if(k === "start") Object.assign(f, {initial: v === "initial", predict: v === "predict"});
+  if(k === "start") Object.assign(f, v === true || v === "initial" ? {initial:true} : {initial:false, predict:false});
   if(k === "react") Object.assign(f, {meet: v === "meet" || v === "rebut", comment: v !== "none", rebuttal: v === "rebut", missionDeep: false});
   if(k === "end") Object.assign(f, {change: v === "change" || v === "both", revise: v === "revise" || v === "both"});
   if(k === "evidence"){
@@ -4988,7 +5012,7 @@ const AI_SUG_T = ["debate2", "debateN", "inquiry", "relay"];
 const aiLive = () => S.mode === "supa" && !!SB && !S.demo && !S.preview;
 const AI_ERR = {bad_key:"API 키가 맞지 않아요. ⚙️ AI 연결 설정에서 키를 다시 넣어 주세요.", quota:"무료 사용량을 잠시 다 썼어요. 1~2분 뒤(또는 내일) 다시 해 보세요.",
   forbidden:"이 키로는 Gemini API를 쓸 수 없어요. AI 스튜디오에서 새 키를 만들어 넣어 주세요.", denied:"선생님 계정으로 로그인해야 쓸 수 있어요.",
-  empty:"키워드를 한두 개 적어 주세요.", no_key:"먼저 구글 AI 스튜디오 키를 연결해 주세요.", network:"연결이 잠시 불안정해요. 다시 눌러 주세요.", ai_error:"AI가 질문을 만들지 못했어요. 키워드를 바꿔 다시 해 보세요."};
+  empty:"키워드를 한두 개 적어 주세요.", timeout:"AI 응답이 너무 늦어요. 잠시 뒤 다시 눌러 주세요.", no_key:"먼저 구글 AI 스튜디오 키를 연결해 주세요.", network:"연결이 잠시 불안정해요. 다시 눌러 주세요.", ai_error:"AI가 질문을 만들지 못했어요. 키워드를 바꿔 다시 해 보세요."};
 function aiSugHTML(f){
   if(!AI_SUG_T.includes(f.template)) return "";
   const st = S.aiSug && S.aiSug.t === f.template ? S.aiSug : null, deb = f.template.startsWith("debate");
@@ -5017,7 +5041,8 @@ const DEMO_SUG = {
 };
 async function aiSuggest(body){
   if(!aiLive()){ await new Promise(r => setTimeout(r, 450)); const k = body.kind.startsWith("debate") ? "debate" : body.kind === "relay" ? "relay" : "inquiry"; return {items:DEMO_SUG[k], demo:true} }
-  try{ const r = await SB.functions.invoke("suggest", {body}); return r.error ? {error:"network"} : (r.data || {error:"ai_error"}) }catch(e){ return {error:"network"} }
+  const r = await invokeSafe("suggest", body, 60000);
+  return r.timeout ? {error:"timeout"} : r.error ? {error:"network"} : (r.data || {error:"ai_error"});
 }
 async function loadAiStatus(){
   if(!aiLive()){ S.aiStatus = {off:true}; renderModal(); return }
@@ -5059,6 +5084,7 @@ function viewCreate(){
   const qopts = (relay ? [{k:"student", l:"학생이 고르기"}] : []).concat(Object.entries(QTYPES).map(([k,v]) => ({k, l:`${v.mark} ${v.short}`})));
   const etBoxes = EVIDENCE_TYPES.map(e => `<label class="choice"><input type="checkbox" data-form="create" data-k="evidenceTypes" data-multi value="${esc(e)}" ${(f.evidenceTypes||[]).includes(e)?"checked":""}><span>${esc(e)}</span></label>`).join("");
   const hasReason = tool.fields.some(x=>x.k==="reason");
+  const stg = !f.meet || f.reveal === "teacher" ? 1 : (f.change || f.revise) ? 3 : 2;        // 지금 설정이 실제로 거치는 단계 수
   const GRADES = ["중1","중2","중3","고1","고2","고3"].concat(f.grade && !["중1","중2","중3","고1","고2","고3"].includes(f.grade) ? [f.grade] : []);   // 예전에 고른 값은 그대로 보여 준다
 
   let h = `<button class="linkbtn back" type="button" data-a="home">← 내 과목</button>
@@ -5095,70 +5121,58 @@ function viewCreate(){
   </div></div>
 
   ${isNoteT ? `<style>.depth-card,.preview-steps,details[data-adv]{display:none!important}</style>` : ""}
-  <div class="card depth-card" style="margin-top:16px"><h3>③ 어디까지 생각을 이어 갈까요?</h3><p class="muted small" style="margin:-4px 0 10px">생각이음의 흐름: <b>생각</b> → <b>만남</b>(친구 생각) → <b>변화</b>(달라진 내 생각)</p>${lockWrap(locked, `
-    <div class="depths" role="group" aria-label="활동 깊이">${Object.entries(DEPTHS).filter(([k]) => !(NO_DEEP.includes(f.template) && k === "deep")).map(([k,d])=>`<button type="button" class="depth" data-a="depth" data-v="${k}" aria-pressed="${k===f.depth}">
-      <b><span class="dn" aria-hidden="true">${d.stages}</span>${esc(d.label)}</b>
-      <span class="dstages" aria-hidden="true">${STAGE_L.map((x, i) => `<i class="${i < d.stages ? "on" : ""}">${["💭","👀","🔄"][i]} ${x}</i>`).join("")}</span>
-      <span class="use">${esc(d.use)}</span></button>`).join("")}</div>`)}</div>
+  <div class="card depth-card" style="margin-top:16px"><h3>③ 생각을 어디까지 이어 갈까요? <span class="opt">💭 생각 → 👀 만남 → 🔄 변화</span></h3>${lockWrap(locked, `
+    <div class="depths" role="group" aria-label="생각 깊이">${Object.entries(DEPTHS).filter(([k]) => !(NO_DEEP.includes(f.template) && k === "deep")).map(([k,d])=>`<button type="button" class="depth" data-a="depth" data-v="${k}" aria-pressed="${d.stages === stg}">
+      <b><span class="dn" aria-hidden="true">${d.stages}</span>${esc(d.label)}</b><span class="fl">${esc(d.sum)}</span><span class="use">⏱ ${esc(d.use)}</span></button>`).join("")}</div>`)}</div>
 
-  <div class="preview-steps" style="margin-top:16px"><div class="eyebrow">학생 화면 미리보기 · 설정을 바꾸면 함께 바뀌어요</div>
-    <p class="flowline">${stepsOf(preview).map((s,i)=>`<span>${CIRC[i]||i+1} ${esc(stepMeta(preview,s).s)}</span>`).join(' <span aria-hidden="true">→</span> ')}</p>
-    <p class="estline">총 ${stepsOf(preview).length}단계 · 예상 약 ${estMinutes(preview).join("~")}분${parseInt(f.duration) ? ` · 수업 정보에 적은 시간 ${parseInt(f.duration)}분` : ""} <span class="detail">(단계 수로 어림한 시간이에요)</span></p>
-    <p class="detail">${phs.map((ph,i)=>`${i+1}. ${esc(ph.l)}`).join("  ━  ")}</p></div>
+  <div class="preview-steps" style="margin-top:16px"><div class="pv-h"><span class="eyebrow">👀 학생은 이렇게 활동해요</span><span class="estline">${stepsOf(preview).length}단계 · 약 ${estMinutes(preview).join("~")}분</span></div>
+    <div class="pv-stages">${STAGE_L.map((x, i) => { const ss = stepsOf(preview).filter(st => (STAGE_OF[st] ?? 0) === i);
+      return ss.length ? `<div class="pv-st"><b>${["💭","👀","🔄"][i]} ${x}</b><span>${ss.map(st => esc(stepMeta(preview, st).s)).join(" → ")}</span></div>` : "" }).join("")}</div></div>
 
-  ${S.courses.length ? (() => { const c = courseOf(f.courseId), usedG = editR ? new Set(allPostsOf(editR.id).map(p => p.groupId).filter(Boolean)) : new Set(), lockC = locked && !!courseOf(editR.courseId);
-    return `<div class="card" style="margin-top:16px"><h3>④ 어떤 과목·그룹에서 쓸까요?</h3>
-      <div class="form-grid"><div class="q"><label for="c-course">사용할 과목</label><select id="c-course" data-form="create" data-k="courseId" ${lockC ? "disabled" : ""}><option value="">과목 없이 (미분류 · 링크 하나로 사용)</option>${S.courses.map(x => `<option value="${esc(x.id)}" ${f.courseId===x.id?"selected":""}>${courseIcon(x)} ${esc(x.title)}</option>`).join("")}</select>
-        ${lockC ? `<p class="hint">학생 응답이 있어 과목은 바꿀 수 없어요. 그룹은 더 추가할 수 있어요.</p>` : ""}</div></div>
-      ${c ? (groupsOf(c).length ? `<fieldset class="q"><legend style="font-size:15px">대상 그룹</legend><div class="row" style="flex-wrap:wrap">${groupsOf(c).map(g => { const on = (f.groups||[]).includes(g.id), keep = usedG.has(g.id);
-          return `<label class="choice" style="min-height:36px"><input type="checkbox" data-form="create" data-k="groups" data-multi value="${esc(g.id)}" ${on||keep?"checked":""} ${keep?"disabled":""}><span>${esc(g.name)}${keep?" · 응답 있음":""}</span></label>` }).join("")}</div>
-          <p class="hint">활동은 하나만 만들고, 고른 그룹마다 따로 열고 닫을 수 있어요.</p></fieldset>` : `<p class="muted small">이 과목에는 아직 그룹이 없어요. ‘내 과목’에서 과목 수정으로 그룹을 넣을 수 있어요.</p>`) : ""}</div>` })() : ""}
+  ${(() => { const c = courseOf(f.courseId), usedG = editR ? new Set(allPostsOf(editR.id).map(p => p.groupId).filter(Boolean)) : new Set(), lockC = locked && !!courseOf(editR?.courseId);
+    return `<div class="card" style="margin-top:16px"><h3>④ 누구와, 언제까지 할까요?</h3><div class="form-grid">
+      ${S.courses.length ? `<div class="q"><label for="c-course">과목</label><select id="c-course" data-form="create" data-k="courseId" ${lockC ? "disabled" : ""}><option value="">과목 없이 (링크 하나로 사용)</option>${S.courses.map(x => `<option value="${esc(x.id)}" ${f.courseId===x.id?"selected":""}>${courseIcon(x)} ${esc(x.title)}</option>`).join("")}</select>
+        ${lockC ? `<p class="hint">학생 응답이 있어 과목은 바꿀 수 없어요.</p>` : ""}</div>` : ""}
+      <div class="q"><label for="c-due">마감 <span class="opt">(선택)</span></label><input type="datetime-local" id="c-due" data-form="create" data-k="dueAt" value="${esc(f.dueAt||"")}">
+        <p class="hint">이 시각에 저절로 마감돼요.${f.dueAt ? ` <button class="linkbtn" type="button" data-a="due-clear">지우기</button>` : ""}</p></div></div>
+      ${c && groupsOf(c).length ? `<fieldset class="q"><legend style="font-size:15px">대상 그룹 <span class="opt">그룹마다 따로 열고 닫을 수 있어요</span></legend><div class="row" style="flex-wrap:wrap">${groupsOf(c).map(g => { const on = (f.groups||[]).includes(g.id), keep = usedG.has(g.id);
+          return `<label class="choice" style="min-height:36px"><input type="checkbox" data-form="create" data-k="groups" data-multi value="${esc(g.id)}" ${on||keep?"checked":""} ${keep?"disabled":""}><span>${esc(g.name)}${keep?" · 응답 있음":""}</span></label>` }).join("")}</div></fieldset>` : ""}</div>` })()}
 
-  <div class="card" style="margin-top:16px"><h3>⏰ 마감 <span class="opt">(선택)</span></h3>
-    <div class="q" style="max-width:340px"><label for="c-due">마감 날짜와 시간</label><input type="datetime-local" id="c-due" data-form="create" data-k="dueAt" value="${esc(f.dueAt||"")}">
-      <p class="hint">이 시각이 되면 저절로 마감돼요. 비워 두면 ‘마감하기’를 누를 때까지 열려 있어요.${f.dueAt ? ` <button class="linkbtn" type="button" data-a="due-clear">마감 시각 지우기</button>` : ""}</p></div></div>
-  <details class="adv" data-keep="info" ${(S.advOpen?.info ?? !!editR) ? "open" : ""}><summary>📋 수업 정보 <span class="opt">학년·과목·단원·시간·교사용 메모</span></summary><div><div class="form-grid">
+  <details class="adv" data-keep="info" ${(S.advOpen?.info ?? !!editR) ? "open" : ""}><summary>📋 수업 정보 <span class="opt">학년·단원·차시·교사용 메모</span></summary><div><div class="form-grid">
       <div class="q"><label for="c-grade">학년</label><select id="c-grade" data-form="create" data-k="grade"><option value="">선택 안 함</option>${GRADES.map(g=>`<option ${f.grade===g?"selected":""}>${g}</option>`).join("")}</select></div>
-      <div class="q"><label for="c-subject">과목</label><input type="text" id="c-subject" data-form="create" data-k="subject" maxlength="20" value="${esc(f.subject||"")}" placeholder="예: 한국사, 국어, 통합사회"></div>
+      <div class="q"><label for="c-subject">교과</label><input type="text" id="c-subject" data-form="create" data-k="subject" maxlength="20" value="${esc(f.subject||"")}" placeholder="예: 한국사, 국어, 통합사회"></div>
       <div class="q"><label for="c-unit">단원</label><input type="text" id="c-unit" data-form="create" data-k="unit" maxlength="40" value="${esc(f.unit||"")}"></div>
-      <div class="q"><label for="c-year">연도·차시</label><input type="text" id="c-year" data-form="create" data-k="year" maxlength="16" placeholder="예: 1972" value="${esc(f.year||"")}"></div>
+      <div class="q"><label for="c-year">연도·차시</label><input type="text" id="c-year" data-form="create" data-k="year" maxlength="16" placeholder="예: 3차시" value="${esc(f.year||"")}"></div>
       <div class="q"><label for="c-duration">예상 활동 시간 (분)</label><input type="number" id="c-duration" data-form="create" data-k="duration" min="0" max="180" step="5" value="${esc(f.duration||"")}" placeholder="예: 20"></div>
       <div class="q"><label for="c-stage">수업 단계</label><select id="c-stage" data-form="create" data-k="stage"><option value="">선택 안 함</option>${["도입","전개","정리","과제"].map(g=>`<option ${f.stage===g?"selected":""}>${g}</option>`).join("")}</select></div>
       <div class="q wide"><label for="c-memo">📝 교사용 메모 <span class="opt">(학생에게 보이지 않아요)</span></label>${ta("create","memo",{rows:2, ph:"예: 다음 시간 토론 전에 활용", id:"c-memo"})}</div>
     </div></div></details>
 
-  <details class="adv" data-adv data-keep="adv" ${S.advOpen?.adv ? "open" : ""}><summary>⚙️ 고급 설정 <span class="opt">설정하지 않아도 바로 만들 수 있어요</span></summary><div>`;
+  <details class="adv" data-adv data-keep="adv" ${S.advOpen?.adv ? "open" : ""}><summary>⚙️ 세부 설정 <span class="opt">고르지 않아도 ③에 맞게 정해져 있어요</span></summary><div>`;
   let adv = "";
+  const toolOpts = Object.entries(TOOLS).filter(([k,v]) => v.only ? v.only === f.template : (TOOL_PICK.includes(k) || k === f.tool));
+  const toolOnly = !!TOOLS[TEMPLATES[f.template]?.tool]?.only;
+  const sec = (ic, title, body) => `<section class="adv-sec"><h4>${ic} ${title}</h4>${body}</section>`;
   if(relay){
-    adv += `<div class="feat">
-      ${chk("feedback","교사 피드백")}
-      ${chk("anonymous","학생끼리는 익명으로 보이기 <span class='opt'>(선생님은 이름을 봐요)</span>")}
-    </div>`;
+    adv += sec("⚙️", "기본", `<div class="feat">${chk("feedback","교사 피드백 <span class='opt'>— 학생 글에 선생님이 한마디</span>")}${chk("anonymous","학생끼리는 익명으로 보이기 <span class='opt'>(선생님은 이름을 봐요)</span>")}</div>`);
   }else{
-    adv += `<div class="form-grid">
-      <div class="q"><label for="c-tool">사고 도구</label><select id="c-tool" data-form="create" data-k="tool" ${TOOLS[TEMPLATES[f.template]?.tool]?.only ? "disabled" : ""}>${Object.entries(TOOLS).filter(([k,v]) => !v.only || v.only === f.template).map(([k,v])=>`<option value="${k}" ${k===f.tool?"selected":""}>${v.label}</option>`).join("")}</select>
-        <p class="hint">작성 칸: ${effFields(preview).map(x=>esc(x.l)).join(" · ")}</p></div>
-      <div class="q"><label for="c-reveal">다른 학생 글 보기</label><select id="c-reveal" data-form="create" data-k="reveal">${Object.entries(REVEAL).map(([k,v])=>`<option value="${k}" ${k===f.reveal?"selected":""}>${v}</option>`).join("")}</select></div>
-      <div class="q"><label for="c-min">최소 글자 수</label><input type="number" id="c-min" data-form="create" data-k="minChars" min="0" max="3000" step="10" value="${esc(f.minChars||"0")}">
-        <p class="hint">300자 미만이면 학생에게 숫자 대신 부드러운 안내만 보여요.</p></div>
-    </div>
-    <div class="form-grid adv-combo">
-      <div class="q"><label for="c-start">활동을 시작할 때</label><select id="c-start" data-combo="start">
-        ${[["none","바로 내 생각 쓰기"],["initial","처음 생각을 짧게 남기기"],["predict","먼저 예측하고, 마지막에 비교하기"]].map(([k,l]) => `<option value="${k}" ${comboVal(f,"start")===k?"selected":""}>${l}</option>`).join("")}</select>
-        <p class="hint">처음 생각·예측은 마지막에 ‘지금 생각’과 비교해 볼 수 있어요.</p></div>
-      <div class="q"><label for="c-react">친구 글과 만나기</label><select id="c-react" data-combo="react" ${f.reveal==="teacher" ? "disabled" : ""}>
-        ${[["none","읽기만 하기"],["comment","댓글 달기"],["meet","다른 생각 하나 골라 한마디 하기"],["rebut","다른 생각에 근거를 들어 답하기"]].map(([k,l]) => `<option value="${k}" ${comboVal(f,"react")===k?"selected":""}>${l}</option>`).join("")}</select>
-        <p class="hint">${f.reveal==="teacher" ? "‘선생님만 보기’ 활동은 친구 글이 보이지 않아요." : "‘근거를 들어 답하기’는 학생 화면에서 ‘친구 생각에 답하기’로 보여요."}</p></div>
-      <div class="q"><label for="c-end">활동을 마칠 때</label><select id="c-end" data-combo="end">
-        ${[["none","따로 없음"],["change","생각이 어떻게 바뀌었는지 돌아보기"],["revise","처음 글을 고쳐 쓰기"],["both","돌아보고 고쳐 쓰기"]].map(([k,l]) => `<option value="${k}" ${comboVal(f,"end")===k?"selected":""}>${l}</option>`).join("")}</select>
-        <p class="hint">고쳐 써도 처음 글은 그대로 남아요.</p></div>
-    </div>
-    <div class="feat">
-      <label><input type="checkbox" id="c-evid" data-combo="evidence" ${comboVal(f,"evidence") ? "checked" : ""}><span>근거를 탄탄하게 <span class='opt'>— 근거 종류 고르기${hasReason ? "·근거 설명" : ""}${f.depth==="deep" ? "·반론 예상하기" : ""}·학습 용어(주장·근거) 함께 보이기</span></span></label>
-      ${comboVal(f,"evidence") ? `<div class="sub"><div class="choices">${etBoxes}</div></div>` : ""}
-      ${chk("feedback","교사 피드백 <span class='opt'>— 학생 글에 선생님이 한마디</span>")}
-      ${chk("anonymous","학생끼리는 익명으로 보이기 <span class='opt'>(선생님은 이름을 봐요)</span>")}
-    </div>`;
+    adv += sec("💭", "생각 — 어떻게 쓸까요?", `
+      ${toolOnly ? `<p class="hint">작성 칸: ${effFields(preview).map(x=>esc(x.l)).join(" · ")}</p>` : `<div class="tools" role="group" aria-label="작성 방법">${toolOpts.map(([k,v]) => `<button type="button" class="toolchip" data-a="pick-tool" data-v="${k}" aria-pressed="${k===f.tool}"><b>${esc(TOOL_NAME[k] || v.label)}</b><span>${v.fields.map(x => esc(x.l)).join(" · ")}</span></button>`).join("")}</div>`}
+      <div class="feat">
+        ${stg === 3 ? `<label><input type="checkbox" id="c-initial" data-combo="start" ${comboVal(f,"start") !== "none" ? "checked" : ""}><span>처음 생각 먼저 남기기 <span class='opt'>— 마지막에 ‘지금 생각’과 나란히 비교해요</span></span></label>` : ""}
+        <label><input type="checkbox" id="c-evid" data-combo="evidence" ${comboVal(f,"evidence") ? "checked" : ""}><span>근거를 탄탄하게 <span class='opt'>— 근거 종류 고르기${hasReason ? "·근거 설명" : ""}</span></span></label>
+        ${comboVal(f,"evidence") ? `<div class="sub"><div class="choices">${etBoxes}</div></div>` : ""}
+        <div class="q" style="max-width:260px"><label for="c-min">최소 글자 수</label><input type="number" id="c-min" data-form="create" data-k="minChars" min="0" max="3000" step="10" value="${esc(f.minChars||"0")}"></div>
+      </div>`);
+    adv += sec("👀", "만남 — 친구 생각을 어떻게 볼까요?", `<div class="form-grid">
+      <div class="q"><label for="c-reveal">우리 반 게시판</label><select id="c-reveal" data-form="create" data-k="reveal">${Object.entries(REVEAL).map(([k,v])=>`<option value="${k}" ${k===f.reveal?"selected":""}>${REVEAL_L[k] || v}</option>`).join("")}</select></div>
+      ${stg >= 2 ? `<div class="q"><label for="c-react">친구 글에 반응하기</label><select id="c-react" data-combo="react" ${f.reveal==="teacher" ? "disabled" : ""}>
+        ${[["comment","댓글 자유롭게"],["meet","다른 생각 하나 골라 한마디"],["rebut","근거를 들어 답하기"]].map(([k,l]) => `<option value="${k}" ${comboVal(f,"react")===k?"selected":""}>${l}</option>`).join("")}</select></div>` : ""}</div>
+      ${f.reveal==="teacher" && stg >= 2 ? `<p class="hint">‘선생님만 보기’면 친구 글을 볼 수 없어 만남 단계가 빠져요.</p>` : ""}${stg < 2 ? `<p class="hint">친구 생각에 반응하는 단계는 ③에서 ‘생각 → 만남’ 이상을 고르면 생겨요. (게시판의 ❤️·💬는 언제나 쓸 수 있어요)</p>` : ""}`);
+    if(stg === 3) adv += sec("🔄", "변화 — 마무리는 어떻게 할까요?", `<div class="q" style="max-width:360px"><select id="c-end" data-combo="end" aria-label="마무리 방법">
+        ${[["change","달라진 생각 돌아보기"],["revise","처음 글 고쳐 쓰기"],["both","돌아보고 고쳐 쓰기"]].map(([k,l]) => `<option value="${k}" ${comboVal(f,"end")===k?"selected":""}>${l}</option>`).join("")}</select>
+        <p class="hint">고쳐 써도 처음 글은 그대로 남아 비교할 수 있어요.</p></div>`);
+    adv += sec("🧑‍🏫", "그 밖에", `<div class="feat">${chk("feedback","교사 피드백 <span class='opt'>— 학생 글에 선생님이 한마디</span>")}${chk("anonymous","학생끼리는 익명으로 보이기 <span class='opt'>(선생님은 이름을 봐요)</span>")}</div>`);
   }
   h += lockWrap(locked, adv) + `</div></details>`;
   if(S.tplNaming) h += `<div class="setup" style="margin-top:16px"><b>💾 내 템플릿으로 저장</b><p class="small">활동 유형·깊이·세부 설정을 저장해 두고 다음에 불러올 수 있어요.</p>
@@ -5595,14 +5609,17 @@ async function act(a, b){
       if(!aiLive()){ toast("체험·미리보기 화면에서는 저장할 수 없어요."); return }
       if(key.length < 20){ toast("키가 너무 짧아요. AI 스튜디오에서 복사한 키 전체를 붙여 넣어 주세요."); return }
       b.disabled = true; b.textContent = "확인하는 중…";
-      const r1 = await rpcSafe("ai_key_set", {p_key:key});
-      if(!r1.data?.ok){ b.disabled = false; b.textContent = "저장하고 확인"; toast(r1.data?.reason === "format" ? "키 모양이 이상해요. 띄어쓰기 없이 키만 붙여 넣어 주세요." : "저장하지 못했어요. 다시 해 보세요."); return }
-      const r2 = await SB.functions.invoke("suggest", {body:{test:true}}).catch(() => ({}));
-      if(r2.data?.ok) toast("✅ 연결됐어요! 이제 🪄 버튼으로 질문을 추천받을 수 있어요.");
-      else toast("키는 저장했지만 확인에 실패했어요: " + (AI_ERR[r2.data?.error] || "잠시 뒤 다시 해 보세요."));
+      try{
+        const r1 = await rpcSafe("ai_key_set", {p_key:key});
+        if(!r1.data?.ok){ toast(r1.data?.reason === "format" ? "키 모양이 이상해요. 띄어쓰기 없이 키만 붙여 넣어 주세요." : r1.data?.reason === "denied" ? "선생님 계정으로 로그인해야 저장할 수 있어요." : "저장하지 못했어요. 다시 해 보세요."); return }
+        const r2 = await invokeSafe("suggest", {test:true}, 45000);
+        if(r2.data?.ok) toast("✅ 연결됐어요! 이제 🪄 버튼으로 질문을 추천받을 수 있어요.");
+        else if(r2.timeout) toast("키는 저장했어요. 확인이 오래 걸리니, 활동 만들기에서 🪄 버튼으로 바로 써 보세요.");
+        else toast("키는 저장했지만 확인에 실패했어요: " + (AI_ERR[r2.data?.error] || "잠시 뒤 다시 해 보세요.") + (r2.data?.message ? ` (${r2.data.message.slice(0, 80)})` : ""));
+      }finally{ if(b.isConnected){ b.disabled = false; b.textContent = "저장하고 확인" } }
       S.aiStatus = undefined; await loadAiStatus(); return;
     }
-    case "ai-key-del": { if(!aiLive()) return; await SB.rpc("ai_key_set", {p_key:""}); toast("키를 지웠어요."); S.aiStatus = undefined; await loadAiStatus(); return }
+    case "ai-key-del": { if(!aiLive()) return; await rpcSafe("ai_key_set", {p_key:""}); toast("키를 지웠어요."); S.aiStatus = undefined; await loadAiStatus(); return }
     case "ai-suggest": {
       const f = createForm(), kw = (f.aiKw || "").trim() || (f.title || "").trim();
       if(!AI_SUG_T.includes(f.template)) return;
@@ -5621,6 +5638,7 @@ async function act(a, b){
       saveFormsSoon(); toast(f.template === "debate2" && x.a && !lk ? "논제와 두 입장을 넣었어요. 고쳐 써도 돼요." : "질문을 넣었어요. 고쳐 써도 돼요.");
       render(); document.getElementById("c-prompt")?.focus(); return;
     }
+    case "pick-tool": { const f = F("create"); f.tool = b.dataset.v; Object.assign(f, TOOLS[f.tool]?.force || {}); saveFormsSoon(); break }
     case "tour-start": tourGo(0); return;
     case "tour-next": tourGo((S.tour ?? -1) + 1); return;
     case "tour-prev": tourGo((S.tour ?? 1) - 1); return;

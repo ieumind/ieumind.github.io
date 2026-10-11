@@ -50,7 +50,9 @@ function buildPrompt(b: any) {
 async function callGemini(key: string, model: string, body: unknown) {
   const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`, {
     method: "POST", headers: { "Content-Type": "application/json", "x-goog-api-key": key }, body: JSON.stringify(body),
-  });
+    signal: AbortSignal.timeout(20000),                    // 모델 하나가 20초 넘게 걸리면 다음으로
+  }).catch(() => null);
+  if (!r) return { status: 504, j: null };
   let j: any = null; try { j = await r.json(); } catch { /* */ }
   return { status: r.status, j };
 }
@@ -83,7 +85,9 @@ Deno.serve(async (req) => {
     };
   const order = [...new Set([row.model, ...MODELS].filter(Boolean))] as string[];
   let last = "ai_error", lastMsg = "";
+  const started = Date.now();
   for (const m of order) {
+    if (Date.now() - started > 40000) { last = last === "ai_error" ? "timeout" : last; break; }   // 전체 40초 안에 끝낸다
     const { status, j } = await callGemini(row.gemini_key, m, req_);
     if (status === 200) {
       if (m !== row.model) await admin.from("teacher_ai").update({ model: m }).eq("uid", u!.user!.id);
@@ -100,6 +104,7 @@ Deno.serve(async (req) => {
     if (/API_KEY_INVALID|API key not valid|API_KEY_SERVICE_BLOCKED/i.test(reason)) return json({ error: "bad_key", message: lastMsg });
     if (status === 403) { last = "forbidden"; continue; }
     if (status === 429) { last = "quota"; continue; }
+    if (status === 504) { last = "timeout"; continue; }
     if (status === 404 || status === 400) { last = last === "quota" ? "quota" : "ai_error"; continue; }
     last = "ai_error";
   }
