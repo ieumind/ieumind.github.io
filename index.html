@@ -3,6 +3,14 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>생각이음</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="생각이음">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="theme-color" content="#1D6A4F">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@400;700&family=IBM+Plex+Sans+KR:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap">
@@ -281,7 +289,11 @@ input[type=number]{max-width:140px}
 .form-grid .q + .q{margin-top:0}
 .form-grid .q > label{font-size:15px}
 details.adv{margin-top:16px;background:var(--surface);border:1px solid var(--line);border-radius:12px}
-details.adv > summary{cursor:pointer;padding:14px 20px;font-weight:600;min-height:48px;display:flex;align-items:center;gap:8px}
+details.adv > summary{cursor:pointer;padding:14px 20px;font-weight:600;min-height:48px;display:flex;align-items:center;gap:8px;list-style:none}
+details.adv > summary::-webkit-details-marker{display:none}
+details.adv > summary::after{content:"펼치기 ▾";margin-left:auto;flex:0 0 auto;font-size:13px;font-weight:600;color:var(--accent);background:var(--accent-soft);border-radius:999px;padding:4px 12px}
+details.adv[open] > summary::after{content:"접기 ▴"}
+details.adv > summary:hover::after{filter:brightness(.96)}
 details.adv > div{padding:4px 20px 20px;display:grid;gap:18px}
 .feat{display:grid;gap:10px}
 .feat > label{display:flex;align-items:flex-start;gap:10px;font-size:15px;min-height:32px}
@@ -334,8 +346,10 @@ details.adv > div{padding:4px 20px 20px;display:grid;gap:18px}
 
 /* ---------- 화면 밝기 ---------- */
 .top-end{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
-.theme{width:40px;height:40px;border:1px solid var(--line);border-radius:999px;display:grid;place-items:center;cursor:pointer;background:var(--surface);font-size:17px;padding:0;transition:transform .15s}
-.theme:active{transform:scale(.92)}
+.theme{display:inline-flex;gap:2px;padding:3px;border:1px solid var(--line);border-radius:999px;background:var(--sunk)}
+.theme button{width:36px;height:34px;border:0;border-radius:999px;background:none;cursor:pointer;font-size:16px;padding:0;opacity:.55;transition:background .15s,opacity .15s}
+.theme button[aria-pressed="true"]{background:var(--surface);opacity:1;box-shadow:0 1px 3px rgba(0,0,0,.15)}
+.theme button:active{transform:scale(.92)}
 .theme summary::-webkit-details-marker{display:none}
 .theme-menu{position:absolute;right:0;top:46px;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:6px;display:grid;gap:2px;min-width:150px;box-shadow:0 8px 24px rgba(0,0,0,.18);z-index:20}
 .theme-menu button{border:0;background:none;text-align:left;padding:8px 10px;border-radius:6px;cursor:pointer;font-size:14px;min-height:38px}
@@ -507,6 +521,13 @@ body.presenting .top,body.presenting .notice{display:none}
 .chip[title]{cursor:help}
 .stools{display:grid;gap:10px}
 .stools input[type=search]{width:100%;border:1px solid var(--line);background:var(--paper);border-radius:10px;padding:10px 14px;font-size:16px}
+input[type=datetime-local]{min-height:44px;border:1px solid var(--line);border-radius:10px;padding:8px 12px;background:var(--surface);color:var(--fg);font:inherit;max-width:100%}
+/* ---------- 앱 설치 안내 ---------- */
+.isteps{list-style:none;padding:0;margin:0;display:grid;gap:8px}
+.isteps li{display:grid;grid-template-columns:28px 34px 1fr;align-items:center;gap:8px;background:var(--sunk);border-radius:12px;padding:12px 14px;font-size:15.5px;line-height:1.5}
+.isteps .in{width:26px;height:26px;border-radius:999px;background:var(--accent);color:var(--accent-ink);display:grid;place-items:center;font-size:13px;font-weight:700}
+.isteps .ic{font-size:22px;text-align:center}
+.btn.inst{border-color:var(--accent);color:var(--accent)}
 /* ---------- 오늘의 필기 ---------- */
 .ngrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:8px}
 .nthumb{position:relative;aspect-ratio:3/4;border:1px solid var(--line);border-radius:10px;overflow:hidden;background:var(--sunk);padding:0;margin:0;cursor:pointer;display:block;font:inherit;color:var(--fg)}
@@ -756,7 +777,7 @@ a.btn{text-decoration:none;color:inherit;display:inline-flex;align-items:center}
   <header class="top">
     <button class="brand" data-a="home" type="button"><b>생각이음</b><span>생각을 잇다, 생각이 자라다</span></button>
     <div class="top-end"><div class="top-r" id="topr"></div>
-      <button class="theme" id="theme" type="button" data-a="theme-toggle" aria-label="다크 모드로 바꾸기" title="다크 모드로 바꾸기"><span id="theme-ic" aria-hidden="true">🌙</span></button></div>
+      <div class="theme" id="theme" role="group" aria-label="화면 밝기"><button type="button" data-a="theme-set" data-v="light" title="라이트 모드" aria-label="라이트 모드">☀️</button><button type="button" data-a="theme-set" data-v="dark" title="다크 모드" aria-label="다크 모드">🌙</button></div></div>
   </header>
   <main id="app"><p class="who">불러오는 중…</p></main>
 </div>
@@ -1481,9 +1502,8 @@ const HOST_THEME = document.documentElement.getAttribute("data-theme");   // 보
 const curTheme = () => { const v = lsGet("nonjae.theme"); return v === "light" || v === "dark" ? v : (HOST_THEME === "dark" || HOST_THEME === "light" ? HOST_THEME : (matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light")) };
 function applyTheme(v){
   document.documentElement.setAttribute("data-theme", v);
-  const ic = document.getElementById("theme-ic"), b = document.getElementById("theme"), nx = v === "dark" ? "라이트 모드로 바꾸기" : "다크 모드로 바꾸기";
-  if(ic) ic.textContent = v === "dark" ? "☀️" : "🌙";
-  if(b){ b.title = nx; b.setAttribute("aria-label", nx) }
+  document.querySelectorAll('[data-a="theme-set"]').forEach(x => x.setAttribute("aria-pressed", String(x.dataset.v === v)));   // ☀️ 라이트 · 🌙 다크 중 지금 것을 표시
+  document.querySelector('meta[name="theme-color"]')?.setAttribute("content", v === "dark" ? "#0F1412" : "#1D6A4F");
 }
 function setTheme(v){ lsSet("nonjae.theme", v); applyTheme(v) }
 applyTheme(curTheme());
@@ -1585,6 +1605,7 @@ function renderTop(){
     const rr = S.view === "room" ? room() : null, gcid = rr?._gid ? rr.courseId : (S.view === "home" ? S.course : "");
     if(gcid && myGroup(gcid)) h += `<span class="who">${esc(groupName(gcid, myGroup(gcid)))} · <button class="linkbtn" type="button" data-a="regroup" data-c="${esc(gcid)}">그룹 바꾸기</button></span>`;
     h += `<button class="btn sm" type="button" data-a="mine">내 생각 기록</button>`;
+    if(!isStandalone()) h += `<button class="btn sm inst" type="button" data-a="install-help">📲 앱으로 설치</button>`;
   }else h += `<button class="btn sm pri" type="button" data-a="create">+ 새 활동</button>`;
   document.getElementById("topr").innerHTML = h;
 }
@@ -1960,6 +1981,26 @@ function viewNotesTeacher(r){
       ${p?.notes ? `<span class="muted small">${esc(fmt(p.notes.submittedAt))} · ${p.notes.images.length}장${p.notes.version > 1 ? ` · ${p.notes.version}번째 제출` : ""}</span>${noteThumbs(p, p.notes.images, 3)}${p.notes.memo ? `<p class="small ncard-memo">${esc(p.notes.memo)}</p>` : ""}
         <div class="row end">${st === "redo" ? `<button class="btn sm" type="button" data-a="note-req-cancel" data-pid="${esc(p.id)}">요청 취소</button>` : `<button class="btn sm" type="button" data-a="note-req" data-pid="${esc(p.id)}">↻ 재제출 요청</button>`}<button class="btn sm pri" type="button" data-a="note-view" data-pid="${esc(p.id)}" data-i="0">크게 보기</button></div>`
       : `<p class="muted small">${p ? "올리는 중이거나 아직 제출 전이에요." : "아직 제출하지 않았어요."}</p>`}</article>`).join("")}</div>`;
+}
+/* ---- 📲 휴대폰 홈 화면에 앱처럼 설치 (학생) ---- */
+let INSTALL_EVT = null;                                   // 안드로이드 크롬: 바로 설치 창
+addEventListener("beforeinstallprompt", e => { e.preventDefault(); INSTALL_EVT = e; if(S.modal?.type === "install") renderModal() });
+addEventListener("appinstalled", () => { INSTALL_EVT = null; renderTop() });
+const isStandalone = () => matchMedia("(display-mode: standalone)").matches || navigator.standalone === true;
+const deviceOS = () => { const u = navigator.userAgent; return /iPhone|iPad|iPod/.test(u) || (/Macintosh/.test(u) && navigator.maxTouchPoints > 1) ? "ios" : /Android/.test(u) ? "android" : "ios" };
+const inAppBrowser = () => /KAKAOTALK|NAVER|Instagram|FBAN|FBAV|Line\/|everytimeApp|band/i.test(navigator.userAgent);
+function installHelpHTML(os){
+  const steps = os === "android"
+    ? [["⋮", "오른쪽 위 <b>점 세 개(⋮)</b> 메뉴 누르기"], ["📲", "<b>‘홈 화면에 추가’</b> 또는 <b>‘앱 설치’</b> 누르기"], ["✓", "<b>‘설치’</b>(또는 ‘추가’)를 누르면 완료"]]
+    : [["⬆️", "화면 아래 <b>공유 버튼</b> 누르기 <span class='muted'>(네모에 위쪽 화살표 모양)</span>"], ["➕", "목록을 올려 <b>‘홈 화면에 추가’</b> 누르기"], ["✓", "오른쪽 위 <b>‘추가’</b>를 누르면 완료"]];
+  return `<h3>📲 생각이음을 앱처럼 설치하기</h3>
+    <p class="small">홈 화면에 <b>생각이음</b> 아이콘이 생겨요. 다음부터는 링크나 QR 없이 아이콘만 누르면 바로 들어와요.</p>
+    <div class="seg" role="group" aria-label="휴대폰 종류"><button type="button" data-a="install-os" data-v="ios" aria-pressed="${os !== "android"}">아이폰·아이패드</button><button type="button" data-a="install-os" data-v="android" aria-pressed="${os === "android"}">갤럭시·안드로이드</button></div>
+    ${inAppBrowser() ? `<p class="notice small">⚠️ 지금은 카카오톡 같은 앱 안의 브라우저로 열려 있어요. 먼저 <b>${os === "android" ? "Chrome(크롬)" : "Safari(사파리)"}</b>로 열어 주세요. (오른쪽 아래·위의 메뉴 → ‘다른 브라우저로 열기’)</p>` : ""}
+    ${os === "android" && INSTALL_EVT ? `<button class="btn pri" type="button" data-a="install-now">📲 지금 바로 설치하기</button><p class="muted small" style="text-align:center">또는 아래 순서로 설치할 수도 있어요.</p>` : ""}
+    <ol class="isteps">${steps.map(([ic, t], i) => `<li><span class="in">${i+1}</span><span class="ic" aria-hidden="true">${ic}</span><span>${t}</span></li>`).join("")}</ol>
+    <p class="muted small">${os === "android" ? "Chrome(크롬)이나 삼성 인터넷에서 할 수 있어요." : "Safari(사파리)에서 할 수 있어요."} 설치한 앱을 처음 열 때 학번·이름·개인 코드를 한 번 더 넣어야 할 수 있어요.</p>
+    <div class="row end"><button class="btn pri" type="button" data-a="modal-close">알겠어요</button></div>`;
 }
 /* 활동 안의 두 화면: 우리 반 게시판 ↔ 내 활동 */
 function roomTabs(r, cur){
@@ -3831,6 +3872,8 @@ function renderModal(){
     const c = courseOf(m.id), n = S.rooms.filter(r => r.courseId === m.id).length;
     h = `<h3>수업을 삭제할까요?</h3><p><b>${esc(c?.title||"")}</b></p><p>${n ? `이 수업의 활동 ${n}개와 학생 응답은 지워지지 않고 ‘미분류’로 옮겨져요. 그룹별 배포 정보는 남지만 그룹 이름은 보이지 않게 돼요.` : "이 수업에는 활동이 없어요."}</p>
       <div class="row end"><button class="btn" type="button" data-a="modal-close">취소</button><button class="btn danger" type="button" data-a="course-del-yes" data-id="${esc(m.id)}">수업 삭제</button></div>`;
+  }else if(m.type === "install"){
+    h = installHelpHTML(m.os);
   }else if(m.type === "roster"){
     h = rosterModalHTML();
   }else if(m.type === "note"){
@@ -4154,7 +4197,7 @@ function viewCreate(){
   const qopts = (relay ? [{k:"student", l:"학생이 고르기"}] : []).concat(Object.entries(QTYPES).map(([k,v]) => ({k, l:`${v.mark} ${v.short}`})));
   const etBoxes = EVIDENCE_TYPES.map(e => `<label class="choice"><input type="checkbox" data-form="create" data-k="evidenceTypes" data-multi value="${esc(e)}" ${(f.evidenceTypes||[]).includes(e)?"checked":""}><span>${esc(e)}</span></label>`).join("");
   const hasReason = tool.fields.some(x=>x.k==="reason");
-  const GRADES = ["초3","초4","초5","초6","중1","중2","중3","고1","고2","고3","기타"];
+  const GRADES = ["중1","중2","중3","고1","고2","고3"].concat(f.grade && !["중1","중2","중3","고1","고2","고3"].includes(f.grade) ? [f.grade] : []);   // 예전에 고른 값은 그대로 보여 준다
 
   let h = `<button class="linkbtn back" type="button" data-a="home">← 내 수업</button>
   <div class="home-head"><div><div class="eyebrow">교사 화면</div><h1>${editR ? (isDraft ? "작성 중인 활동" : "활동 수정") : "새 활동"}</h1>
@@ -4559,7 +4602,7 @@ async function act(a, b){
       break;
     }
     case "fb-skip": { const ok = await savePost(r, {feedbackSkipped:true}); if(ok) goNext(r); break }
-    case "theme-toggle": setTheme(curTheme() === "dark" ? "light" : "dark"); return;
+    case "theme-set": setTheme(b.dataset.v === "dark" ? "dark" : "light"); return;
     case "to-stage": S.work = S.roomId; S.openPost = null; scrollTo(0,0); break;
     case "rmode": S.work = b.dataset.v === "work" ? S.roomId : null; S.openPost = null; break;
     case "due-clear": { const f = createForm(); f.dueAt = ""; saveFormsSoon(); break }
@@ -4593,6 +4636,9 @@ async function act(a, b){
       toast("복제했어요. 제목과 안내만 바꾸고 ‘공개하기’를 누르세요.");
       break;
     }
+    case "install-help": S.modal = {type:"install", os:deviceOS()}; break;
+    case "install-os": if(S.modal) S.modal.os = b.dataset.v; break;
+    case "install-now": if(INSTALL_EVT){ INSTALL_EVT.prompt(); const c = await INSTALL_EVT.userChoice.catch(() => null); INSTALL_EVT = null; S.modal = null; if(c?.outcome === "accepted") toast("설치했어요! 홈 화면에서 생각이음을 찾아보세요.") } break;
     case "hsub": S.hsub = b.dataset.v; lsSet("nonjae.hsub", S.hsub); break;
     case "map-more": S.mapMore = {...(S.mapMore||{}), [r.id+":"+b.dataset.v]:true}; break;
     case "unpick": { F("meet:"+r.id).diffPostId = ""; saveFormsSoon(); break }
