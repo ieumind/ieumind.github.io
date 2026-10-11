@@ -618,6 +618,9 @@ a.btn{text-decoration:none;color:inherit;display:inline-flex;align-items:center}
 .scard:hover{transform:translateY(-2px);box-shadow:0 6px 18px rgba(0,0,0,.08)}
 .scard-top{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:6px}
 .scard .subj{font-size:13px;font-weight:600;color:var(--c);background:var(--cs);border-radius:999px;padding:3px 10px}
+.scard .subj.none{color:var(--muted);background:var(--sunk);font-weight:500}
+.sctl{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.btn.hlbl{min-height:36px;font-size:13.5px;padding:4px 10px;white-space:nowrap}
 .scard .sst{font-size:13px;font-weight:600;border-radius:999px;padding:3px 10px;background:var(--sunk);color:var(--muted)}
 .scard.todo .sst{background:var(--warn-soft);color:var(--warn)}
 .scard.doing .sst{background:var(--accent-soft);color:var(--accent)}
@@ -1102,8 +1105,17 @@ function demoData(){
   const names = ["10301 김가온","10302 나다은","10303 박서준","10304 이하린","10305 정우진","10306 최서아"];
   const notesRoom = {id:"demo-notes", template:"notes", title:"오늘의 필기 · 3·1 운동", subject:"한국사", unit:"근대 · 3·1 운동", year:"1919",
     prompt:"오늘 배운 3·1 운동의 전개 과정을 공책에 정리하고 사진으로 올려 주세요.", stances:[], reveal:"teacher", anonymous:false, tool:"free", depth:"normal",
-    fields:TOOLS.free.fields, noteCfg:{maxPages:10}, open:true, status:"open", dueAt:now + 26 * 60 * m, teacherName:"체험"};
-  S.rooms = [notesRoom, ...SAMPLE_ROOMS.map(r => ({...r, status:"open", teacherName:"체험", subject:r.subject || "한국사"}))].map((r, i) => ({...r, createdAt:now - (i + 1) * 3600000, updatedAt:now - i * 60000}));
+    fields:TOOLS.free.fields, noteCfg:{maxPages:3}, open:true, status:"open", dueAt:now + 26 * 60 * m, teacherName:"체험", year:"7차시"};
+  const drawRoom = {id:"demo-draw", template:"draw", title:"최초의 인류는 어떤 모습이었을까?", subject:"역사", unit:"선사 시대 · 인류의 출현", year:"1차시",
+    prompt:"최초의 인류는 어떤 모습으로, 어떻게 살았을까? 상상한 모습을 그림으로 그리고 그렇게 그린 까닭을 적어 보자.",
+    context:"오스트랄로피테쿠스는 약 400만 년 전 아프리카에 살았던 초기 인류로, 두 발로 걸었다. 뇌 용량은 현대인의 3분의 1 정도였다.",
+    stances:[], reveal:"after", anonymous:false, tool:"draw", depth:"normal", minChars:0, fields:TOOLS.draw.fields, open:true, status:"open", teacherName:"체험"};
+  const chatRoom = {id:"demo-chat", template:"chat", title:"아이히만에게 묻다 · 명령과 책임", subject:"역사", unit:"제2차 세계 대전과 홀로코스트", year:"5차시",
+    prompt:"아이히만에게 ‘명령에 따랐을 뿐’이라는 주장에 대해 묻고, 명령을 따른 개인에게도 책임이 있는지 생각해 보자.",
+    context:"아돌프 아이히만은 나치 독일 친위대 장교로, 유대인을 강제 수용소로 보내는 이송 업무를 맡았다. 1961년 예루살렘 재판에서 그는 ‘명령에 따랐을 뿐’이라고 주장했고, 1962년 처형되었다. 재판을 지켜본 철학자 한나 아렌트는 생각하지 않고 명령을 따른 평범한 사람이 큰 악을 저지를 수 있다며 ‘악의 평범성’이라는 말을 남겼다.",
+    persona:{name:"아돌프 아이히만", about:"나치 독일 친위대 장교. 유대인 강제 이송을 실무로 맡았고, 1961년 예루살렘 재판에서 ‘명령에 따랐을 뿐’이라고 주장했다.", style:"persona", maxTurns:6},
+    stances:[], reveal:"after", anonymous:false, tool:"chatReflect", depth:"normal", minChars:20, fields:TOOLS.chatReflect.fields, open:true, status:"open", teacherName:"체험"};
+  S.rooms = [notesRoom, drawRoom, chatRoom, ...SAMPLE_ROOMS.map(r => ({...r, status:"open", teacherName:"체험", subject:r.subject || "한국사"}))].map((r, i) => ({...r, createdAt:now - (i + 1) * 3600000, updatedAt:now - i * 60000}));
   const P = [];
   const deb = [["불가피했다","경제 개발을 위한 자금이 급했기 때문에 불가피했다고 생각한다.","당시 한국은 1인당 소득이 매우 낮았고, 일본의 자금이 경부 고속 도로와 포항 제철 건설에 쓰였다."],
     ["다른 길이 있었다","사과와 배상 없이 서두른 협정이라 다른 길이 있었다고 본다.","6·3 시위처럼 많은 국민이 반대했고, 피해자 개인의 배상 문제가 오늘날까지 남아 있다."],
@@ -1119,11 +1131,34 @@ function demoData(){
     notes:{images:[{d:pg3, w:600, h:800}], memo:"", submittedAt:now - 22 * m, version:1, history:[]}});
   P.push({id:"dn2", roomId:"demo-notes", author:names[2], status:"submitted", body:{}, createdAt:now - 15 * m, updatedAt:now - 15 * m, resubmitReq:{at:now - 5 * m, msg:"두 번째 쪽이 흐려요. 밝은 곳에서 다시 찍어 주세요."},
     notes:{images:[{d:pg2, w:600, h:800}], memo:"", submittedAt:now - 15 * m, version:1, history:[]}});
+  // 손으로 그리기 예시 그림
+  const drawFig = (bg, hair, stick) => { const c = document.createElement("canvas"); c.width = 640; c.height = 480; const g = c.getContext("2d");
+    g.fillStyle = bg; g.fillRect(0, 0, 640, 480); g.fillStyle = "#c9b48a"; g.fillRect(0, 380, 640, 100);
+    g.strokeStyle = "#3a2a1a"; g.lineWidth = 7; g.lineCap = "round";
+    g.fillStyle = "#8a6a4a"; g.beginPath(); g.arc(300, 150, 42, 0, Math.PI * 2); g.fill();
+    g.fillStyle = hair; g.beginPath(); g.arc(300, 135, 46, Math.PI, 0); g.fill();
+    g.beginPath(); g.moveTo(300, 192); g.lineTo(290, 300); g.moveTo(290, 300); g.lineTo(255, 380); g.moveTo(290, 300); g.lineTo(325, 380);
+    g.moveTo(296, 220); g.lineTo(240, 270); g.moveTo(296, 220); g.lineTo(360, 250); g.stroke();
+    if(stick){ g.strokeStyle = "#6b4a2a"; g.lineWidth = 9; g.beginPath(); g.moveTo(360, 250); g.lineTo(420, 140); g.stroke() }
+    g.fillStyle = "#e8a33a"; g.beginPath(); g.arc(520, 360, 22, 0, Math.PI * 2); g.fill(); g.fillStyle = "#c0392b"; g.beginPath(); g.moveTo(505, 360); g.lineTo(520, 320); g.lineTo(535, 360); g.fill();
+    return c.toDataURL("image/jpeg", 0.75) };
+  P.push({id:"dd0", roomId:"demo-draw", author:names[3], status:"submitted", createdAt:now - 70 * m, updatedAt:now - 70 * m,
+    body:{drawing:drawFig("#dbeaf5", "#2b1d12", true), note:"두 발로 서서 나뭇가지를 도구로 들고 있어요. 털이 많고 키가 작았을 것 같아요."}});
+  P.push({id:"dd1", roomId:"demo-draw", author:names[4], status:"submitted", createdAt:now - 64 * m, updatedAt:now - 64 * m,
+    body:{drawing:drawFig("#f5ecd9", "#5a3a1a", false), note:"불을 피워 몸을 녹이고 무리를 지어 살았을 것이라고 상상했어요."}});
+  // 가상 인물 대화 예시 기록
+  P.push({id:"dc0", roomId:"demo-chat", author:names[5], status:"submitted", createdAt:now - 55 * m, updatedAt:now - 48 * m,
+    chat:{done:true, doneAt:now - 50 * m, log:[
+      {role:"user", text:"당신은 왜 수많은 사람을 수용소로 보내는 일을 했나요?"},
+      {role:"ai", text:"(AI가 연기하는 가상 인물이에요) 나는 위에서 내려온 명령을 처리하는 관리였다고 말했소. 기차 시간표와 인원 숫자를 맞추는 일이 내 업무라고 여겼지."},
+      {role:"user", text:"그 기차에 탄 사람들이 어떻게 될지 몰랐나요?"},
+      {role:"ai", text:"재판에서 나는 내 손으로 직접 죽이지 않았다고 강조했소. 그러나 기록은 내가 이송의 결과를 알고 있었음을 보여 주었지. 바로 그 점이 재판의 핵심이었소."}]},
+    body:{learned:"아이히만은 자기가 ‘서류 일’만 했다고 생각했다.", doubt:"정말 결과를 몰랐다는 말이 사실인지 재판 기록을 찾아봐야겠다.", text:"명령을 따랐더라도 그 결과를 알면서 멈추지 않았다면 책임이 있다고 생각한다."}});
   S.posts = P;
   S.replies = [{id:"dr0", roomId:"park-1965", postId:"dp0", author:names[1], kind:"rebuttal", text:"경제 성장은 맞지만 피해자 배상이 빠진 점은 문제라고 생각해.", evidence:"지금도 강제 동원 배상 문제가 이어지고 있어.", createdAt:now - 40 * m},
                {id:"dr1", roomId:"park-1965", postId:"dp1", author:names[3], kind:"comment", text:"6·3 시위 사례가 설득력 있어!", createdAt:now - 35 * m}];
   S._rep = S.replies; S._trep = [];
-  S.tnotes = ["demo-notes", "park-1965", "park-modern", "park-relay"].map(id => ({id, roster:names}));
+  S.tnotes = ["demo-notes", "demo-draw", "demo-chat", "park-1965", "park-modern", "park-relay"].map(id => ({id, roster:names}));
   S.loaded = {rooms:1, posts:1, replies:1, courses:1, treplies:1, config:1, tnotes:1, ttemplates:1};
 }
 
@@ -1146,7 +1181,7 @@ const S = {
   tnotes:[], ttemplates:[], config:[],   // 교사 전용 메모·명단 / 내 템플릿 / 앱 설정(학생 공유 링크)
   ttab:"overview", mq:"", mf:"all", msub:"", mgrade:"",
   modal:null, preview:null, hashRoom:(location.hash||"").slice(1),
-  hsub: lsGet("nonjae.hsub") || "", hsort: lsGet("nonjae.hsort") || "todo",   // 학생 첫 화면: 과목 칸·정렬
+  hsub: lsGet("nonjae.hsub") || "", hlabel: lsGet("nonjae.hlabel") || "posted", hsort: lsGet("nonjae.hsort") || "todo",   // 학생 첫 화면: 과목 칸·정렬
   msort:"recent", mdur:"", mview: lsGet("nonjae.mview")==="list" ? "list" : "card",      // 내 활동: 정렬·시간·보기 방식
   sq:"", sf:"all", ss:"no", sview: lsGet("nonjae.sview")==="grid" ? "grid" : "card",      // 학생 생각: 검색·필터·정렬·보기 방식
   sidx:0, fbSent:null, qopen:null, pmode:null, pidx:0, prand:null,
@@ -1728,12 +1763,26 @@ function homeState(r){
   return mine ? {k:"todo", l:"✏️ 쓰는 중", o:0} : {k:"todo", l:"✏️ 아직 안 했어요", o:0};
 }
 const HSORTS = [["todo","할 일 먼저"],["new","새로 올라온 순"],["due","마감 가까운 순"],["subject","과목 순"]];
+/* 카드 왼쪽 위 표시: 게시일(기본) · 마감 · 차시 · 단원 — 작은 버튼으로 돌려 가며 바꾼다 */
+const HLABELS = [["posted","게시일"],["due","마감"],["lesson","차시"],["unit","단원"]];
+function postedLabel(ts){
+  if(!ts) return "";
+  const d = new Date(ts), day = x => new Date(x.getFullYear(), x.getMonth(), x.getDate()).getTime(), diff = Math.round((day(new Date()) - day(d)) / 864e5);
+  return diff === 0 ? "오늘 올라옴" : diff === 1 ? "어제 올라옴" : `${d.getMonth()+1}월 ${d.getDate()}일(${"일월화수목금토"[d.getDay()]}) 게시`;
+}
+function cardLabel(r, k){
+  if(k === "due") return r.dueAt ? (pastDue(r) ? `⏰ ${fmtDue(r.dueAt)} 마감됨` : `⏰ ${fmtDue(r.dueAt)}까지`) : {muted:"마감 없음"};
+  if(k === "lesson") return r.year ? `📍 ${r.year}` : {muted:"차시 정보 없음"};
+  if(k === "unit") return r.unit ? `📚 ${r.unit}` : {muted:"단원 정보 없음"};
+  return `🗓 ${postedLabel(r.createdAt)}`;
+}
 function viewHomeStudent(crs, rooms){
   const nm = splitAuthor(S.name).name.trim(), now = new Date();
   const items = rooms.map(r => ({r, st:homeState(r), k:subjKey(r)}));
   const subs = [...new Map(items.map(x => [x.k, x.r])).entries()].sort((a,b) => koCmp(subjLabel(a[1]), subjLabel(b[1])));
   const cur = subs.some(([k]) => k === S.hsub) ? S.hsub : "";
   const sort = HSORTS.some(([k]) => k === S.hsort) ? S.hsort : "todo";
+  const hl = HLABELS.some(([k]) => k === S.hlabel) ? S.hlabel : "posted", hlName = HLABELS.find(([k]) => k === hl)[1];
   let list = items.filter(x => !cur || x.k === cur);
   const byNew = (a,b) => (b.r.createdAt||0) - (a.r.createdAt||0);
   list.sort({todo:(a,b) => a.st.o - b.st.o || (a.r.dueAt||9e15) - (b.r.dueAt||9e15) || byNew(a,b), new:byNew,
@@ -1746,18 +1795,19 @@ function viewHomeStudent(crs, rooms){
       <p>${crs ? (myGroup(crs.id) ? `${esc(groupName(crs.id, myGroup(crs.id)))} · ` : "") + `이 수업의 활동만 보여요. <button class="linkbtn" type="button" data-a="course-all">모든 활동 보기</button>` : "오늘 함께 생각할 활동이에요. 하나를 골라 들어가 보세요."}</p></div>
       <div class="sstats"><div class="todo"><b>${cnt("todo")}</b><span>해야 할 활동</span></div><div><b>${cnt("doing")}</b><span>하는 중</span></div><div><b>${cnt("done")}</b><span>다 했어요</span></div></div></div>`;
   if(!rooms.length) return h + `<div class="empty">아직 열린 활동이 없어요. 선생님이 활동을 올리면 여기에 나타나요.</div></section>`;
-  if(subs.length > 1) h += `<div class="stabs" role="tablist" aria-label="과목·선생님">
+  if(subs.length) h += `<div class="stabs" role="tablist" aria-label="과목·선생님">
       <button type="button" role="tab" data-a="hsub" data-v="" aria-selected="${!cur}">전체 <span>${items.length}</span></button>
       ${subs.map(([k, r]) => `<button type="button" role="tab" data-a="hsub" data-v="${esc(k)}" aria-selected="${cur===k}" style="--c:var(--${subjTone(k)});--cs:var(--${subjTone(k)}-soft)"><span aria-hidden="true">${subjIcon(r.subject)}</span> ${esc(subjLabel(r))} <span>${items.filter(x => x.k === k).length}</span></button>`).join("")}</div>`;
   h += `<div class="sbar"><span class="muted small">${cur ? esc(subjLabel(subs.find(([k]) => k === cur)[1])) + " · " : ""}활동 ${list.length}개</span>
-    <label class="ssort">정렬 <select id="h-sort">${HSORTS.map(([k,l]) => `<option value="${k}" ${sort===k?"selected":""}>${l}</option>`).join("")}</select></label></div>`;
+    <span class="sctl"><button class="btn sm hlbl" type="button" data-a="hlabel" title="카드에 보여 줄 정보 바꾸기 (게시일 → 마감 → 차시 → 단원)">🏷 ${hlName} ⇄</button>
+    <label class="ssort">정렬 <select id="h-sort">${HSORTS.map(([k,l]) => `<option value="${k}" ${sort===k?"selected":""}>${l}</option>`).join("")}</select></label></span></div>`;
   h += `<div class="sgrid">${list.map(({r, st, k}) => {
     const ps = postsOf(r.id), t = TEMPLATES[r.template] || {};
     return `<button class="scard ${st.k}" type="button" data-a="open" data-id="${esc(r.id)}" style="--c:var(--${subjTone(k)});--cs:var(--${subjTone(k)}-soft)">
-      <span class="scard-top"><span class="subj"><span aria-hidden="true">${subjIcon(r.subject)}</span> ${esc(subjLabel(r))}</span><span class="sst">${esc(st.l)}</span></span>
+      <span class="scard-top">${(() => { const v = cardLabel(r, hl); return typeof v === "string" ? `<span class="subj">${esc(v)}</span>` : `<span class="subj none">${esc(v.muted)}</span>` })()}<span class="sst">${esc(st.l)}</span></span>
       <span class="scard-t">${esc(r.title)}</span>
       ${r.prompt && r.prompt !== r.title ? `<span class="scard-p">${esc(r.prompt)}</span>` : ""}
-      <span class="scard-m"><span>${t.icon||""} ${esc(t.label||"")}</span>${r.dueAt && st.o < 3 ? `<span class="${r.dueAt - Date.now() < 864e5 ? "soon" : ""}">⏰ ${esc(fmtDue(r.dueAt))}까지</span>` : ""}${r.reveal !== "teacher" ? `<span>👥 ${ps.length}명</span>` : ""}</span>
+      <span class="scard-m"><span>${t.icon||""} ${esc(t.label||"")}</span>${r.dueAt && st.o < 3 && hl !== "due" ? `<span class="${r.dueAt - Date.now() < 864e5 ? "soon" : ""}">⏰ ${esc(fmtDue(r.dueAt))}까지</span>` : ""}${r.reveal !== "teacher" ? `<span>👥 ${ps.length}명</span>` : ""}</span>
     </button>`}).join("")}</div></section>`;
   return h;
 }
@@ -1888,7 +1938,7 @@ function viewRoomStudent(r){
    - 그 밖(미리보기 등): 작게 줄인 사진을 글 안에 저장
    ========================================================= */
 const isNotes = r => r?.template === "notes";
-const NOTE_MAX = r => Math.max(1, Math.min(20, Number(r?.noteCfg?.maxPages) || 10));
+const NOTE_MAX = r => Math.max(1, Math.min(12, Number(r?.noteCfg?.maxPages) || 3));
 const noteRedoReq = p => p?.resubmitReq && p.resubmitReq.at > (p.notes?.submittedAt || 0) ? p.resubmitReq : null;
 const NDRAFT = {};                    // 활동 id → 제출 전 고른 사진 [{blob, url, w, h}] (이 화면에만)
 const NURL = {};                      // 저장된 사진 경로 → 잠깐 쓰는 주소
@@ -4097,7 +4147,7 @@ function formFromRoom(r){
   const f = featuresOf(r), t = TEMPLATES[r.template] || {};
   const form = {editId:r.id, goal:(GOALS.find(g=>g.t.includes(r.template))||{}).k, template:r.template, tool:toolOf(r), depth:depthOf(r),
     prompt:r.prompt||"", title:r.title||"", context:r.context||"", intro:r.intro||"",
-    maxPages:String(r.noteCfg?.maxPages||10), personaName:r.persona?.name||"", personaAbout:r.persona?.about||"", personaStyle:r.persona?.style||"persona", maxTurns:String(r.persona?.maxTurns||8),
+    maxPages:String(r.noteCfg?.maxPages||3), personaName:r.persona?.name||"", personaAbout:r.persona?.about||"", personaStyle:r.persona?.style||"persona", maxTurns:String(r.persona?.maxTurns||8),
     subject:r.subject||"", unit:r.unit||"", year:r.year||"", grade:r.grade||"", duration:String(r.duration||""), dueAt:dtv(r.dueAt), stage:r.stage||"", memo:tnote(r).memo||"",
     qtype:r.qtype||t.qtype||"", reveal:r.reveal||t.reveal, anonymous:!!r.anonymous, minChars:String(r.minChars||0),
     stances:(r.stances||[]).join(", "), nst:(r.stances||[]).length,
@@ -4293,6 +4343,7 @@ function applyDepth(k){
 function applyTemplate(k){
   const t = TEMPLATES[k], f = F("create");
   Object.assign(f, {template:k, tool:t.tool, stances:t.stances.join(", "), reveal:t.reveal, anonymous:t.anonymous, qtype:t.qtype||"", predict:false, develop:false, nst:t.stances.length});
+  if(NO_DEEP.includes(k) && f.depth === "deep") applyDepth("normal");
   if(k === "notes" && !(f.prompt||"").trim()) f.prompt = "오늘 수업에서 배운 내용을 공책이나 태블릿에 정리하고, 사진을 찍어 올려 주세요.";
   t.stances.forEach((x,i) => { f["st"+i] = x });
   applyDepth(t.depth);
@@ -4304,14 +4355,16 @@ function createForm(){
   if(TEMPLATES[f.template].stances.length && !f.nst){ f.nst = TEMPLATES[f.template].stances.length; TEMPLATES[f.template].stances.forEach((x,i) => { f["st"+i] = f["st"+i] || x }) }
   return f;
 }
+const NO_DEEP = ["chat", "sketch", "draw"];                        // 깊이 있게 없이 ‘빠르게·기본’만 쓰는 활동
 function roomFromForm(f){
   const t = TEMPLATES[f.template], relay = f.template === "relay";
+  if(NO_DEEP.includes(f.template) && f.depth === "deep") f = {...f, depth:"normal"};
   const tool = relay ? "free" : TOOLS[t.tool]?.only ? t.tool : (TOOLS[f.tool] && !TOOLS[f.tool].only ? f.tool : t.tool);   // 생각 스케치는 키워드 스케치 칸만
   const stances = !t.stances.length ? [] : (f.nst ? Array.from({length:f.nst}, (_,i) => String(f["st"+i]||"").trim()).filter(Boolean)
                                                 : String(f.stances||"").split(",").map(s=>s.trim()).filter(Boolean)).slice(0,4);
   const prompt = (f.prompt||"").trim();
   const isDebate = f.template === "debate2" || f.template === "debateN";
-  const noteCfg = f.template === "notes" ? {maxPages:Math.max(1, Math.min(20, parseInt(f.maxPages)||10))} : undefined;
+  const noteCfg = f.template === "notes" ? {maxPages:Math.max(1, Math.min(12, parseInt(f.maxPages)||3))} : undefined;
   const persona = f.template === "chat" ? {name:(f.personaName||"").trim(), about:(f.personaAbout||"").trim(), style:f.personaStyle === "easy" ? "easy" : "persona", maxTurns:Math.max(1, Math.min(30, parseInt(f.maxTurns)||8))} : undefined;
   return {
     title:(f.title||"").trim() || (f.template === "notes" ? `오늘의 필기 · ${new Date().getMonth()+1}월 ${new Date().getDate()}일` : (prompt.length > 28 ? prompt.slice(0,28) + "…" : prompt)),
@@ -4372,7 +4425,7 @@ function viewCreate(){
       <div class="q wide"><label for="c-pabout">인물 소개 <span class="opt">(학생에게도 보여요 · AI가 이 설정대로 말해요)</span></label><input type="text" id="c-pabout" data-form="create" data-k="personaAbout" maxlength="200" value="${esc(f.personaAbout||"")}" placeholder="예: 조선의 26대 왕이자 대한제국 황제. 1897년 대한제국을 선포했다."></div>
       <div class="q"><label for="c-pmax">학생 한 명이 할 수 있는 질문 수</label><input type="number" id="c-pmax" data-form="create" data-k="maxTurns" min="1" max="30" value="${esc(f.maxTurns||"8")}"></div>
       <p class="hint wide" data-x>AI는 교사가 넣은 ‘자료’를 먼저 참고해요. 교과서·사료 요약을 넣으면 틀린 말이 줄어요. 학생 화면에는 ‘AI가 연기하는 가상 인물이에요’ 안내가 늘 함께 보여요.</p>` : ""}
-    ${isNoteT ? `<div class="q"><label for="c-maxp">한 번에 올릴 수 있는 사진 수</label><input type="number" id="c-maxp" data-form="create" data-k="maxPages" min="1" max="20" value="${esc(f.maxPages||"10")}"></div>
+    ${isNoteT ? `<div class="q"><label for="c-maxp">한 번에 올릴 수 있는 사진 수</label><input type="number" id="c-maxp" data-form="create" data-k="maxPages" min="1" max="12" value="${esc(f.maxPages||"3")}"><p class="hint">1장~12장 (기본 3장)</p></div>
       <p class="hint wide">학생은 📷 사진 찍기나 🖼 앨범에서 여러 장을 골라, 미리 보고 순서를 바꾸거나 뺀 뒤 제출해요. 제출한 필기는 선생님만 볼 수 있어요. 활동 이름을 비워 두면 ‘오늘의 필기 · 날짜’로 정해져요.</p>` : ""}
     ${(f.template==="inquiry" || relay) ? `<div class="wide">${lockWrap(locked, `<fieldset class="q"><legend style="font-size:15px">질문 유형은 무엇인가요?</legend>${radios("create","qtype",qopts,{label:"질문 유형"})}${qtypeHelp("질문 유형 설명 보기")}</fieldset>`)}</div>` : ""}
     ${t.stances.length ? `<div class="wide">${lockWrap(locked, `<fieldset class="q"><legend style="font-size:15px">입장 <span class="opt">(이름을 바꿀 수 있어요)</span></legend>
@@ -4386,7 +4439,7 @@ function viewCreate(){
 
   ${isNoteT ? `<style>.depth-card,.preview-steps,details[data-adv]{display:none!important}</style>` : ""}
   <div class="card depth-card" style="margin-top:16px"><h3>③ 어느 정도 깊이로 할까요?</h3>${lockWrap(locked, `
-    <div class="depths" role="group" aria-label="활동 깊이">${Object.entries(DEPTHS).map(([k,d])=>`<button type="button" class="depth" data-a="depth" data-v="${k}" aria-pressed="${k===f.depth}">
+    <div class="depths" role="group" aria-label="활동 깊이">${Object.entries(DEPTHS).filter(([k]) => !(NO_DEEP.includes(f.template) && k === "deep")).map(([k,d])=>`<button type="button" class="depth" data-a="depth" data-v="${k}" aria-pressed="${k===f.depth}">
       <b><span aria-hidden="true">${d.mark}</span>${d.label}</b><span class="fl">${esc(d.sum)}</span><span class="use">${esc(d.use)}</span></button>`).join("")}</div>`)}</div>
 
   <div class="preview-steps" style="margin-top:16px"><div class="eyebrow">학생 화면 미리보기 · 설정을 바꾸면 함께 바뀌어요</div>
@@ -4805,6 +4858,7 @@ async function act(a, b){
     case "install-help": S.modal = {type:"install", os:deviceOS()}; break;
     case "install-os": if(S.modal) S.modal.os = b.dataset.v; break;
     case "install-now": if(INSTALL_EVT){ INSTALL_EVT.prompt(); const c = await INSTALL_EVT.userChoice.catch(() => null); INSTALL_EVT = null; S.modal = null; if(c?.outcome === "accepted") toast("설치했어요! 홈 화면에서 생각이음을 찾아보세요.") } break;
+    case "hlabel": { const i = HLABELS.findIndex(([k]) => k === (S.hlabel || "posted")); S.hlabel = HLABELS[(i + 1) % HLABELS.length][0]; lsSet("nonjae.hlabel", S.hlabel); break }
     case "hsub": S.hsub = b.dataset.v; lsSet("nonjae.hsub", S.hsub); break;
     case "map-more": S.mapMore = {...(S.mapMore||{}), [r.id+":"+b.dataset.v]:true}; break;
     case "unpick": { F("meet:"+r.id).diffPostId = ""; saveFormsSoon(); break }
@@ -5101,7 +5155,7 @@ async function act(a, b){
     case "tpl": createForm(); applyTemplate(b.dataset.v); saveFormsSoon(); break;
     case "st-add": { const f = createForm(), n = f.nst || TEMPLATES[f.template].stances.length || 2; if(n < 4){ f["st"+n] = f["st"+n] || `입장 ${n+1}`; f.nst = n + 1 } saveFormsSoon(); break }
     case "st-del": { const f = createForm(), n = f.nst || TEMPLATES[f.template].stances.length || 2; if(n > 2){ f.nst = n - 1; delete f["st"+f.nst] } saveFormsSoon(); break }
-    case "depth": createForm(); applyDepth(b.dataset.v); saveFormsSoon(); break;
+    case "depth": { const cf = createForm(); applyDepth(NO_DEEP.includes(cf.template) && b.dataset.v === "deep" ? "normal" : b.dataset.v); saveFormsSoon(); break }
 
     /* ---- 질문이음 ---- */
     case "ask-edit": { const k = "ask:"+r.id, q = p.questions[0]; S.form[k] = {text:q.text, qtype:q.qtype||"", _edit:true}; break }
