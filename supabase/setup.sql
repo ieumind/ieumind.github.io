@@ -446,7 +446,7 @@ begin
     v_who := 'T:' || auth.uid(); v_lim := 200;
   else
     v_sid := public.my_student(d.tid);
-    if v_sid is null or not public.tid_active(d.tid) then return json_build_object('ok', false, 'reason', 'denied'); end if;
+    if v_sid is null or not public.tid_active(d.tid) or not public.room_for_me(p_room, d.tid) then return json_build_object('ok', false, 'reason', 'denied'); end if;
     v_st := coalesce(d.data ->> 'status', 'open');
     if v_st in ('draft', 'archived', 'closed') or d.data ->> 'open' = 'false'
        or (jsonb_typeof(d.data -> 'dueAt') = 'number' and (d.data ->> 'dueAt')::numeric <= extract(epoch from now()) * 1000) then
@@ -565,6 +565,66 @@ language sql stable security definer set search_path = public as $$
 $$;
 revoke execute on function public.ai_key_set(text), public.ai_key_status() from public, anon;
 grant execute on function public.ai_key_set(text), public.ai_key_status() to authenticated;
+
+-- ---------------------------------------------------------------------
+-- 👥 과목 수강 학생: courses 문서의 data.members = [학생 id, …]
+--   members가 있으면 그 학생에게만 과목·그 과목의 활동·글·댓글이 보이고, 글도 그 학생만 쓸 수 있다
+--   members가 없는 예전 과목과 과목에 넣지 않은 활동은 지금처럼 선생님의 모든 학생에게 보인다
+-- ---------------------------------------------------------------------
+create or replace function public.course_for_me(p_course text, p_tid uuid) returns boolean
+language sql stable security definer set search_path = public as $$
+  select coalesce((select case when jsonb_typeof(c.data -> 'members') = 'array'
+                               then coalesce((c.data -> 'members') ? (public.my_student(p_tid)::text), false) else true end
+                     from public.docs c where c.col = 'courses' and c.id = p_course and c.tid = p_tid limit 1), true);
+$$;
+create or replace function public.room_for_me(p_room text, p_tid uuid) returns boolean
+language sql stable security definer set search_path = public as $$
+  select coalesce((select public.course_for_me(coalesce(r.data ->> 'courseId', ''), p_tid)
+                     from public.docs r where r.col = 'rooms' and r.id = p_room and r.tid = p_tid limit 1), true);
+$$;
+create or replace function public.room_open_to_peers(p_room text, p_tid uuid) returns boolean
+language sql stable security definer set search_path = public as $$
+  select coalesce((select r.data ->> 'reveal' from public.docs r
+                    where r.col = 'rooms' and r.id = p_room and r.tid = p_tid), 'after') <> 'teacher'
+     and public.room_for_me(p_room, p_tid);
+$$;
+revoke execute on function public.course_for_me(text, uuid), public.room_for_me(text, uuid) from public, anon;
+grant execute on function public.course_for_me(text, uuid), public.room_for_me(text, uuid) to authenticated;
+alter policy docs_read on public.docs using (
+  (public.is_teacher() and tid = auth.uid())
+  or (public.is_my_teacher(tid) and public.tid_active(tid) and (
+        col = 'config'
+     or (col = 'courses' and public.course_for_me(id, tid))
+     or (col = 'rooms' and public.course_for_me(coalesce(data ->> 'courseId', ''), tid))
+     or (col = 'posts' and (owner = public.my_student(tid) or public.room_open_to_peers(room_id, tid)))
+     or (col in ('replies', 'treplies') and public.room_for_me(room_id, tid))))
+);
+alter policy docs_insert on public.docs with check (
+  (public.is_teacher() and tid = auth.uid())
+  or (col in ('posts', 'replies') and owner is not null and owner = public.my_student(tid) and public.tid_active(tid) and public.room_for_me(room_id, tid)
+      and data ->> 'author' = public.my_student_name(tid) and coalesce(data ->> 'kind', '') not in ('teacher', 'class'))
+);
+alter policy docs_update on public.docs
+  using ((public.is_teacher() and tid = auth.uid())
+         or (col in ('posts', 'replies') and owner is not null and owner = public.my_student(tid) and public.tid_active(tid)))
+  with check ((public.is_teacher() and tid = auth.uid())
+    or (col in ('posts', 'replies') and owner is not null and owner = public.my_student(tid) and public.tid_active(tid) and public.room_for_me(room_id, tid)
+        and data ->> 'author' = public.my_student_name(tid) and coalesce(data ->> 'kind', '') not in ('teacher', 'class')));
+-- 과목 공지·새 활동 알림: 그 과목 수강 학생 기기에만 (members가 없으면 모든 학생)
+create or replace function public.push_targets_for(p_course text) returns table(endpoint text, p256dh text, auth text)
+language plpgsql security definer set search_path = public as $$
+declare m jsonb;
+begin
+  if not public.is_teacher() then return; end if;
+  if (select count(*) from public.notify_log where tid = auth.uid() and at > now() - interval '1 hour') >= 30 then return; end if;
+  insert into public.notify_log (tid) values (auth.uid());
+  select c.data -> 'members' into m from public.docs c where c.col = 'courses' and c.id = p_course and c.tid = auth.uid() limit 1;
+  return query select s.endpoint, s.p256dh, s.auth from public.push_subs s
+    join public.student_sessions ss on ss.uid = s.uid and ss.tid = auth.uid()
+   where jsonb_typeof(m) is distinct from 'array' or m ? ss.student_id::text;
+end $$;
+revoke execute on function public.push_targets_for(text) from public, anon;
+grant execute on function public.push_targets_for(text) to authenticated;
 
 -- =====================================================================
 -- 마지막으로 관리자(나)의 구글 이메일을 등록하세요 (따옴표 안을 바꿔서 실행)

@@ -379,7 +379,8 @@ details.adv > div{padding:4px 20px 20px;display:grid;gap:18px}
 .mfilters button[aria-pressed="true"]{border-color:var(--fg);background:var(--fg);color:var(--bg);font-weight:600}
 .mfilters select{width:auto;min-height:36px;padding:4px 10px;font-size:14px;border-radius:999px}
 .mgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:14px}
-.mcard{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:16px 18px;display:grid;gap:8px;min-width:0;align-content:start}
+.mcard{background:var(--surface);border:1px solid var(--line);border-top:5px solid var(--c,var(--line));border-radius:12px;padding:16px 18px;display:grid;gap:8px;min-width:0;align-content:start;transition:box-shadow .12s}
+.mcard:hover{box-shadow:0 6px 18px rgba(0,0,0,.07)}
 .mcard h2{font-family:var(--f-display);font-size:19px;line-height:1.4;overflow-wrap:anywhere}
 .mcard h2 button{all:unset;cursor:pointer}
 .mcard h2 button:hover{text-decoration:underline;text-underline-offset:4px}
@@ -568,8 +569,22 @@ input[type=datetime-local]{min-height:44px;border:1px solid var(--line);border-r
 .appfoot .linkbtn{font-size:12.5px;color:var(--muted)}
 .fb-kinds{display:flex;gap:8px;flex-wrap:wrap}
 .fb-kinds .btn[aria-pressed="true"]{background:var(--fg);color:var(--bg);border-color:var(--fg)}
-.sec-h{font-size:17px;margin:6px 0 -4px;display:flex;align-items:baseline;gap:8px}
+.sec-h{font-size:18px;margin:10px 0 -2px;display:flex;align-items:baseline;gap:8px;font-weight:700}
+.sec-h .muted{font-weight:500}
 .thead{display:grid;gap:14px;margin-bottom:18px}
+.memline{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px;background:var(--accent-soft);border-radius:10px;padding:9px 12px;font-size:14px}
+.memline.warn{background:var(--warn-soft)}
+.mchips{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+.mchip{border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:6px 12px;min-height:36px;font:inherit;font-size:14px;cursor:pointer;color:var(--fg)}
+.mchip small{font-family:var(--f-mono);color:var(--muted);margin-left:2px}
+.mchip.all{background:var(--accent);border-color:var(--accent);color:#fff}
+.mchip.all small{color:#fff}
+.mchip.some{border-color:var(--accent);background:var(--accent-soft)}
+.mem-list{max-height:min(46vh,380px);overflow:auto;border:1px solid var(--line);border-radius:10px;padding:4px 8px;background:var(--paper)}
+.mgrp-h{font-size:12.5px;font-weight:700;color:var(--muted);padding:8px 4px 2px;position:sticky;top:0;background:var(--paper)}
+.mrow{display:flex;align-items:center;gap:10px;padding:7px 6px;border-radius:8px;cursor:pointer;font-size:15px}
+.mrow:hover{background:var(--sunk)}
+.mrow input{width:18px;height:18px;accent-color:var(--accent)}
 .aisug{background:var(--sunk);border-radius:12px;padding:12px 14px;display:grid;gap:8px}
 .aisug-row{display:flex;gap:8px;flex-wrap:wrap}
 .aisug-row input{flex:1;min-width:200px}
@@ -597,11 +612,13 @@ input[type=datetime-local]{min-height:44px;border:1px solid var(--line);border-r
 .thead-hi p{color:var(--muted);margin-top:4px}
 .thead-hi p b{color:var(--fg)}
 .tstats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
-.tstat{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:12px 14px;display:grid;grid-template-columns:auto 1fr;column-gap:10px;align-items:center}
-.tstat .ic{grid-row:span 3;font-size:22px}
-.tstat b{font-family:var(--f-mono);font-size:24px;line-height:1.1}
-.tstat span:not(.ic){font-size:13.5px;color:var(--muted)}
-.tstat em{font-style:normal;font-size:12px;color:var(--muted)}
+.tstat{background:var(--surface);border:1px solid var(--line);border-left:6px solid var(--tc,var(--line));border-radius:14px;padding:12px 14px 12px 16px;display:grid;grid-template-columns:1fr auto;align-items:center;gap:2px 10px;text-align:left;font:inherit;color:var(--fg);cursor:pointer;transition:transform .12s,box-shadow .12s}
+.tstat:hover{transform:translateY(-2px);box-shadow:0 6px 16px rgba(0,0,0,.08)}
+.tstat .tl{font-size:14px;font-weight:600;color:var(--muted)}
+.tstat .ic{grid-column:2;grid-row:1 / span 3;font-size:26px;opacity:.9}
+.tstat b{font-family:var(--f-mono);font-size:32px;line-height:1.05;color:var(--tc,var(--fg))}
+.tstat em{font-style:normal;font-size:12.5px;color:var(--muted)}
+.tstat.t1{--tc:var(--s1)} .tstat.t2{--tc:var(--accent)} .tstat.t3{--tc:var(--s2)} .tstat.t4{--tc:var(--s4)}
 .tstat.warn{background:var(--warn-soft);border-color:transparent}
 .tstat.good{background:var(--accent-soft);border-color:transparent}
 @media (max-width:640px){.tstats{grid-template-columns:repeat(2,minmax(0,1fr))}}
@@ -698,6 +715,17 @@ a.btn{text-decoration:none;color:inherit;display:inline-flex;align-items:center}
 .sstats span{font-size:12.5px;color:var(--muted)}
 .sstats .todo{background:var(--warn-soft);border-color:transparent}
 .sstats .todo b{color:var(--warn)}
+.sstats > div:nth-child(2) b{color:var(--s1)}
+.sstats > div:nth-child(3) b{color:var(--accent)}
+.gate{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:18px;align-items:start;margin-top:6px}
+.gate-hero{display:grid;gap:10px;padding:24px;border-radius:18px;background:linear-gradient(135deg,var(--accent-soft),var(--surface));border:1px solid var(--line)}
+.gate-logo{width:56px;height:56px;border-radius:16px;background:var(--surface);display:grid;place-items:center;font-size:30px;box-shadow:0 4px 14px rgba(0,0,0,.08)}
+.gate-hero h1{font-family:var(--f-display);font-size:clamp(26px,4.4vw,34px);line-height:1.3}
+.gate-hero p{color:var(--muted);line-height:1.65}
+.gate-steps{list-style:none;margin:6px 0 0;padding:0;display:flex;flex-wrap:wrap;gap:8px}
+.gate-steps li{display:flex;align-items:center;gap:6px;background:var(--surface);border-radius:999px;padding:5px 12px 5px 5px;font-size:13.5px}
+.gate-steps b{width:22px;height:22px;border-radius:999px;background:var(--accent);color:#fff;display:grid;place-items:center;font-size:12px}
+.gate-form .card{margin:0}
 .stabs{display:flex;gap:8px;overflow-x:auto;padding:2px 2px 6px;scrollbar-width:thin;-webkit-overflow-scrolling:touch}
 .stabs button{flex:0 0 auto;border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:8px 14px;font-size:14.5px;cursor:pointer;min-height:42px;white-space:nowrap;color:var(--fg)}
 .stabs button span:last-child{font-family:var(--f-mono);font-size:12.5px;color:var(--muted);margin-left:2px}
@@ -740,6 +768,15 @@ a.btn{text-decoration:none;color:inherit;display:inline-flex;align-items:center}
 /* ---------- 우리 반 게시판 (패들렛처럼) ---------- */
 .wall-sec{margin-top:26px;display:grid;gap:10px;min-width:0}
 .wall-h{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:6px}
+.wact{display:flex;align-items:center;gap:6px;margin-top:10px;flex-wrap:wrap}
+.wact .sp{flex:1}
+.hbtn,.cbtn{display:inline-flex;align-items:center;gap:4px;border:1px solid var(--line);background:var(--surface);color:var(--fg);border-radius:999px;padding:4px 11px;min-height:34px;font:inherit;font-size:13.5px;cursor:pointer}
+.hbtn .hh{font-size:15px;line-height:1;transition:transform .15s}
+.hbtn.on{border-color:#E0566B;background:#FDE8EC;color:#B3263C;font-weight:600}
+:root[data-theme="dark"] .hbtn.on{background:#3A1B22;color:#FF9AAB}
+.hbtn.on .hh{transform:scale(1.15)}
+.hbtn:disabled{cursor:default;opacity:.75}
+.hbtn:not(:disabled):hover,.cbtn:hover{border-color:var(--fg)}
 .wall{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:12px;align-items:start;min-width:0}
 .wall > .post.open{grid-column:1/-1}
 .post.wcard{background:var(--wc,var(--surface));border-color:transparent;box-shadow:0 1px 3px rgba(0,0,0,.07);display:grid;gap:6px}
@@ -1323,7 +1360,7 @@ const Auth = (() => { let t = null; return Object.freeze({ set(v){ if(t === null
 Object.defineProperty(S, "canTeach", {get: () => Auth.teacher, set(){} });        // 예전 코드 호환: 읽기만
 const isTeacher = () => Auth.teacher && S.role === "teacher";                       // 교사 권한 + 교사 화면(학생 화면 미리보기 중이면 false)
 /* 교사만 쓰는 동작: 학생 권한으로는 버튼이 없을 뿐 아니라 호출해도 실행되지 않는다 */
-const TEACHER_ACTS = new Set(["ai-setup","ai-key-save","ai-key-del","ai-suggest","ai-pick","tadmin-open","tadmin-block","tadmin-tab","fbadmin-done","notice-add","notice-del","note-filter","note-req","note-req-send","note-req-cancel","note-dup","create","edit-room","dup","dup-list","del","del-yes","del-ask","del-room","status","toggle","save-feedback","class-fb","pin","pin-move","pin-clear",
+const TEACHER_ACTS = new Set(["mem-open","mem-cls","mem-all","mem-none","mem-save","ai-setup","ai-key-save","ai-key-del","ai-suggest","ai-pick","tadmin-open","tadmin-block","tadmin-tab","fbadmin-done","notice-add","notice-del","note-filter","note-req","note-req-send","note-req-cancel","note-dup","create","edit-room","dup","dup-list","del","del-yes","del-ask","del-room","status","toggle","save-feedback","class-fb","pin","pin-move","pin-clear",
   "present","present-exit","pmode","pnav","prand","fullscreen","export","export-go","save-tset","tpl-save-open","tpl-save","tpl-cancel","use-tpl","create-save","draft-save","publish-draft","discard-form",
   "preview","preview-form","preview-home","qr","copy-link","save-share","mcourse","course-new","course-edit","course-gadd","course-gdel","course-save","course-del","course-del-yes",
   "roster-open","roster-add","roster-reissue","roster-del","roster-print","gsel","asg-add-open","asg-add-cancel","asg-add","asg-st","racts","mview","sview","sfilter","sgo","snav","ttab","mfilter","open-student","goal","tpl","st-add","st-del","depth"]);
@@ -1377,11 +1414,30 @@ const asgChip = st => `<span class="chip as-${st}">${ASG[st].ic} ${ASG[st].l}</s
 /* 학생이 고른 그룹은 수업마다 이 기기에 기억한다 */
 function myGroup(cid){
   if(!cid) return "";
-  const g = lsGet("nonjae.group." + cid) || "";
+  const g = lsGet(groupKey(cid)) || lsGet("nonjae.group." + cid) || "";   // 학생마다 따로 (예전 값도 읽는다)
   const c = courseOf(cid);
-  return c && groupsOf(c).some(x => x.id === g) ? g : "";
+  if(c && groupsOf(c).some(x => x.id === g)) return g;
+  const auto = c && !isTeacher() ? autoGroup(c) : "";             // 그룹 이름이 내 학급(1-3)이나 학교와 같으면 저절로
+  if(auto){ setMyGroup(cid, auto); return auto }
+  return "";
 }
-function setMyGroup(cid, gid){ if(cid) lsSet("nonjae.group." + cid, gid || "") }
+/* 학번으로 학급 알아보기: 10301 → 1-3 · 11005 → 1-10 · 1301 → 1-3 (학교가 있으면 ‘학교 1-3’) */
+function classOf(number, school){
+  const n = String(number || "").trim(); let c = "";
+  if(/^\d{5}$/.test(n)) c = `${n[0]}-${+n.slice(1, 3)}`;
+  else if(/^\d{4}$/.test(n)) c = `${n[0]}-${+n[1]}`;
+  return c ? (school ? `${school} ${c}` : c) : (school || "기타");
+}
+const normG = t => String(t || "").replace(/학년/g, "-").replace(/[\s반]/g, "").toLowerCase();
+function autoGroup(c){
+  if(!S.name) return "";
+  const a = splitAuthor(S.name), cls = a.number ? classOf(a.number, "") : "";
+  const keys = [cls !== "기타" ? cls : "", a.school, a.school && cls ? a.school + cls : ""].filter(Boolean).map(normG);
+  const hit = groupsOf(c).filter(g => keys.includes(normG(g.name)));
+  return hit.length === 1 ? hit[0].id : "";
+}
+const groupKey = cid => "nonjae.group." + cid + (S.name && !isTeacher() ? "." + heartKey(S.name) : "");
+function setMyGroup(cid, gid){ if(cid) lsSet(groupKey(cid), gid || "") }
 /* 학생에게 보이는 활동: 우리 그룹의 배포 상태를 활동 상태에 반영한 복사본 */
 function forMe(r){
   if(r && !isTeacher() && pastDue(r) && r.open !== false && (!r.status || r.status === "open")) r = {...r, status:"closed", open:false};   // 마감 시각이 지났다
@@ -1420,7 +1476,7 @@ const submitted = p => !!p && p.status !== "draft";                       // 예
 const inGsel = p => !S.gsel || !isTeacher() || S.gselRoom !== p.roomId || (S.gsel === "_none" ? !p.groupId : p.groupId === S.gsel);   // 교사: 그룹별 결과 보기
 const allPostsOf = id => S.posts.filter(p => p.roomId === id && inGsel(p)).sort((a,b)=>(a.createdAt||0)-(b.createdAt||0));
 const postsOf = id => allPostsOf(id).filter(submitted);
-const repliesOf = pid => S.replies.filter(r => r.postId === pid).sort((a,b)=>(a.createdAt||0)-(b.createdAt||0));
+const repliesOf = pid => S.replies.filter(r => r.postId === pid && r.kind !== "heart").sort((a,b)=>(a.createdAt||0)-(b.createdAt||0));
 const myPost = r => S.name ? S.posts.find(p => p.roomId === r.id && p.author === S.name) : null;
 const postId = r => "p-" + r.id + "-" + hash(S.name);
 const roomsSorted = () => [...S.rooms].filter(r => isTeacher() || (visibleToStudents(r) && (!S.course || r.courseId === S.course))).sort((a,b)=> String(a.year||"").localeCompare(String(b.year||"")) || (a.createdAt||0)-(b.createdAt||0));
@@ -1775,7 +1831,7 @@ function render(){
   if(S.preview) h += `<div class="preview-banner" role="status"><span>👀 <b>학생 화면 미리보기 중</b> · 실제 학생 데이터에는 영향을 주지 않습니다. 여기서 쓴 내용은 저장되지 않아요.</span><button class="btn sm pri" type="button" data-a="preview-exit">교사 화면으로 돌아가기</button></div>`;
   else if(S.demo) h += `<div class="notice demo-bar"><span>🧪 <b>체험 모드</b> · 예시 반(학생 6명)으로 마음껏 눌러 보세요. 만들거나 고친 것은 저장되지 않아요.</span><span class="row"><button class="btn sm" type="button" data-a="tour-start">🧭 둘러보기</button><button class="btn sm pri" type="button" data-a="demo-exit">체험 끝내고 시작하기 →</button></span></div>`;
   else if(S.mode === "local") h += `<div class="notice"><b>미리보기 모드</b> · 이 화면에서는 글이 저장되지 않아요. ${window.claude ? "공유 링크로 열면 반 전체가 같은 활동을 씁니다." : "학생 글을 모으려면 README의 Supabase 설정을 마쳐 주세요."}${S.supaError ? ` (연결 오류: ${esc(S.supaError)})` : ""}</div>`;
-  else if(!S.canWrite && !(S.mode === "supa" && S.wantTeacher && !Auth.teacher)) h += `<div class="notice"><b>보기 전용</b> · 이 계정은 글을 읽을 수만 있어요. 선생님께 참여 권한을 요청하세요.</div>`;
+  else if(!S.canWrite && !(S.mode === "supa" && !Auth.teacher && (S.wantTeacher || !S.name))) h += `<div class="notice"><b>보기 전용</b> · 이 계정은 글을 읽을 수만 있어요. 선생님께 참여 권한을 요청하세요.</div>`;
 
   if(S.mode === "supa" && S.wantTeacher && !Auth.teacher) h += viewTeacherLogin();
   else if(S.mode === "supa" && !Auth.teacher && !S.name) h += viewCodeGate();          // 이 선생님 반 학생으로 확인되기 전에는 활동이 보이지 않는다
@@ -1793,6 +1849,7 @@ function render(){
 }
 function afterRender(){
   S.landed = null;
+  if(S.comFocus){ const t = document.querySelector(`[data-form="com:${S.comFocus}"]`); S.comFocus = null; if(t){ t.scrollIntoView({block:"center"}); t.focus({preventScroll:true}) } }
   tourPlace();
   drawMount();
   const cl = document.querySelector("#chatbox .chatlog"); if(cl) cl.scrollTop = cl.scrollHeight;
@@ -1819,7 +1876,7 @@ function renderTop(){
     if(S.name) h += `<span class="who">${esc(S.name)} · <button class="linkbtn" type="button" data-a="rename">${S.mode === "supa" ? "다른 학생으로" : "이름 바꾸기"}</button></span>`;
     const rr = S.view === "room" ? room() : null, gcid = rr?._gid ? rr.courseId : (S.view === "home" ? S.course : "");
     if(gcid && myGroup(gcid)) h += `<span class="who">${esc(groupName(gcid, myGroup(gcid)))} · <button class="linkbtn" type="button" data-a="regroup" data-c="${esc(gcid)}">그룹 바꾸기</button></span>`;
-    h += `<button class="btn sm" type="button" data-a="mine">내 생각 기록</button>`;
+    if(S.name) h += `<button class="btn sm" type="button" data-a="mine">📒 내 생각 기록</button>`;   // 로그인(코드 확인) 전에는 보이지 않는다
     if(!isStandalone()) h += `<button class="btn sm inst" type="button" data-a="install-help">📲 앱으로 설치</button>`;
   }else h += `<button class="btn sm pri" type="button" data-a="create">+ 새 활동</button>`;
   document.getElementById("topr").innerHTML = h;
@@ -1916,7 +1973,7 @@ function viewHomeStudent(all){
   if(S.course && courseOf(S.course)) S.sdash = "c:" + S.course;
   const groups = new Map();
   all.forEach(r => { const k = dashKey(r); if(!groups.has(k)) groups.set(k, []); groups.get(k).push(r) });
-  S.courses.forEach(c => { const k = "c:" + c.id; if(!groups.has(k) && (myGroup(c.id) || noticesOf(c).length || S.sdash === k)) groups.set(k, []) });
+  S.courses.forEach(c => { const k = "c:" + c.id; if(!groups.has(k) && (Array.isArray(c.members) || myGroup(c.id) || noticesOf(c).length || S.sdash === k)) groups.set(k, []) });   // 수강 학생으로 정해진 과목은 활동이 없어도 보인다
   if(S.sdash && groups.has(S.sdash)) return viewDash(dashInfo(S.sdash, groups.get(S.sdash)), groups.get(S.sdash));
   S.sdash = ""; S.course = "";
   return viewDashList(groups, all);
@@ -2292,10 +2349,10 @@ function viewNotesTeacher(r){
 /* 🧭 체험 모드 둘러보기: 주요 버튼을 하나씩 비추며 짧게 설명한다 */
 const TOUR = [
   {sel:".demo-bar", t:"🧪 체험 모드예요", d:"예시 반(학생 6명)과 활동이 미리 들어 있어요. 무엇을 눌러도 저장되지 않으니 마음껏 눌러 보세요. 이 안내는 언제든 ‘🧭 둘러보기’로 다시 볼 수 있어요."},
-  {sel:".tstats", t:"📊 오늘 한눈에 보기", d:"과목 수, 진행 중인 활동, 24시간 안에 마감되는 활동, 오늘 들어온 학생 응답을 바로 보여 줘요."},
-  {sel:".dgrid .dcard", t:"📚 과목 대시보드", d:"‘1학년 한국사’처럼 과목을 만들어 활동을 모아요. 반·학교를 그룹으로 넣으면 활동 하나를 여러 반에 따로 열고 닫을 수 있어요. 학생도 같은 과목 카드로 들어와요."},
+  {sel:".tstats", t:"📊 오늘 한눈에 보기", d:"진행 중인 활동, 24시간 안에 마감되는 활동, 오늘 들어온 학생 응답을 바로 보여 줘요. 칸을 누르면 그 활동만 모아 보여요."},
+  {sel:".dgrid .dcard", t:"📚 과목 대시보드", d:"‘1학년 통합과학’처럼 과목을 만들고, 그 과목을 듣는 학생을 학급별(1-3, 1-10…)이나 한 명씩 골라요. 고른 학생에게만 과목·활동·공지·알림이 가요."},
   {sel:".tnotice", t:"📢 공지 띄우기", d:"과목 화면 맨 위에 공지를 1~2개 띄워요. ‘학생 앱에 알림 보내기’를 켜 두면 학생 휴대폰으로 알림이 가요.", prep:() => { S.view = "home"; S.mcourse = S.courses[0]?.id || "" }},
-  {sel:".mcard", t:"🗂 활동 카드", d:"참여·완료 현황을 보고 ‘결과 보기’로 학생 생각을 확인해요. 링크·QR 공유, 마감, 수정·복제도 여기서 해요.", prep:() => { S.view = "home"; S.mcourse = "" }},
+  {sel:".mcard", t:"🗂 활동 카드", d:"참여·완료 현황을 보고 ‘📊 결과 보기’로 학생 생각을 확인해요. 🔗 링크로 학생에게 나눠 주고, 수정·복제·마감·삭제는 ‘⋯ 관리’에 있어요.", prep:() => { S.view = "home"; S.mcourse = "" }},
   {sel:".thead [data-a=create]", t:"➕ 새 활동 만들기", d:"토론·질문 활동·논술·생각 스케치·오늘의 필기·AI 가상 인물 대화 중에 고르고 주제만 적으면 단계가 자동으로 짜여요. 🪄 키워드로 AI에게 논제·질문을 추천받을 수도 있어요."},
   {sel:'#topr [data-a="preview-home"]', t:"👀 학생 화면 미리보기", d:"학생에게 어떻게 보이는지 바로 확인해요. 과목 카드 → 게시판 → 내 생각 쓰기 순서로 학생이 활동해요. 미리보기에서 쓴 내용은 저장되지 않아요."},
   {sel:".appfoot", t:"💬 오류·건의하기", d:"쓰다가 불편한 점이나 바라는 기능이 있으면 화면 맨 아래 버튼으로 알려 주세요. 만든 선생님에게 바로 전달돼요."},
@@ -2368,7 +2425,7 @@ async function notifyStudents(msg){
 const pushNote = d => !d ? " (알림은 보내지 못했어요)" : d.sent ? ` 학생 기기 ${d.sent}대에 알림을 보냈어요.` : !d.total ? " (아직 알림을 켠 학생이 없어요)" : "";
 function roomPlace(r){ const c = courseOf(r.courseId); return c ? c.title : (r.subject || "").trim() }
 async function notifyNewRoom(r){
-  const d = await notifyStudents({title:"🆕 새 활동이 올라왔어요", body:`${roomPlace(r) ? roomPlace(r) + " · " : ""}${r.title}`, url:"#" + r.id, tag:"r-" + r.id});
+  const d = await notifyStudents({title:"🆕 새 활동이 올라왔어요", body:`${roomPlace(r) ? roomPlace(r) + " · " : ""}${r.title}`, url:"#" + r.id, tag:"r-" + r.id, ...(courseOf(r.courseId) ? {course:r.courseId} : {})});   // 과목 활동이면 그 과목 학생에게만
   toast("공개했어요." + pushNote(d));
 }
 /* 알림을 누르거나 주소 뒤(#…)가 바뀌면 그 활동·과목으로 간다 */
@@ -2677,8 +2734,13 @@ function readCard(r, p, mine, ps, {pickable=true}={}){
   if(open && pickable && p !== mine && !mine?.readAt){
     h += `<div class="row" style="margin-top:12px"><button class="btn sm${picked?" picked":""}" type="button" data-a="pick-diff" data-id="${esc(p.id)}" aria-pressed="${picked}">${picked?"✓ 이 생각을 골랐어요":"이 생각을 고를래요"}</button></div>`;
   }
-  // 한마디를 남긴 뒤에는 다른 친구 글에도 자유롭게 한마디 더 (선택)
-  if(open && p !== mine && (mine?.readAt || !pickable)){
+  if(!pickable){                                                     // 게시판에서 펼친 글: 하트 · 댓글
+    h += wallActs(r, p, {open:true});
+    if(open && (!isTeacher() || S.preview) && S.name){
+      if(p !== mine && f.deep && f.rebuttal && f.meet) h += `<div class="row" style="margin-top:8px"><button class="btn sm" type="button" data-a="go-respond" data-id="${esc(p.id)}">이 생각에 답해보기 →</button></div>`;
+      h += commentForm(r, p, p === mine ? "💬 친구 댓글에 답하기" : "💬 댓글 달기");
+    }
+  }else if(open && p !== mine && mine?.readAt){                       // 한마디를 남긴 뒤에는 다른 친구 글에도 자유롭게 한마디 더 (선택)
     if(f.deep && f.rebuttal && f.meet) h += `<div class="row" style="margin-top:8px"><button class="btn sm" type="button" data-a="go-respond" data-id="${esc(p.id)}">이 생각에 답해보기 →</button></div>`;
     else if(f.comment) h += commentForm(r, p, "한마디 더 남기기 (선택)");
   }
@@ -2691,11 +2753,23 @@ const wallTone = (r, p) => {
   let h = 0; for(const c of String(p.author||p.id)) h = (h*31 + c.charCodeAt(0)) >>> 0;
   return `--wc:var(--${SC[h%4]}-soft)`;
 };
+/* ❤️ 하트: replies에 kind "heart" 한 줄(학생마다 글마다 하나, on으로 켜고 끈다) */
+const heartsOf = pid => S.replies.filter(x => x.kind === "heart" && x.postId === pid && x.on !== false);
+const myHeart = pid => S.replies.find(x => x.kind === "heart" && x.postId === pid && x.author === S.name);
+const heartKey = name => { let h = 0; for(const c of String(name)) h = (h*31 + c.charCodeAt(0)) >>> 0; return h.toString(36) };
+function wallActs(r, p, {open=false}={}){
+  const n = heartsOf(p.id).length, mh = myHeart(p.id), on = !!mh && mh.on !== false, own = p.author === S.name, reps = visibleReplies(p).length;
+  const canHeart = (!isTeacher() || S.preview) && !!S.name && !own && S.canWrite;
+  const ttl = own ? "내 글이에요" : !canHeart ? "하트" : on ? "하트 취소" : "하트 누르기";
+  return `<div class="wact"><button class="hbtn${on ? " on" : ""}" type="button" data-a="heart" data-id="${esc(p.id)}" aria-pressed="${on}" ${canHeart ? "" : "disabled"} title="${ttl}" aria-label="${ttl} (${n}개)"><span class="hh" aria-hidden="true">${on ? "❤️" : "🤍"}</span><span>${n || ""}</span></button>
+    <button class="cbtn" type="button" data-a="${open ? "focus-com" : "open-post"}" data-id="${esc(p.id)}" data-c="1">💬 ${reps ? `댓글 ${reps}` : "댓글 달기"}</button><span class="sp"></span>
+    ${open ? "" : `<button class="btn sm" type="button" data-a="open-post" data-id="${esc(p.id)}">펼쳐 읽기</button>`}</div>`;
+}
 function wallCardBody(r, p, ps, extra = ""){
-  const img = Object.values(finalBody(p)).find(isImg), txt = previewText(r, p), reps = visibleReplies(p).length;
+  const img = Object.values(finalBody(p)).find(isImg), txt = previewText(r, p);
   return `${img ? `<img class="wimg" src="${esc(img)}" alt="${esc(displayName(r,p.author,ps))}의 그림" loading="lazy">` : ""}
-    ${txt ? `<p class="wtxt">${esc(txt)}</p>` : ""}
-    <div class="pmeta"><span>${reps ? `💬 ${reps}` : ""}${extra}</span><button class="btn sm" type="button" data-a="open-post" data-id="${esc(p.id)}">펼쳐 읽기</button></div>`;
+    ${txt ? `<p class="wtxt">${esc(txt)}</p>` : ""}${extra ? `<p class="small muted">${extra}</p>` : ""}
+    ${wallActs(r, p)}`;
 }
 function wallCard(r, p, mine, ps){
   if(S.openPost === p.id) return readCard(r, p, mine, ps, {pickable:false});
@@ -3631,8 +3705,11 @@ function viewWelcome(){
 }
 /* 학생: 선생님 반 확인 화면 (처음 들어올 때, 또는 다른 선생님의 활동 링크로 들어올 때) */
 function viewCodeGate(){
-  return `<div class="home-head"><div><div class="eyebrow">생각이음</div><h1>반갑습니다!</h1><p>선생님이 나눠 준 개인 코드로 처음 한 번만 확인할게요.</p></div></div>
-    <div id="stage" style="max-width:560px">${codeForm()}</div>
+  return `<section class="gate"><div class="gate-hero"><div class="gate-logo" aria-hidden="true">💭</div><div class="eyebrow">생각이음 · 학생</div>
+      <h1>생각을 잇는 교실에<br>오신 걸 환영해요!</h1>
+      <p>선생님이 나눠 준 <b>개인 코드</b>로 처음 한 번만 확인할게요. 이 기기가 기억해서 다음부터는 묻지 않아요.</p>
+      <ol class="gate-steps"><li><b>1</b><span>코드 입력</span></li><li><b>2</b><span>내 과목 들어가기</span></li><li><b>3</b><span>생각 쓰고 나누기</span></li></ol></div>
+    <div id="stage" class="gate-form">${codeForm()}</div></section>
     <p class="muted small" style="margin-top:18px">선생님이신가요? <button class="linkbtn" type="button" data-a="t-start">교사로 시작하기 →</button></p>
     <p class="muted small" style="margin-top:6px"><a href="privacy.html" target="_blank" rel="noopener">개인정보처리방침</a> · <a href="terms.html" target="_blank" rel="noopener">이용약관</a></p>`;
 }
@@ -3706,6 +3783,7 @@ async function loadRoster(){
   const r = await SB.from("students").select("id,school,number,name,code").order("school").order("number");
   if(r.error){ toast("학생 명단을 불러오지 못했어요."); return }
   S.roster = r.data || []; if(S.modal?.type === "roster") render();
+  if(S.modal?.type === "members"){ memGuess(); renderModal() }
 }
 function rosterModalHTML(){
   const q = (S.rosterQ || "").trim(), list = (S.roster || []).filter(x => !q || rosterLabel(x).includes(q)), hasSch = (S.roster || []).some(x => x.school);
@@ -3992,12 +4070,12 @@ function teacherTop(){
   const open = live.filter(r => statusOf(r) === "open"), soon = open.filter(r => r.dueAt && r.dueAt > Date.now() && r.dueAt - Date.now() < 864e5);
   const drafts = live.filter(r => statusOf(r) === "draft").length, today = respToday(live);
   const nm = S.demo ? "체험" : (S.sbName || "").trim();
-  const tile = (ic, n, l, sub, cls = "") => `<div class="tstat ${cls}"><span class="ic" aria-hidden="true">${ic}</span><b>${n}</b><span>${l}</span>${sub ? `<em>${sub}</em>` : ""}</div>`;
+  const tile = (ic, n, l, sub, cls = "", v = "") => `<button type="button" class="tstat ${cls}" data-a="tstat" data-v="${v}" title="${esc(l)} 보기"><span class="ic" aria-hidden="true">${ic}</span><span class="tl">${l}</span><b>${n}</b>${sub ? `<em>${sub}</em>` : "<em>&nbsp;</em>"}</button>`;
   return `<section class="thead"><div class="thead-hi"><div><div class="eyebrow">${now.getMonth()+1}월 ${now.getDate()}일 ${"일월화수목금토"[now.getDay()]}요일 · 교사 화면</div>
       <h1>${nm ? `${esc(nm)} 선생님, 안녕하세요` : "선생님, 안녕하세요"} 👋</h1>
       <p>${open.length ? `지금 <b>${open.length}개</b> 활동이 열려 있어요.${soon.length ? ` 그중 <b>${soon.length}개</b>는 24시간 안에 마감돼요.` : ""}` : "열린 활동이 없어요. ‘+ 새 활동 만들기’로 시작해 보세요."}</p></div>
     <span class="row">${S.mode === "supa" ? `<button class="btn" type="button" data-a="roster-open">👥 학생 코드</button>` : ""}<button class="btn pri" type="button" data-a="create">+ 새 활동 만들기</button></span></div>
-    <div class="tstats">${tile("📚", S.courses.length, "과목", `활동 ${live.length}개`)}${tile("▶️", open.length, "진행 중", drafts ? `작성 중 ${drafts}` : "")}${tile("⏰", soon.length, "곧 마감", "24시간 안", soon.length ? "warn" : "")}${tile("✍️", today, "오늘 들어온 응답", "", today ? "good" : "")}</div></section>`;
+    <div class="tstats">${tile("📚", S.courses.length, "내 과목", `활동 ${live.length}개`, "t1", "courses")}${tile("▶️", open.length, "진행 중", drafts ? `작성 중 ${drafts}` : "지금 열린 활동", "t2", "open")}${tile("⏰", soon.length, "곧 마감", "24시간 안", soon.length ? "t3 warn" : "t3", "soon")}${tile("✍️", today, "오늘 들어온 응답", "새 글·제출", today ? "t4 good" : "t4", "today")}</div></section>`;
 }
 function courseCards(){
   const none = courseRooms("_none");
@@ -4007,10 +4085,59 @@ function courseCards(){
       <span class="ds"><span>활동 ${rs.length}</span>${open ? `<span class="todo">진행 중 ${open}</span>` : ""}${td ? `<span class="new">오늘 응답 ${td}</span>` : ""}</span></button>` };
   return `<div class="sec-h2"><h2 class="sec-h">📚 내 과목 <span class="muted small">${S.courses.length}개</span></h2></div>
     <div class="dgrid">${S.courses.map(c => { const ns = noticesOf(c);
-      return card(c.id, subjTone("c:" + c.id), courseIcon(c), c.title, [c.subject, c.year, groupsOf(c).length ? `그룹 ${groupsOf(c).length}개` : ""].filter(Boolean).join(" · ") || "과목", courseRooms(c.id),
+      return card(c.id, subjTone("c:" + c.id), courseIcon(c), c.title, [c.subject, c.year, Array.isArray(c.members) ? `학생 ${c.members.length}명` : "", groupsOf(c).length ? `그룹 ${groupsOf(c).length}개` : ""].filter(Boolean).join(" · ") || "과목", courseRooms(c.id),
         ns.length ? `<span class="dn">📢 ${esc(ns[0].text)}${ns.length > 1 ? ` 외 ${ns.length - 1}` : ""}</span>` : "") }).join("")}
       ${none.length ? card("_none", "s4", "🗂", "과목 없는 활동", "과목에 넣지 않은 활동이에요", none) : ""}
-      <button type="button" class="dcard dadd" data-a="course-new"><span class="dt">＋ 새 과목</span><span class="dw">예: 1학년 한국사 · 반이나 학교를 그룹으로 넣으면 활동 하나를 나눠 쓸 수 있어요</span></button></div>`;
+      <button type="button" class="dcard dadd" data-a="course-new"><span class="dt">＋ 새 과목</span><span class="dw">예: 1학년 통합과학 · 과목을 만들고 듣는 학생을 학급별로 골라요</span></button></div>`;
+}
+/* 👥 과목 수강 학생 고르기: 학급(학번)별로 한꺼번에, 또는 한 명씩. 고른 학생에게만 과목·활동·공지·알림이 간다 */
+function memOpen(cid, extra = {}){
+  const c = courseOf(cid) || extra;
+  let sel = new Set(Array.isArray(c.members) ? c.members : []);
+  S.modal = {type:"members", id:cid, sel, legacy:!Array.isArray(c.members), title:c.title || extra.title || ""};
+  if(S.roster === undefined) loadRoster();
+  else if(S.modal.legacy) memGuess();
+}
+function memGuess(){                                              // 예전 과목: 그룹 이름과 같은 학급 학생을 미리 골라 둔다
+  const m = S.modal; if(m?.type !== "members" || !m.legacy || m.sel.size || !S.roster) return;
+  const gs = groupsOf(courseOf(m.id)).map(g => normG(g.name));
+  if(gs.length) S.roster.forEach(x => { const k = classOf(x.number, x.school); if(gs.includes(normG(k)) || gs.includes(normG(classOf(x.number, "")))) m.sel.add(x.id) });
+}
+const memClasses = () => { const by = new Map(); (S.roster || []).forEach(x => { const k = classOf(x.number, x.school); if(!by.has(k)) by.set(k, []); by.get(k).push(x) });
+  return [...by.entries()].sort((a, b) => koCmp(a[0].replace(/(\d+)/g, d => d.padStart(3, "0")), b[0].replace(/(\d+)/g, d => d.padStart(3, "0")))) };
+function memChipsHTML(m){
+  return memClasses().map(([k, xs]) => { const n = xs.filter(x => m.sel.has(x.id)).length, st = !n ? "none" : n === xs.length ? "all" : "some";
+    return `<button type="button" class="mchip ${st}" data-a="mem-cls" data-v="${esc(k)}" aria-pressed="${st === "all"}"><span aria-hidden="true">${st === "all" ? "✓" : st === "some" ? "◐" : "＋"}</span> ${esc(k)} <small>${n}/${xs.length}</small></button>` }).join("");
+}
+function memListHTML(m){
+  const q = (m.q || "").trim(), cls = memClasses().map(([k, xs]) => [k, xs.filter(x => !q || rosterLabel(x).includes(q))]).filter(([, xs]) => xs.length);
+  if(!cls.length) return `<p class="muted small" style="padding:10px">찾는 학생이 없어요.</p>`;
+  return cls.map(([k, xs]) => `<div class="mgrp"><div class="mgrp-h">${esc(k)}</div>${xs.map(x => `<label class="mrow"><input type="checkbox" data-mem="${esc(x.id)}" ${m.sel.has(x.id) ? "checked" : ""}><span>${esc(rosterLabel(x))}</span></label>`).join("")}</div>`).join("");
+}
+function memRefresh(){
+  const m = S.modal; if(m?.type !== "members") return;
+  const ch = document.getElementById("mem-chips"); if(ch) ch.innerHTML = memChipsHTML(m);
+  const ct = document.getElementById("mem-count"); if(ct) ct.textContent = `${m.sel.size}명 골랐어요`;
+  document.querySelectorAll("input[data-mem]").forEach(i => { i.checked = m.sel.has(i.dataset.mem) });
+}
+function membersHTML(m){
+  const head = `<h3>👥 ${esc(m.title || courseOf(m.id)?.title || "")} · 수강 학생</h3>
+    <p class="small muted">고른 학생에게만 이 과목과 활동·공지·알림이 보여요. 학번으로 학급을 알아봐요 (10301 → 1-3, 11005 → 1-10).</p>`;
+  if(S.roster === undefined) return head + `<p class="muted">학생 명단을 불러오는 중…</p>`;
+  if(!S.roster.length) return head + `<div class="notice">아직 학생 명단이 없어요. 먼저 <b>👥 학생 코드</b>에서 학생을 넣은 뒤 골라 주세요.</div><div class="row end"><button class="btn" type="button" data-a="modal-close">닫기</button><button class="btn pri" type="button" data-a="roster-open">👥 학생 코드로 가기</button></div>`;
+  return head + (m.legacy ? `<p class="notice small">지금은 수강 학생을 정하지 않아 <b>모든 학생</b>에게 이 과목이 보여요. 학생을 골라 저장하면 그 학생에게만 보여요.${m.sel.size ? " (그룹 이름과 같은 학급 학생을 미리 골라 두었어요)" : ""}</p>` : "")
+    + `<div class="mem-top"><b class="small">학급별로 한 번에</b><div id="mem-chips" class="mchips">${memChipsHTML(m)}</div></div>
+    <div class="row" style="margin:10px 0 6px;flex-wrap:wrap"><input type="search" id="mem-q" placeholder="학번·이름으로 찾기" value="${esc(m.q || "")}" aria-label="학생 찾기" style="flex:1;min-width:160px">
+      <button class="btn sm" type="button" data-a="mem-all">전체 선택</button><button class="btn sm" type="button" data-a="mem-none">전체 해제</button></div>
+    <div id="mem-list" class="mem-list">${memListHTML(m)}</div>
+    <div class="row" style="justify-content:space-between;margin-top:12px;flex-wrap:wrap;gap:8px"><b id="mem-count" class="small">${m.sel.size}명 골랐어요</b>
+      <span class="row"><button class="btn" type="button" data-a="modal-close">취소</button><button class="btn pri" type="button" data-a="mem-save">저장</button></span></div>`;
+}
+function memLine(c){
+  const n = Array.isArray(c.members) ? c.members.length : null, id = esc(c.id);
+  if(S.mode !== "supa" || S.demo) return `<div class="memline"><span>👥 실제 생각이음에서는 여기서 <b>이 과목을 듣는 학생</b>을 학급별·개인별로 골라요.</span></div>`;
+  return `<div class="memline${n ? "" : " warn"}"><span>${n === null ? "⚠️ 수강 학생을 아직 고르지 않아 <b>선생님의 모든 학생</b>에게 이 과목이 보여요." : n === 0 ? "⚠️ 수강 학생이 없어 <b>아직 아무 학생에게도</b> 이 과목이 보이지 않아요." : `👥 수강 학생 <b>${n}명</b> · 이 학생들에게만 과목·활동·공지·알림이 가요.`}</span>
+    <button class="btn sm${n ? "" : " pri"}" type="button" data-a="mem-open" data-id="${id}">${n ? "학생 바꾸기" : "👥 수강 학생 고르기"}</button></div>`;
 }
 function courseHead(){
   if(S.mcourse && S.mcourse !== "_none" && !courseOf(S.mcourse) && S.mcourse !== S.pendingCourse) S.mcourse = "";   // 방금 만든 과목은 저장소에서 돌아올 때까지 기다린다
@@ -4023,7 +4150,8 @@ function courseHead(){
   return back + `<section class="chead" style="--c:var(--${subjTone("c:" + c.id)})"><div class="cardh"><h2>${courseIcon(c)} ${esc(c.title)}</h2><span class="row">
       <button class="btn sm" type="button" data-a="copy-link" data-kind="course" data-id="${id}">🔗 과목 링크</button><button class="btn sm" type="button" data-a="qr" data-kind="course" data-id="${id}">과목 QR</button><button class="btn sm" type="button" data-a="course-edit" data-id="${id}">과목 수정</button></span></div>
     <p class="mmeta">${esc([c.subject, c.year].filter(Boolean).join(" · "))}${c.description ? ` · ${esc(c.description)}` : ""}${c.subject || c.year || c.description ? " · " : ""}활동 ${rs.length}개 · 진행 중 ${open}개 · 오늘 응답 ${respToday(rs)}개</p>
-    <div class="gchips"><span class="small muted">그룹</span>${groupsOf(c).map(g => `<span class="gchip">${esc(g.name)}</span>`).join("") || `<span class="muted small">아직 없어요. ‘과목 수정’에서 반·학교 같은 그룹을 넣어 주세요.</span>`}</div>
+    ${memLine(c)}
+    <div class="gchips"><span class="small muted">그룹</span>${groupsOf(c).map(g => `<span class="gchip">${esc(g.name)}</span>`).join("") || `<span class="muted small">없어도 돼요. 같은 활동을 반마다 따로 열고 닫고 싶을 때 ‘과목 수정’에서 넣어요.</span>`}</div>
     ${noticePanel(c)}</section>`;
 }
 /* 📢 과목 공지: 학생의 과목 화면 맨 위에 1~2개 띄운다 (과목 문서의 notices에 저장) */
@@ -4284,7 +4412,7 @@ function estMinutes(r){
 const CIRC = "①②③④⑤⑥⑦⑧⑨⑩⑪⑫";
 
 /* ---- 내 활동: 정렬 · 활동 시간 ---- */
-const MSORTS = [["recent","최근 활동순"],["created","만든 날짜순"],["partHigh","참여율 높은 순"],["partLow","참여율 낮은 순"],["notJoined","미참여 학생 많은 순"],["compHigh","완료율 높은 순"],["title","제목 가나다순"]];
+const MSORTS = [["recent","최근 활동순"],["due","마감 가까운 순"],["created","만든 날짜순"],["partHigh","참여율 높은 순"],["partLow","참여율 낮은 순"],["notJoined","미참여 학생 많은 순"],["compHigh","완료율 높은 순"],["title","제목 가나다순"]];
 const MDURS = [["le10","10분 이하", d => d <= 10],["10-20","10~20분", d => d > 10 && d <= 20],["20-40","20~40분", d => d > 20 && d <= 40],["ge40","40분 이상", d => d > 40]];
 function manageTable(list, stOf){
   return `<div class="tscroll"><table class="ptable mtable"><thead><tr><th>활동</th><th>유형</th><th>과목·학년</th><th>상태</th><th>참여</th><th>완료</th><th>최근 활동</th><th><span class="sr">관리</span></th></tr></thead><tbody>
@@ -4296,7 +4424,7 @@ function manageTable(list, stOf){
         <td data-l="참여" class="mono">${st.participants}${st.total ? ` / ${st.total}` : "명"}</td>
         <td data-l="완료" class="mono">${st.participants ? `${st.complete} / ${st.participants}` : "–"}</td>
         <td data-l="최근 활동" class="small">${fmtRel(lastActivity(r))}</td>
-        <td class="acts"><button class="btn sm ${draft ? "pri" : ""}" type="button" data-a="${draft ? "edit-room" : "open"}" data-id="${esc(r.id)}">${draft ? "이어서 만들기" : "결과 보기"}</button><button class="btn sm" type="button" data-a="racts" data-id="${esc(r.id)}" aria-label="${esc(r.title)} 관리 메뉴">⋯ 관리</button><button class="btn sm danger" type="button" data-a="del-ask" data-id="${esc(r.id)}" aria-label="${esc(r.title)} 삭제">🗑</button></td></tr>` }).join("")}
+        <td class="acts"><button class="btn sm ${draft ? "pri" : ""}" type="button" data-a="${draft ? "edit-room" : "open"}" data-id="${esc(r.id)}">${draft ? "이어서 만들기" : "결과 보기"}</button><button class="btn sm" type="button" data-a="racts" data-id="${esc(r.id)}" aria-label="${esc(r.title)} 관리 메뉴">⋯</button><button class="btn sm danger" type="button" data-a="del-ask" data-id="${esc(r.id)}" aria-label="${esc(r.title)} 삭제">🗑</button></td></tr>` }).join("")}
   </tbody></table></div>`;
 }
 
@@ -4331,7 +4459,8 @@ function manageFiltered(){
   const comp = r => { const st = stOf(r); return st.participants ? st.complete / st.participants : null };
   const recent = (a,b) => lastActivity(b) - lastActivity(a);
   const cmp = {recent, created:(a,b) => (b.createdAt||0) - (a.createdAt||0), partHigh:nl(part,-1), partLow:nl(part,1),
-    notJoined:nl(r => stOf(r).notJoined, -1), compHigh:nl(comp,-1), title:(a,b) => koCmp(a.title||"", b.title||"")}[S.msort] || recent;
+    notJoined:nl(r => stOf(r).notJoined, -1), compHigh:nl(comp,-1), title:(a,b) => koCmp(a.title||"", b.title||""),
+    due:(a,b) => (a.dueAt && a.dueAt > Date.now() ? a.dueAt : 9e15) - (b.dueAt && b.dueAt > Date.now() ? b.dueAt : 9e15) || recent(a,b)}[S.msort] || recent;
   list.sort((a,b) => cmp(a,b) || recent(a,b));
   list.stOf = stOf;
   return list;
@@ -4339,7 +4468,8 @@ function manageFiltered(){
 function manageCard(r){
   const t = TEMPLATES[r.template] || {}, st = teacherStats(r), s = statusOf(r);
   const pp = st.total ? Math.round(st.participants/st.total*100) : 0, cp = st.participants ? Math.round(st.complete/st.participants*100) : 0;
-  return `<article class="mcard">
+  const cc = courseOf(r.courseId);
+  return `<article class="mcard" style="--c:var(--${cc ? subjTone("c:" + cc.id) : "line"})">
     <div class="mtop">${statusChip(r)}${dueChip(r)}<span class="chip tpl"><span aria-hidden="true">${t.icon||""}</span>${esc(t.label||"")}${t.mode?` · ${esc(t.mode)}`:""}</span>${r.duration?`<span class="chip">⏱ ${esc(r.duration)}분</span>`:""}${asgSummary(r)}</div>
     <h2><button type="button" data-a="open" data-id="${esc(r.id)}">${esc(r.title || "제목 없는 활동")}</button></h2>
     <div class="mmeta">${!S.mcourse && courseOf(r.courseId) ? `${courseIcon(courseOf(r.courseId))} ${esc(courseOf(r.courseId).title)} · ` : ""}${esc([r.grade, r.subject, r.unit].filter(Boolean).join(" / ") || "수업 정보 없음")}</div>
@@ -4348,9 +4478,8 @@ function manageCard(r){
     <div class="mstats"><span>최근 활동 ${fmtRel(lastActivity(r))}</span><span>만든 날 ${fmtDate(r.createdAt) || "–"}</span></div>
     <div class="macts">${s === "draft"
       ? `<button class="btn sm pri" type="button" data-a="edit-room" data-id="${esc(r.id)}">이어서 만들기</button><button class="btn sm" type="button" data-a="preview" data-id="${esc(r.id)}">학생 화면</button><span class="sp"></span><button class="btn sm danger" type="button" data-a="del-ask" data-id="${esc(r.id)}">삭제</button>`
-      : `<button class="btn sm pri" type="button" data-a="open" data-id="${esc(r.id)}">결과 보기</button><button class="btn sm" type="button" data-a="preview" data-id="${esc(r.id)}">학생 화면</button><button class="btn sm" type="button" data-a="copy-link" data-id="${esc(r.id)}">링크</button>
-         <span class="sp"></span><button class="btn sm" type="button" data-a="edit-room" data-id="${esc(r.id)}">수정</button><button class="btn sm" type="button" data-a="dup" data-id="${esc(r.id)}">복제</button>${statusButtons(r)}
-         ${s !== "archived" ? `<button class="btn sm" type="button" data-a="status" data-id="${esc(r.id)}" data-v="archived" title="${STATUS.archived.d}" aria-label="보관">🗄</button>` : ""}<button class="btn sm danger" type="button" data-a="del-ask" data-id="${esc(r.id)}" title="활동 삭제" aria-label="${esc(r.title)} 삭제">🗑</button>`}</div></article>`;
+      : `<button class="btn sm pri" type="button" data-a="open" data-id="${esc(r.id)}">📊 결과 보기</button><button class="btn sm" type="button" data-a="copy-link" data-id="${esc(r.id)}">🔗 링크</button><button class="btn sm" type="button" data-a="preview" data-id="${esc(r.id)}" title="학생 화면 미리보기">👀 학생 화면</button>
+         <span class="sp"></span><button class="btn sm" type="button" data-a="racts" data-id="${esc(r.id)}" title="수정·복제·마감·보관·삭제" aria-label="${esc(r.title)} 관리 메뉴">⋯</button>`}</div></article>`;
 }
 function manageList(){
   const list = manageFiltered();
@@ -4417,8 +4546,8 @@ function renderModal(){
   }else if(m.type === "course"){
     const f = F("course"), used = new Set(S.rooms.filter(r => r.courseId === f.id).flatMap(r => [...asgIds(r), ...S.posts.filter(p => p.roomId === r.id && p.groupId).map(p => p.groupId)]));
     h = `<h3>${f.id ? "과목 수정" : "새 과목 만들기"}</h3>
-      <div class="q"><label for="course-title">과목 이름</label><input type="text" id="course-title" data-form="course" data-k="title" maxlength="40" value="${esc(f.title||"")}" placeholder="예: 1학년 한국사, 한국사2 온라인 공동교육과정"></div>
-      <div class="form-grid"><div class="q"><label for="course-subject">교과</label><input type="text" id="course-subject" data-form="course" data-k="subject" maxlength="20" value="${esc(f.subject||"")}" placeholder="예: 한국사"></div>
+      <div class="q"><label for="course-title">과목 이름</label><input type="text" id="course-title" data-form="course" data-k="title" maxlength="40" value="${esc(f.title||"")}" placeholder="예: 1학년 통합과학, 고급 생명과학 온라인 공동교육과정"></div>
+      <div class="form-grid"><div class="q"><label for="course-subject">교과</label><input type="text" id="course-subject" data-form="course" data-k="subject" maxlength="20" value="${esc(f.subject||"")}" placeholder="예: 과학"></div>
         <div class="q"><label for="course-year">연도·학기</label><input type="text" id="course-year" data-form="course" data-k="year" maxlength="20" value="${esc(f.year||"")}" placeholder="예: 2026-2"></div></div>
       <div class="q"><label for="course-desc">설명 <span class="opt">(선택)</span></label><input type="text" id="course-desc" data-form="course" data-k="description" maxlength="80" value="${esc(f.description||"")}" placeholder="예: 화·목 3교시"></div>
       <div class="q"><label>그룹 <span class="opt">반·학교·학년·프로젝트 등 학생 묶음</span></label>
@@ -4432,6 +4561,8 @@ function renderModal(){
       <div class="row end"><button class="btn" type="button" data-a="modal-close">취소</button><button class="btn danger" type="button" data-a="course-del-yes" data-id="${esc(m.id)}">과목 삭제</button></div>`;
   }else if(m.type === "tadmin"){
     h = tadminHTML();
+  }else if(m.type === "members"){
+    h = membersHTML(m);
   }else if(m.type === "ai"){
     h = aiSetupHTML();
   }else if(m.type === "feedback"){
@@ -4981,6 +5112,7 @@ document.addEventListener("input", e => {
   const el = e.target;
   if(el.id === "roster-q"){ S.rosterQ = el.value; const box = el.closest(".modal"); if(box){ const at = el.selectionStart; render(); const n = document.getElementById("roster-q"); if(n){ n.focus(); n.setSelectionRange(at, at) } } return }
   if(el.id === "n-q"){ S.nq = el.value; const at = el.selectionStart; render(); const n = document.getElementById("n-q"); if(n){ n.focus(); n.setSelectionRange(at, at) } return }
+  if(el.id === "mem-q" && S.modal?.type === "members"){ S.modal.q = el.value; const box = document.getElementById("mem-list"); if(box) box.innerHTML = memListHTML(S.modal); return }
   if(el.id === "m-q"){ S.mq = el.value; const box = document.getElementById("mlist"); if(box) box.innerHTML = manageList(); return }
   if(el.id === "s-q"){ S.sq = el.value; const r = room(), box = document.getElementById("slist"); if(r && box){ const st = teacherStats(r); box.innerHTML = studentListHTML(r, st, studentView(r, st)) } return }
   if(!el.dataset.form || el.type==="checkbox" || el.type==="radio" || el.tagName==="SELECT") return;
@@ -4992,6 +5124,7 @@ document.addEventListener("input", e => {
 document.addEventListener("toggle", e => { const d = e.target; if(d?.dataset?.keep) S.advOpen = {...(S.advOpen || {}), [d.dataset.keep]: d.open} }, true);
 document.addEventListener("change", e => {
   const el = e.target;
+  if(el.dataset.mem && S.modal?.type === "members"){ el.checked ? S.modal.sel.add(el.dataset.mem) : S.modal.sel.delete(el.dataset.mem); memRefresh(); return }
   if(el.dataset.combo){ setCombo(el.dataset.combo, el.type === "checkbox" ? el.checked : el.value); saveFormsSoon(); render(); document.getElementById(el.id)?.focus(); return }
   if(el.dataset.noteFile){ const r = S.rooms.find(x => x.id === el.dataset.noteFile); if(r && el.files?.length) noteAddFiles(r, el.files); el.value = ""; return }
   if(el.id === "n-cls"){ S.ncls = el.value; render(); return }
@@ -5159,7 +5292,19 @@ async function act(a, b){
       break;
     }
     case "step": goStep(r, b.dataset.v); S.take = null; break;
-    case "open-post": S.openPost = b.dataset.id; S.fbSent = null; if(isTeacher() && S.view === "room"){ S.ttab = "students"; setTimeout(() => document.querySelector(".snav")?.scrollIntoView({block:"start"}), 0) } break;
+    case "heart": {
+      const pid = b.dataset.id, post = S.posts.find(x => x.id === pid);
+      if(!post || !S.name || post.author === S.name || (isTeacher() && !S.preview)) return;
+      const ex = myHeart(pid), on = !(ex && ex.on !== false), id = ex?.id || ("h-" + pid + "-" + heartKey(S.name));
+      const data = {roomId:post.roomId, postId:pid, author:S.name, kind:"heart", on, createdAt:ex?.createdAt || Date.now(), updatedAt:Date.now()};
+      const prev = S.replies;
+      S.replies = S.replies.filter(x => x.id !== id).concat({id, ...data}); render();          // 바로 보이게
+      const ok = await write(db => db.doc("replies/" + id).set(data), () => {});
+      if(!ok){ S.replies = prev; render() }
+      return;
+    }
+    case "focus-com": { const t = document.getElementById("com:" + b.dataset.id + "-text") || document.querySelector(`[data-form="com:${b.dataset.id}"]`); t?.scrollIntoView({block:"center"}); t?.focus(); return }
+    case "open-post": S.openPost = b.dataset.id; S.fbSent = null; if(b.dataset.c) S.comFocus = b.dataset.id; if(isTeacher() && S.view === "room"){ S.ttab = "students"; setTimeout(() => document.querySelector(".snav")?.scrollIntoView({block:"start"}), 0) } break;
     case "close-post": S.openPost = null; S.fbSent = null; break;
     case "go-respond": goStep(r, "respond"); S.openPost = b.dataset.id; break;
     case "starter": insertStarter(b); return;
@@ -5319,7 +5464,7 @@ async function act(a, b){
       const ok = await write(db => db.doc("courses/" + c.id).update({notices, updatedAt:Date.now()}), () => { c.notices = notices });
       if(!ok) return;
       const push = nf.push !== false && canPush(); delete S.form[key]; saveFormsSoon();
-      if(push){ render(); const d = await notifyStudents({title:`📢 ${c.title} 공지`, body:n.text.slice(0, 120), url:"#c:" + c.id, tag:"n-" + c.id}); toast("공지를 올렸어요." + pushNote(d)); return }
+      if(push){ render(); const d = await notifyStudents({title:`📢 ${c.title} 공지`, body:n.text.slice(0, 120), url:"#c:" + c.id, tag:"n-" + c.id, course:c.id}); toast("공지를 올렸어요." + pushNote(d)); return }
       toast("공지를 올렸어요. 학생의 과목 화면 맨 위에 보여요."); break;
     }
     case "notice-del": {
@@ -5348,6 +5493,27 @@ async function act(a, b){
       if(r2.error){ toast("바꾸지 못했어요: " + r2.error.message); return }
       toast(on ? `${em} 계정을 막았어요. 이 계정과 학생들은 더 이상 글·사진을 올릴 수 없어요.` : `${em} 계정을 다시 쓸 수 있게 했어요.`);
       await loadTadmin(); return;
+    }
+    case "tstat": {
+      const v = b.dataset.v;
+      if(v === "courses"){ S.mcourse = ""; render(); document.querySelector(".dgrid")?.scrollIntoView({block:"center", behavior:"smooth"}); return }
+      S.mcourse = ""; S.mq = "";
+      if(v === "open"){ S.mf = "open"; S.msort = "recent" }
+      if(v === "soon"){ S.mf = "open"; S.msort = MSORTS.some(([k]) => k === "due") ? "due" : "recent" }
+      if(v === "today"){ S.mf = "all"; S.msort = "recent" }
+      render(); document.getElementById("mlist")?.scrollIntoView({block:"start", behavior:"smooth"}); return;
+    }
+    case "mem-open": memOpen(b.dataset.id); break;
+    case "mem-cls": { const m = S.modal, xs = memClasses().find(([k]) => k === b.dataset.v)?.[1] || []; if(!m) return;
+      const all = xs.every(x => m.sel.has(x.id)); xs.forEach(x => all ? m.sel.delete(x.id) : m.sel.add(x.id)); memRefresh(); return }
+    case "mem-all": if(S.modal?.type === "members"){ (S.roster || []).forEach(x => S.modal.sel.add(x.id)); memRefresh() } return;
+    case "mem-none": if(S.modal?.type === "members"){ S.modal.sel.clear(); memRefresh() } return;
+    case "mem-save": {
+      const m = S.modal, c = courseOf(m?.id); if(!c){ toast("과목이 아직 저장되는 중이에요. 잠시 뒤 다시 눌러 주세요."); return }
+      const members = (S.roster || []).filter(x => m.sel.has(x.id)).map(x => x.id);
+      const ok = await write(db => db.doc("courses/" + c.id).update({members, updatedAt:Date.now()}), () => { c.members = members });
+      if(ok){ c.members = members; S.modal = null; toast(members.length ? `수강 학생 ${members.length}명을 저장했어요. 이 학생들에게만 과목이 보여요.` : "수강 학생을 비웠어요. 지금은 아무 학생에게도 보이지 않아요.") }
+      break;
     }
     case "ai-setup": S.modal = {type:"ai"}; S.aiStatus = undefined; loadAiStatus(); break;
     case "ai-key-save": {
@@ -5510,10 +5676,12 @@ async function act(a, b){
       if(!title){ toast("과목 이름을 적어 주세요."); document.getElementById("course-title")?.focus(); return }
       const groups = (f.groups||[]).map(g => ({id:g.id, name:String(f["gn:"+g.id] ?? g.name).trim() || g.name, createdAt:g.createdAt || Date.now()}));
       const now = Date.now(), id = f.id || "c-" + now.toString(36), prev = courseOf(id);
-      const doc = {title, subject:(f.subject||"").trim(), year:(f.year||"").trim(), description:(f.description||"").trim(), groups, notices:noticesOf(prev), ...(S.sbName ? {teacherName:S.sbName} : prev?.teacherName ? {teacherName:prev.teacherName} : {}), createdAt:prev?.createdAt || now, updatedAt:now};   // 공지는 그대로 둔다
+      const doc = {title, subject:(f.subject||"").trim(), year:(f.year||"").trim(), description:(f.description||"").trim(), groups, notices:noticesOf(prev), ...(Array.isArray(prev?.members) ? {members:prev.members} : !prev && S.mode === "supa" && !S.demo ? {members:[]} : {}), ...(S.sbName ? {teacherName:S.sbName} : prev?.teacherName ? {teacherName:prev.teacherName} : {}), createdAt:prev?.createdAt || now, updatedAt:now};   // 공지는 그대로 둔다
       // TODO: 실제 배포 시 교사 인증 및 권한 검증 필요 (teacherId는 서버에서 확인한 교사 계정으로 채운다)
       const ok = await write(db => db.doc("courses/"+id).set(doc), () => { S.courses = S.courses.filter(x => x.id !== id).concat({id, ...doc}) });
-      if(ok){ delete S.form.course; S.modal = null; S.mcourse = id; S.pendingCourse = id; toast(f.id ? "과목을 저장했어요." : "과목을 만들었어요. 이제 활동을 만들 때 이 과목과 그룹을 고를 수 있어요.") }
+      if(ok){ delete S.form.course; S.modal = null; S.mcourse = id; S.pendingCourse = id;
+        if(!f.id && S.mode === "supa" && !S.demo){ memOpen(id, {title}); toast("과목을 만들었어요. 이제 이 과목을 듣는 학생을 골라 주세요.") }
+        else toast(f.id ? "과목을 저장했어요." : "과목을 만들었어요. 이제 활동을 만들 때 이 과목과 그룹을 고를 수 있어요.") }
       break;
     }
     case "course-del": S.modal = {type:"course-del", id:F("course").id}; break;
