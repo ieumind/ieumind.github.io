@@ -230,6 +230,46 @@ do $$ begin
   end;
 end $$;
 
+-- ---------------------------------------------------------------------
+-- 📸 오늘의 필기: 사진 보관함(Storage) ‘notes’
+-- 경로 = {활동id}/{학생id}/{파일}. 학생은 자기 폴더만 올리고·보고·지우고, 선생님은 자기 활동의 사진만 본다
+-- ---------------------------------------------------------------------
+insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
+values ('notes', 'notes', false, 5242880, array['image/jpeg','image/png','image/webp'])
+on conflict (id) do nothing;
+
+create or replace function public.room_tid(p_room text) returns uuid
+language sql stable security definer set search_path = public as $$
+  select tid from public.docs where col = 'rooms' and id = p_room limit 1;
+$$;
+create or replace function public.my_student_id(p_room text) returns uuid
+language sql stable security definer set search_path = public as $$
+  select public.my_student(public.room_tid(p_room));
+$$;
+create or replace function public.note_can_read(p_name text) returns boolean
+language sql stable security definer set search_path = public as $$
+  select case when (storage.foldername(p_name))[1] is null then false else
+    (public.is_teacher() and public.room_tid((storage.foldername(p_name))[1]) = auth.uid())
+    or coalesce((storage.foldername(p_name))[2] = public.my_student(public.room_tid((storage.foldername(p_name))[1]))::text, false)
+  end;
+$$;
+create or replace function public.note_can_write(p_name text) returns boolean
+language sql stable security definer set search_path = public as $$
+  select coalesce((storage.foldername(p_name))[2] = public.my_student(public.room_tid((storage.foldername(p_name))[1]))::text, false);
+$$;
+revoke execute on function public.room_tid(text), public.my_student_id(text), public.note_can_read(text), public.note_can_write(text) from public, anon;
+grant execute on function public.room_tid(text), public.my_student_id(text), public.note_can_read(text), public.note_can_write(text) to authenticated;
+
+drop policy if exists notes_read on storage.objects;
+drop policy if exists notes_insert on storage.objects;
+drop policy if exists notes_delete on storage.objects;
+create policy notes_read on storage.objects for select to authenticated
+  using (bucket_id = 'notes' and public.note_can_read(name));
+create policy notes_insert on storage.objects for insert to authenticated
+  with check (bucket_id = 'notes' and public.note_can_write(name));
+create policy notes_delete on storage.objects for delete to authenticated
+  using (bucket_id = 'notes' and public.note_can_read(name));
+
 -- =====================================================================
 -- 마지막으로 교사 구글 계정을 등록하세요 (따옴표 안을 바꿔서 실행, 교사마다 한 줄)
 -- insert into public.teachers (email) values ('teacher@school.kr') on conflict do nothing;
