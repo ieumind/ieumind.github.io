@@ -317,6 +317,8 @@ input[type=number]{max-width:140px}
 .depth .use{font-size:13px;color:var(--muted)}
 .depth[aria-pressed="true"]{border-color:var(--accent);background:var(--accent-soft);box-shadow:0 0 0 1px var(--accent)}
 .form-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px}
+.form-grid > .q{align-content:start}
+#c-course,#c-due{min-height:44px;padding:8px 12px;font-size:15px;line-height:1.4}
 .form-grid .wide{grid-column:1/-1}
 .form-grid .q + .q{margin-top:0}
 .form-grid .q > label{font-size:15px}
@@ -437,6 +439,7 @@ details.adv > div{padding:2px 20px 16px;display:grid;gap:12px}
 .mcard h2 button:hover{text-decoration:underline;text-underline-offset:4px}
 .mcard h2 button:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
 .mtop{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.mtop .chip{max-width:100%;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.ahead{grid-template-columns:minmax(0,1fr)}.ahead > *{min-width:0}
 .mmeta{font-size:13.5px;color:var(--muted)}
 .mstats{display:flex;flex-wrap:wrap;gap:4px 14px;font-size:13.5px;color:var(--muted)}
 .mstats b{color:var(--fg);font-family:var(--f-mono);font-variant-numeric:tabular-nums}
@@ -457,6 +460,7 @@ details.adv > div{padding:2px 20px 16px;display:grid;gap:12px}
 .ahead h1{font-family:var(--f-display);font-size:28px;line-height:1.3}
 .abar{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
 .abar .sp{flex:1}
+.abar .ab2{display:contents}
 .kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-top:16px}
 .kpi{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px 14px;display:grid;gap:2px}
 .kpi b{font-family:var(--f-mono);font-size:26px;line-height:1.15;font-variant-numeric:tabular-nums}
@@ -540,10 +544,22 @@ body.presenting .top,body.presenting .notice{display:none}
   .brand b{font-size:22px}
   .brand span{display:none}
   #theme{grid-row:1;grid-column:2}
-  .top-r{grid-row:2;grid-column:1/-1;flex-wrap:nowrap;overflow-x:auto;gap:8px;padding-bottom:2px;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+  .top-r{grid-row:2;grid-column:1/-1;flex-wrap:wrap;gap:6px}
   .top-r::-webkit-scrollbar{display:none}
   .top-r > *{flex:0 0 auto;white-space:nowrap}
-  .top-r .btn{min-height:38px;padding:6px 12px;font-size:14px}
+  .top-r .btn{min-height:36px;padding:5px 10px;font-size:13.5px}
+  .lt,.pc-only{display:none!important}
+  .abar{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}.abar .sp{display:none}
+  .abar .btn{min-width:0;padding:6px 4px;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;justify-content:center}
+  .abar .ab2{grid-column:1/-1;display:grid;grid-template-columns:repeat(auto-fit,minmax(0,1fr));gap:6px}
+  .chead{padding:12px 14px}.chead h2{font-size:19px}
+  .chead-acts{width:100%;display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))}.chead-acts .btn{min-width:0;padding:6px 4px;font-size:13px;justify-content:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .tnotice .nprev + .nprev{display:none}
+  .tabs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));overflow:visible}
+  .tabs button{padding:8px 4px;min-height:40px;font-size:14px;overflow:hidden;text-overflow:ellipsis}
+  .tmrpanel .btn{padding:5px 9px}
+  .kpis{grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;margin-top:12px}.kpi{padding:8px 10px}.kpi b{font-size:20px}.kpi span{font-size:12px}
+  .tmrpanel .tmr-tip{display:none}
   .wall{grid-template-columns:1fr}
   .wl-hero{padding:20px 16px}
   .wl-big{width:100%}
@@ -717,6 +733,13 @@ a.autolink{color:var(--accent);text-decoration:underline;text-underline-offset:2
 .dcard{display:grid;gap:8px;text-align:left;background:var(--surface);border:1px solid var(--line);border-left:7px solid var(--c);border-radius:16px;padding:16px 18px;cursor:pointer;color:var(--fg);font:inherit;position:relative;transition:transform .12s,box-shadow .12s}
 .dcard:hover{transform:translateY(-2px);box-shadow:0 6px 18px rgba(0,0,0,.08)}
 .dcard .dt{font-family:var(--f-body);font-size:20px;font-weight:800;letter-spacing:-.01em;line-height:1.3}
+.dcard .dt,.mqh{display:flex;align-items:baseline;gap:.3em;min-width:0;max-width:100%}
+.dcard{min-width:0}.chead .cardh h2{flex:1 1 auto;min-width:0}
+.mq{display:block;flex:0 1 auto;min-width:0;overflow:hidden;white-space:nowrap}
+.mq-in{display:inline-block;will-change:transform}
+.mq.run .mq-in{animation:mq var(--mq-t,8s) ease-in-out infinite alternate}
+@keyframes mq{0%,18%{transform:translateX(0)}82%,100%{transform:translateX(var(--mq-x,0))}}
+@media (prefers-reduced-motion:reduce){.mq.run .mq-in{animation:none}.mq{text-overflow:ellipsis}}
 .dcard .dw{font-size:13.5px;color:var(--muted)}
 .dcard .dn{font-size:14px;background:var(--warn-soft);color:var(--fg);border-radius:10px;padding:6px 10px;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
 .dcard{align-content:start}
@@ -1029,7 +1052,37 @@ a.btn{text-decoration:none;color:inherit;display:inline-flex;align-items:center}
 .ccard:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
 .ccard b{font-size:16.5px}
 .ccard .g{font-size:13.5px;color:var(--muted);overflow-wrap:anywhere}
-.chead{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px 18px;display:grid;gap:8px;margin-bottom:16px}
+.chead{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px 18px;display:grid;grid-template-columns:minmax(0,1fr);gap:8px;margin-bottom:16px}
+.chead > *{min-width:0}
+.cport{border:1px solid var(--line);border-radius:12px;background:var(--surface);margin:0 0 16px}
+.cport > summary b{white-space:nowrap}
+.cport > summary{display:flex;flex-wrap:wrap;align-items:center;gap:4px 10px;padding:11px 16px;cursor:pointer;list-style:none}
+.cport > summary::-webkit-details-marker{display:none}
+.cport > summary::after{content:"펼치기 ▾";margin-left:auto;font-size:12.5px;color:var(--muted);white-space:nowrap}
+.cport[open] > summary::after{content:"접기 ▴"}
+.cport-body{padding:0 12px 12px}
+.cport-legend{margin:0 4px 8px;line-height:1.9}
+.cport-wrap{overflow:auto;max-height:70vh;border:1px solid var(--line);border-radius:10px}
+.cport-t{border-collapse:separate;border-spacing:0;font-size:13.5px;min-width:100%}
+.cport-t th,.cport-t td{padding:5px 6px;border-bottom:1px solid var(--line);text-align:center;background:var(--surface)}
+.cport-t thead th{position:sticky;top:0;z-index:2;vertical-align:bottom;font-weight:600;background:var(--sunk)}
+.cport-t thead th{min-width:70px}
+.cport-t thead th .linkbtn{display:grid;justify-items:center;gap:2px;max-width:92px;margin:0 auto;text-decoration:none;color:var(--fg)}
+.cport-t .ctt{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;font-size:12px;line-height:1.3;white-space:normal}
+.cport-t .cdone{display:block;font-family:var(--f-mono);font-size:11px;color:var(--muted);font-weight:400}
+.cport-t .cn{position:sticky;left:0;z-index:1;text-align:left;white-space:nowrap;font-weight:500}
+.cport-t thead .cn{z-index:3}
+.cport-t .cnum{font-size:12.5px;color:var(--muted)}
+.pc{display:inline-grid;place-items:center;width:26px;height:26px;border-radius:7px;border:0;font:inherit;font-weight:700;font-size:14px;line-height:1;padding:0}
+button.pc{cursor:pointer}
+.pc.done{background:var(--s3-soft);color:var(--s3)}.pc.doing{background:var(--warn-soft);color:var(--warn)}.pc.none{background:transparent;color:var(--muted)}
+.cport-legend .pc{width:20px;height:20px;font-size:12px;vertical-align:middle}
+.pf-list{list-style:none;padding:0;margin:10px 0;display:grid;gap:8px;max-height:60vh;overflow:auto}
+.pf-it{border:1px solid var(--line);border-left:5px solid var(--line);border-radius:10px;padding:10px 12px;display:grid;gap:4px}
+.pf-it.done{border-left-color:var(--s3)}.pf-it.doing{border-left-color:var(--warn)}.pf-it.none{opacity:.7}
+.pf-it .linkbtn{justify-self:start}
+.pf-h{display:flex;justify-content:space-between;gap:8px;align-items:center}.pf-tx{font-size:14px;white-space:pre-wrap}
+@media (min-width:641px){.m-only{display:none!important}}
 .chead h2{font-family:var(--f-body);font-weight:800;font-size:22px;letter-spacing:-.01em}
 .gchips{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
 .gchip{border:1px solid var(--line);background:var(--paper);border-radius:8px;padding:3px 10px;font-size:14px}
@@ -1487,7 +1540,7 @@ const Auth = (() => { let t = null; return Object.freeze({ set(v){ if(t === null
 Object.defineProperty(S, "canTeach", {get: () => Auth.teacher, set(){} });        // 예전 코드 호환: 읽기만
 const isTeacher = () => Auth.teacher && S.role === "teacher";                       // 교사 권한 + 교사 화면(학생 화면 미리보기 중이면 false)
 /* 교사만 쓰는 동작: 학생 권한으로는 버튼이 없을 뿐 아니라 호출해도 실행되지 않는다 */
-const TEACHER_ACTS = new Set(["tmr-start","tmr-add","tmr-pause","tmr-resume","tmr-stop","ctx-img-del","qfb","qfb-close","fb-chip","pick-tool","mem-open","mem-cls","mem-all","mem-none","course-gsplit","ai-setup","ai-key-save","ai-key-del","ai-suggest","ai-pick","tadmin-open","tadmin-block","tadmin-tab","fbadmin-done","notice-add","notice-del","note-filter","note-req","note-req-send","note-req-cancel","note-dup","create","edit-room","dup","dup-list","del","del-yes","del-ask","del-room","status","toggle","save-feedback","class-fb","pin","pin-move","pin-clear",
+const TEACHER_ACTS = new Set(["port-student","port-open","tmr-start","tmr-add","tmr-pause","tmr-resume","tmr-stop","ctx-img-del","qfb","qfb-close","fb-chip","pick-tool","mem-open","mem-cls","mem-all","mem-none","course-gsplit","ai-setup","ai-key-save","ai-key-del","ai-suggest","ai-pick","tadmin-open","tadmin-block","tadmin-tab","fbadmin-done","notice-add","notice-del","note-filter","note-req","note-req-send","note-req-cancel","note-dup","create","edit-room","dup","dup-list","del","del-yes","del-ask","del-room","status","toggle","save-feedback","class-fb","pin","pin-move","pin-clear",
   "present","present-exit","pmode","pnav","prand","fullscreen","export","export-go","save-tset","tpl-save-open","tpl-save","tpl-cancel","use-tpl","create-save","draft-save","publish-draft","discard-form",
   "preview","preview-form","preview-home","qr","copy-link","save-share","mcourse","course-new","course-edit","course-gadd","course-gdel","course-save","course-del","course-del-yes",
   "roster-open","roster-add","roster-reissue","roster-del","roster-print","gsel","asg-add-open","asg-add-cancel","asg-add","asg-st","racts","mview","sview","sfilter","sgo","snav","ttab","mfilter","open-student","goal","tpl","st-add","st-del","depth"]);
@@ -1990,7 +2043,18 @@ function render(){
   app.innerHTML = h;
   renderModal();
   afterRender();
+  mqFit();
 }
+/* 긴 과목 이름: 줄을 바꾸지 않고 한 줄에서 천천히 옆으로 흘러가며 끝까지 보여 준다 (넘칠 때만) */
+const mq = t => `<span class="mq"><span class="mq-in">${esc(t)}</span></span>`;
+function mqFit(){
+  document.querySelectorAll(".mq").forEach(el => {
+    const d = el.firstElementChild.scrollWidth - el.clientWidth, run = d > 2;
+    el.classList.toggle("run", run);
+    if(run){ el.style.setProperty("--mq-x", -d + "px"); el.style.setProperty("--mq-t", Math.max(5, d / 25 + 3).toFixed(1) + "s") }
+  });
+}
+addEventListener("resize", () => { clearTimeout(mqFit.t); mqFit.t = setTimeout(mqFit, 150) });
 function afterRender(){
   S.landed = null;
   if(S.comFocus){ const t = document.querySelector(`[data-form="com:${S.comFocus}"]`); S.comFocus = null; if(t){ t.scrollIntoView({block:"center"}); t.focus({preventScroll:true}) } }
@@ -2013,7 +2077,7 @@ function renderTop(){
   if(S.mode === "supa" && S.wantTeacher && !Auth.teacher){ document.getElementById("topr").innerHTML = ""; return }   // 교사 소개 화면: 학생 버튼은 숨긴다
   if(S.preview){ document.getElementById("topr").innerHTML = `<button class="btn sm" type="button" data-a="preview-exit">교사 화면으로 돌아가기</button>`; return }
   if(isTeacher()) h += `<button class="btn sm" type="button" data-a="home">📋 내 과목</button>`;
-  if(isTeacher()) h += `<button class="btn sm" type="button" data-a="preview-home" title="학생에게 보이는 화면을 확인해요. 여기서 쓴 내용은 저장되지 않아요.">👀 학생 화면 미리보기</button>`;
+  if(isTeacher()) h += `<button class="btn sm" type="button" data-a="preview-home" title="학생에게 보이는 화면을 확인해요. 여기서 쓴 내용은 저장되지 않아요.">👀 <span class="lt">학생 화면 </span>미리보기</button>`;
   if(isTeacher() && S.mode === "supa" && S.isAdmin) h += `<button class="btn sm" type="button" data-a="tadmin-open">👩‍🏫 교사 관리</button>`;
   if(isTeacher() && S.mode === "supa") h += `<button class="btn sm" type="button" data-a="t-logout" title="${esc(S.sbEmail)}">로그아웃</button>`;
   if(!isTeacher()){
@@ -2021,8 +2085,8 @@ function renderTop(){
     const rr = S.view === "room" ? room() : null, gcid = rr?._gid ? rr.courseId : (S.view === "home" ? S.course : "");
     if(gcid && myGroup(gcid) && myGroup(gcid) !== "_none") h += `<span class="who">${esc(groupName(gcid, myGroup(gcid)))}${groupByTeacher(courseOf(gcid)) ? "" : ` · <button class="linkbtn" type="button" data-a="regroup" data-c="${esc(gcid)}">그룹 바꾸기</button>`}</span>`;
     if(S.name) h += `<button class="btn sm" type="button" data-a="mine">📒 내 생각 기록</button>`;   // 로그인(코드 확인) 전에는 보이지 않는다
-    if(!isStandalone()) h += `<button class="btn sm inst" type="button" data-a="install-help">📲 앱으로 설치</button>`;
-  }else{ h += `<button class="btn sm pri" type="button" data-a="create">+ 새 활동</button>`; if(!isStandalone()) h += `<button class="btn sm inst" type="button" data-a="install-help">📲 앱으로 설치</button>` }
+    if(!isStandalone()) h += `<button class="btn sm inst" type="button" data-a="install-help">📲 <span class="lt">앱으로 </span>설치</button>`;
+  }else{ h += `<button class="btn sm pri" type="button" data-a="create">+ 새 활동</button>`; if(!isStandalone()) h += `<button class="btn sm inst" type="button" data-a="install-help">📲 <span class="lt">앱으로 </span>설치</button>` }
   document.getElementById("topr").innerHTML = h;
 }
 function distHTML(r, posts){
@@ -2150,7 +2214,7 @@ function viewDashList(groups, all){
     const todo = rs.filter(r => homeState(r).k === "todo").length, nNew = rs.filter(isNewRoom).length;
     const n = [...info.notices].sort((a, b) => (b.at||0) - (a.at||0))[0];
     return `<button class="dcard" type="button" data-a="dash" data-v="${esc(info.k)}" style="--c:var(--${info.tone})">
-      <span class="dt"><span aria-hidden="true">${info.icon}</span> ${esc(info.title)}</span>
+      <span class="dt"><span aria-hidden="true">${info.icon}</span>${mq(info.title)}</span>
       <span class="dw">${info.teacher ? `${esc(info.teacher)} 선생님 · ` : ""}활동 ${rs.length}개</span>
       ${n ? `<span class="dn">📢 ${isNewNotice(n) ? "<b>새 공지</b> · " : ""}${esc(n.text)}</span>` : ""}
       <span class="ds">${todo ? `<span class="todo">할 일 ${todo}</span>` : `<span>✓ 할 일 없음</span>`}${nNew ? `<span class="new">🆕 새 활동 ${nNew}</span>` : ""}</span></button>`}).join("")}</div>`;
@@ -2172,7 +2236,7 @@ function viewDash(info, rooms){
   markSeen("n", ns.map(n => n.id));                                    // 과목 화면을 열면 공지는 읽은 것으로
   let h = `<section class="shome"><button class="linkbtn back" type="button" data-a="dash-back">← 내 과목</button>
     <div class="dhead" style="--c:var(--${info.tone})">${info.teacher ? `<div class="eyebrow">${esc(info.teacher)} 선생님</div>` : ""}
-      <h1><span aria-hidden="true">${info.icon}</span> ${esc(info.title)}</h1>
+      <h1 class="mqh"><span aria-hidden="true">${info.icon}</span>${mq(info.title)}</h1>
       <p class="muted">${crs && myGroup(crs.id) ? `${esc(groupName(crs.id, myGroup(crs.id)))} · ` : ""}활동 ${rooms.length}개 · 해야 할 활동 ${cnt("todo")}개${crs?.description ? ` · ${esc(crs.description)}` : ""}</p></div>`;
   if(ns.length) h += `<div class="notices" aria-label="공지사항">${ns.map(n => `<div class="notice-item ${fresh.has(n.id) ? "fresh" : ""}"><b>📢 공지${fresh.has(n.id) ? " · 새 소식" : ""}</b><p>${lnk(n.text)}</p><span class="nm">${esc(fmt(n.at))}</span></div>`).join("")}</div>`;
   if(!rooms.length) return h + `<div class="empty">아직 이 과목에 열린 활동이 없어요. 선생님이 활동을 올리면 여기에 나타나요.</div></section>`;
@@ -2580,6 +2644,7 @@ const TOUR = [
   {sel:".tstats", t:"📊 오늘 한눈에 보기", d:"진행 중인 활동, 24시간 안에 마감되는 활동, 오늘 들어온 학생 응답을 바로 보여 줘요. 칸을 누르면 그 활동만 모아 보여요."},
   {sel:".dgrid .dcard", t:"📚 과목 대시보드", d:"‘1학년 통합과학’처럼 과목을 만들고, 그 과목을 듣는 학생을 학급별(1-3, 1-10…)이나 한 명씩 골라요. 고른 학생에게만 과목·활동·공지·알림이 가요."},
   {sel:".tnotice", t:"📢 공지 띄우기", d:"과목 화면 맨 위에 공지를 1~2개 띄워요. ‘학생 앱에 알림 보내기’를 켜 두면 학생 휴대폰으로 알림이 가요.", prep:() => { S.view = "home"; S.mcourse = S.courses[0]?.id || "" }},
+  {sel:".cport", t:"📊 학생별 활동 현황", d:"이 과목의 활동을 학생마다 한 줄로 모아 봐요. ✓ 완료 · … 하는 중 · · 아직 안 함. 이름을 누르면 그 학생의 포트폴리오가 열려요.", prep:() => { S.view = "home"; S.mcourse = S.courses[0]?.id || ""; S.advOpen = {...(S.advOpen || {}), ["cport-" + (S.courses[0]?.id || "")]: true} }},
   {sel:'.mcard:has([data-id="demo-draw"])', t:"🗂 활동 카드", d:"활동마다 참여·완료 현황이 보여요. 🔗 링크로 학생에게 나눠 주고, 아래 줄에서 수정·복제·마감·보관·삭제를 해요.", prep:() => { S.view = "home"; S.mcourse = "" }},
   {sel:'.mcard:has([data-id="demo-draw"]) [data-a="open"].pri', t:"👆 ‘결과 보기’를 눌러 보세요!", d:"‘최초의 인류는 어떤 모습이었을까?’ 활동의 결과를 열어 볼게요. 버튼을 직접 누르거나 ‘다음’을 눌러요.", on:{a:"open", id:"demo-draw"}, prep:() => { S.view = "home"; S.mcourse = "" }},
   {sel:'[data-a="ttab"][data-v="students"]', t:"👆 ‘학생 생각’을 눌러 보세요!", d:"참여 현황·생각의 변화·피드백 탭이 있어요. 학생 한 명 한 명의 결과물은 ‘학생 생각’에서 봐요.", on:{a:"ttab", v:"students"}, prep:() => { S.view = "room"; S.roomId = "demo-draw"; S.ttab = "overview"; S.openPost = null }},
@@ -3529,15 +3594,16 @@ function viewRoomTeacher(r){
       <span class="mmeta">${esc([r.grade, r.subject, r.unit].filter(Boolean).join(" / "))}${r.duration?` · ⏱ ${esc(r.duration)}분`:""}</span></div>
     <h1>${esc(r.title)}</h1>
     <div class="abar">
-      <button class="btn sm" type="button" data-a="copy-link" data-id="${esc(r.id)}">🔗 학생 링크 복사</button>
-      <button class="btn sm" type="button" data-a="qr" data-id="${esc(r.id)}">QR 코드</button>
-      <button class="btn sm" type="button" data-a="preview" data-id="${esc(r.id)}">👀 학생 화면 미리보기</button>
-      ${isNotes(r) ? "" : `<button class="btn sm" type="button" data-a="present" data-id="${esc(r.id)}">📽 수업에서 함께 보기</button>`}
-      <span class="sp"></span>
+      <button class="btn sm pc-only" type="button" data-a="copy-link" data-id="${esc(r.id)}">🔗 학생 링크 복사</button>
+      <button class="btn sm pc-only" type="button" data-a="qr" data-id="${esc(r.id)}">QR 코드</button>
+      <button class="btn sm m-only" type="button" data-a="qr" data-id="${esc(r.id)}" title="QR 코드와 링크 복사">🔗 링크·QR</button>
+      <button class="btn sm" type="button" data-a="preview" data-id="${esc(r.id)}">👀 <span class="lt">학생 화면 </span>미리보기</button>
+      ${isNotes(r) ? "" : `<button class="btn sm" type="button" data-a="present" data-id="${esc(r.id)}">📽 <span class="lt">수업에서 </span>함께 보기</button>`}
+      <span class="sp"></span><span class="ab2">
       <button class="btn sm" type="button" data-a="edit-room" data-id="${esc(r.id)}">✏️ 수정</button>
       <button class="btn sm" type="button" data-a="dup" data-id="${esc(r.id)}">📑 복제</button>
       ${statusButtons(r, true)}${statusOf(r) !== "archived" && statusOf(r) !== "draft" ? `<button class="btn sm" type="button" data-a="status" data-id="${esc(r.id)}" data-v="archived" title="${STATUS.archived.d}">🗄 보관</button>` : ""}
-      <button class="btn sm danger" type="button" data-a="del-ask" data-id="${esc(r.id)}">🗑 삭제</button>
+      <button class="btn sm danger" type="button" data-a="del-ask" data-id="${esc(r.id)}">🗑 삭제</button></span>
     </div></section>`;
   if(!isNotes(r)) h += tmrPanel(r);                                    // ⏱ 수업 타이머 (오늘의 필기는 과제라 뺀다)
   h += gselBar(r);
@@ -3813,7 +3879,7 @@ function teacherCard(r, p, ps, nav){
    ========================================================= */
 /* 🔄 새 버전 알림: 배포 때마다 APP_VERSION과 version.json의 v를 같은 값으로 올린다.
    GitHub Pages는 화면을 10분쯤 기억하므로, 옛 화면이면 아래쪽에 ‘새로고침’ 띠를 띄우고 주소를 바꿔 새로 받는다 */
-const APP_VERSION = "2026-10-12f";
+const APP_VERSION = "2026-10-12g";
 async function checkVersion(){
   if(!/^https?:$/.test(location.protocol)) return;
   try{
@@ -4366,7 +4432,7 @@ function teacherTop(){
 function courseCards(){
   const none = courseRooms("_none");
   const card = (k, tone, ic, title, sub, rs, extra = "") => { const open = rs.filter(r => statusOf(r) === "open").length, td = respToday(rs);
-    return `<button type="button" class="dcard" data-a="mcourse" data-v="${esc(k)}" style="--c:var(--${tone})"><span class="dt"><span aria-hidden="true">${ic}</span> ${esc(title)}</span>
+    return `<button type="button" class="dcard" data-a="mcourse" data-v="${esc(k)}" style="--c:var(--${tone})"><span class="dt"><span aria-hidden="true">${ic}</span>${mq(title)}</span>
       <span class="dw">${esc(sub)}</span>${extra}
       <span class="ds"><span>활동 ${rs.length}</span>${open ? `<span class="todo">진행 중 ${open}</span>` : ""}${td ? `<span class="new">오늘 응답 ${td}</span>` : ""}</span></button>` };
   return `<div class="sec-h2"><h2 class="sec-h">📚 내 과목 <span class="muted small">${S.courses.length}개</span></h2></div>
@@ -4441,12 +4507,55 @@ function courseHead(){
   const id = esc(c.id), rs = courseRooms(c.id), open = rs.filter(r => statusOf(r) === "open").length;
   const nMem = Array.isArray(c.members) ? c.members.length : null, gs = groupsOf(c), live = S.mode === "supa" && !S.demo;
   const memBtn = `<button class="btn sm${live && !nMem ? " pri" : ""}" type="button" data-a="course-edit" data-id="${id}" data-focus="students" title="수강 학생·그룹 고르기">👥 ${nMem === null ? "학생 고르기" : `학생 ${nMem}명`}</button>`;
-  return back + `<section class="chead" style="--c:var(--${subjTone("c:" + c.id)})"><div class="cardh"><h2>${courseIcon(c)} ${esc(c.title)}</h2><span class="row chead-acts">
-      ${memBtn}<button class="btn sm" type="button" data-a="copy-link" data-kind="course" data-id="${id}">🔗 과목 링크</button><button class="btn sm" type="button" data-a="qr" data-kind="course" data-id="${id}">QR</button><button class="btn sm" type="button" data-a="course-edit" data-id="${id}">✏️ 과목 수정</button></span></div>
+  return back + `<section class="chead" style="--c:var(--${subjTone("c:" + c.id)})"><div class="cardh"><h2 class="mqh"><span aria-hidden="true">${courseIcon(c)}</span>${mq(c.title)}</h2><span class="row chead-acts">
+      ${memBtn}<button class="btn sm pc-only" type="button" data-a="copy-link" data-kind="course" data-id="${id}">🔗 과목 링크</button><button class="btn sm pc-only" type="button" data-a="qr" data-kind="course" data-id="${id}">QR</button><button class="btn sm m-only" type="button" data-a="qr" data-kind="course" data-id="${id}" title="QR 코드와 링크 복사">🔗 링크·QR</button><button class="btn sm" type="button" data-a="course-edit" data-id="${id}">✏️ <span class="lt">과목 </span>수정</button></span></div>
     <p class="mmeta">${esc([c.subject, c.year, c.description].filter(Boolean).join(" · "))}${c.subject || c.year || c.description ? " · " : ""}활동 ${rs.length}개 · 진행 중 ${open}개 · 오늘 응답 ${respToday(rs)}개${gs.length ? ` · 그룹 ${gs.map(g => esc(g.name) + (Array.isArray(g.members) ? `(${g.members.length})` : "")).join(", ")}` : ""}</p>
     ${live && !nMem ? `<p class="memwarn">⚠️ ${nMem === null ? "수강 학생을 고르지 않아 <b>모든 학생</b>에게 이 과목이 보여요." : "수강 학생이 없어 <b>아무 학생에게도</b> 보이지 않아요."}</p>` : ""}
     ${noticePanel(c)}</section>`;
 }
+/* 📊 과목 포트폴리오: 학생 × 활동 한눈에 보기
+   - 접어 두었다가 펼칠 때만 계산한다 (data-lazy) · 이미 불러온 글로만 계산해서 서버에 더 묻지 않는다
+   - 학생 명단: 수강 학생(실서비스) → 없으면 활동 명단(tnotes.roster)과 글쓴이 */
+function portStudents(c, rs){
+  const cr = rs.length ? courseRoster(rs[0]) : null;
+  if(cr) return cr;
+  const set = new Set();
+  rs.forEach(r => { (tnote(r).roster || []).forEach(n => set.add(n)); S.posts.filter(p => p.roomId === r.id && p.author).forEach(p => set.add(p.author)) });
+  return [...set].sort(koCmp);
+}
+function coursePortfolio(c){
+  const dk = "cport-" + c.id, open = S.advOpen?.[dk] ?? false;
+  const rs = courseRooms(c.id).filter(r => statusOf(r) !== "draft").sort((a, b) => (a.createdAt||0) - (b.createdAt||0));
+  let h = `<details class="cport" data-keep="${esc(dk)}" data-lazy ${open ? "open" : ""}><summary><b>📊 학생별 활동 현황</b><span class="muted small">포트폴리오 · 활동 ${rs.length}개</span></summary>`;
+  if(!open) return h + `</details>`;
+  if(!rs.length) return h + `<div class="cport-body"><p class="muted small">아직 공개한 활동이 없어요.</p></div></details>`;
+  const names = portStudents(c, rs);
+  if(!names.length) return h + `<div class="cport-body"><p class="muted small">${S.roster === undefined && S.mode === "supa" ? "학생 명단을 불러오는 중…" : "아직 학생이 없어요. 과목의 ‘👥 학생’에서 수강 학생을 골라 주세요."}</p></div></details>`;
+  const postOf = {}; S.posts.forEach(p => { if(p.author) postOf[p.roomId + "\u0001" + p.author] = p });
+  const cell = (r, n) => { const p = postOf[r.id + "\u0001" + n], g = progressOf(r, p);
+    return {p, k: !p ? "none" : g.cls === "done" ? "done" : "doing", t: g.label} };
+  const IC = {done:"✓", doing:"…", none:"·"};
+  const rows = names.map(n => { const cs = rs.map(r => cell(r, n)); return {n, cs, done:cs.filter(x => x.k === "done").length, any:cs.filter(x => x.k !== "none").length} });
+  const colDone = rs.map((r, i) => rows.filter(x => x.cs[i].k === "done").length);
+  h += `<div class="cport-body"><p class="small muted cport-legend"><span class="pc done">✓</span> 모든 단계 완료 <span class="pc doing">…</span> 하는 중 <span class="pc none">·</span> 아직 안 함 · 칸을 누르면 그 학생의 사고 과정, 이름을 누르면 학생 포트폴리오가 열려요.</p>
+    <div class="cport-wrap"><table class="cport-t"><thead><tr><th class="cn">학생 <span class="muted">${names.length}명</span></th>${rs.map((r, i) => `<th title="${esc(r.title)}"><button type="button" class="linkbtn" data-a="open" data-id="${esc(r.id)}"><span class="cti">${esc(TEMPLATES[r.template]?.icon || "")}</span><span class="ctt">${esc(r.title)}</span></button><span class="cdone">${colDone[i]}/${names.length}</span></th>`).join("")}<th>완료</th></tr></thead>
+    <tbody>${rows.map(x => `<tr><th class="cn"><button type="button" class="linkbtn" data-a="port-student" data-c="${esc(c.id)}" data-v="${esc(x.n)}">${esc(x.n)}</button></th>${x.cs.map((y, i) => `<td>${y.p ? `<button type="button" class="pc ${y.k}" data-a="port-open" data-id="${esc(rs[i].id)}" data-v="${esc(y.p.id)}" title="${esc(y.t)}">${IC[y.k]}</button>` : `<span class="pc none" title="미참여">${IC.none}</span>`}</td>`).join("")}<td class="mono cnum">${x.done}/${rs.length}</td></tr>`).join("")}</tbody></table></div></div></details>`;
+  return h;
+}
+/* 학생 한 명의 과목 포트폴리오 (창) */
+function portStudentHTML(m){
+  const c = courseOf(m.c); if(!c) return "";
+  const rs = courseRooms(c.id).filter(r => statusOf(r) !== "draft").sort((a, b) => (a.createdAt||0) - (b.createdAt||0));
+  const items = rs.map(r => { const p = S.posts.find(x => x.roomId === r.id && x.author === m.v), g = progressOf(r, p);
+    const txt = p ? (presentThought(r, p) || "").toString() : "";
+    return `<li class="pf-it ${!p ? "none" : g.cls === "done" ? "done" : "doing"}"><div class="pf-h"><b>${esc(TEMPLATES[r.template]?.icon || "")} ${esc(r.title)}</b><span class="chip">${esc(p ? (g.cls === "done" ? "완료" : "하는 중") : "아직 안 함")}</span></div>
+      ${txt ? `<p class="pf-tx">${esc(txt.length > 220 ? txt.slice(0, 220) + "…" : txt)}</p>` : ""}
+      ${p ? `<button class="linkbtn" type="button" data-a="port-open" data-id="${esc(r.id)}" data-v="${esc(p.id)}">사고 과정 보기 →</button>` : ""}</li>` }).join("");
+  const done = rs.filter(r => { const p = S.posts.find(x => x.roomId === r.id && x.author === m.v); return p && progressOf(r, p).cls === "done" }).length;
+  return `<h3>📒 ${esc(m.v)} · ${esc(c.title)}</h3><p class="muted small">활동 ${rs.length}개 중 ${done}개 완료</p><ol class="pf-list">${items}</ol>
+    <div class="row end"><button class="btn pri" type="button" data-a="modal-close">닫기</button></div>`;
+}
+
 /* 📢 과목 공지: 학생의 과목 화면 맨 위에 1~2개 띄운다 (과목 문서의 notices에 저장) */
 const NOTICE_MAX = 2;
 const noticesOf = c => (Array.isArray(c?.notices) ? c.notices : []).filter(n => n && n.id && n.text).slice(0, NOTICE_MAX);
@@ -4791,6 +4900,7 @@ function viewManage(){
   const subs = [...new Set(S.rooms.map(r=>r.subject).filter(Boolean))], grades = [...new Set(S.rooms.map(r=>r.grade).filter(Boolean))];
   const local = S.form.create && !S.form.create.editId && ((S.form.create.prompt||"").trim() || (S.form.create.title||"").trim()) ? S.form.create : null;
   let h = teacherTop() + courseHead();
+  if(S.mcourse && S.mcourse !== "_none" && courseOf(S.mcourse)) h += coursePortfolio(courseOf(S.mcourse));
   h += `<h2 class="sec-h" style="margin:18px 0 10px">${S.mcourse && S.mcourse !== "_none" ? "📋 이 과목의 활동" : S.mcourse === "_none" ? "📋 과목 없는 활동" : "📋 모든 활동"} <span class="muted small">${counts.all}개${counts.archived ? ` · 보관 ${counts.archived}` : ""}</span></h2>`;
   if(!shareBase()) h += `<div class="setup"><b>🔗 학생 링크 설정 (처음 한 번)</b><p class="small">화면 오른쪽 위의 <b>공유</b>에서 이 페이지 링크를 만든 뒤 아래에 붙여 넣으면, 활동마다 학생 링크와 QR 코드를 바로 만들 수 있어요. 학생이 들어올 수 있도록 공유 범위도 확인해 주세요.</p>
     <div class="row"><input type="text" id="share-url" placeholder="https://claude.ai/…" aria-label="공유 링크"><button class="btn sm pri" type="button" data-a="save-share">저장</button></div></div>`;
@@ -4824,7 +4934,8 @@ function renderModal(){
   if(m?.type === "feedback"){ const t = document.getElementById("fb-body"); if(t) m.body = t.value }   // 다시 그려도 쓰던 내용이 남게
   if(!m){ el.innerHTML = ""; return }
   let h = "";
-  if(m.type === "qr"){
+  if(m.type === "port"){ h = portStudentHTML(m) }
+  else if(m.type === "qr"){
     const kind = m.kind || "room", link = linkFor(kind, m.id, m.g);
     const c = kind === "course" ? courseOf(m.id) : null, r = kind === "room" ? S.rooms.find(x=>x.id===m.id) : null;
     const cid = c ? c.id : r?.courseId, gids = c ? groupsOf(c).map(g => g.id) : asgIds(r);
@@ -5286,8 +5397,19 @@ function viewCreate(){
   const isDraft = editR && statusOf(editR) === "draft";
   const preview = roomFromForm(f), phs = phasesOf(preview), tool = TOOLS[preview.tool];
   const isChat = f.template === "chat", isNoteT = f.template === "notes";
-  const promptLabel = isNoteT ? "학생에게 보일 안내" : isChat ? "대화 주제 (학생에게 보이는 안내)" : relay ? "질문을 만들 주제" : (f.template==="inquiry" ? "학생들에게 던질 질문" : "논제 (학생들에게 던질 질문)");
-  const promptPh = isNoteT ? "예: " + NOTES_PROMPT + " (비워 두면 이 문장으로 보여요)" : isChat ? "예: 고종에게 대한제국을 선포한 까닭과 그때의 고민을 물어보자." : relay ? "예: 유신 체제에 대해 궁금한 것을 질문으로 만들어 보자." : (f.template==="inquiry" ? "예: 일제 강점기에 생긴 철도와 공장은 누구를 위한 ‘근대화’였을까?" : "예: 콜럼버스의 날을 ‘원주민의 날’로 바꿔야 할까?");
+  const PROMPT_LP = {                                                       // 활동 유형마다 알맞은 이름과 회색 예시
+    debate2:["논제 (학생들에게 던질 질문)", "예: 콜럼버스의 날을 ‘원주민의 날’로 바꿔야 할까?"],
+    debateN:["논제 (학생들에게 던질 질문)", "예: 개항 이후 조선이 가장 먼저 바꿔야 했던 것은 정치, 경제, 교육 중 무엇일까?"],
+    inquiry:["학생들에게 던질 질문", "예: 일제 강점기에 생긴 철도와 공장은 누구를 위한 ‘근대화’였을까?"],
+    relay:["질문을 만들 주제", "예: 3·1 운동에 대해 궁금한 것을 질문으로 만들어 보자."],
+    essay:["논술 주제 (학생들에게 던질 질문)", "예: 역사를 기억하는 일이 오늘을 사는 우리에게 왜 필요한지 근거를 들어 논술해 보자."],
+    reflect:["감상·성찰 주제", "예: 오늘 읽은 독립운동가의 편지에서 가장 마음에 남은 문장과 그 까닭을 써 보자."],
+    sketch:["스케치 주제 (학생에게 보이는 안내)", "예: ‘민주주의’ 하면 떠오르는 낱말을 이어 생각 지도를 그려 보자."],
+    draw:["스케치 주제 (학생에게 보이는 안내)", "예: 최초의 인류는 어떤 모습으로 살았을까? 상상한 모습을 그려 보자."],
+    predict:["예측할 질문", "예: 산업 혁명이 일어나면 사람들의 하루는 어떻게 달라졌을까? 먼저 예측해 보자."],
+    chat:["대화 주제 (학생에게 보이는 안내)", "예: 고종에게 대한제국을 선포한 까닭과 그때의 고민을 물어보자."],
+    notes:["학생에게 보일 안내", "예: " + NOTES_PROMPT + " (비워 두면 이 문장으로 보여요)"]};
+  const [promptLabel, promptPh] = PROMPT_LP[f.template] || PROMPT_LP.debate2;
   const qopts = (relay ? [{k:"student", l:"학생이 고르기"}] : []).concat(Object.entries(QTYPES).map(([k,v]) => ({k, l:`${v.mark} ${v.short}`})));
   const etBoxes = EVIDENCE_TYPES.map(e => `<label class="choice"><input type="checkbox" data-form="create" data-k="evidenceTypes" data-multi value="${esc(e)}" ${(f.evidenceTypes||[]).includes(e)?"checked":""}><span>${esc(e)}</span></label>`).join("");
   const hasReason = tool.fields.some(x=>x.k==="reason");
@@ -5426,7 +5548,8 @@ document.addEventListener("input", e => {
   if(key.startsWith("essay:")){ const r = room(), box = document.getElementById("estatus"); if(r && box) box.outerHTML = essayStatusHTML(r) }
 });
 /* 접고 펴는 패널: 화면을 다시 그려도 열린 상태를 기억한다 */
-document.addEventListener("toggle", e => { const d = e.target; if(d?.dataset?.keep) S.advOpen = {...(S.advOpen || {}), [d.dataset.keep]: d.open} }, true);
+document.addEventListener("toggle", e => { const d = e.target; if(d?.dataset?.keep) S.advOpen = {...(S.advOpen || {}), [d.dataset.keep]: d.open};
+  if(d?.dataset && "lazy" in d.dataset && d.open && !d.querySelector(".cport-body")) render() }, true);   // 펼칠 때 처음 계산
 document.addEventListener("change", e => {
   const el = e.target;
   if(el.dataset.mem && S.form.course){ const f = S.form.course, sel = new Set(f.sel || []); el.checked ? sel.add(el.dataset.mem) : sel.delete(el.dataset.mem); f.sel = [...sel]; memRefresh(); return }
@@ -5615,6 +5738,8 @@ async function act(a, b){
     case "focus-com": { const t = document.getElementById("com:" + b.dataset.id + "-text") || document.querySelector(`[data-form="com:${b.dataset.id}"]`); t?.scrollIntoView({block:"center"}); t?.focus(); return }
     case "open-post": S.openPost = b.dataset.id; S.fbSent = null; if(b.dataset.c) S.comFocus = b.dataset.id; if(isTeacher() && S.view === "room"){ S.ttab = "students"; setTimeout(() => document.querySelector(".snav")?.scrollIntoView({block:"start"}), 0) } break;
     case "close-post": S.openPost = null; S.fbSent = null; break;
+    case "port-student": S.modal = {type:"port", c:b.dataset.c, v:b.dataset.v}; break;
+    case "port-open": S.modal = null; S.view = "room"; S.roomId = b.dataset.id; S.ttab = "students"; S.openPost = b.dataset.v; S.gsel = ""; scrollTo(0,0); break;
     case "go-respond": goStep(r, "respond"); S.openPost = b.dataset.id; break;
     case "starter": insertStarter(b); return;
 
