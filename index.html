@@ -1056,6 +1056,13 @@ a.btn{text-decoration:none;color:inherit;display:inline-flex;align-items:center}
 .ccard .g{font-size:13.5px;color:var(--muted);overflow-wrap:anywhere}
 .chead{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px 18px;display:grid;grid-template-columns:minmax(0,1fr);gap:8px;margin-bottom:16px}
 .chead > *{min-width:0}
+.csort{display:inline-flex;gap:6px;align-items:center}.csort select{width:auto;min-height:32px;padding:3px 10px;font-size:13.5px;border-radius:999px;line-height:1.4}
+.dcard.dedit{cursor:grab;outline:2px dashed color-mix(in srgb,var(--c,var(--accent)) 45%,transparent);outline-offset:-4px;user-select:none}
+.dcard.dedit.dragging{opacity:.45}.dcard.dedit.over{outline:3px solid var(--accent);outline-offset:-3px}
+.dmv{display:flex;align-items:center;justify-content:space-between;gap:6px;margin-top:6px}
+.dmv button{border:1px solid var(--line);background:var(--paper);border-radius:8px;min-width:40px;min-height:34px;font-size:15px;cursor:pointer;color:var(--fg)}
+.dmv .grip{font-size:12px;color:var(--muted)}
+.corder-tip{margin:-2px 0 8px}
 .dmore-row{display:flex;justify-content:center;margin:10px 0 4px}
 .sec-h2{display:flex;align-items:baseline;justify-content:space-between;gap:10px;flex-wrap:wrap}
 .archbox{margin-top:12px;padding:12px;border:1px dashed var(--line);border-radius:12px;background:var(--sunk)}.archbox .dgrid{margin-top:8px}.archbox .dcard{opacity:.8}
@@ -1672,7 +1679,15 @@ const inGsel = p => !S.gsel || !isTeacher() || S.gselRoom !== p.roomId || (S.gse
 const allPostsOf = id => S.posts.filter(p => p.roomId === id && inGsel(p)).sort((a,b)=>(a.createdAt||0)-(b.createdAt||0));
 const postsOf = id => allPostsOf(id).filter(submitted);
 const repliesOf = pid => S.replies.filter(r => r.postId === pid && r.kind !== "heart").sort((a,b)=>(a.createdAt||0)-(b.createdAt||0));
-const myPost = r => S.name ? S.posts.find(p => p.roomId === r.id && p.author === S.name) : null;
+/* 👥 학생 한 명이 여러 선생님 과목을 들을 때: 선생님마다 명단 이름표가 다를 수 있다
+   S.idents = [{tid, sid, name}] (my_students), DOC_TID = 문서별 선생님 → 글을 쓸 때 그 활동 선생님의 이름표를 쓴다 */
+const DOC_TID = new Map();
+const isMe = a => !!a && (a === S.name || !!S.myNames?.has(a));
+function meFor(roomId){
+  const t = DOC_TID.get("rooms/" + roomId), id = t && (S.idents || []).find(x => x.tid === t);
+  return id?.name || S.name;
+}
+const myPost = r => S.name ? S.posts.find(p => p.roomId === r.id && isMe(p.author)) : null;
 const postId = r => "p-" + r.id + "-" + hash(S.name);
 const roomsSorted = () => [...S.rooms].filter(r => isTeacher() || (visibleToStudents(r) && (!S.course || r.courseId === S.course))).sort((a,b)=> String(a.year||"").localeCompare(String(b.year||"")) || (a.createdAt||0)-(b.createdAt||0));
 const stanceIdx = (r,s) => (r.stances||[]).indexOf(s);
@@ -1922,7 +1937,7 @@ function sub(col){
 /* 새로운 선생님 피드백이 내 글에 도착하면 알려 준다 */
 function checkNewFeedback(){
   if(!S.name || isTeacher()) return;
-  const mineIds = new Set(S.posts.filter(p=>p.author===S.name).map(p=>p.id));
+  const mineIds = new Set(S.posts.filter(p=>isMe(p.author)).map(p=>p.id));
   const fb = S.replies.filter(x => x.kind==="teacher" && mineIds.has(x.postId)).map(x=>x.id);
   const cls = S.replies.filter(x => x.kind==="class").map(x=>x.id);
   fb.push(...cls);
@@ -1948,7 +1963,7 @@ document.addEventListener("focusout", () => setTimeout(() => {
 async function savePost(r, patch){
   const ex = myPost(r), id = ex?.id || postId(r);
   const base = ex ? (({id, ...rest}) => rest)(ex)
-                  : {roomId:r.id, author:S.name, stance:null, body:{}, revisit:"", status:"draft", createdAt:Date.now()};
+                  : {roomId:r.id, author:meFor(r.id), stance:null, body:{}, revisit:"", status:"draft", createdAt:Date.now()};
   const data = {...base, ...patch, updatedAt:Date.now()};
   let gid = ex?.groupId || r._gid || (r.courseId ? myGroup(r.courseId) : "");
   if(gid === "_none") gid = "";
@@ -2089,7 +2104,7 @@ function renderTop(){
   if(isTeacher() && S.mode === "supa" && S.isAdmin) h += `<button class="btn sm" type="button" data-a="tadmin-open">👩‍🏫 교사 관리</button>`;
   if(isTeacher() && S.mode === "supa") h += `<button class="btn sm" type="button" data-a="t-logout" title="${esc(S.sbEmail)}">로그아웃</button>`;
   if(!isTeacher()){
-    if(S.name) h += `<span class="who">${esc(S.name)} · <button class="linkbtn" type="button" data-a="rename">${S.mode === "supa" ? "다른 학생으로" : "이름 바꾸기"}</button></span>`;
+    if(S.name) h += `<span class="who">${esc(S.name)} · <button class="linkbtn" type="button" data-a="rename">${S.mode === "supa" ? "다른 학생으로" : "이름 바꾸기"}</button>${S.mode === "supa" && !S.preview ? ` · <button class="linkbtn" type="button" data-a="join-open" title="다른 선생님의 과목을 함께 들어요">＋ 과목 추가</button>` : ""}</span>`;
     const rr = S.view === "room" ? room() : null, gcid = rr?._gid ? rr.courseId : (S.view === "home" ? S.course : "");
     if(gcid && myGroup(gcid) && myGroup(gcid) !== "_none") h += `<span class="who">${esc(groupName(gcid, myGroup(gcid)))}${groupByTeacher(courseOf(gcid)) ? "" : ` · <button class="linkbtn" type="button" data-a="regroup" data-c="${esc(gcid)}">그룹 바꾸기</button>`}</span>`;
     if(S.name) h += `<button class="btn sm" type="button" data-a="mine">📒 내 생각 기록</button>`;   // 로그인(코드 확인) 전에는 보이지 않는다
@@ -2216,18 +2231,20 @@ function viewDashList(groups, all){
   const live = [...groups.values()].flat().filter(r => { const t = tmrOf(r); return t && t.st !== "end" });   // ⏱ 선생님이 타이머를 켠 활동 = 지금 수업 중
   h += live.map(r => `<button class="livebar" type="button" data-a="open" data-id="${esc(r.id)}" data-tmr="${esc(r.id)}"><span>⏱ <b>지금 수업 중</b> · ${esc(r.title)}</span><b class="tmr-t">${mmss(tmrOf(r).left)}</b><span aria-hidden="true">→</span></button>`).join("");
   if(!groups.size) return h + `<div class="empty">아직 열린 활동이 없어요. 선생님이 활동을 올리면 여기에 나타나요.</div></section>`;
-  const busy = rs => rs.some(r => homeState(r).k === "todo" || isNewRoom(r)) ? 0 : 1;      // 할 일·새 활동이 있는 과목이 앞에
-  const dashes = [...groups.entries()].map(([k, rs]) => ({info:dashInfo(k, rs), rs}))
-    .sort((a, b) => busy(a.rs) - busy(b.rs) || (a.info.c ? 0 : 1) - (b.info.c ? 0 : 1) || koCmp(a.info.title, b.info.title));
-  const dshown = S.allDash ? dashes : dashes.slice(0, COURSE_SHOW);
-  h += `<h2 class="sec-h">📚 내 과목 <span class="muted small">${dashes.length}개</span></h2><div class="dgrid">${dshown.map(({info, rs}) => {
+  const so = stuOrder(), born = d => d.info.c?.createdAt || Math.min(...d.rs.map(r => r.createdAt || 0), 9e15);
+  const dashes = orderCourses([...groups.entries()].map(([k, rs]) => ({info:dashInfo(k, rs), rs})), born, d => { const i = so.indexOf(d.info.k); return i < 0 ? null : i });
+  const ed = !!S.corderEdit && csortOf() === "custom";
+  S.corderKeys = dashes.map(d => d.info.k);
+  const dshown = S.allDash || ed ? dashes : dashes.slice(0, COURSE_SHOW);
+  h += `<div class="sec-h2"><h2 class="sec-h">📚 내 과목 <span class="muted small">${dashes.length}개</span></h2>${dashes.length > 1 ? csortBar() : ""}</div>
+    ${ed ? `<p class="small muted corder-tip"><span class="pc-only">카드를 끌어서 옮기거나 ◀ ▶ 를</span><span class="m-only">▲ ▼ 를</span> 눌러 순서를 바꿔요.</p>` : ""}<div class="dgrid${ed ? " dgrid-edit" : ""}">${dshown.map(({info, rs}) => {
     const todo = rs.filter(r => homeState(r).k === "todo").length, nNew = rs.filter(isNewRoom).length;
     const n = [...info.notices].sort((a, b) => (b.at||0) - (a.at||0))[0];
-    return `<button class="dcard" type="button" data-a="dash" data-v="${esc(info.k)}" style="--c:var(--${info.tone})">
+    return `${ed ? `<div class="dcard dedit" draggable="true" data-ck="${esc(info.k)}"` : `<button class="dcard" type="button" data-a="dash" data-v="${esc(info.k)}"`} style="--c:var(--${info.tone})">
       <span class="dt"><span aria-hidden="true">${info.icon}</span>${mq(info.title)}</span>
       <span class="dw">${info.teacher ? `${esc(info.teacher)} 선생님 · ` : ""}활동 ${rs.length}개</span>
       ${n ? `<span class="dn">📢 ${isNewNotice(n) ? "<b>새 공지</b> · " : ""}${esc(n.text)}</span>` : ""}
-      <span class="ds">${todo ? `<span class="todo">할 일 ${todo}</span>` : `<span>✓ 할 일 없음</span>`}${nNew ? `<span class="new">🆕 새 활동 ${nNew}</span>` : ""}</span></button>`}).join("")}</div>${moreBtn(dashes.length - dshown.length, S.allDash && dashes.length > COURSE_SHOW, "dash-more")}`;
+      <span class="ds">${todo ? `<span class="todo">할 일 ${todo}</span>` : `<span>✓ 할 일 없음</span>`}${nNew ? `<span class="new">🆕 새 활동 ${nNew}</span>` : ""}</span>${ed ? mvBtns(info.k) + `</div>` : `</button>`}`}).join("")}</div>${ed ? "" : moreBtn(dashes.length - dshown.length, S.allDash && dashes.length > COURSE_SHOW, "dash-more")}`;
   const todo = items.filter(x => x.st.o < 2).sort((a, b) => a.st.o - b.st.o || (a.r.dueAt||9e15) - (b.r.dueAt||9e15) || (b.r.createdAt||0) - (a.r.createdAt||0)).slice(0, 8);
   if(todo.length) h += `<h2 class="sec-h">✏️ 해야 할 활동</h2><div class="todolist">${todo.map(({r, st}) => `<button type="button" data-a="open" data-id="${esc(r.id)}">
       <span class="tl"><b>${esc(r.title)}${isNewRoom(r) ? `<span class="newdot">NEW</span>` : ""}</b><span>${esc(dashInfo(dashKey(r), [r]).title)}${r.dueAt ? ` · ⏰ ${esc(fmtDue(r.dueAt))}까지` : ""}</span></span>
@@ -2967,7 +2984,7 @@ function stepCounter(r, p, open){
 
 /* ---- 함께 생각하기 · 친구 생각 살펴보기 ---- */
 function displayName(r, author, ps){
-  if(author === S.name && !isTeacher()) return "나";
+  if(isMe(author) && !isTeacher()) return "나";
   if(r.anonymous && !isTeacher()){
     const authors = [...new Set(ps.map(x=>x.author))], i = authors.indexOf(author);
     return i < 0 ? "익명" : "익명 " + (i+1);
@@ -2992,7 +3009,7 @@ function previewText(r, p){
 }
 /* 내가 볼 수 있는 답글: 예전 읽기 메모는 글쓴이와 선생님만 */
 function visibleReplies(p){
-  return repliesOf(p.id).filter(x => x.kind !== "note" || isTeacher() || p.author === S.name || x.author === S.name);
+  return repliesOf(p.id).filter(x => x.kind !== "note" || isTeacher() || isMe(p.author) || isMe(x.author));
 }
 function replyHTML(r, x, ps){
   const who = x.kind === "teacher" ? "선생님" : displayName(r, x.author, ps);
@@ -3062,10 +3079,10 @@ const wallTone = (r, p) => {                                     // 쪽지 색: 
 };
 /* ❤️ 하트: replies에 kind "heart" 한 줄(학생마다 글마다 하나, on으로 켜고 끈다) */
 const heartsOf = pid => S.replies.filter(x => x.kind === "heart" && x.postId === pid && x.on !== false);
-const myHeart = pid => S.replies.find(x => x.kind === "heart" && x.postId === pid && x.author === S.name);
+const myHeart = pid => S.replies.find(x => x.kind === "heart" && x.postId === pid && isMe(x.author));
 const heartKey = name => { let h = 0; for(const c of String(name)) h = (h*31 + c.charCodeAt(0)) >>> 0; return h.toString(36) };
 function wallActs(r, p, {open=false}={}){
-  const n = heartsOf(p.id).length, mh = myHeart(p.id), on = !!mh && mh.on !== false, own = p.author === S.name, reps = visibleReplies(p).length;
+  const n = heartsOf(p.id).length, mh = myHeart(p.id), on = !!mh && mh.on !== false, own = isMe(p.author), reps = visibleReplies(p).length;
   const canHeart = (!isTeacher() || S.preview) && !!S.name && !own && S.canWrite;
   const ttl = own ? "내 글이에요" : !canHeart ? "하트" : on ? "하트 취소" : "하트 누르기";
   return `<div class="wact"><button class="hbtn${on ? " on" : ""}" type="button" data-a="heart" data-id="${esc(p.id)}" aria-pressed="${on}" ${canHeart ? "" : "disabled"} title="${ttl}" aria-label="${ttl} (${n}개)"><span class="hh" aria-hidden="true">${on ? "❤️" : "🤍"}</span><span>${n}</span></button>
@@ -3126,7 +3143,7 @@ function stanceMap(r, list, cardFn, {lockNote="", preview=""}={}){
   return `<section class="smap" aria-label="우리 반의 생각 지도">
     <div class="smap-h"><span class="eyebrow">우리 반의 생각 지도</span><span class="muted small">${n}명 참여</span></div>
     <div class="smap-cols" style="--n:${st.length}">${st.map((s,i)=>{
-      const items = list.filter(p=>p.stance===s).sort((a,b) => (b.author===S.name) - (a.author===S.name));
+      const items = list.filter(p=>p.stance===s).sort((a,b) => (isMe(b.author)) - (isMe(a.author)));
       const pct = n ? Math.round(items.length/n*100) : 0, more = S.mapMore?.[r.id+":"+i];
       const shown = cardFn && !more ? items.slice(0, LIMIT) : items;
       const ghost = preview === s ? `<div class="post ghost land" style="--c:var(--${SC[i%4]})">✏️ 내 생각이 여기에 들어가요</div>` : "";
@@ -3144,7 +3161,7 @@ function groupedPosts(r, list, cardFn){
   return `<div class="wall">${list.map(cardFn).join("")}</div>`;
 }
 function stepRead(r, p, open){
-  const f = featuresOf(r), ps = postsOf(r.id), others = ps.filter(x => x.author !== S.name);
+  const f = featuresOf(r), ps = postsOf(r.id), others = ps.filter(x => !isMe(x.author));
   const key = "meet:" + r.id, mform = F(key, () => ({diffPostId:p?.meet?.diffPostId||""}));
   const diffId = p?.meet?.diffPostId || mform.diffPostId;
   const diffPost = diffId && ps.find(x=>x.id===diffId);
@@ -3208,7 +3225,7 @@ function replyForm(r, p){
 }
 function respondCard(r, p, ps){
   const isOpen = S.openPost === p.id;
-  const mineCount = S.replies.filter(x=>x.postId===p.id && x.author===S.name && x.kind==="rebuttal").length;
+  const mineCount = S.replies.filter(x=>x.postId===p.id && isMe(x.author) && x.kind==="rebuttal").length;
   let h = `<article class="post${isOpen?" open":""}">${postHead(r,p,ps)}`;
   if(!isOpen) return h + `<p class="preview">${esc(previewText(r,p))}</p>
     <div class="pmeta"><span>${mineCount ? "✓ 내가 답했어요" : ""}</span><button class="btn sm" type="button" data-a="open-post" data-id="${esc(p.id)}">답하기</button></div></article>`;
@@ -3217,7 +3234,7 @@ function respondCard(r, p, ps){
   return h + `</article>`;
 }
 function stepRespond(r, p, open){
-  const ps = postsOf(r.id), others = ps.filter(x=>x.author!==S.name);
+  const ps = postsOf(r.id), others = ps.filter(x=>!isMe(x.author));
   const diffId = p?.meet?.diffPostId;
   // 내가 고른 '가장 다른 글' → 입장이 다른 글 → 나머지 순서
   const rank = x => x.id===diffId ? 0 : (p?.stance && x.stance && x.stance!==p.stance ? 1 : 2);
@@ -3368,7 +3385,7 @@ function stepRecord(r, p){
   let h = `<div class="card"><div class="flow-h"><h3>🧭 나의 생각 흐름</h3><p class="muted small">${esc(TEMPLATES[r.template]?.flowSummary || "처음 생각 → 친구의 생각 → 지금의 생각")}</p></div>${thinkFlow(r,p)}</div>`;
   // 빠른 활동: 만남 단계가 없어도 친구 글은 둘러볼 수 있다
   if(!featuresOf(r).meet && r.reveal !== "teacher"){
-    const ps = postsOf(r.id), others = ps.filter(x=>x.author!==S.name);
+    const ps = postsOf(r.id), others = ps.filter(x=>!isMe(x.author));
     if(others.length) h += `<details class="card"><summary>친구들 생각 둘러보기 (${others.length}편)</summary><div style="margin-top:12px">${groupedPosts(r, others, x => readCard(r, x, p, ps, {pickable:false}))}</div></details>`;
   }
   return h + `<div class="row end"><button class="btn" type="button" data-a="mine">내 생각 기록 전체 보기</button></div>`;
@@ -3434,7 +3451,7 @@ function relayPool(r){
   return out;
 }
 function relayCard(r, it, ps, {action=false}={}){
-  const mine = it.answers.some(a => a.author === S.name);
+  const mine = it.answers.some(a => isMe(a.author));
   return `<article class="qcard"><div class="eyebrow">🔎 질문${it.q.from ? " · 이어진 질문" : ""}</div>
     <p class="qt">“${esc(it.q.text)}”</p>
     <div class="meta">${qtypeChip(it.q.qtype)}<span>만든 친구: ${esc(displayName(r, it.p.author, ps))}</span><span>답 ${it.answers.length}개</span></div>
@@ -3464,7 +3481,7 @@ function stepAsk(r, p, open){
 }
 /* ② 질문 이어받기: 카드 풀에서 골라 답하기 */
 function stepTake(r, p, open){
-  const ps = postsOf(r.id), pool = relayPool(r).filter(it => it.p.author !== S.name);
+  const ps = postsOf(r.id), pool = relayPool(r).filter(it => !isMe(it.p.author));
   const sel = S.take && pool.find(it => it.p.id===S.take.pid && it.q.id===S.take.qid);
   const myAns = myRepliesIn(r, ["answer"]);
   if(sel && open && S.canWrite){
@@ -3476,7 +3493,7 @@ function stepTake(r, p, open){
         <button class="btn pri" type="button" data-a="answer-save" data-id="${esc(sel.p.id)}" data-q="${esc(sel.q.id)}">내 생각 보내기</button></div></div>`;
   }
   // 아직 내가 답하지 않은 질문, 답이 적은 질문이 앞으로
-  const rank = it => (it.answers.some(a=>a.author===S.name) ? 1000 : 0) + it.answers.length;
+  const rank = it => (it.answers.some(a=>isMe(a.author)) ? 1000 : 0) + it.answers.length;
   const sorted = [...pool].sort((a,b) => rank(a)-rank(b) || (a.q.at||0)-(b.q.at||0));
   let h = `<div class="card"><p><b>친구의 질문 하나를 골라 이어받아 보세요.</b></p>
     <p class="muted small" style="margin-top:4px">답이 적은 질문이 앞에 있어요.${myAns.length ? ` · 지금까지 ${myAns.length}개 이어받았어요.` : ""}</p></div>`;
@@ -3918,7 +3935,7 @@ function teacherCard(r, p, ps, nav){
    ========================================================= */
 /* 🔄 새 버전 알림: 배포 때마다 APP_VERSION과 version.json의 v를 같은 값으로 올린다.
    GitHub Pages는 화면을 10분쯤 기억하므로, 옛 화면이면 아래쪽에 ‘새로고침’ 띠를 띄우고 주소를 바꿔 새로 받는다 */
-const APP_VERSION = "2026-10-12i";
+const APP_VERSION = "2026-10-12j";
 async function checkVersion(){
   if(!/^https?:$/.test(location.protocol)) return;
   try{
@@ -3963,7 +3980,12 @@ async function initSupa(){
     S.sbAnon = !!session?.user?.is_anonymous;
     S.sbName = who.teacher ? (session?.user?.user_metadata?.full_name || session?.user?.user_metadata?.name || "") : "";
     if(!who.teacher){ S.name = who.student_name || ""; lsSet("nonjae.name", S.name)
-      if(S.name){ const ids = await rpcSafe("my_student_ids"); S.mySids = new Set(Array.isArray(ids.data) ? ids.data : []) } }   // 선생님이 정한 그룹을 알아보려고 내 학생 번호(들)
+      if(S.name){ const ms = await rpcSafe("my_students");                // 연결된 선생님마다 내 학생 번호·이름표
+        S.idents = Array.isArray(ms.data) ? ms.data : [];
+        if(!S.idents.length){ const ids = await rpcSafe("my_student_ids"); S.mySids = new Set(Array.isArray(ids.data) ? ids.data : []) }   // 예전 서버
+        else S.mySids = new Set(S.idents.map(x => x.sid));
+        S.myNames = new Set(S.idents.map(x => x.name)) }
+      if(lsGet("nonjae.joined")){ lsSet("nonjae.joined", ""); setTimeout(() => toast("새 선생님의 과목을 추가했어요. ‘내 과목’에서 볼 수 있어요."), 600) } }   // 선생님이 정한 그룹을 알아보려고 내 학생 번호(들)
     S.canWrite = !!who.teacher || !!who.student_name;
     S.db = supaDB(SB);
     ["rooms","posts","replies","treplies","config","courses"].forEach(sub);
@@ -4004,16 +4026,16 @@ function supaDB(sb){
         (async () => {
           try{
             for(let from = 0; ; from += 1000){
-              const r = chk(await sb.from("docs").select("id,data").eq("col", col).range(from, from + 999));
-              r.data.forEach(x => map.set(x.id, x.data));
+              const r = chk(await sb.from("docs").select("id,data,tid").eq("col", col).range(from, from + 999));
+              r.data.forEach(x => { map.set(x.id, x.data); if(x.tid) DOC_TID.set(col + "/" + x.id, x.tid) });
               if(r.data.length < 1000) break;
             }
             ready = true; emit();
           }catch(e){ onErr && onErr(e) }
         })();
         sb.channel("docs-" + col + "-" + Math.random().toString(36).slice(2, 8))
-          .on("postgres_changes", {event:"INSERT", schema:"public", table:"docs", filter:`col=eq.${col}`}, p => { map.set(p.new.id, p.new.data); emit() })
-          .on("postgres_changes", {event:"UPDATE", schema:"public", table:"docs", filter:`col=eq.${col}`}, p => { map.set(p.new.id, p.new.data); emit() })
+          .on("postgres_changes", {event:"INSERT", schema:"public", table:"docs", filter:`col=eq.${col}`}, p => { map.set(p.new.id, p.new.data); if(p.new.tid) DOC_TID.set(col + "/" + p.new.id, p.new.tid); emit() })
+          .on("postgres_changes", {event:"UPDATE", schema:"public", table:"docs", filter:`col=eq.${col}`}, p => { map.set(p.new.id, p.new.data); if(p.new.tid) DOC_TID.set(col + "/" + p.new.id, p.new.tid); emit() })
           .on("postgres_changes", {event:"DELETE", schema:"public", table:"docs"}, p => { if(p.old && p.old.col === col){ map.delete(p.old.id); emit() } })
           .subscribe();
         return () => {};
@@ -4135,6 +4157,19 @@ function tadminHTML(){
     <div class="row end"><button class="btn" type="button" data-a="modal-close">닫기</button></div>`;
 }
 /* 학생: 학번 · 이름 · 개인 코드 */
+/* ＋ 과목 추가: 다른 선생님이 준 개인 코드로 그 선생님 과목을 더한다 (이 기기에 선생님이 여럿 연결됨) */
+function joinHTML(m){
+  const me = splitAuthor(S.name), tnames = [...new Set((S.idents || []).map(x => S.courses.find(c => DOC_TID.get("courses/" + c.id) === x.tid && c.teacherName)?.teacherName).filter(Boolean))];
+  return `<h3>＋ 과목 추가</h3>
+    <p class="small">다른 선생님의 과목도 듣나요? 그 선생님께 받은 <b>개인 코드</b>를 넣으면, 그 선생님이 나를 넣어 둔 과목이 <b>내 과목</b>에 더해져요. 지금 과목은 그대로 남아요.</p>
+    ${(S.idents || []).length ? `<p class="muted small" style="margin-top:6px">지금 연결된 선생님 ${S.idents.length}명${tnames.length ? ` · ${tnames.map(n => esc(n) + " 선생님").join(", ")}` : ""}</p>` : ""}
+    <div class="form-grid" style="margin-top:12px">
+      <div class="q"><label for="j-num">학번</label><input type="text" id="j-num" inputmode="numeric" maxlength="12" autocomplete="off" value="${esc(me.number)}"></div>
+      <div class="q"><label for="j-name">이름</label><input type="text" id="j-name" maxlength="20" autocomplete="off" value="${esc(me.name)}"></div>
+      <div class="q"><label for="j-code">새 선생님의 개인 코드</label><input type="text" id="j-code" maxlength="12" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="예: K7P2QM"></div></div>
+    <p class="hint">학번·이름은 그 선생님 명단에 적힌 그대로 넣어 주세요. 코드는 선생님마다 달라요.</p>
+    <div class="row end"><button class="btn" type="button" data-a="modal-close">취소</button><button class="btn pri" type="button" data-a="join-save">과목 추가</button></div>`;
+}
 function codeForm(){
   return `<div class="card"><p><b>처음 한 번만 확인할게요.</b> 선생님이 나눠 준 개인 코드를 넣어 주세요.</p>
     <div class="form-grid" style="margin-top:10px">
@@ -4471,24 +4506,55 @@ function teacherTop(){
 /* 과목이 많을 때: 처음엔 3개만, ‘더 보기’로 전체 · 지난 학기 과목은 보관(archived)하면 목록과 학생 화면에서 빠진다 */
 const COURSE_SHOW = 3;
 const activeCourses = () => S.courses.filter(c => !c.archived);
-const courseRecent = c => Math.max(c.updatedAt || 0, c.createdAt || 0, ...courseRooms(c.id).map(r => r.updatedAt || r.createdAt || 0), ...noticesOf(c).map(n => n.at || 0));
+/* 과목 순서: 사용자 지정(기본) · 오래된 순 · 최신순 — 고른 방식은 이 기기에 기억
+   사용자 지정: 선생님은 과목 문서의 ord(여러 기기에서 같게), 학생은 이 기기의 순서 목록(nonjae.corder) */
+const CSORTS = [["custom","사용자 지정"],["old","오래된 순"],["new","최신순"]];
+const csortOf = () => { const v = lsGet("nonjae.csort"); return CSORTS.some(x => x[0] === v) ? v : "custom" };
+function orderCourses(list, created, ordOf){
+  const m = csortOf(), num = v => (typeof v === "number" && isFinite(v)) ? v : 1e9;
+  if(m === "old") return [...list].sort((a, b) => created(a) - created(b));
+  if(m === "new") return [...list].sort((a, b) => created(b) - created(a));
+  return [...list].sort((a, b) => num(ordOf(a)) - num(ordOf(b)) || created(a) - created(b));
+}
+const stuOrder = () => { try{ const v = JSON.parse(lsGet("nonjae.corder") || "[]"); return Array.isArray(v) ? v : [] }catch(e){ return [] } };
+function csortBar(){
+  const m = csortOf();
+  return `<span class="csort"><select id="c-sort" aria-label="과목 정렬">${CSORTS.map(([k, l]) => `<option value="${k}" ${m === k ? "selected" : ""}>${l}</option>`).join("")}</select>${m === "custom" ? `<button class="btn sm${S.corderEdit ? " pri" : ""}" type="button" data-a="corder-edit" aria-pressed="${!!S.corderEdit}">${S.corderEdit ? "✓ 다 바꿨어요" : "↔ 순서 바꾸기"}</button>` : ""}</span>`;
+}
+const mvBtns = k => `<span class="dmv"><button type="button" data-a="cmove" data-v="${esc(k)}" data-d="-1" aria-label="앞으로"><span class="pc-only">◀</span><span class="m-only">▲</span></button><span class="grip pc-only" aria-hidden="true">⠿ 끌어서 옮기기</span><button type="button" data-a="cmove" data-v="${esc(k)}" data-d="1" aria-label="뒤로"><span class="pc-only">▶</span><span class="m-only">▼</span></button></span>`;
+/* 순서 바꾸기: keys = 지금 보이는 순서, from을 to 자리로 → 저장 */
+async function courseReorder(keys, from, to){
+  const i = keys.indexOf(from); if(i < 0 || to < 0 || to >= keys.length || i === to) return;
+  const next = [...keys]; next.splice(i, 1); next.splice(to, 0, from);
+  if(isTeacher()){
+    const ch = next.map((id, n) => [courseOf(id), n]).filter(([c, n]) => c && c.ord !== n);
+    ch.forEach(([c, n]) => { c.ord = n });                               // 화면부터 바로
+    render();
+    await Promise.all(ch.map(([c, n]) => write(db => db.doc("courses/" + c.id).update({ord:n}), () => {})));
+  }else{ lsSet("nonjae.corder", JSON.stringify(next)); render() }
+}
 const moreBtn = (n, open, a) => n > 0 || open ? `<div class="dmore-row"><button class="btn sm" type="button" data-a="${a}" aria-expanded="${!!open}">${open ? "접기 ▴" : `＋ 과목 ${n}개 더 보기`}</button></div>` : "";
 function courseCards(){
   const none = courseRooms("_none");
-  const card = (k, tone, ic, title, sub, rs, extra = "") => { const open = rs.filter(r => statusOf(r) === "open").length, td = respToday(rs);
-    return `<button type="button" class="dcard" data-a="mcourse" data-v="${esc(k)}" style="--c:var(--${tone})"><span class="dt"><span aria-hidden="true">${ic}</span>${mq(title)}</span>
+  const card = (k, tone, ic, title, sub, rs, extra = "", ed = false) => { const open = rs.filter(r => statusOf(r) === "open").length, td = respToday(rs);
+    const inner = `<span class="dt"><span aria-hidden="true">${ic}</span>${mq(title)}</span>
       <span class="dw">${esc(sub)}</span>${extra}
-      <span class="ds"><span>활동 ${rs.length}</span>${open ? `<span class="todo">진행 중 ${open}</span>` : ""}${td ? `<span class="new">오늘 응답 ${td}</span>` : ""}</span></button>` };
-  const act = activeCourses().sort((a, b) => courseRecent(b) - courseRecent(a)), arch = S.courses.filter(c => c.archived);   // 최근에 쓴 과목이 앞에
-  const shown = S.allCourses ? act : act.slice(0, COURSE_SHOW);
-  const cc = c => { const ns = noticesOf(c);
+      <span class="ds"><span>활동 ${rs.length}</span>${open ? `<span class="todo">진행 중 ${open}</span>` : ""}${td ? `<span class="new">오늘 응답 ${td}</span>` : ""}</span>`;
+    return ed ? `<div class="dcard dedit" draggable="true" data-ck="${esc(k)}" style="--c:var(--${tone})">${inner}${mvBtns(k)}</div>`
+              : `<button type="button" class="dcard" data-a="mcourse" data-v="${esc(k)}" style="--c:var(--${tone})">${inner}</button>` };
+  const act = orderCourses(activeCourses(), c => c.createdAt || 0, c => c.ord), arch = S.courses.filter(c => c.archived);
+  const ed = !!S.corderEdit && csortOf() === "custom";
+  S.corderKeys = act.map(c => c.id);
+  const shown = S.allCourses || ed ? act : act.slice(0, COURSE_SHOW);
+  const cc = (c, e = false) => { const ns = noticesOf(c);
       return card(c.id, subjTone("c:" + c.id), courseIcon(c), c.title, [c.subject, c.year, Array.isArray(c.members) ? `학생 ${c.members.length}명` : "", groupsOf(c).length ? `그룹 ${groupsOf(c).length}개` : ""].filter(Boolean).join(" · ") || "과목", courseRooms(c.id),
-        ns.length ? `<span class="dn">📢 ${esc(ns[0].text)}${ns.length > 1 ? ` 외 ${ns.length - 1}` : ""}</span>` : "") };
-  return `<div class="sec-h2"><h2 class="sec-h">📚 내 과목 <span class="muted small">${act.length}개</span></h2>${arch.length ? `<button class="linkbtn small" type="button" data-a="courses-arch" aria-expanded="${!!S.archCourses}">🗄 보관한 과목 ${arch.length}개 ${S.archCourses ? "▴" : "▾"}</button>` : ""}</div>
-    <div class="dgrid">${shown.map(cc).join("")}
-      ${none.length ? card("_none", "s4", "🗂", "과목 없는 활동", "과목에 넣지 않은 활동이에요", none) : ""}
-      <button type="button" class="dcard dadd" data-a="course-new"><span class="dt">＋ 새 과목</span><span class="dw">과목을 만들고 듣는 학생을 학급별로 골라요</span></button></div>
-    ${moreBtn(act.length - shown.length, S.allCourses && act.length > COURSE_SHOW, "courses-more")}
+        ns.length ? `<span class="dn">📢 ${esc(ns[0].text)}${ns.length > 1 ? ` 외 ${ns.length - 1}` : ""}</span>` : "", e) };
+  return `<div class="sec-h2"><h2 class="sec-h">📚 내 과목 <span class="muted small">${act.length}개</span></h2><span class="row" style="gap:8px">${act.length > 1 ? csortBar() : ""}${arch.length ? `<button class="linkbtn small" type="button" data-a="courses-arch" aria-expanded="${!!S.archCourses}">🗄 보관한 과목 ${arch.length}개 ${S.archCourses ? "▴" : "▾"}</button>` : ""}</span></div>
+    ${ed ? `<p class="small muted corder-tip"><span class="pc-only">카드를 끌어서 옮기거나 ◀ ▶ 를</span><span class="m-only">▲ ▼ 를</span> 눌러 순서를 바꿔요. 모든 기기에서 같은 순서로 보여요.</p>` : ""}
+    <div class="dgrid${ed ? " dgrid-edit" : ""}">${shown.map(c => cc(c, ed)).join("")}
+      ${ed ? "" : `${none.length ? card("_none", "s4", "🗂", "과목 없는 활동", "과목에 넣지 않은 활동이에요", none) : ""}
+      <button type="button" class="dcard dadd" data-a="course-new"><span class="dt">＋ 새 과목</span><span class="dw">과목을 만들고 듣는 학생을 학급별로 골라요</span></button>`}</div>
+    ${ed ? "" : moreBtn(act.length - shown.length, S.allCourses && act.length > COURSE_SHOW, "courses-more")}
     ${S.archCourses && arch.length ? `<div class="archbox"><p class="small muted">🗄 보관한 과목 · 학생 화면에는 보이지 않아요. 눌러서 들어가면 ‘보관 해제’할 수 있어요.</p><div class="dgrid">${arch.map(cc).join("")}</div></div>` : ""}`;
 }
 /* 👥 과목 만들기·수정 창 안에서: 수강 학생 고르기(학급별로 한꺼번에 또는 한 명씩) → 고른 학생으로 그룹 짓기
@@ -4986,6 +5052,7 @@ function renderModal(){
   if(!m){ el.innerHTML = ""; return }
   let h = "";
   if(m.type === "port"){ h = portStudentHTML(m) }
+  else if(m.type === "join"){ h = joinHTML(m) }
   else if(m.type === "qr"){
     const kind = m.kind || "room", link = linkFor(kind, m.id, m.g);
     const c = kind === "course" ? courseOf(m.id) : null, r = kind === "room" ? S.rooms.find(x=>x.id===m.id) : null;
@@ -5247,7 +5314,7 @@ function viewMine(){
     <div class="home-head"><div><div class="eyebrow">내 생각 기록</div><h1>나의 생각 흐름 모음</h1>
     <p>논제마다 처음 생각과 지금의 생각, 내가 든 이유와 친구·선생님이 남긴 말을 모아 봐요. 학기 말에 내 생각이 어떻게 자랐는지 돌아볼 수 있어요.</p></div></div>`;
   if(!S.name) return h + nameForm();
-  const mine = S.posts.filter(p => p.author===S.name && S.rooms.some(r=>r.id===p.roomId)).sort((a,b)=>(b.createdAt||0)-(a.createdAt||0));
+  const mine = S.posts.filter(p => isMe(p.author) && S.rooms.some(r=>r.id===p.roomId)).sort((a,b)=>(b.createdAt||0)-(a.createdAt||0));
   if(!mine.length) return h + `<div class="empty">아직 기록이 없어요. 활동에서 첫 생각을 남겨 보세요.</div>`;
 
   const changed = mine.filter(p => p.change && ["much","some"].includes(p.change.degree)).length;
@@ -5599,6 +5666,11 @@ document.addEventListener("input", e => {
   if(key.startsWith("essay:")){ const r = room(), box = document.getElementById("estatus"); if(r && box) box.outerHTML = essayStatusHTML(r) }
 });
 /* 접고 펴는 패널: 화면을 다시 그려도 열린 상태를 기억한다 */
+/* 과목 카드 끌어서 순서 바꾸기 (사용자 지정 · 순서 바꾸기 모드) */
+document.addEventListener("dragstart", e => { const el = e.target.closest?.("[data-ck]"); if(!el) return; S.dragCk = el.dataset.ck; el.classList.add("dragging"); try{ e.dataTransfer.effectAllowed = "move"; e.dataTransfer.setData("text/plain", S.dragCk) }catch(_){} });
+document.addEventListener("dragover", e => { const el = e.target.closest?.("[data-ck]"); if(!el || !S.dragCk) return; e.preventDefault(); document.querySelectorAll(".dedit.over").forEach(x => x !== el && x.classList.remove("over")); if(el.dataset.ck !== S.dragCk) el.classList.add("over") });
+document.addEventListener("drop", e => { const el = e.target.closest?.("[data-ck]"); if(!el || !S.dragCk) return; e.preventDefault(); const ks = S.corderKeys || [], from = S.dragCk; S.dragCk = null; courseReorder(ks, from, ks.indexOf(el.dataset.ck)) });
+document.addEventListener("dragend", () => { S.dragCk = null; document.querySelectorAll(".dedit.dragging,.dedit.over").forEach(x => x.classList.remove("dragging", "over")) });
 document.addEventListener("toggle", e => { const d = e.target; if(d?.dataset?.keep) S.advOpen = {...(S.advOpen || {}), [d.dataset.keep]: d.open};
   if(d?.dataset && "lazy" in d.dataset && d.open && !d.querySelector(".cport-body")) render() }, true);   // 펼칠 때 처음 계산
 document.addEventListener("change", e => {
@@ -5609,6 +5681,7 @@ document.addEventListener("change", e => {
   if(el.dataset.ctxFile !== undefined){ if(el.files?.length) ctxAddFiles(el.files); el.value = ""; return }
   if(el.dataset.noteFile){ const r = S.rooms.find(x => x.id === el.dataset.noteFile); if(r && el.files?.length) noteAddFiles(r, el.files); el.value = ""; return }
   if(el.id === "n-cls"){ S.ncls = el.value; render(); return }
+  if(el.id === "c-sort"){ lsSet("nonjae.csort", el.value); if(el.value !== "custom") S.corderEdit = false; render(); document.getElementById("c-sort")?.focus(); return }
   if(el.id === "m-sub" || el.id === "m-grade"){ S[el.id === "m-sub" ? "msub" : "mgrade"] = el.value; render(); return }
   if(el.dataset.asg){                                        // 그룹별 시작·마감 시각
     if(!Auth.teacher) return;
@@ -5777,9 +5850,9 @@ async function act(a, b){
     case "step": goStep(r, b.dataset.v); S.take = null; break;
     case "heart": {
       const pid = b.dataset.id, post = S.posts.find(x => x.id === pid);
-      if(!post || !S.name || post.author === S.name || (isTeacher() && !S.preview)) return;
+      if(!post || !S.name || isMe(post.author) || (isTeacher() && !S.preview)) return;
       const ex = myHeart(pid), on = !(ex && ex.on !== false), id = ex?.id || ("h-" + pid + "-" + heartKey(S.name));
-      const data = {roomId:post.roomId, postId:pid, author:S.name, kind:"heart", on, createdAt:ex?.createdAt || Date.now(), updatedAt:Date.now()};
+      const data = {roomId:post.roomId, postId:pid, author:meFor(post.roomId), kind:"heart", on, createdAt:ex?.createdAt || Date.now(), updatedAt:Date.now()};
       const prev = S.replies;
       S.replies = S.replies.filter(x => x.id !== id).concat({id, ...data}); render();          // 바로 보이게
       const ok = await write(db => db.doc("replies/" + id).set(data), () => {});
@@ -5798,6 +5871,18 @@ async function act(a, b){
     case "rename":
       if(S.mode === "supa"){ lsSet("nonjae.name", ""); await SB.auth.signOut(); location.reload(); return }   // 다른 학생으로: 이 기기의 연결을 끊는다
       S.name = ""; lsSet("nonjae.name",""); S.form = {}; S.step = {}; if(S.view!=="room") S.view = "mine"; break;
+    case "join-open": S.modal = {type:"join"}; break;
+    case "corder-edit": S.corderEdit = !S.corderEdit; break;
+    case "cmove": { const ks = S.corderKeys || [], k = b.dataset.v; await courseReorder(ks, k, ks.indexOf(k) + Number(b.dataset.d)); setTimeout(() => document.querySelector(`[data-ck="${CSS.escape(k)}"] [data-d="${b.dataset.d}"]`)?.focus(), 0); return }
+    case "join-save": {
+      const g = id => (document.getElementById(id)?.value || "").trim(), num = g("j-num"), nm = g("j-name"), code = g("j-code");
+      if(!num || !nm || !code){ toast("학번, 이름, 새 선생님의 개인 코드를 모두 적어 주세요."); return }
+      if(b) b.disabled = true;
+      const res = await rpcSafe("claim_student", {p_number:num, p_name:nm, p_code:code});
+      if(res.error || !res.data){ if(b) b.disabled = false; toast("학번·이름·코드가 맞지 않아요. 새 선생님께 받은 코드인지 확인해 주세요."); return }
+      if(S.mySids?.has(res.data.id)){ S.modal = null; toast("이미 연결된 선생님이에요. 과목이 안 보이면 선생님께 과목에 넣어 달라고 말해 주세요."); break }
+      lsSet("nonjae.joined", "1"); location.reload(); return;            // 새 선생님의 과목·활동을 새로 불러온다
+    }
     case "setname": {
       if(S.mode === "supa"){
         const g = id => (document.getElementById(id)?.value || "").trim();
@@ -6053,7 +6138,7 @@ async function act(a, b){
       const kind = fe.rebuttal ? "rebuttal" : (fe.comment ? "comment" : "");
       b.disabled = true;
       if(kind){
-        const okR = await addReply({roomId:r.id, postId:f.diffPostId, author:S.name, kind, text, evidence:"", createdAt:Date.now()});
+        const okR = await addReply({roomId:r.id, postId:f.diffPostId, author:meFor(r.id), kind, text, evidence:"", createdAt:Date.now()});
         if(!okR){ b.disabled = false; return }
       }
       const answers = {reply:text};
@@ -6065,7 +6150,7 @@ async function act(a, b){
     }
     case "read-done": {
       const f = F("meet:"+r.id), answers = {};
-      if(postsOf(r.id).some(x => x.author !== S.name) && !f.diffPostId){ toast("친구 글에 댓글을 하나 남겨 주세요."); return }
+      if(postsOf(r.id).some(x => !isMe(x.author)) && !f.diffPostId){ toast("친구 글에 댓글을 하나 남겨 주세요."); return }
       MISSIONS.forEach(m => { if((f[m.k]||"").trim()) answers[m.k] = f[m.k].trim() });
       const ok = await savePost(r, {readAt:Date.now(), meet:{answers, diffPostId:f.diffPostId||"", at:Date.now()}});
       if(ok){ dropForm("meet:"+r.id); goNext(r) }
@@ -6080,10 +6165,10 @@ async function act(a, b){
       const pid = b.dataset.id, text = (F("com:"+pid).text||"").trim();
       if(!text){ toast("내 생각을 한 문장만 적어 볼까요?"); return }
       const fe = featuresOf(r), tgt = S.posts.find(x => x.id === pid);
-      const inRead = !isTeacher() && p && !p.readAt && S.work === r.id && selectedStep(r, p) === "read" && tgt && tgt.author !== S.name;   // ‘친구 생각 만나기’ 단계에서 단 댓글
+      const inRead = !isTeacher() && p && !p.readAt && S.work === r.id && selectedStep(r, p) === "read" && tgt && !isMe(tgt.author);   // ‘친구 생각 만나기’ 단계에서 단 댓글
       if(inRead){
         b.disabled = true;
-        const okR = await addReply({roomId:r.id, postId:pid, author:S.name, kind:fe.rebuttal && !fe.deep ? "rebuttal" : "comment", text, evidence:"", createdAt:Date.now()});
+        const okR = await addReply({roomId:r.id, postId:pid, author:meFor(r.id), kind:fe.rebuttal && !fe.deep ? "rebuttal" : "comment", text, evidence:"", createdAt:Date.now()});
         if(!okR){ b.disabled = false; return }
         dropForm("com:"+pid);
         if(fe.deep && fe.rebuttal || fe.readMission.length){ F("meet:"+r.id).diffPostId = pid; saveFormsSoon(); toast("댓글을 남겼어요. 다 읽었으면 ‘다 읽었어요’를 눌러 주세요."); break }
@@ -6091,7 +6176,7 @@ async function act(a, b){
         if(ok){ toast("한마디를 남겼어요! 다음 단계로 넘어가요."); S.openPost = null; goNext(r) }
         break;
       }
-      const ok = await addReply({roomId:r.id, postId:pid, author:S.name, kind:"comment", text, evidence:"", createdAt:Date.now()});
+      const ok = await addReply({roomId:r.id, postId:pid, author:meFor(r.id), kind:"comment", text, evidence:"", createdAt:Date.now()});
       if(ok){ dropForm("com:"+pid); toast("올렸어요.") }
       break;
     }
@@ -6103,7 +6188,7 @@ async function act(a, b){
       if(deep && !differ){ toast("생각이 다른 부분을 적어 볼까요?"); return }
       if(!text){ toast("이 생각에 대한 내 의견을 한 문장 적어 볼까요?"); return }
       if(!evidence){ toast("그렇게 생각하는 이유도 한 가지 적어 주세요."); return }
-      const data = {roomId:r.id, postId:pid, author:S.name, kind:"rebuttal", text, evidence, evidenceType:f.etype||"", createdAt:Date.now()};
+      const data = {roomId:r.id, postId:pid, author:meFor(r.id), kind:"rebuttal", text, evidence, evidenceType:f.etype||"", createdAt:Date.now()};
       if(deep){ data.agree = (f.agree||"").trim(); data.differ = differ }
       const ok = await addReply(data);
       if(ok){ dropForm("reb:"+pid); S.openPost = null; toast("답을 남겼어요.") }
@@ -6191,7 +6276,7 @@ async function act(a, b){
       const groups = (f.groups||[]).map(g => { const old = groupsOf(prev).find(x => x.id === g.id);
         const members = live ? sel.filter(sid => f.gm?.[sid] === g.id) : old?.members;
         return {id:g.id, name:String(f["gn:"+g.id] ?? g.name).trim() || g.name, createdAt:g.createdAt || Date.now(), ...(Array.isArray(members) ? {members} : {})} });
-      const doc = {title, subject:(f.subject||"").trim(), year:(f.year||"").trim(), description:(f.description||"").trim(), groups, notices:noticesOf(prev), ...(prev?.archived ? {archived:true, archivedAt:prev.archivedAt || null} : {}), ...(live ? {members:sel} : Array.isArray(prev?.members) ? {members:prev.members} : !prev && cmLive() ? {members:[]} : {}), ...(S.sbName ? {teacherName:S.sbName} : prev?.teacherName ? {teacherName:prev.teacherName} : {}), createdAt:prev?.createdAt || now, updatedAt:now};   // 공지는 그대로 둔다
+      const doc = {title, subject:(f.subject||"").trim(), year:(f.year||"").trim(), description:(f.description||"").trim(), groups, notices:noticesOf(prev), ...(typeof prev?.ord === "number" ? {ord:prev.ord} : {}), ...(prev?.archived ? {archived:true, archivedAt:prev.archivedAt || null} : {}), ...(live ? {members:sel} : Array.isArray(prev?.members) ? {members:prev.members} : !prev && cmLive() ? {members:[]} : {}), ...(S.sbName ? {teacherName:S.sbName} : prev?.teacherName ? {teacherName:prev.teacherName} : {}), createdAt:prev?.createdAt || now, updatedAt:now};   // 공지는 그대로 둔다
       // TODO: 실제 배포 시 교사 인증 및 권한 검증 필요 (teacherId는 서버에서 확인한 교사 계정으로 채운다)
       const ok = await write(db => db.doc("courses/"+id).set(doc), () => { S.courses = S.courses.filter(x => x.id !== id).concat({id, ...doc}) });
       if(ok){ delete S.form.course; S.modal = null; S.mcourse = id; S.pendingCourse = id;
@@ -6417,7 +6502,7 @@ async function act(a, b){
       const key = `ans:${b.dataset.id}:${b.dataset.q}`, f = F(key), text = (f.text||"").trim();
       if(!text){ toast("이 질문에 대한 내 생각을 한 문장 적어 볼까요?"); return }
       b.disabled = true;
-      const ok = await addReply({roomId:r.id, postId:b.dataset.id, qid:b.dataset.q, author:S.name, kind:"answer", text, evidence:(f.evidence||"").trim(), createdAt:Date.now()});
+      const ok = await addReply({roomId:r.id, postId:b.dataset.id, qid:b.dataset.q, author:meFor(r.id), kind:"answer", text, evidence:(f.evidence||"").trim(), createdAt:Date.now()});
       if(ok){ dropForm(key); S.take = null; toast("생각을 보냈어요. 질문을 만든 친구에게 전해져요."); goNext(r) } else b.disabled = false;
       break;
     }

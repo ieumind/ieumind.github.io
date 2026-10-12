@@ -16,7 +16,7 @@
   3. 다시 생각을 고쳐 쓴다.
 - 교사는 활동을 만들고, 학생의 생각 흐름과 참여 현황을 확인하고, 피드백한다.
 - 만든 사람: 이태형 선생님(한백고). 화면 맨 아래에 “제작 : 이태형T(한백고)”가 표시된다.
-- 공개 주소: <https://taeneuu.github.io/thinklink/>
+- 공개 주소: <https://ieumind.github.io/> (2026-10-12 이전: `taeneuu.github.io/thinklink/` → 새 주소로 넘겨 주는 저장소만 남김)
   - 교사 로그인: `#teacher`
   - 체험 모드: `?demo=1`
 
@@ -84,7 +84,7 @@
 ### 1-4. 사용 기술과 전체 구조
 - **프런트엔드**: 빌드 도구 없는 단일 `index.html`(약 5,960줄). 바닐라 JS + CSS.
   - 외부 스크립트: supabase-js(CDN), QR 코드(qrcodejs, 필요할 때만).
-- **호스팅**: GitHub Pages. 저장소 `taeneuu/thinklink`의 main 루트를 그대로 배포한다.
+- **호스팅**: GitHub Pages. 저장소 `ieumind/ieumind.github.io`(조직 사이트, 예전 `taeneuu/thinklink`)의 main 루트를 그대로 배포한다.
 - **백엔드**: Supabase. 프로젝트 ref `zgwahesadlejacmxojfg`, 서울 리전.
   - Postgres(RLS) + Auth(Google, Anonymous) + Realtime + Storage + Edge Functions(Deno).
 - **AI**
@@ -232,6 +232,17 @@
   - 과목을 저장(수정)해도 보관 상태 유지.
 - `APP_VERSION`/`version.json` = `2026-10-12i`. 테스트: `t48.py`.
 
+### 2-14. 추가 수정 (PR #27, 2026-10-12) · 저장소를 `ieumind/ieumind.github.io`로 옮긴 뒤 첫 PR
+- 저장소·주소 이전: `https://ieumind.github.io/`. `notify`의 VAPID subject를 새 주소로(배포 v3). 예전 주소는 개인 계정의 `taeneuu/thinklink` 저장소(넘겨 주기 index.html·404.html·sw.js)로 새 주소에 넘긴다.
+- 👥 한 학생이 여러 선생님 과목 듣기: 상단 ‘＋ 과목 추가’(`join-open` → `joinHTML` → `join-save` = `claim_student`)로 다른 선생님이 준 개인 코드를 넣으면 이 기기에 그 선생님이 더 연결된다(student_sessions는 원래 (uid, tid)마다 한 줄). 성공하면 새로 불러오고 안내.
+  - 선생님마다 명단 이름표가 다를 수 있다(학교 이름 등) → 새 함수 `my_students()` = [{tid, sid, name}] (setup.sql·서버 마이그레이션 `my_students`). `S.idents`, `S.myNames`.
+  - 문서마다 선생님(tid)을 `DOC_TID`에 기억(`select id,data,tid`, 실시간도). 글·댓글·하트를 쓸 때 `meFor(roomId)` = 그 활동 선생님의 이름표, ‘내 글인가’는 `isMe(author)`.
+  - 로컬 검사: `dev/sql/multi_teacher_test.sql`(이름표가 틀리면 RLS가 막는 것까지). 가짜 Supabase(mock.js)에 선생님 두 명(`?who=teacher2`, 문서·학생에 tid) 추가.
+- 과목 정렬: 사용자 지정(기본)·오래된 순·최신순(`CSORTS`, 이 기기에 `nonjae.csort`). 사용자 지정에서 ‘↔ 순서 바꾸기’ → 카드를 끌어 놓기(PC) 또는 ◀ ▶(휴대폰은 ▲ ▼).
+  - 교사: 과목 문서 `ord`(여러 기기에서 같은 순서, 과목 저장해도 유지). 학생: 이 기기의 `nonjae.corder`.
+  - 앞서 넣은 ‘최근에 쓴 순’(교사)·‘할 일 있는 과목 먼저’(학생) 자동 정렬은 이 설정으로 바뀌었다.
+- `APP_VERSION`/`version.json` = `2026-10-12j`. 테스트: `t49.py`.
+
 ---
 
 ## 3. 파일 및 코드 구조
@@ -286,7 +297,7 @@
 - 입력 중에는 `dataChanged()`가 다시 그리지 않는다. 그래서 입력 칸 포커스가 유지된다.
 
 ### 3-3. GitHub 연동
-- **저장소**: `taeneuu/thinklink`. 기본 브랜치 `main` → GitHub Pages.
+- **저장소**: `ieumind/ieumind.github.io` (예전 `taeneuu/thinklink`에서 옮김). 기본 브랜치 `main` → GitHub Pages.
 - **작업 브랜치**: `supabase-version`.
   - 작업 → 커밋 → push → PR(`supabase-version` → `main`) → **사용자가 Merge**.
 - **커밋 작성자**: `git -c user.name="taeneuu" -c user.email="taeneuu@users.noreply.github.com" commit …`
@@ -297,7 +308,7 @@
   ```
 - **PR 열기**: `gh pr create`는 GraphQL 오류가 난다. 대신 아래처럼 연다.
   ```
-  gh api repos/taeneuu/thinklink/pulls -f title=… -f head=supabase-version -f base=main -F body=@파일
+  gh api repos/ieumind/ieumind.github.io/pulls -f title=… -f head=supabase-version -f base=main -F body=@파일
   ```
   - PR 본문 끝: `🤖 Generated with [Claude Code](https://claude.com/claude-code)` + 세션 링크.
 
@@ -367,7 +378,7 @@
 2. **알려진 개선 후보 (요청받지 않음, 하지 말 것 — 요청 시에만)**
    - 교사 결과 화면에 ❤️ 수 표시.
    - 오늘의 필기 Storage 정책(`note_can_write`)에 수강 여부 확인 추가. 지금은 비수강생에게 활동 자체가 안 보이므로 실질 위험은 낮다.
-   - `notify`의 VAPID subject가 `https://taeneuu.github.io/thinklink/`로 고정돼 있다. 다른 설치본은 수정 필요.
+   - `notify`의 VAPID subject가 `https://ieumind.github.io/`로 고정돼 있다. 다른 설치본은 수정 필요.
    - 체험 모드에서는 수강 학생 고르기를 체험할 수 없다(안내 문구만 표시).
 
 ---

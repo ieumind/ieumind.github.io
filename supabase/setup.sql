@@ -686,6 +686,20 @@ $$;
 revoke execute on function public.room_view(text), public.room_viewers(text) from public, anon;
 grant execute on function public.room_view(text), public.room_viewers(text) to authenticated;
 
+-- ---------------------------------------------------------------------
+-- 👥 학생 한 명이 여러 선생님 과목을 들을 때: 선생님마다 명단의 이름표가 다를 수 있다 (학교 이름 등)
+--   my_students(): 이 기기에 연결된 선생님별 {tid, sid, name} — 글을 쓸 때 그 선생님 명단의 이름표를 쓴다
+-- ---------------------------------------------------------------------
+create or replace function public.my_students() returns json
+language sql stable security definer set search_path = public as $$
+  select coalesce(json_agg(json_build_object('tid', ss.tid, 'sid', ss.student_id,
+           'name', case when s.school <> '' then s.school || ' ' else '' end || s.number || ' ' || s.name) order by ss.created_at), '[]'::json)
+    from public.student_sessions ss join public.students s on s.id = ss.student_id
+   where ss.uid = auth.uid();
+$$;
+revoke execute on function public.my_students() from public, anon;
+grant execute on function public.my_students() to authenticated;
+
 -- =====================================================================
 -- 마지막으로 관리자(나)의 구글 이메일을 등록하세요 (따옴표 안을 바꿔서 실행)
 -- 다른 선생님은 등록하지 않아도 구글로 로그인하면 바로 교사가 돼요
