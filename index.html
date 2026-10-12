@@ -1056,6 +1056,10 @@ a.btn{text-decoration:none;color:inherit;display:inline-flex;align-items:center}
 .ccard .g{font-size:13.5px;color:var(--muted);overflow-wrap:anywhere}
 .chead{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px 18px;display:grid;grid-template-columns:minmax(0,1fr);gap:8px;margin-bottom:16px}
 .chead > *{min-width:0}
+.dmore-row{display:flex;justify-content:center;margin:10px 0 4px}
+.sec-h2{display:flex;align-items:baseline;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.archbox{margin-top:12px;padding:12px;border:1px dashed var(--line);border-radius:12px;background:var(--sunk)}.archbox .dgrid{margin-top:8px}.archbox .dcard{opacity:.8}
+.archwarn{background:var(--sunk);border-radius:8px;padding:8px 12px;font-size:14px;display:flex;flex-wrap:wrap;gap:8px;align-items:center}
 .cport{border:1px solid var(--line);border-radius:12px;background:var(--surface);margin:0 0 16px}
 .cport > summary b{white-space:nowrap}
 .cport > summary{display:flex;flex-wrap:wrap;align-items:center;gap:4px 10px;padding:11px 16px;cursor:pointer;list-style:none}
@@ -1544,7 +1548,7 @@ const Auth = (() => { let t = null; return Object.freeze({ set(v){ if(t === null
 Object.defineProperty(S, "canTeach", {get: () => Auth.teacher, set(){} });        // 예전 코드 호환: 읽기만
 const isTeacher = () => Auth.teacher && S.role === "teacher";                       // 교사 권한 + 교사 화면(학생 화면 미리보기 중이면 false)
 /* 교사만 쓰는 동작: 학생 권한으로는 버튼이 없을 뿐 아니라 호출해도 실행되지 않는다 */
-const TEACHER_ACTS = new Set(["port-student","port-open","tmr-start","tmr-add","tmr-pause","tmr-resume","tmr-stop","ctx-img-del","qfb","qfb-close","fb-chip","pick-tool","mem-open","mem-cls","mem-all","mem-none","course-gsplit","ai-setup","ai-key-save","ai-key-del","ai-suggest","ai-pick","tadmin-open","tadmin-block","tadmin-tab","fbadmin-done","notice-add","notice-del","note-filter","note-req","note-req-send","note-req-cancel","note-dup","create","edit-room","dup","dup-list","del","del-yes","del-ask","del-room","status","toggle","save-feedback","class-fb","pin","pin-move","pin-clear",
+const TEACHER_ACTS = new Set(["course-archive","courses-more","courses-arch","port-student","port-open","tmr-start","tmr-add","tmr-pause","tmr-resume","tmr-stop","ctx-img-del","qfb","qfb-close","fb-chip","pick-tool","mem-open","mem-cls","mem-all","mem-none","course-gsplit","ai-setup","ai-key-save","ai-key-del","ai-suggest","ai-pick","tadmin-open","tadmin-block","tadmin-tab","fbadmin-done","notice-add","notice-del","note-filter","note-req","note-req-send","note-req-cancel","note-dup","create","edit-room","dup","dup-list","del","del-yes","del-ask","del-room","status","toggle","save-feedback","class-fb","pin","pin-move","pin-clear",
   "present","present-exit","pmode","pnav","prand","fullscreen","export","export-go","save-tset","tpl-save-open","tpl-save","tpl-cancel","use-tpl","create-save","draft-save","publish-draft","discard-form",
   "preview","preview-form","preview-home","qr","copy-link","save-share","mcourse","course-new","course-edit","course-gadd","course-gdel","course-save","course-del","course-del-yes",
   "roster-open","roster-add","roster-reissue","roster-del","roster-print","gsel","asg-add-open","asg-add-cancel","asg-add","asg-st","racts","mview","sview","sfilter","sgo","snav","ttab","mfilter","open-student","goal","tpl","st-add","st-del","depth"]);
@@ -2185,7 +2189,7 @@ function viewHomeStudent(all){
   if(S.course && courseOf(S.course)) S.sdash = "c:" + S.course;
   const groups = new Map();
   all.forEach(r => { const k = dashKey(r); if(!groups.has(k)) groups.set(k, []); groups.get(k).push(r) });
-  S.courses.forEach(c => { const k = "c:" + c.id; if(!groups.has(k) && (Array.isArray(c.members) || myGroup(c.id) || noticesOf(c).length || S.sdash === k)) groups.set(k, []) });   // 수강 학생으로 정해진 과목은 활동이 없어도 보인다
+  S.courses.forEach(c => { const k = "c:" + c.id; if(!c.archived && !groups.has(k) && (Array.isArray(c.members) || myGroup(c.id) || noticesOf(c).length || S.sdash === k)) groups.set(k, []) });   // 수강 학생으로 정해진 과목은 활동이 없어도 보인다
   if(S.sdash && groups.has(S.sdash)) return viewDash(dashInfo(S.sdash, groups.get(S.sdash)), groups.get(S.sdash));
   S.sdash = ""; S.course = "";
   return viewDashList(groups, all);
@@ -2212,16 +2216,18 @@ function viewDashList(groups, all){
   const live = [...groups.values()].flat().filter(r => { const t = tmrOf(r); return t && t.st !== "end" });   // ⏱ 선생님이 타이머를 켠 활동 = 지금 수업 중
   h += live.map(r => `<button class="livebar" type="button" data-a="open" data-id="${esc(r.id)}" data-tmr="${esc(r.id)}"><span>⏱ <b>지금 수업 중</b> · ${esc(r.title)}</span><b class="tmr-t">${mmss(tmrOf(r).left)}</b><span aria-hidden="true">→</span></button>`).join("");
   if(!groups.size) return h + `<div class="empty">아직 열린 활동이 없어요. 선생님이 활동을 올리면 여기에 나타나요.</div></section>`;
+  const busy = rs => rs.some(r => homeState(r).k === "todo" || isNewRoom(r)) ? 0 : 1;      // 할 일·새 활동이 있는 과목이 앞에
   const dashes = [...groups.entries()].map(([k, rs]) => ({info:dashInfo(k, rs), rs}))
-    .sort((a, b) => (a.info.c ? 0 : 1) - (b.info.c ? 0 : 1) || koCmp(a.info.title, b.info.title));
-  h += `<h2 class="sec-h">📚 내 과목 <span class="muted small">${dashes.length}개</span></h2><div class="dgrid">${dashes.map(({info, rs}) => {
+    .sort((a, b) => busy(a.rs) - busy(b.rs) || (a.info.c ? 0 : 1) - (b.info.c ? 0 : 1) || koCmp(a.info.title, b.info.title));
+  const dshown = S.allDash ? dashes : dashes.slice(0, COURSE_SHOW);
+  h += `<h2 class="sec-h">📚 내 과목 <span class="muted small">${dashes.length}개</span></h2><div class="dgrid">${dshown.map(({info, rs}) => {
     const todo = rs.filter(r => homeState(r).k === "todo").length, nNew = rs.filter(isNewRoom).length;
     const n = [...info.notices].sort((a, b) => (b.at||0) - (a.at||0))[0];
     return `<button class="dcard" type="button" data-a="dash" data-v="${esc(info.k)}" style="--c:var(--${info.tone})">
       <span class="dt"><span aria-hidden="true">${info.icon}</span>${mq(info.title)}</span>
       <span class="dw">${info.teacher ? `${esc(info.teacher)} 선생님 · ` : ""}활동 ${rs.length}개</span>
       ${n ? `<span class="dn">📢 ${isNewNotice(n) ? "<b>새 공지</b> · " : ""}${esc(n.text)}</span>` : ""}
-      <span class="ds">${todo ? `<span class="todo">할 일 ${todo}</span>` : `<span>✓ 할 일 없음</span>`}${nNew ? `<span class="new">🆕 새 활동 ${nNew}</span>` : ""}</span></button>`}).join("")}</div>`;
+      <span class="ds">${todo ? `<span class="todo">할 일 ${todo}</span>` : `<span>✓ 할 일 없음</span>`}${nNew ? `<span class="new">🆕 새 활동 ${nNew}</span>` : ""}</span></button>`}).join("")}</div>${moreBtn(dashes.length - dshown.length, S.allDash && dashes.length > COURSE_SHOW, "dash-more")}`;
   const todo = items.filter(x => x.st.o < 2).sort((a, b) => a.st.o - b.st.o || (a.r.dueAt||9e15) - (b.r.dueAt||9e15) || (b.r.createdAt||0) - (a.r.createdAt||0)).slice(0, 8);
   if(todo.length) h += `<h2 class="sec-h">✏️ 해야 할 활동</h2><div class="todolist">${todo.map(({r, st}) => `<button type="button" data-a="open" data-id="${esc(r.id)}">
       <span class="tl"><b>${esc(r.title)}${isNewRoom(r) ? `<span class="newdot">NEW</span>` : ""}</b><span>${esc(dashInfo(dashKey(r), [r]).title)}${r.dueAt ? ` · ⏰ ${esc(fmtDue(r.dueAt))}까지` : ""}</span></span>
@@ -2265,7 +2271,7 @@ function viewHome(){
   if(crs && !myGroup(crs.id) && groupsOf(crs).length > 1) return (isTeacher() ? "" : `<button class="linkbtn back" type="button" data-a="dash-back">← 내 과목</button>`) + `<div class="home-head"><div><div class="eyebrow">학생 화면</div><h1>${courseIcon(crs)} ${esc(crs.title)}</h1></div></div>` + groupPickHTML(crs, null);
   if(crs && !myGroup(crs.id) && groupsOf(crs).length === 1) setMyGroup(crs.id, groupsOf(crs)[0].id);
   if(!isTeacher()){                                                    // 학생: 과목 대시보드 (목록 ↔ 과목 하나)
-    const all = [...S.rooms].filter(visibleToStudents).map(forMe).filter(r => !r._ready && !r._notAssigned && statusOf(r) !== "archived");
+    const all = [...S.rooms].filter(visibleToStudents).map(forMe).filter(r => !r._ready && !r._notAssigned && statusOf(r) !== "archived" && !courseOf(r.courseId)?.archived);   // 보관한 과목의 활동은 목록에서 뺀다 (내 생각 기록에는 남는다)
     return viewHomeStudent(all);
   }
   let h = `<div class="home-head"><div><div class="eyebrow">${isTeacher()?"교사 화면":"학생 화면"}</div>
@@ -3912,7 +3918,7 @@ function teacherCard(r, p, ps, nav){
    ========================================================= */
 /* 🔄 새 버전 알림: 배포 때마다 APP_VERSION과 version.json의 v를 같은 값으로 올린다.
    GitHub Pages는 화면을 10분쯤 기억하므로, 옛 화면이면 아래쪽에 ‘새로고침’ 띠를 띄우고 주소를 바꿔 새로 받는다 */
-const APP_VERSION = "2026-10-12h";
+const APP_VERSION = "2026-10-12i";
 async function checkVersion(){
   if(!/^https?:$/.test(location.protocol)) return;
   try{
@@ -4460,20 +4466,30 @@ function teacherTop(){
       <h1>${nm ? `${esc(nm)} 선생님, 안녕하세요` : "선생님, 안녕하세요"} 👋</h1>
       <p>${open.length ? `지금 <b>${open.length}개</b> 활동이 열려 있어요.${soon.length ? ` 그중 <b>${soon.length}개</b>는 24시간 안에 마감돼요.` : ""}` : "열린 활동이 없어요. ‘+ 새 활동 만들기’로 시작해 보세요."}</p></div>
     <span class="row">${S.mode === "supa" ? `<button class="btn" type="button" data-a="roster-open">👥 학생 코드</button>` : ""}<button class="btn pri" type="button" data-a="create">+ 새 활동 만들기</button></span></div>
-    <div class="tstats">${tile("📚", S.courses.length, "내 과목", `활동 ${live.length}개`, "t1", "courses")}${tile("▶️", open.length, "진행 중", drafts ? `작성 중 ${drafts}` : "지금 열린 활동", "t2", "open")}${tile("⏰", soon.length, "곧 마감", "24시간 안", soon.length ? "t3 warn" : "t3", "soon")}${tile("✍️", today, "오늘 들어온 응답", "새 글·제출", today ? "t4 good" : "t4", "today")}</div></section>`;
+    <div class="tstats">${tile("📚", activeCourses().length, "내 과목", `활동 ${live.length}개`, "t1", "courses")}${tile("▶️", open.length, "진행 중", drafts ? `작성 중 ${drafts}` : "지금 열린 활동", "t2", "open")}${tile("⏰", soon.length, "곧 마감", "24시간 안", soon.length ? "t3 warn" : "t3", "soon")}${tile("✍️", today, "오늘 들어온 응답", "새 글·제출", today ? "t4 good" : "t4", "today")}</div></section>`;
 }
+/* 과목이 많을 때: 처음엔 3개만, ‘더 보기’로 전체 · 지난 학기 과목은 보관(archived)하면 목록과 학생 화면에서 빠진다 */
+const COURSE_SHOW = 3;
+const activeCourses = () => S.courses.filter(c => !c.archived);
+const courseRecent = c => Math.max(c.updatedAt || 0, c.createdAt || 0, ...courseRooms(c.id).map(r => r.updatedAt || r.createdAt || 0), ...noticesOf(c).map(n => n.at || 0));
+const moreBtn = (n, open, a) => n > 0 || open ? `<div class="dmore-row"><button class="btn sm" type="button" data-a="${a}" aria-expanded="${!!open}">${open ? "접기 ▴" : `＋ 과목 ${n}개 더 보기`}</button></div>` : "";
 function courseCards(){
   const none = courseRooms("_none");
   const card = (k, tone, ic, title, sub, rs, extra = "") => { const open = rs.filter(r => statusOf(r) === "open").length, td = respToday(rs);
     return `<button type="button" class="dcard" data-a="mcourse" data-v="${esc(k)}" style="--c:var(--${tone})"><span class="dt"><span aria-hidden="true">${ic}</span>${mq(title)}</span>
       <span class="dw">${esc(sub)}</span>${extra}
       <span class="ds"><span>활동 ${rs.length}</span>${open ? `<span class="todo">진행 중 ${open}</span>` : ""}${td ? `<span class="new">오늘 응답 ${td}</span>` : ""}</span></button>` };
-  return `<div class="sec-h2"><h2 class="sec-h">📚 내 과목 <span class="muted small">${S.courses.length}개</span></h2></div>
-    <div class="dgrid">${S.courses.map(c => { const ns = noticesOf(c);
+  const act = activeCourses().sort((a, b) => courseRecent(b) - courseRecent(a)), arch = S.courses.filter(c => c.archived);   // 최근에 쓴 과목이 앞에
+  const shown = S.allCourses ? act : act.slice(0, COURSE_SHOW);
+  const cc = c => { const ns = noticesOf(c);
       return card(c.id, subjTone("c:" + c.id), courseIcon(c), c.title, [c.subject, c.year, Array.isArray(c.members) ? `학생 ${c.members.length}명` : "", groupsOf(c).length ? `그룹 ${groupsOf(c).length}개` : ""].filter(Boolean).join(" · ") || "과목", courseRooms(c.id),
-        ns.length ? `<span class="dn">📢 ${esc(ns[0].text)}${ns.length > 1 ? ` 외 ${ns.length - 1}` : ""}</span>` : "") }).join("")}
+        ns.length ? `<span class="dn">📢 ${esc(ns[0].text)}${ns.length > 1 ? ` 외 ${ns.length - 1}` : ""}</span>` : "") };
+  return `<div class="sec-h2"><h2 class="sec-h">📚 내 과목 <span class="muted small">${act.length}개</span></h2>${arch.length ? `<button class="linkbtn small" type="button" data-a="courses-arch" aria-expanded="${!!S.archCourses}">🗄 보관한 과목 ${arch.length}개 ${S.archCourses ? "▴" : "▾"}</button>` : ""}</div>
+    <div class="dgrid">${shown.map(cc).join("")}
       ${none.length ? card("_none", "s4", "🗂", "과목 없는 활동", "과목에 넣지 않은 활동이에요", none) : ""}
-      <button type="button" class="dcard dadd" data-a="course-new"><span class="dt">＋ 새 과목</span><span class="dw">과목을 만들고 듣는 학생을 학급별로 골라요</span></button></div>`;
+      <button type="button" class="dcard dadd" data-a="course-new"><span class="dt">＋ 새 과목</span><span class="dw">과목을 만들고 듣는 학생을 학급별로 골라요</span></button></div>
+    ${moreBtn(act.length - shown.length, S.allCourses && act.length > COURSE_SHOW, "courses-more")}
+    ${S.archCourses && arch.length ? `<div class="archbox"><p class="small muted">🗄 보관한 과목 · 학생 화면에는 보이지 않아요. 눌러서 들어가면 ‘보관 해제’할 수 있어요.</p><div class="dgrid">${arch.map(cc).join("")}</div></div>` : ""}`;
 }
 /* 👥 과목 만들기·수정 창 안에서: 수강 학생 고르기(학급별로 한꺼번에 또는 한 명씩) → 고른 학생으로 그룹 짓기
    저장: courses.members = [학생 id] (이 학생에게만 과목·활동·공지·알림), groups[].members = [학생 id] (그룹은 선생님이 정함) */
@@ -4543,6 +4559,7 @@ function courseHead(){
   return back + `<section class="chead" style="--c:var(--${subjTone("c:" + c.id)})"><div class="cardh"><h2 class="mqh"><span aria-hidden="true">${courseIcon(c)}</span>${mq(c.title)}</h2><span class="row chead-acts">
       ${memBtn}<button class="btn sm pc-only" type="button" data-a="copy-link" data-kind="course" data-id="${id}">🔗 과목 링크</button><button class="btn sm pc-only" type="button" data-a="qr" data-kind="course" data-id="${id}">QR</button><button class="btn sm m-only" type="button" data-a="qr" data-kind="course" data-id="${id}" title="QR 코드와 링크 복사">🔗 링크·QR</button><button class="btn sm" type="button" data-a="course-edit" data-id="${id}">✏️ <span class="lt">과목 </span>수정</button></span></div>
     <p class="mmeta">${esc([c.subject, c.year, c.description].filter(Boolean).join(" · "))}${c.subject || c.year || c.description ? " · " : ""}활동 ${rs.length}개 · 진행 중 ${open}개 · 오늘 응답 ${respToday(rs)}개${gs.length ? ` · 그룹 ${gs.map(g => esc(g.name) + (Array.isArray(g.members) ? `(${g.members.length})` : "")).join(", ")}` : ""}</p>
+    ${c.archived ? `<p class="archwarn">🗄 보관한 과목이에요. 학생 화면과 ‘내 과목’ 목록에 보이지 않아요. <button class="btn sm" type="button" data-a="course-archive" data-id="${id}" data-v="0">보관 해제</button></p>` : ""}
     ${live && !nMem ? `<p class="memwarn">⚠️ ${nMem === null ? "수강 학생을 고르지 않아 <b>모든 학생</b>에게 이 과목이 보여요." : "수강 학생이 없어 <b>아무 학생에게도</b> 보이지 않아요."}</p>` : ""}
     ${noticePanel(c)}</section>`;
 }
@@ -4885,6 +4902,7 @@ function manageFiltered(){
     if(S.msub && (r.subject||"") !== S.msub) return false;
     if(S.mgrade && (r.grade||"") !== S.mgrade) return false;
     if(cf && (cf === "_none" ? !!courseOf(r.courseId) : r.courseId !== cf)) return false;      // 수업별
+    if(!cf && courseOf(r.courseId)?.archived) return false;                              // 보관한 과목의 활동은 그 과목 안에서만
     if(dur && !(Number(r.duration) > 0 && dur[2](Number(r.duration)))) return false;     // 시간이 적힌 활동만
     if(!q) return true;
     const t = TEMPLATES[r.template] || {};
@@ -4927,7 +4945,7 @@ function manageList(){
   return `<div class="mgrid">${list.map(manageCard).join("")}</div>`;
 }
 function viewManage(){
-  const inC = r => !S.mcourse || (S.mcourse === "_none" ? !courseOf(r.courseId) : r.courseId === S.mcourse);
+  const inC = r => !S.mcourse ? !courseOf(r.courseId)?.archived : (S.mcourse === "_none" ? !courseOf(r.courseId) : r.courseId === S.mcourse);   // 보관한 과목의 활동은 ‘모든 활동’에서 빼고, 그 과목에 들어가면 보인다
   const counts = {all:S.rooms.filter(r=>statusOf(r)!=="archived" && inC(r)).length};
   Object.keys(STATUS).forEach(k => counts[k] = S.rooms.filter(r=>statusOf(r)===k && inC(r)).length);
   const subs = [...new Set(S.rooms.map(r=>r.subject).filter(Boolean))], grades = [...new Set(S.rooms.map(r=>r.grade).filter(Boolean))];
@@ -5000,7 +5018,7 @@ function renderModal(){
         ${(f.groups||[]).map(g => `<div class="grow"><input type="text" data-form="course" data-k="gn:${esc(g.id)}" maxlength="30" value="${esc(f["gn:"+g.id] ?? g.name)}" aria-label="그룹 이름">${live ? `<span class="pill" id="gcnt-${esc(g.id)}">${counts.get(g.id) || 0}명</span>` : ""}${used.has(g.id) ? `<span class="muted small" title="이 그룹에 배포한 활동이나 응답이 있어 뺄 수 없어요">사용 중</span>` : `<button class="btn sm" type="button" data-a="course-gdel" data-v="${esc(g.id)}" aria-label="그룹 빼기">✕</button>`}</div>`).join("")}
         <div class="grow"><input type="text" id="course-gadd" placeholder="새 그룹 이름 (예: 1-3, 한백고)" aria-label="그룹 추가"><button class="btn sm" type="button" data-a="course-gadd">+ 추가</button>${live && S.roster?.length ? `<button class="btn sm" type="button" data-a="course-gsplit" title="고른 학생을 학급마다 그룹으로 나눠요">학급별로 나누기</button>` : ""}</div>
         <p class="hint">${live ? "그룹을 만든 뒤 위 학생 목록 오른쪽 칸에서 학생마다 그룹을 골라요. ‘학급별로 나누기’를 누르면 한 번에 정해져요." : "그룹은 실제 생각이음에서 학생 명단으로 정해요."}</p></section>
-      <div class="row end">${f.id ? `<button class="btn danger" type="button" data-a="course-del" style="margin-right:auto">과목 삭제…</button>` : ""}<button class="btn" type="button" data-a="modal-close">취소</button><button class="btn pri" type="button" data-a="course-save">${f.id ? "저장" : "과목 만들기"}</button></div>`;
+      <div class="row end">${f.id ? `<span class="row" style="margin-right:auto;gap:6px"><button class="btn danger" type="button" data-a="course-del">과목 삭제…</button><button class="btn" type="button" data-a="course-archive" data-id="${esc(f.id)}" data-v="${courseOf(f.id)?.archived ? 0 : 1}" title="지난 학기 과목처럼 더 쓰지 않는 과목을 목록과 학생 화면에서 숨겨요. 활동과 응답은 그대로 남아요.">${courseOf(f.id)?.archived ? "🗄 보관 해제" : "🗄 보관"}</button></span>` : ""}<button class="btn" type="button" data-a="modal-close">취소</button><button class="btn pri" type="button" data-a="course-save">${f.id ? "저장" : "과목 만들기"}</button></div>`;
   }else if(m.type === "course-del"){
     const c = courseOf(m.id), n = S.rooms.filter(r => r.courseId === m.id).length;
     h = `<h3>과목을 삭제할까요?</h3><p><b>${esc(c?.title||"")}</b></p><p>${n ? `이 과목의 활동 ${n}개와 학생 응답은 지워지지 않고 ‘미분류’로 옮겨져요. 그룹별 배포 정보는 남지만 그룹 이름은 보이지 않게 돼요.` : "이 과목에는 활동이 없어요."}</p>
@@ -5497,7 +5515,7 @@ function viewCreate(){
 
   ${(() => { const c = courseOf(f.courseId), usedG = editR ? new Set(allPostsOf(editR.id).map(p => p.groupId).filter(Boolean)) : new Set(), lockC = locked && !!courseOf(editR?.courseId);
     return `<div class="card" style="margin-top:16px"><h3>④ 누구와, 언제까지 할까요?</h3><div class="form-grid">
-      ${S.courses.length ? `<div class="q"><label for="c-course">과목</label><select id="c-course" data-form="create" data-k="courseId" ${lockC ? "disabled" : ""}><option value="">과목 없이 (링크 하나로 사용)</option>${S.courses.map(x => `<option value="${esc(x.id)}" ${f.courseId===x.id?"selected":""}>${courseIcon(x)} ${esc(x.title)}</option>`).join("")}</select>
+      ${S.courses.length ? `<div class="q"><label for="c-course">과목</label><select id="c-course" data-form="create" data-k="courseId" ${lockC ? "disabled" : ""}><option value="">과목 없이 (링크 하나로 사용)</option>${S.courses.filter(x => !x.archived || x.id === f.courseId).map(x => `<option value="${esc(x.id)}" ${f.courseId===x.id?"selected":""}>${courseIcon(x)} ${esc(x.title)}${x.archived ? " (보관)" : ""}</option>`).join("")}</select>
         ${lockC ? `<p class="hint">학생 응답이 있어 과목은 바꿀 수 없어요.</p>` : ""}</div>` : ""}
       <div class="q"><label for="c-due">마감 <span class="opt">(선택)</span></label><input type="datetime-local" id="c-due" data-form="create" data-k="dueAt" value="${esc(f.dueAt||"")}">
         <p class="hint">이 시각에 저절로 마감돼요.${f.dueAt ? ` <button class="linkbtn" type="button" data-a="due-clear">지우기</button>` : ""}</p></div></div>
@@ -5919,6 +5937,7 @@ async function act(a, b){
     /* ---- 과목 대시보드 (학생) ---- */
     case "dash": S.sdash = b.dataset.v; S.course = S.sdash.startsWith("c:") ? S.sdash.slice(2) : ""; S.view = "home"; scrollTo(0,0); break;
     case "dash-back": S.sdash = ""; S.course = ""; S.view = "home"; scrollTo(0,0); break;
+    case "dash-more": S.allDash = !S.allDash; break;
     case "push-on": await pushOn(); return;
     case "push-hide": lsSet("nonjae.pushhide", "1"); break;
     /* ---- 과목 공지 (교사) ---- */
@@ -6172,7 +6191,7 @@ async function act(a, b){
       const groups = (f.groups||[]).map(g => { const old = groupsOf(prev).find(x => x.id === g.id);
         const members = live ? sel.filter(sid => f.gm?.[sid] === g.id) : old?.members;
         return {id:g.id, name:String(f["gn:"+g.id] ?? g.name).trim() || g.name, createdAt:g.createdAt || Date.now(), ...(Array.isArray(members) ? {members} : {})} });
-      const doc = {title, subject:(f.subject||"").trim(), year:(f.year||"").trim(), description:(f.description||"").trim(), groups, notices:noticesOf(prev), ...(live ? {members:sel} : Array.isArray(prev?.members) ? {members:prev.members} : !prev && cmLive() ? {members:[]} : {}), ...(S.sbName ? {teacherName:S.sbName} : prev?.teacherName ? {teacherName:prev.teacherName} : {}), createdAt:prev?.createdAt || now, updatedAt:now};   // 공지는 그대로 둔다
+      const doc = {title, subject:(f.subject||"").trim(), year:(f.year||"").trim(), description:(f.description||"").trim(), groups, notices:noticesOf(prev), ...(prev?.archived ? {archived:true, archivedAt:prev.archivedAt || null} : {}), ...(live ? {members:sel} : Array.isArray(prev?.members) ? {members:prev.members} : !prev && cmLive() ? {members:[]} : {}), ...(S.sbName ? {teacherName:S.sbName} : prev?.teacherName ? {teacherName:prev.teacherName} : {}), createdAt:prev?.createdAt || now, updatedAt:now};   // 공지는 그대로 둔다
       // TODO: 실제 배포 시 교사 인증 및 권한 검증 필요 (teacherId는 서버에서 확인한 교사 계정으로 채운다)
       const ok = await write(db => db.doc("courses/"+id).set(doc), () => { S.courses = S.courses.filter(x => x.id !== id).concat({id, ...doc}) });
       if(ok){ delete S.form.course; S.modal = null; S.mcourse = id; S.pendingCourse = id;
@@ -6180,6 +6199,17 @@ async function act(a, b){
       break;
     }
     case "course-del": S.modal = {type:"course-del", id:F("course").id}; break;
+    case "course-archive": {
+      const c = courseOf(b.dataset.id), on = b.dataset.v === "1"; if(!c) break;
+      const patch = {archived:on, archivedAt:on ? Date.now() : null, updatedAt:Date.now()};
+      const ok = await write(db => db.doc("courses/"+c.id).update(patch), () => Object.assign(c, patch));
+      if(ok){ S.modal = null; delete S.form.course;
+        if(on){ S.mcourse = ""; toast("과목을 보관했어요. 학생 화면에서 보이지 않아요. ‘🗄 보관한 과목’에서 다시 꺼낼 수 있어요.") }
+        else toast("보관을 풀었어요. 다시 ‘내 과목’과 학생 화면에 보여요.") }
+      break;
+    }
+    case "courses-more": S.allCourses = !S.allCourses; break;
+    case "courses-arch": S.archCourses = !S.archCourses; break;
     case "course-del-yes": {
       const id = b.dataset.id;
       const ok = await write(db => db.doc("courses/"+id).delete(), () => { S.courses = S.courses.filter(x => x.id !== id) });
