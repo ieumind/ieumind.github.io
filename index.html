@@ -121,9 +121,20 @@ p{margin:0}
 .room-head .rmeta{margin:0 0 10px}
 .room-head h1{font-family:var(--f-display);font-size:30px;font-weight:700;line-height:1.3}
 .prompt{font-family:var(--f-display);font-size:19px;line-height:1.75;margin-top:12px;max-width:62ch}
-details.source{margin-top:14px;background:var(--sunk);border-radius:10px;padding:10px 16px;max-width:72ch}
-details.source summary{cursor:pointer;font-size:14px;font-weight:600;color:var(--muted);min-height:32px;display:flex;align-items:center}
-details.source p{margin-top:4px;font-size:15px}
+details.source{margin-top:16px;background:var(--surface);border:1px solid var(--line);border-left:5px solid var(--accent);border-radius:12px;padding:12px 20px 16px}
+details.source summary{cursor:pointer;font-size:15px;font-weight:700;color:var(--fg);min-height:36px;display:flex;align-items:center;gap:8px;list-style:none}
+details.source summary::-webkit-details-marker{display:none}
+details.source summary::after{content:"접기 ▴";margin-left:auto;font-size:12.5px;font-weight:600;color:var(--muted)}
+details.source:not([open]) summary::after{content:"펼치기 ▾"}
+details.source p{margin-top:6px;font-size:16.5px;line-height:1.8;white-space:pre-wrap;overflow-wrap:anywhere;max-width:80ch}
+.srcimgs{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:10px;margin-top:12px}
+.srcimgs img{width:100%;max-height:340px;object-fit:contain;border-radius:8px;background:var(--sunk);border:1px solid var(--line);display:block}
+.ctximgs{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px;align-items:center}
+.ctximgs figure{position:relative;margin:0;width:88px;height:88px}
+.ctximgs figure img{width:100%;height:100%;object-fit:cover;border-radius:8px;border:1px solid var(--line)}
+.ctximgs figure button{position:absolute;top:-6px;right:-6px;width:24px;height:24px;border-radius:999px;border:0;background:var(--fg);color:var(--bg);cursor:pointer;font-size:12px}
+.ctxadd{display:inline-flex;align-items:center;gap:6px;border:1.5px dashed var(--line);border-radius:10px;padding:8px 14px;min-height:44px;cursor:pointer;font-size:14px;color:var(--accent);font-weight:600}
+.ctxadd span{color:var(--muted);font-weight:400;font-family:var(--f-mono);font-size:12px}
 .rules{display:flex;flex-wrap:wrap;gap:6px;margin-top:14px}
 .tctl{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-top:16px;padding-top:14px;border-top:1px dashed var(--line);font-size:14px;color:var(--muted)}
 
@@ -355,7 +366,7 @@ details.adv > div{padding:2px 20px 16px;display:grid;gap:12px}
 .smap{display:grid;gap:10px;min-width:0}
 .smap-h{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:6px}
 .smap-cols{display:grid;grid-template-columns:repeat(var(--n),minmax(0,1fr));gap:14px;align-items:start}
-.smap-col{display:grid;gap:10px;min-width:0;align-content:start;background:var(--cs);border-radius:14px;padding:12px}
+.smap-col{display:grid;gap:10px;min-width:0;align-content:start;background:var(--surface);border:1px solid var(--line);border-top:5px solid var(--c);border-radius:14px;padding:12px}
 .smap-top{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:8px;color:var(--c)}
 .smap-top .ic{font-size:22px;line-height:1}
 .smap-top b{font-size:17px}
@@ -1345,7 +1356,8 @@ function demoData(){
   /* 과목 대시보드 체험: 한국사 활동을 ‘1학년 한국사’ 과목에 넣고 공지 하나를 띄워 둔다 */
   S.courses = [{id:"c-demo", title:"1학년 한국사", subject:"한국사", year:"2026-2", teacherName:"체험", groups:[], createdAt:now - 864e5, updatedAt:now,
     notices:[{id:"n-demo", text:"다음 시간에는 컴퓨터실에서 수업해요. 이어폰을 챙겨 오세요.", at:now - 2 * 3600000}]}];
-  S.rooms.forEach(r => { if((r.subject || "") === "한국사") r.courseId = "c-demo" });
+  S.courses.push({id:"c-demo2", title:"2학년 세계사", subject:"역사", year:"2026-2", teacherName:"체험", groups:[], createdAt:now - 864e5, updatedAt:now, notices:[]});
+  S.rooms.forEach(r => { if((r.subject || "") === "한국사") r.courseId = "c-demo"; if(r.id === "demo-draw" || r.id === "demo-chat") r.courseId = "c-demo2" });
   const P = [];
   const deb = [["불가피했다","경제 개발을 위한 자금이 급했기 때문에 불가피했다고 생각한다.","당시 한국은 1인당 소득이 매우 낮았고, 일본의 자금이 경부 고속 도로와 포항 제철 건설에 쓰였다."],
     ["다른 길이 있었다","사과와 배상 없이 서두른 협정이라 다른 길이 있었다고 본다.","6·3 시위처럼 많은 국민이 반대했고, 피해자 개인의 배상 문제가 오늘날까지 남아 있다."],
@@ -1456,7 +1468,7 @@ const Auth = (() => { let t = null; return Object.freeze({ set(v){ if(t === null
 Object.defineProperty(S, "canTeach", {get: () => Auth.teacher, set(){} });        // 예전 코드 호환: 읽기만
 const isTeacher = () => Auth.teacher && S.role === "teacher";                       // 교사 권한 + 교사 화면(학생 화면 미리보기 중이면 false)
 /* 교사만 쓰는 동작: 학생 권한으로는 버튼이 없을 뿐 아니라 호출해도 실행되지 않는다 */
-const TEACHER_ACTS = new Set(["qfb","qfb-close","fb-chip","pick-tool","mem-open","mem-cls","mem-all","mem-none","course-gsplit","ai-setup","ai-key-save","ai-key-del","ai-suggest","ai-pick","tadmin-open","tadmin-block","tadmin-tab","fbadmin-done","notice-add","notice-del","note-filter","note-req","note-req-send","note-req-cancel","note-dup","create","edit-room","dup","dup-list","del","del-yes","del-ask","del-room","status","toggle","save-feedback","class-fb","pin","pin-move","pin-clear",
+const TEACHER_ACTS = new Set(["ctx-img-del","qfb","qfb-close","fb-chip","pick-tool","mem-open","mem-cls","mem-all","mem-none","course-gsplit","ai-setup","ai-key-save","ai-key-del","ai-suggest","ai-pick","tadmin-open","tadmin-block","tadmin-tab","fbadmin-done","notice-add","notice-del","note-filter","note-req","note-req-send","note-req-cancel","note-dup","create","edit-room","dup","dup-list","del","del-yes","del-ask","del-room","status","toggle","save-feedback","class-fb","pin","pin-move","pin-clear",
   "present","present-exit","pmode","pnav","prand","fullscreen","export","export-go","save-tset","tpl-save-open","tpl-save","tpl-cancel","use-tpl","create-save","draft-save","publish-draft","discard-form",
   "preview","preview-form","preview-home","qr","copy-link","save-share","mcourse","course-new","course-edit","course-gadd","course-gdel","course-save","course-del","course-del-yes",
   "roster-open","roster-add","roster-reissue","roster-del","roster-print","gsel","asg-add-open","asg-add-cancel","asg-add","asg-st","racts","mview","sview","sfilter","sgo","snav","ttab","mfilter","open-student","goal","tpl","st-add","st-del","depth"]);
@@ -1991,7 +2003,7 @@ function renderTop(){
     if(gcid && myGroup(gcid) && myGroup(gcid) !== "_none") h += `<span class="who">${esc(groupName(gcid, myGroup(gcid)))}${groupByTeacher(courseOf(gcid)) ? "" : ` · <button class="linkbtn" type="button" data-a="regroup" data-c="${esc(gcid)}">그룹 바꾸기</button>`}</span>`;
     if(S.name) h += `<button class="btn sm" type="button" data-a="mine">📒 내 생각 기록</button>`;   // 로그인(코드 확인) 전에는 보이지 않는다
     if(!isStandalone()) h += `<button class="btn sm inst" type="button" data-a="install-help">📲 앱으로 설치</button>`;
-  }else h += `<button class="btn sm pri" type="button" data-a="create">+ 새 활동</button>`;
+  }else{ h += `<button class="btn sm pri" type="button" data-a="create">+ 새 활동</button>`; if(!isStandalone()) h += `<button class="btn sm inst" type="button" data-a="install-help">📲 앱으로 설치</button>` }
   document.getElementById("topr").innerHTML = h;
 }
 function distHTML(r, posts){
@@ -2205,6 +2217,16 @@ function rulesHTML(r){
   if(f.revise) c.push("최종 수정");
   return `<div class="rules">${c.filter(Boolean).map(x=>`<span class="chip">${esc(x)}</span>`).join("")}</div>`;
 }
+/* 📚 자료: 처음엔 펼쳐 두고(학생이 자료를 읽고 쓰는 것이 핵심), 접으면 그 활동은 접힌 채로 기억 */
+const ctxImgsOf = r => (Array.isArray(r.ctxImgs) ? r.ctxImgs : []).filter(Boolean).slice(0, 10);
+function srcBox(r, cls = ""){
+  const imgs = ctxImgsOf(r);
+  if(!r.context && !imgs.length) return "";
+  const dk = "src-" + r.id, open = S.advOpen?.[dk] ?? true;
+  return `<details class="source ${cls}" data-keep="${esc(dk)}" ${open ? "open" : ""}><summary>📚 자료 ${imgs.length ? `<span class="opt">사진 ${imgs.length}장</span>` : ""}</summary>
+    ${r.context ? `<p>${lnk(r.context)}</p>` : ""}
+    ${imgs.length ? `<div class="srcimgs">${imgs.map((u, i) => `<a href="${esc(u)}" target="_blank" rel="noopener" title="크게 보기"><img src="${esc(u)}" alt="자료 사진 ${i + 1}" loading="lazy"></a>`).join("")}</div>` : ""}</details>`;
+}
 function roomHead(r, {sourceOpen=true, rules=false}={}){
   const open = r.open!==false;
   return `<button class="linkbtn back" type="button" data-a="home">← 활동 목록</button><div class="room-head">
@@ -2216,7 +2238,7 @@ function roomHead(r, {sourceOpen=true, rules=false}={}){
     ${isRelay(r) ? `<p class="eyebrow" style="margin-top:12px">오늘의 주제</p>` : ""}
     <p class="prompt"${isRelay(r) ? ' style="margin-top:2px"' : ""}>${lnk(r.prompt)}</p>
     ${r.template==="inquiry" && QTYPES[r.qtype] ? `<div class="row" style="margin-top:8px">${qtypeChip(r.qtype)}<span class="muted small">${esc(QTYPES[r.qtype].d)}</span></div>` : ""}
-    ${r.context ? `<details class="source" ${sourceOpen?"open":""}><summary>자료 보기</summary><p>${lnk(r.context)}</p></details>` : ""}
+    ${srcBox(r)}
     ${rules ? rulesHTML(r) : `<details class="help" style="margin-top:10px"><summary>💡 어떻게 하는 활동인가요?</summary><div class="help-body">
       <p>${esc(TEMPLATES[r.template]?.desc || "")}</p><p class="muted small">${phasesOf(r).map((ph,i)=>`${i+1}. ${esc(ph.l)}`).join(" → ")}</p></div></details>`}</div>`;
 }
@@ -2325,6 +2347,28 @@ async function shrinkImage(file, maxSide, q){
   return {blob, w, h};
 }
 const blobToDataURL = b => new Promise(ok => { const fr = new FileReader(); fr.onload = () => ok(fr.result); fr.readAsDataURL(b) });
+/* 📚 자료 사진: Supabase는 공개 보관함 ‘materials’의 {교사id}/…jpg, 그 밖(체험·미리보기)은 작게 줄여 글 안에 */
+async function ctxAddFiles(files){
+  const f = F("create"), room = 10 - (f.ctxImgs || []).length, list = [...files].filter(x => /^image\//.test(x.type)).slice(0, Math.max(0, room));
+  if(!list.length){ toast(room <= 0 ? "사진은 10장까지 넣을 수 있어요." : "사진 파일만 넣을 수 있어요."); return }
+  if(files.length > room) toast(`사진은 10장까지라 ${room}장만 넣었어요.`);
+  S.ctxUploading = true; render();
+  const live = S.mode === "supa" && SB && !S.demo && !S.preview && S.sbUid;
+  try{
+    for(const file of list){
+      const {blob} = await shrinkImage(file, live ? 1600 : 1000, live ? 0.82 : 0.7);
+      let url;
+      if(live){
+        const path = `${S.sbUid}/${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 7)}.jpg`;
+        const up = await SB.storage.from("materials").upload(path, blob, {contentType:"image/jpeg", upsert:false});
+        if(up.error) throw up.error;
+        url = SB.storage.from("materials").getPublicUrl(path).data.publicUrl;
+      }else url = await blobToDataURL(blob);
+      f.ctxImgs = [...(f.ctxImgs || []), url].slice(0, 10); saveFormsSoon();
+    }
+  }catch(e){ toast("사진을 올리지 못했어요: " + (e?.message || "다시 해 보세요.")) }
+  S.ctxUploading = false; render();
+}
 async function noteAddFiles(r, files){
   const list = NDRAFT[r.id] = NDRAFT[r.id] || [], max = NOTE_MAX(r);
   const arr = [...files].filter(f => /^image\//.test(f.type) || /\.(heic|heif|jpe?g|png|webp)$/i.test(f.name));
@@ -2466,8 +2510,11 @@ const TOUR = [
   {sel:".tstats", t:"📊 오늘 한눈에 보기", d:"진행 중인 활동, 24시간 안에 마감되는 활동, 오늘 들어온 학생 응답을 바로 보여 줘요. 칸을 누르면 그 활동만 모아 보여요."},
   {sel:".dgrid .dcard", t:"📚 과목 대시보드", d:"‘1학년 통합과학’처럼 과목을 만들고, 그 과목을 듣는 학생을 학급별(1-3, 1-10…)이나 한 명씩 골라요. 고른 학생에게만 과목·활동·공지·알림이 가요."},
   {sel:".tnotice", t:"📢 공지 띄우기", d:"과목 화면 맨 위에 공지를 1~2개 띄워요. ‘학생 앱에 알림 보내기’를 켜 두면 학생 휴대폰으로 알림이 가요.", prep:() => { S.view = "home"; S.mcourse = S.courses[0]?.id || "" }},
-  {sel:".mcard", t:"🗂 활동 카드", d:"참여·완료 현황을 보고 ‘📊 결과 보기’로 학생 생각을 확인해요. 🔗 링크로 학생에게 나눠 주고, 수정·복제·마감·삭제는 ‘⋯ 관리’에 있어요.", prep:() => { S.view = "home"; S.mcourse = "" }},
-  {sel:".thead [data-a=create]", t:"➕ 새 활동 만들기", d:"토론·질문 활동·논술·생각 스케치·오늘의 필기·AI 가상 인물 대화 중에 고르고 주제만 적으면 단계가 자동으로 짜여요. 🪄 키워드로 AI에게 논제·질문을 추천받을 수도 있어요."},
+  {sel:'.mcard:has([data-id="demo-draw"])', t:"🗂 활동 카드", d:"활동마다 참여·완료 현황이 보여요. 🔗 링크로 학생에게 나눠 주고, 아래 줄에서 수정·복제·마감·보관·삭제를 해요.", prep:() => { S.view = "home"; S.mcourse = "" }},
+  {sel:'.mcard:has([data-id="demo-draw"]) [data-a="open"].pri', t:"👆 ‘결과 보기’를 눌러 보세요!", d:"‘최초의 인류는 어떤 모습이었을까?’ 활동의 결과를 열어 볼게요. 버튼을 직접 누르거나 ‘다음’을 눌러요.", on:{a:"open", id:"demo-draw"}, prep:() => { S.view = "home"; S.mcourse = "" }},
+  {sel:'[data-a="ttab"][data-v="students"]', t:"👆 ‘학생 생각’을 눌러 보세요!", d:"참여 현황·생각의 변화·피드백 탭이 있어요. 학생 한 명 한 명의 결과물은 ‘학생 생각’에서 봐요.", on:{a:"ttab", v:"students"}, prep:() => { S.view = "room"; S.roomId = "demo-draw"; S.ttab = "overview"; S.openPost = null }},
+  {sel:".scards", t:"🖼 학생의 결과물을 확인할 수 있어요", d:"학생이 그린 그림과 설명이 카드로 모여요. ❤️·💬 반응을 보고, ‘💬 바로 피드백’으로 한마디를 남기거나 ‘사고 과정 →’으로 자세히 볼 수 있어요.", prep:() => { S.view = "room"; S.roomId = "demo-draw"; S.ttab = "students"; S.openPost = null }},
+  {sel:".thead [data-a=create]", prep:() => { S.view = "home"; S.mcourse = "" }, t:"➕ 새 활동 만들기", d:"토론·질문 활동·논술·생각 스케치·오늘의 필기·AI 가상 인물 대화 중에 고르고 주제만 적으면 단계가 자동으로 짜여요. 🪄 키워드로 AI에게 논제·질문을 추천받을 수도 있어요."},
   {sel:'#topr [data-a="preview-home"]', t:"👀 학생 화면 미리보기", d:"학생에게 어떻게 보이는지 바로 확인해요. 과목 카드 → 게시판 → 내 생각 쓰기 순서로 학생이 활동해요. 미리보기에서 쓴 내용은 저장되지 않아요."},
   {sel:".appfoot", t:"💬 오류·건의하기", d:"쓰다가 불편한 점이나 바라는 기능이 있으면 화면 맨 아래 버튼으로 알려 주세요. 만든 선생님에게 바로 전달돼요."},
   {sel:null, t:"🎉 준비 끝!", d:"이제 활동 카드를 눌러 결과 화면을 보거나, ‘+ 새 활동’으로 직접 만들어 보세요. 실제로 쓰려면 구글 계정으로 시작하면 돼요.", last:true}
@@ -2861,7 +2908,9 @@ function readCard(r, p, mine, ps, {pickable=true}={}){
   return h + `<div class="row end" style="margin-top:10px"><button class="linkbtn" type="button" data-a="close-post">접기</button></div></article>`;
 }
 /* ---- 우리 반 게시판: 패들렛처럼 카드로 모아 보기. ‘제출 후 공개’ 활동은 내 생각을 게시하기 전까지 흐리게 ---- */
-const wallTone = (r, p) => {                                     // 쪽지 색: 글마다 옅은 빨강·파랑·초록·노랑·보라·주황 중 하나 (늘 같은 색)
+const wallTone = (r, p) => {                                     // 쪽지 색: 토론은 입장 색, 그 밖에는 글마다 옅은 6색 중 하나 (늘 같은 색)
+  const si = (r.stances || []).indexOf(p.stance);
+  if(si >= 0) return `--wc:var(--${SC[si % 4]}-soft)`;
   let h = 0; for(const c of String(p.id || p.author)) h = (h*31 + c.charCodeAt(0)) >>> 0;
   return `--wc:var(--pad${h % 6})`;
 };
@@ -2955,11 +3004,12 @@ function stepRead(r, p, open){
   const diffPost = diffId && ps.find(x=>x.id===diffId);
   const diffName = diffPost ? displayName(r, diffPost.author, ps) : "";
   const hasSt = (r.stances||[]).length > 0;
-  let h = `<div class="card"><p><b>${hasSt ? "내 생각과 다른 의견을 하나 골라 보세요." : "내 생각과 다른 친구의 생각을 하나 찾아보세요."}</b></p>
-    <p class="muted small" style="margin-top:4px">생각 카드를 펼쳐 읽고 ‘이 생각을 고를래요’를 누르면 돼요.</p></div>`;
-  if(hasSt) h += stanceMap(r, ps, x => readCard(r, x, p, ps));
+  let h = p?.readAt ? "" : `<div class="card"><p><b>💬 친구 생각을 읽고, 마음에 남는 글에 댓글로 한마디 남겨 보세요.</b></p>
+    <p class="muted small" style="margin-top:4px">${hasSt ? "나와 다른 입장의 글이면 더 좋아요. " : ""}글 아래 ‘＋ 댓글 추가’를 누르면 돼요.${f.deep && f.rebuttal ? " 댓글을 남긴 글에 다음 단계에서 근거를 들어 답해요." : " 한마디를 남기면 이 단계를 마쳐요."}</p></div>`;
+  const card = x => readCard(r, x, p, ps, {pickable:false});
+  if(hasSt) h += stanceMap(r, ps, card);
   else if(!others.length) h += `<div class="empty">아직 다른 친구의 글이 없어요. 잠시 뒤 다시 와 보세요.</div>`;
-  else h += groupedPosts(r, submitted(p) ? [p, ...others] : others, x => readCard(r, x, p, ps));   // 게시판: 내 카드가 맨 앞
+  else h += groupedPosts(r, submitted(p) ? [p, ...others] : others, card);   // 게시판: 내 카드가 맨 앞
   if(hasSt && !others.length) h += `<div class="empty">아직 다른 친구의 글이 없어요. 잠시 뒤 다시 와 보세요.</div>`;
 
   // 이미 마친 경우: 고른 생각과 내 한마디
@@ -2978,18 +3028,12 @@ function stepRead(r, p, open){
   const extraHTML = extra.length ? `<details class="help" style="margin-top:14px"><summary>➕ 더 생각해 보기 (선택)</summary><div style="display:grid;gap:14px;margin-top:6px">${extra.map(m=>question(key, m.k, {q:m.q, rows:2, opt:true, tip:m.tip, starters:m.starters})).join("")}</div></details>` : "";
   const pickedQuote = diffPost ? `<div class="q"><span class="hint">내가 고른 ${esc(diffName)}의 생각</span><p class="quote">${esc(previewText(r,diffPost))}</p></div>` : "";
 
-  // 깊이 있게: 고른 뒤 '친구 생각에 답해보기' 단계로
-  if(f.deep && f.rebuttal){
-    return h + `<div class="card">${pickedQuote || `<p class="muted">친구의 생각을 하나 고르면, 다음 단계에서 그 생각에 답해 볼 수 있어요.</p>`}${extraHTML}
-      <div class="foot"><span></span><button class="btn pri" type="button" data-a="read-done">다 읽었어요</button></div></div>`;
+  // 댓글로 만나기: 일반은 첫 댓글을 남기면 바로 마침(save-comment). 깊이 있게(근거 들어 답하기)는 댓글 단 글을 골라 ‘다 읽었어요’
+  if(f.deep && f.rebuttal || extra.length){
+    return h + `<div class="card">${pickedQuote ? pickedQuote.replace("내가 고른", "내가 댓글을 남긴") : `<p class="muted">친구 글에 댓글을 하나 남기면 ‘다 읽었어요’를 누를 수 있어요.</p>`}${extraHTML}
+      <div class="foot"><span></span><button class="btn pri" type="button" data-a="read-done" ${diffPost ? "" : "disabled"}>다 읽었어요</button></div></div>`;
   }
-  // 일반: 고른 생각에 한마디
-  if(!diffPost) return h + `<div class="empty">친구의 생각을 하나 고르면, 여기에 한마디 쓸 칸이 열려요.</div>`;
-  return h + `<div class="card">${pickedQuote}
-    ${question(key,"reply",{q:"친구의 생각을 읽고 한마디 답해 보세요.", rows:2, ...MEET_HELP})}
-    ${extraHTML}
-    <div class="foot"><button class="linkbtn" type="button" data-a="unpick">다른 생각 고르기</button>
-      <button class="btn pri" type="button" data-a="meet-reply">한마디 남기기</button></div></div>`;
+  return h;
 }
 
 /* ---- 함께 생각하기 · 친구 생각에 답하기 ---- */
@@ -3453,7 +3497,7 @@ function tabOverview(r, st){
   const f = featuresOf(r), all = st.all;
   let h = `<section class="card"><div class="eyebrow">${isRelay(r) ? "오늘의 주제" : "논제"}</div><p class="prompt" style="margin-top:4px">${lnk(r.prompt)}</p>
     ${r.intro ? `<p class="muted" style="margin-top:8px"><b>활동 소개</b> · ${lnk(r.intro)}</p>` : ""}
-    ${r.context ? `<details class="source"><summary>자료 보기</summary><p>${lnk(r.context)}</p></details>` : ""}
+    ${srcBox(r)}
     ${rulesHTML(r)}
     ${tnote(r).memo ? `<p class="small" style="margin-top:12px;background:var(--sunk);border-radius:8px;padding:8px 12px">📝 <b>교사용 메모</b> · ${esc(tnote(r).memo)} <span class="muted">(학생에게 보이지 않아요)</span></p>` : ""}</section>`;
   h = asgCard(r) + hintCard(r, st) + stanceCard(r, st) + rateCard(r, st) + checkCard(r, st) + h;
@@ -3698,7 +3742,7 @@ function teacherCard(r, p, ps, nav){
    ========================================================= */
 /* 🔄 새 버전 알림: 배포 때마다 APP_VERSION과 version.json의 v를 같은 값으로 올린다.
    GitHub Pages는 화면을 10분쯤 기억하므로, 옛 화면이면 아래쪽에 ‘새로고침’ 띠를 띄우고 주소를 바꿔 새로 받는다 */
-const APP_VERSION = "2026-10-12c";
+const APP_VERSION = "2026-10-12d";
 async function checkVersion(){
   if(!/^https?:$/.test(location.protocol)) return;
   try{
@@ -3739,7 +3783,7 @@ async function initSupa(){
     const who = (await SB.rpc("whoami", {p_ref: ref && ref !== "teacher" ? ref : null})).data || {};
     S.mode = "supa";
     Auth.set(!!who.teacher);
-    S.sbEmail = who.email || ""; S.isAdmin = !!who.admin; S.sbBlocked = !!who.blocked;
+    S.sbEmail = who.email || ""; S.isAdmin = !!who.admin; S.sbBlocked = !!who.blocked; S.sbUid = session?.user?.id || "";
     S.sbAnon = !!session?.user?.is_anonymous;
     S.sbName = who.teacher ? (session?.user?.user_metadata?.full_name || session?.user?.user_metadata?.name || "") : "";
     if(!who.teacher){ S.name = who.student_name || ""; lsSet("nonjae.name", S.name)
@@ -4259,7 +4303,7 @@ function courseCards(){
       return card(c.id, subjTone("c:" + c.id), courseIcon(c), c.title, [c.subject, c.year, Array.isArray(c.members) ? `학생 ${c.members.length}명` : "", groupsOf(c).length ? `그룹 ${groupsOf(c).length}개` : ""].filter(Boolean).join(" · ") || "과목", courseRooms(c.id),
         ns.length ? `<span class="dn">📢 ${esc(ns[0].text)}${ns.length > 1 ? ` 외 ${ns.length - 1}` : ""}</span>` : "") }).join("")}
       ${none.length ? card("_none", "s4", "🗂", "과목 없는 활동", "과목에 넣지 않은 활동이에요", none) : ""}
-      <button type="button" class="dcard dadd" data-a="course-new"><span class="dt">＋ 새 과목</span><span class="dw">예: 1학년 통합과학 · 과목을 만들고 듣는 학생을 학급별로 골라요</span></button></div>`;
+      <button type="button" class="dcard dadd" data-a="course-new"><span class="dt">＋ 새 과목</span><span class="dw">과목을 만들고 듣는 학생을 학급별로 골라요</span></button></div>`;
 }
 /* 👥 과목 만들기·수정 창 안에서: 수강 학생 고르기(학급별로 한꺼번에 또는 한 명씩) → 고른 학생으로 그룹 짓기
    저장: courses.members = [학생 id] (이 학생에게만 과목·활동·공지·알림), groups[].members = [학생 id] (그룹은 선생님이 정함) */
@@ -4828,7 +4872,7 @@ async function setStatus(r, st){
 function formFromRoom(r){
   const f = featuresOf(r), t = TEMPLATES[r.template] || {};
   const form = {editId:r.id, goal:(GOALS.find(g=>g.t.includes(r.template))||{}).k, template:r.template, tool:toolOf(r), depth:depthOf(r),
-    prompt:r.prompt||"", title:r.title||"", context:r.context||"", intro:r.intro||"",
+    prompt:r.prompt||"", title:r.title||"", context:r.context||"", ctxImgs:ctxImgsOf(r), intro:r.intro||"",
     maxPages:String(r.noteCfg?.maxPages||3), personaName:r.persona?.name||"", personaAbout:r.persona?.about||"", personaStyle:r.persona?.style||"persona", maxTurns:String(r.persona?.maxTurns||8),
     subject:r.subject||"", unit:r.unit||"", year:r.year||"", grade:r.grade||"", duration:String(r.duration||""), dueAt:dtv(r.dueAt), stage:r.stage||"", memo:tnote(r).memo||"",
     qtype:r.qtype||t.qtype||"", reveal:r.reveal||t.reveal, anonymous:!!r.anonymous, minChars:String(r.minChars||0),
@@ -5054,7 +5098,7 @@ function roomFromForm(f){
   return {
     title:(f.title||"").trim() || (f.template === "notes" ? `오늘의 필기 · ${new Date().getMonth()+1}월 ${new Date().getDate()}일` : (prompt.length > 28 ? prompt.slice(0,28) + "…" : prompt)),
     subject:(f.subject||"").trim(), unit:(f.unit||"").trim(), year:(f.year||"").trim(),
-    prompt, context:(f.context||"").trim(),
+    prompt, context:(f.context||"").trim(), ctxImgs:(f.ctxImgs || []).slice(0, 10),
     template: isDebate ? (stances.length >= 3 ? "debateN" : "debate2") : f.template, depth:f.depth, tool, stances, reveal: relay ? "immediate" : f.reveal,
     ...(persona ? {persona} : {}), ...(noteCfg ? {noteCfg} : {}),
     qtype: (f.template==="inquiry" || relay) ? (f.qtype || t.qtype) : "",
@@ -5209,7 +5253,10 @@ function viewCreate(){
         <button class="btn sm" type="button" data-a="st-del" aria-label="마지막 입장 빼기" ${(f.nst||t.stances.length) <= 2 ? "disabled" : ""}>−</button><button class="btn sm" type="button" data-a="st-add" aria-label="입장 추가" ${(f.nst||t.stances.length) >= 4 ? "disabled" : ""}>＋</button></div></fieldset>`)}</div>` : ""}
     <div class="q"><label for="c-title">활동 이름 <span class="opt">(선택)</span></label><input type="text" id="c-title" data-form="create" data-k="title" maxlength="60" placeholder="비워 두면 위 내용으로 정해져요" value="${esc(f.title||"")}"></div>
     <div class="q"><label for="c-intro">활동 소개 <span class="opt">(선택 · 학생에게 보여요)</span></label><input type="text" id="c-intro" data-form="create" data-k="intro" maxlength="120" placeholder="예: 친구와 생각을 나누고 내 생각을 다시 돌아봐요." value="${esc(f.intro||"")}"></div>
-    <div class="q wide"><label for="c-context">${isChat ? "AI가 참고할 자료" : "자료"} <span class="opt">(선택)</span></label>${ta("create","context",{rows:2, ph:"배경 설명, 사료 요약, 통계 등", id:"c-context"})}</div>
+    <div class="q wide"><label for="c-context">${isChat ? "AI가 참고할 자료" : "자료"} <span class="opt">(선택 · 학생 화면에 펼쳐 보여요)</span></label>${ta("create","context",{rows:3, ph:"배경 설명, 사료 요약, 통계, 참고 주소(https://…) 등", id:"c-context"})}
+      <div class="ctximgs">${(f.ctxImgs || []).map((u, i) => `<figure><img src="${esc(u)}" alt="자료 사진 ${i + 1}"><button type="button" data-a="ctx-img-del" data-i="${i}" aria-label="사진 ${i + 1} 빼기">✕</button></figure>`).join("")}
+        ${(f.ctxImgs || []).length < 10 ? `<label class="ctxadd">🖼 사진 첨부 <span>${(f.ctxImgs || []).length}/10</span><input type="file" accept="image/*" multiple data-ctx-file hidden></label>` : `<span class="muted small">사진은 10장까지예요.</span>`}
+        ${S.ctxUploading ? `<span class="muted small">올리는 중…</span>` : ""}</div></div>
   </div></div>
 
   ${isNoteT ? `<style>.depth-card,.preview-steps,details[data-adv]{display:none!important}</style>` : ""}
@@ -5259,7 +5306,7 @@ function viewCreate(){
     adv += sec("👀", "만남 — 친구 생각을 어떻게 볼까요?", `<div class="form-grid">
       <div class="q"><label for="c-reveal">우리 반 게시판</label><select id="c-reveal" data-form="create" data-k="reveal">${Object.entries(REVEAL).map(([k,v])=>`<option value="${k}" ${k===f.reveal?"selected":""}>${REVEAL_L[k] || v}</option>`).join("")}</select></div>
       ${stg >= 2 ? `<div class="q"><label for="c-react">친구 글에 반응하기</label><select id="c-react" data-combo="react" ${f.reveal==="teacher" ? "disabled" : ""}>
-        ${[["comment","댓글 자유롭게"],["meet","다른 생각 하나 골라 한마디"],["rebut","근거를 들어 답하기"]].map(([k,l]) => `<option value="${k}" ${comboVal(f,"react")===k?"selected":""}>${l}</option>`).join("")}</select></div>` : ""}</div>
+        ${[["comment","자유롭게 둘러보기 (댓글은 선택)"],["meet","친구 글에 댓글로 한마디 남기기"],["rebut","근거를 들어 답하기"]].map(([k,l]) => `<option value="${k}" ${comboVal(f,"react")===k?"selected":""}>${l}</option>`).join("")}</select></div>` : ""}</div>
       ${f.reveal==="teacher" && stg >= 2 ? `<p class="hint">‘선생님만 보기’면 친구 글을 볼 수 없어 만남 단계가 빠져요.</p>` : ""}${stg < 2 ? `<p class="hint">친구 생각에 반응하는 단계는 ③에서 ‘생각 → 만남’ 이상을 고르면 생겨요. (게시판의 ❤️·💬는 언제나 쓸 수 있어요)</p>` : ""}`);
     if(stg === 3) adv += sec("🔄", "변화 — 마무리는 어떻게 할까요?", `<div class="q" style="max-width:360px"><select id="c-end" data-combo="end" aria-label="마무리 방법">
         ${[["change","달라진 생각 돌아보기"],["revise","처음 글 고쳐 쓰기"],["both","돌아보고 고쳐 쓰기"]].map(([k,l]) => `<option value="${k}" ${comboVal(f,"end")===k?"selected":""}>${l}</option>`).join("")}</select>
@@ -5313,6 +5360,7 @@ document.addEventListener("change", e => {
   if(el.dataset.mem && S.form.course){ const f = S.form.course, sel = new Set(f.sel || []); el.checked ? sel.add(el.dataset.mem) : sel.delete(el.dataset.mem); f.sel = [...sel]; memRefresh(); return }
   if(el.dataset.memg && S.form.course){ const f = S.form.course; f.gm = f.gm || {}; if(el.value) f.gm[el.dataset.memg] = el.value; else delete f.gm[el.dataset.memg]; memRefresh(); return }
   if(el.dataset.combo){ setCombo(el.dataset.combo, el.type === "checkbox" ? el.checked : el.value); saveFormsSoon(); render(); document.getElementById(el.id)?.focus(); return }
+  if(el.dataset.ctxFile !== undefined){ if(el.files?.length) ctxAddFiles(el.files); el.value = ""; return }
   if(el.dataset.noteFile){ const r = S.rooms.find(x => x.id === el.dataset.noteFile); if(r && el.files?.length) noteAddFiles(r, el.files); el.value = ""; return }
   if(el.id === "n-cls"){ S.ncls = el.value; render(); return }
   if(el.id === "m-sub" || el.id === "m-grade"){ S[el.id === "m-sub" ? "msub" : "mgrade"] = el.value; render(); return }
@@ -5393,6 +5441,8 @@ function insertStarter(b){
 }
 
 async function act(a, b){
+  if(S.tour != null && TOUR[S.tour]?.on){ const o = TOUR[S.tour].on;            // 둘러보기: 안내한 버튼을 직접 누르면 다음 장면으로
+    if(o.a === a && (!o.id || b?.dataset?.id === o.id) && (!o.v || b?.dataset?.v === o.v)){ S.tour++; S.tourScrolled = -1 } }
   if(TEACHER_ACTS.has(a) && !Auth.teacher){ toast("선생님만 쓸 수 있는 기능이에요."); return }   // 학생 권한: 교사 기능 호출 차단
   if(["phase","step","go-respond","open-record"].includes(a)) S.work = a === "open-record" ? b.dataset.id : S.roomId;   // 단계로 가면 ‘내 활동’ 화면
   if(a === "open" || a === "home" || a === "mine") S.work = null;
@@ -5730,6 +5780,7 @@ async function act(a, b){
       saveFormsSoon(); toast(f.template === "debate2" && x.a && !lk ? "논제와 두 입장을 넣었어요. 고쳐 써도 돼요." : "질문을 넣었어요. 고쳐 써도 돼요.");
       render(); document.getElementById("c-prompt")?.focus(); return;
     }
+    case "ctx-img-del": { const f = F("create"); f.ctxImgs = (f.ctxImgs || []).filter((_, i) => i !== +b.dataset.i); saveFormsSoon(); break }
     case "pick-tool": { const f = F("create"); f.tool = b.dataset.v; Object.assign(f, TOOLS[f.tool]?.force || {}); saveFormsSoon(); break }
     case "app-reload": { const u = new URL(location.href); u.searchParams.set("v", S.newVer || String(Date.now())); location.replace(u.toString()); return }
     case "tour-start": tourGo(0); return;
@@ -5765,6 +5816,7 @@ async function act(a, b){
     }
     case "read-done": {
       const f = F("meet:"+r.id), answers = {};
+      if(postsOf(r.id).some(x => x.author !== S.name) && !f.diffPostId){ toast("친구 글에 댓글을 하나 남겨 주세요."); return }
       MISSIONS.forEach(m => { if((f[m.k]||"").trim()) answers[m.k] = f[m.k].trim() });
       const ok = await savePost(r, {readAt:Date.now(), meet:{answers, diffPostId:f.diffPostId||"", at:Date.now()}});
       if(ok){ dropForm("meet:"+r.id); goNext(r) }
@@ -5778,6 +5830,18 @@ async function act(a, b){
     case "save-comment": {
       const pid = b.dataset.id, text = (F("com:"+pid).text||"").trim();
       if(!text){ toast("내 생각을 한 문장만 적어 볼까요?"); return }
+      const fe = featuresOf(r), tgt = S.posts.find(x => x.id === pid);
+      const inRead = !isTeacher() && p && !p.readAt && S.work === r.id && selectedStep(r, p) === "read" && tgt && tgt.author !== S.name;   // ‘친구 생각 만나기’ 단계에서 단 댓글
+      if(inRead){
+        b.disabled = true;
+        const okR = await addReply({roomId:r.id, postId:pid, author:S.name, kind:fe.rebuttal && !fe.deep ? "rebuttal" : "comment", text, evidence:"", createdAt:Date.now()});
+        if(!okR){ b.disabled = false; return }
+        dropForm("com:"+pid);
+        if(fe.deep && fe.rebuttal || fe.readMission.length){ F("meet:"+r.id).diffPostId = pid; saveFormsSoon(); toast("댓글을 남겼어요. 다 읽었으면 ‘다 읽었어요’를 눌러 주세요."); break }
+        const ok = await savePost(r, {readAt:Date.now(), meet:{answers:{reply:text}, diffPostId:pid, at:Date.now()}});
+        if(ok){ toast("한마디를 남겼어요! 다음 단계로 넘어가요."); S.openPost = null; goNext(r) }
+        break;
+      }
       const ok = await addReply({roomId:r.id, postId:pid, author:S.name, kind:"comment", text, evidence:"", createdAt:Date.now()});
       if(ok){ dropForm("com:"+pid); toast("올렸어요.") }
       break;
@@ -6127,7 +6191,7 @@ async function act(a, b){
       if(editR){
         id = editR.id;
         // 학생 응답이 있으면 글자로 된 안내만 바꾼다 (구조는 그대로)
-        doc = locked ? {title:data.title, prompt:data.prompt, context:data.context, subject:data.subject, unit:data.unit, year:data.year, ...(data.persona ? {persona:data.persona} : {}), ...(data.noteCfg ? {noteCfg:data.noteCfg} : {}), ...meta, ...asg, updatedAt:now}
+        doc = locked ? {title:data.title, prompt:data.prompt, context:data.context, ctxImgs:data.ctxImgs, subject:data.subject, unit:data.unit, year:data.year, ...(data.persona ? {persona:data.persona} : {}), ...(data.noteCfg ? {noteCfg:data.noteCfg} : {}), ...meta, ...asg, updatedAt:now}
                      : {...data, ...meta, ...asg, updatedAt:now};
         if(a === "publish-draft") Object.assign(doc, {status:"open", open:true});
         ok = await write(db => db.doc("rooms/"+id).update(doc), () => Object.assign(editR, doc));
