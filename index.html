@@ -127,6 +127,21 @@ details.source summary::-webkit-details-marker{display:none}
 details.source summary::after{content:"접기 ▴";margin-left:auto;font-size:12.5px;font-weight:600;color:var(--muted)}
 details.source:not([open]) summary::after{content:"펼치기 ▾"}
 details.source p{margin-top:6px;font-size:16.5px;line-height:1.8;white-space:pre-wrap;overflow-wrap:anywhere;max-width:80ch}
+.tmrbar{position:sticky;top:calc(env(safe-area-inset-top,0px) + 6px);z-index:30;display:flex;align-items:center;gap:12px;overflow:hidden;margin:-4px 0 14px;padding:10px 16px;border-radius:12px;background:var(--accent);color:var(--accent-ink);box-shadow:0 4px 14px rgba(0,0,0,.12)}
+.tmrbar .tmr-l{font-weight:600;font-size:15px}.tmrbar .tmr-t{margin-left:auto;font-size:26px;font-variant-numeric:tabular-nums;letter-spacing:.02em}
+.tmrbar .tmr-p,.tmrpanel .tmr-p{position:absolute;left:0;bottom:0;height:4px;background:rgba(255,255,255,.55);transition:width 1s linear}
+.tmrbar.warn{background:#c0392b;color:#fff}.tmrbar.paused{background:#6b7280;color:#fff}.tmrbar.end{background:#b45309;color:#fff}.tmrbar.end .tmr-l{font-size:16px}
+.tmrpanel{position:relative;overflow:hidden;display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;margin:12px 0;padding:10px 14px;border:1px solid var(--line);border-radius:12px;background:var(--surface)}
+.tmrpanel .tmr-h{font-size:14px}.tmrpanel .tmr-chips{display:flex;flex-wrap:wrap;gap:6px;align-items:center}.tmrpanel .tmr-tip{flex-basis:100%}
+.tmrpanel .tmr-custom{display:inline-flex;gap:4px;align-items:center}.tmrpanel .tmr-custom input{width:64px;padding:5px 8px}
+.tmrpanel.on{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}.tmrpanel.on .tmr-t{font-size:30px;font-variant-numeric:tabular-nums;margin-right:auto}
+.tmrpanel.on .btn{background:rgba(255,255,255,.95);color:#1f2937;border-color:transparent}.tmrpanel.on .btn.pri{background:#fff;font-weight:700}
+.tmrpanel.on.warn{background:#c0392b;border-color:#c0392b;color:#fff}.tmrpanel.on.paused{background:#6b7280;border-color:#6b7280;color:#fff}.tmrpanel.end{border-color:var(--warn);background:var(--warn-soft)}
+.tmrpanel .tmr-p{background:rgba(255,255,255,.6)}
+.ptmr{font-size:22px;padding:2px 12px;border-radius:10px;background:var(--accent);color:var(--accent-ink);font-variant-numeric:tabular-nums}.ptmr.warn,.ptmr.paused,.ptmr.end{color:#fff}.ptmr.warn{background:#c0392b}.ptmr.paused{background:#6b7280}.ptmr.end{background:#b45309}
+.livebar{display:flex;align-items:center;gap:12px;width:100%;margin:0 0 14px;padding:12px 16px;border:0;border-radius:12px;background:var(--accent);color:var(--accent-ink);font:inherit;font-size:15px;text-align:left;cursor:pointer}.livebar>span:first-child{flex:1 1 0;width:0;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.livebar .tmr-t{font-size:20px;font-variant-numeric:tabular-nums}
+.tmrdot{display:inline-block;padding:1px 7px;border-radius:999px;background:var(--accent);color:var(--accent-ink);font-size:11px;font-variant-numeric:tabular-nums}
+@media (max-width:560px){.tmrbar .tmr-t{font-size:22px}.tmrpanel.on .tmr-t{font-size:24px}}
 .srcimgs{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:10px;margin-top:12px}
 .srcimgs img{width:100%;max-height:340px;object-fit:contain;border-radius:8px;background:var(--sunk);border:1px solid var(--line);display:block}
 .ctximgs{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px;align-items:center}
@@ -1313,15 +1328,15 @@ const SAMPLE_ROOMS = [
    context:"1965년 한국과 일본은 국교를 정상화했다. 일본은 무상 3억 달러, 장기 저리 차관 2억 달러를 제공하기로 했다. 식민 지배에 대한 사과와 배상이 빠졌다는 비판 속에 1964년 6·3 시위가 일어났고, 정부는 서울에 비상계엄을 선포했다.",
    stances:["불가피했다","다른 길이 있었다"], reveal:"after", interact:"rebuttal", anonymous:false, minChars:60, revisit:false,
    fields:TOOLS.claimEvidence.fields},
-  {id:"park-modern", year:"1960s", subject:"한국사", unit:"현대사 · 박정희 정부", template:"inquiry", qtype:"concept", open:true,
-   title:"‘근대화’란 무엇이었을까",
-   prompt:"박정희 정부가 말한 ‘조국 근대화’에서 근대화란 무엇을 의미했을까?",
-   context:"정부는 경제 개발 5개년 계획과 새마을 운동을 ‘조국 근대화’의 길이라고 내세웠다.",
+  {id:"joseon-minbon", year:"15세기", subject:"한국사", unit:"조선 · 민본 사상과 신분제", template:"inquiry", qtype:"concept", open:true,
+   title:"조선의 ‘민본’은 오늘날 민주주의와 무엇이 다를까",
+   prompt:"조선은 ‘백성이 나라의 근본’이라고 했지만 신분제가 엄격한 사회였다. 조선이 말한 ‘민본’은 오늘날의 민주주의와 무엇이 같고 무엇이 다를까?",
+   context:"정도전은 『조선경국전』에서 백성이 나라의 근본이라고 했다. 세종은 백성이 쉽게 익혀 쓰도록 훈민정음을 만들었다(1443년 창제, 1446년 반포). 그러나 조선은 양반·중인·상민·천민으로 나뉜 신분 사회였고, 노비는 사고팔 수 있는 재산처럼 여겨졌다.",
    stances:[], reveal:"after", interact:"comment", anonymous:false, minChars:40, fields:TOOLS.claimEvidence.fields},
-  {id:"park-relay", year:"1972", subject:"한국사", unit:"현대사 · 박정희 정부", template:"relay", qtype:"student", open:true,
-   title:"유신 체제 질문이음",
-   prompt:"유신 체제에 대해 궁금한 것을 질문으로 만들어 보자.",
-   context:"1972년 10월 유신 헌법이 만들어졌다. 대통령은 통일주체국민회의에서 간접 선거로 뽑혔고, 긴급 조치로 헌법 비판도 처벌되었다.",
+  {id:"comfort-relay", year:"1930~40년대", subject:"한국사", unit:"일제 강점기 · 일본군 ‘위안부’ 문제", template:"relay", qtype:"student", open:true,
+   title:"일본군 ‘위안부’ 문제 질문이음",
+   prompt:"일본군 ‘위안부’ 문제에 대해 궁금한 것을 질문으로 만들어 보자.",
+   context:"일제는 중일 전쟁과 태평양 전쟁 시기에 한국을 비롯한 여러 나라의 여성들을 일본군 ‘위안소’로 끌고 가 성노예 생활을 강요했다. 1991년 김학순 할머니가 처음으로 피해 사실을 공개 증언했고, 1992년부터 서울의 일본 대사관 앞에서 수요 시위가 이어지고 있다. 1993년 일본 정부는 고노 담화로 일본군의 관여를 인정하고 사과했지만, 피해자들이 요구한 법적 배상 문제는 오늘날까지 남아 있다.",
    stances:[], reveal:"immediate", interact:"comment", anonymous:true, minChars:0, fields:[]}
 ];
 
@@ -1355,8 +1370,9 @@ function demoData(){
   S.rooms = [notesRoom, drawRoom, chatRoom, ...SAMPLE_ROOMS.map(r => ({...r, status:"open", teacherName:"체험", subject:r.subject || "한국사"}))].map((r, i) => ({...r, createdAt:now - (i + 1) * 3600000, updatedAt:now - i * 60000}));
   /* 과목 대시보드 체험: 한국사 활동을 ‘1학년 한국사’ 과목에 넣고 공지 하나를 띄워 둔다 */
   S.courses = [{id:"c-demo", title:"1학년 한국사", subject:"한국사", year:"2026-2", teacherName:"체험", groups:[], createdAt:now - 864e5, updatedAt:now,
-    notices:[{id:"n-demo", text:"다음 시간에는 컴퓨터실에서 수업해요. 이어폰을 챙겨 오세요.", at:now - 2 * 3600000}]}];
-  S.courses.push({id:"c-demo2", title:"2학년 세계사", subject:"역사", year:"2026-2", teacherName:"체험", groups:[], createdAt:now - 864e5, updatedAt:now, notices:[]});
+    notices:[{id:"n-demo", text:"https://taeneuu.github.io/gwangbok-1945/ 이 링크를 플레이하고 오세요!", at:now - 2 * 3600000}]}];
+  S.courses.push({id:"c-demo2", title:"2학년 세계사", subject:"역사", year:"2026-2", teacherName:"체험", groups:[], createdAt:now - 864e5, updatedAt:now,
+    notices:[{id:"n-demo2", text:"다음 시간에는 컴퓨터실에서 수업해요. 이어폰을 챙겨 오세요.", at:now - 3 * 3600000}]});
   S.rooms.forEach(r => { if((r.subject || "") === "한국사") r.courseId = "c-demo"; if(r.id === "demo-draw" || r.id === "demo-chat") r.courseId = "c-demo2" });
   const P = [];
   const deb = [["불가피했다","경제 개발을 위한 자금이 급했기 때문에 불가피했다고 생각한다.","당시 한국은 1인당 소득이 매우 낮았고, 일본의 자금이 경부 고속 도로와 포항 제철 건설에 쓰였다."],
@@ -1364,8 +1380,10 @@ function demoData(){
     ["다른 길이 있었다","국민의 동의를 얻는 과정이 부족했다.","정부는 비상계엄까지 선포하며 반대 목소리를 막았다."],
     ["불가피했다","냉전 속에서 미국이 한일 국교 정상화를 강하게 요구했다.","미국은 한국과 일본이 협력해 공산주의에 맞서기를 원했다."]];
   deb.forEach(([st, c, rs], i) => P.push({id:"dp" + i, roomId:"park-1965", author:names[i], stance:st, body:{claim:c, reason:rs}, status:"submitted", createdAt:now - (90 - i * 7) * m, updatedAt:now - (80 - i * 7) * m}));
-  [["근대화는 공장과 도로처럼 눈에 보이는 경제 성장을 뜻했다.","5개년 계획의 목표가 공업화와 수출이었다."],["생활 방식까지 바꾸려는 운동이었다고 생각한다.","새마을 운동은 초가집 개량과 근면·자조·협동을 강조했다."]]
-    .forEach(([c, rs], i) => P.push({id:"dq" + i, roomId:"park-modern", author:names[i + 2], body:{claim:c, reason:rs}, status:"submitted", createdAt:now - (50 - i * 9) * m, updatedAt:now - (45 - i * 9) * m}));
+  [["조선의 민본은 왕이 백성을 위해 다스린다는 뜻이지, 백성이 직접 나라의 주인이 된다는 뜻은 아니었다.","훈민정음도 백성이 요구해서가 아니라 왕이 백성을 위해 만들어 준 것이었다."],["백성을 아낀다는 점은 같지만, 모든 사람이 평등하다는 생각이 없다는 점이 가장 다르다.","노비는 재산처럼 사고팔렸고, 신분에 따라 할 수 있는 일이 정해져 있었다."]]
+    .forEach(([c, rs], i) => P.push({id:"dq" + i, roomId:"joseon-minbon", author:names[i + 2], body:{claim:c, reason:rs}, status:"submitted", createdAt:now - (50 - i * 9) * m, updatedAt:now - (45 - i * 9) * m}));
+  [["피해자들은 왜 1991년이 되어서야 증언할 수 있었을까?", "fact"], ["국가가 사과했다면 개인의 배상 문제도 끝난 것일까?", "debate"]]
+    .forEach(([q, qt], i) => P.push({id:"dk" + i, roomId:"comfort-relay", author:names[i + 3], questions:[{id:"q1", text:q, qtype:qt, at:now - (40 - i * 6) * m}], status:"submitted", submittedAt:now - (40 - i * 6) * m, body:{}, createdAt:now - (40 - i * 6) * m, updatedAt:now - (40 - i * 6) * m}));
   const pg1 = demoNote(1, "#fbf8ee"), pg2 = demoNote(2, "#fbf8ee"), pg3 = demoNote(1, "#eef4fb");
   P.push({id:"dn0", roomId:"demo-notes", author:names[0], status:"submitted", body:{}, createdAt:now - 30 * m, updatedAt:now - 30 * m,
     notes:{images:[{d:pg1, w:600, h:800}, {d:pg2, w:600, h:800}], memo:"3·1 운동은 전국으로, 국외로 퍼져 나갔다.", submittedAt:now - 30 * m, version:1, history:[]}});
@@ -1400,7 +1418,7 @@ function demoData(){
   S.replies = [{id:"dr0", roomId:"park-1965", postId:"dp0", author:names[1], kind:"rebuttal", text:"경제 성장은 맞지만 피해자 배상이 빠진 점은 문제라고 생각해.", evidence:"지금도 강제 동원 배상 문제가 이어지고 있어.", createdAt:now - 40 * m},
                {id:"dr1", roomId:"park-1965", postId:"dp1", author:names[3], kind:"comment", text:"6·3 시위 사례가 설득력 있어!", createdAt:now - 35 * m}];
   S._rep = S.replies; S._trep = [];
-  S.tnotes = ["demo-notes", "demo-draw", "demo-chat", "park-1965", "park-modern", "park-relay"].map(id => ({id, roster:names}));
+  S.tnotes = ["demo-notes", "demo-draw", "demo-chat", "park-1965", "joseon-minbon", "comfort-relay"].map(id => ({id, roster:names}));
   S.loaded = {rooms:1, posts:1, replies:1, courses:1, treplies:1, config:1, tnotes:1, ttemplates:1};
 }
 
@@ -1468,7 +1486,7 @@ const Auth = (() => { let t = null; return Object.freeze({ set(v){ if(t === null
 Object.defineProperty(S, "canTeach", {get: () => Auth.teacher, set(){} });        // 예전 코드 호환: 읽기만
 const isTeacher = () => Auth.teacher && S.role === "teacher";                       // 교사 권한 + 교사 화면(학생 화면 미리보기 중이면 false)
 /* 교사만 쓰는 동작: 학생 권한으로는 버튼이 없을 뿐 아니라 호출해도 실행되지 않는다 */
-const TEACHER_ACTS = new Set(["ctx-img-del","qfb","qfb-close","fb-chip","pick-tool","mem-open","mem-cls","mem-all","mem-none","course-gsplit","ai-setup","ai-key-save","ai-key-del","ai-suggest","ai-pick","tadmin-open","tadmin-block","tadmin-tab","fbadmin-done","notice-add","notice-del","note-filter","note-req","note-req-send","note-req-cancel","note-dup","create","edit-room","dup","dup-list","del","del-yes","del-ask","del-room","status","toggle","save-feedback","class-fb","pin","pin-move","pin-clear",
+const TEACHER_ACTS = new Set(["tmr-start","tmr-add","tmr-pause","tmr-resume","tmr-stop","ctx-img-del","qfb","qfb-close","fb-chip","pick-tool","mem-open","mem-cls","mem-all","mem-none","course-gsplit","ai-setup","ai-key-save","ai-key-del","ai-suggest","ai-pick","tadmin-open","tadmin-block","tadmin-tab","fbadmin-done","notice-add","notice-del","note-filter","note-req","note-req-send","note-req-cancel","note-dup","create","edit-room","dup","dup-list","del","del-yes","del-ask","del-room","status","toggle","save-feedback","class-fb","pin","pin-move","pin-clear",
   "present","present-exit","pmode","pnav","prand","fullscreen","export","export-go","save-tset","tpl-save-open","tpl-save","tpl-cancel","use-tpl","create-save","draft-save","publish-draft","discard-form",
   "preview","preview-form","preview-home","qr","copy-link","save-share","mcourse","course-new","course-edit","course-gadd","course-gdel","course-save","course-del","course-del-yes",
   "roster-open","roster-add","roster-reissue","roster-del","roster-print","gsel","asg-add-open","asg-add-cancel","asg-add","asg-st","racts","mview","sview","sfilter","sgo","snav","ttab","mfilter","open-student","goal","tpl","st-add","st-del","depth"]);
@@ -2122,6 +2140,8 @@ function viewDashList(groups, all){
       <h1>${nm ? `${esc(nm)}님, 안녕하세요 👋` : "안녕하세요 👋"}</h1><p>과목을 골라 들어가면 공지와 활동을 볼 수 있어요.</p></div>
       <div class="sstats"><div class="todo"><b>${cnt("todo")}</b><span>해야 할 활동</span></div><div><b>${cnt("doing")}</b><span>하는 중</span></div><div><b>${cnt("done")}</b><span>다 했어요</span></div></div></div>`;
   h += pushBarHTML();
+  const live = [...groups.values()].flat().filter(r => { const t = tmrOf(r); return t && t.st !== "end" });   // ⏱ 선생님이 타이머를 켠 활동 = 지금 수업 중
+  h += live.map(r => `<button class="livebar" type="button" data-a="open" data-id="${esc(r.id)}" data-tmr="${esc(r.id)}"><span>⏱ <b>지금 수업 중</b> · ${esc(r.title)}</span><b class="tmr-t">${mmss(tmrOf(r).left)}</b><span aria-hidden="true">→</span></button>`).join("");
   if(!groups.size) return h + `<div class="empty">아직 열린 활동이 없어요. 선생님이 활동을 올리면 여기에 나타나요.</div></section>`;
   const dashes = [...groups.entries()].map(([k, rs]) => ({info:dashInfo(k, rs), rs}))
     .sort((a, b) => (a.info.c ? 0 : 1) - (b.info.c ? 0 : 1) || koCmp(a.info.title, b.info.title));
@@ -2161,7 +2181,7 @@ function viewDash(info, rooms){
   h += `<div class="sgrid">${list.map(({r, st}) => {
     const ps = postsOf(r.id), t = TEMPLATES[r.template] || {};
     return `<button class="scard ${st.k}" type="button" data-a="open" data-id="${esc(r.id)}" style="--c:var(--${info.tone});--cs:var(--${info.tone}-soft)">
-      <span class="scard-top">${(() => { const v = cardLabel(r, hl); return typeof v === "string" ? `<span class="subj">${esc(v)}</span>` : `<span class="subj none">${esc(v.muted)}</span>` })()}<span class="sst">${isNewRoom(r) ? `<span class="newdot">NEW</span> ` : ""}${esc(st.l)}</span></span>
+      <span class="scard-top">${(() => { const v = cardLabel(r, hl); return typeof v === "string" ? `<span class="subj">${esc(v)}</span>` : `<span class="subj none">${esc(v.muted)}</span>` })()}<span class="sst">${isNewRoom(r) ? `<span class="newdot">NEW</span> ` : ""}${(() => { const tm = tmrOf(r); return tm && tm.st !== "end" ? `<span class="tmrdot" data-tmr="${esc(r.id)}">⏱ <b class="tmr-t">${mmss(tm.left)}</b></span> ` : "" })()}${esc(st.l)}</span></span>
       <span class="scard-t">${esc(r.title)}</span>
       ${r.prompt && r.prompt !== r.title ? `<span class="scard-p">${esc(r.prompt)}</span>` : ""}
       <span class="scard-m"><span>${t.icon||""} ${esc(t.label||"")}</span>${r.dueAt && st.o < 3 && hl !== "due" ? `<span class="${r.dueAt - Date.now() < 864e5 ? "soon" : ""}">⏰ ${esc(fmtDue(r.dueAt))}까지</span>` : ""}${r.reveal !== "teacher" ? `<span>👥 ${ps.length}명</span>` : ""}</span>
@@ -2227,9 +2247,58 @@ function srcBox(r, cls = ""){
     ${r.context ? `<p>${lnk(r.context)}</p>` : ""}
     ${imgs.length ? `<div class="srcimgs">${imgs.map((u, i) => `<a href="${esc(u)}" target="_blank" rel="noopener" title="크게 보기"><img src="${esc(u)}" alt="자료 사진 ${i + 1}" loading="lazy"></a>`).join("")}</div>` : ""}</details>`;
 }
+/* ⏱ 수업 타이머: room.timer = {dur, endsAt, left, at}
+   - 선생님이 활동 화면에서 시작하면 학생 화면 맨 위에 남은 시간이 보인다 (과제처럼 쓸 때는 켜지 않으면 그만)
+   - 진행: endsAt만 / 멈춤: left(남은 ms) / 끝: endsAt이 지남 (학생에게는 끝난 뒤 10분까지만 보임) */
+const TMR_CHIPS = [3, 5, 10, 15, 20];
+function tmrOf(r){
+  const t = r?.timer; if(!t || !(t.dur > 0)) return null;
+  const now = Date.now();
+  if(t.left != null) return {st:"paused", left:Math.max(0, t.left), dur:t.dur};
+  const left = Math.min(t.dur, (t.endsAt || 0) - now);                 // 기기 시계가 조금 늦어도 처음 시간보다 길게 보이지 않게
+  if(left > 0) return {st:"run", left, dur:t.dur};
+  return {st:"end", left:0, dur:t.dur, ago:now - (t.endsAt || 0)};
+}
+const mmss = ms => { const s = Math.ceil(Math.max(0, ms) / 1000); return `${String(Math.floor(s / 60)).padStart(2, "0")}:${String(s % 60).padStart(2, "0")}` };
+function tmrCls(t){ return t.st === "end" ? "end" : t.st === "paused" ? "paused" : t.left <= 60000 ? "warn" : "" }
+/* 학생 화면 맨 위 띠 */
+function tmrBarStudent(r){
+  const t = tmrOf(r); if(!t || (t.st === "end" && t.ago > 10 * 60000)) return "";
+  const msg = t.st === "end" ? "⏰ 시간이 다 됐어요! 쓰던 생각을 마무리해 주세요." : t.st === "paused" ? "⏸ 선생님이 타이머를 잠시 멈췄어요" : "⏱ 남은 시간";
+  return `<div class="tmrbar ${tmrCls(t)}" data-tmr="${esc(r.id)}" role="timer" aria-live="off"><span class="tmr-l">${msg}</span>${t.st === "end" ? "" : `<b class="tmr-t">${mmss(t.left)}</b>`}<i class="tmr-p" style="width:${Math.round(t.left / t.dur * 100)}%"></i></div>`;
+}
+/* 선생님 활동 화면: 시작·멈춤·더하기·끝내기 */
+function tmrPanel(r){
+  const t = tmrOf(r), id = esc(r.id), dur = Number(r.duration) > 0 ? Number(r.duration) : 0;
+  const chips = [...new Set([...(dur && dur <= 90 ? [dur] : []), ...TMR_CHIPS])].map(m => `<button class="btn sm${m === dur ? " pri" : ""}" type="button" data-a="tmr-start" data-id="${id}" data-v="${m}"${m === dur ? ' title="활동을 만들 때 적은 예상 시간"' : ""}>${m}분</button>`).join("");
+  const custom = `<span class="tmr-custom"><input type="number" id="tmr-min" min="1" max="120" step="1" placeholder="분" aria-label="타이머 시간(분)" data-form="tmr" data-k="m" value="${esc(F("tmr").m || "")}"><button class="btn sm" type="button" data-a="tmr-start" data-id="${id}">시작</button></span>`;
+  if(!t || t.st === "end") return `<section class="tmrpanel${t ? " end" : ""}" data-tmr="${id}"><span class="tmr-h">${t ? "⏰ <b>시간 종료</b>" : "⏱ <b>수업 타이머</b>"}</span>
+    <span class="tmr-chips">${chips}${custom}</span>${t ? `<button class="linkbtn" type="button" data-a="tmr-stop" data-id="${id}">타이머 닫기</button>` : `<span class="muted small tmr-tip">누르면 바로 시작되고, 학생 화면 맨 위에도 남은 시간이 보여요.</span>`}</section>`;
+  return `<section class="tmrpanel on ${tmrCls(t)}" data-tmr="${id}"><span class="tmr-h">⏱ ${t.st === "paused" ? "멈춤" : "남은 시간"}</span><b class="tmr-t">${mmss(t.left)}</b>
+    <span class="tmr-chips"><button class="btn sm" type="button" data-a="tmr-add" data-id="${id}" data-v="1">+1분</button>
+    ${t.st === "paused" ? `<button class="btn sm pri" type="button" data-a="tmr-resume" data-id="${id}">▶ 이어서</button>` : `<button class="btn sm" type="button" data-a="tmr-pause" data-id="${id}">⏸ 잠시 멈춤</button>`}
+    <button class="btn sm" type="button" data-a="tmr-stop" data-id="${id}">■ 끝내기</button></span><i class="tmr-p" style="width:${Math.round(t.left / t.dur * 100)}%"></i></section>`;
+}
+async function setTimer(r, timer){
+  const patch = {timer, updatedAt:Date.now()};
+  return write(db => db.doc("rooms/"+r.id).update(patch), () => Object.assign(r, patch));
+}
+/* 1초마다 숫자만 바꾸고, 진행→끝처럼 상태가 바뀔 때만 다시 그린다 */
+const TMR_SEEN = {};
+setInterval(() => {
+  document.querySelectorAll("[data-tmr]").forEach(el => {
+    const r = S.rooms.find(x => x.id === el.dataset.tmr), t = tmrOf(r), key = t ? t.st + tmrCls(t) : "";
+    if(TMR_SEEN[el.dataset.tmr] !== undefined && TMR_SEEN[el.dataset.tmr] !== key){ TMR_SEEN[el.dataset.tmr] = key; render(); return }
+    TMR_SEEN[el.dataset.tmr] = key;
+    if(!t) return;
+    const tt = el.querySelector(".tmr-t"); if(tt) tt.textContent = mmss(t.left);
+    const pp = el.querySelector(".tmr-p"); if(pp) pp.style.width = Math.round(t.left / t.dur * 100) + "%";
+  });
+}, 1000);
+
 function roomHead(r, {sourceOpen=true, rules=false}={}){
   const open = r.open!==false;
-  return `<button class="linkbtn back" type="button" data-a="home">← 활동 목록</button><div class="room-head">
+  return `${tmrBarStudent(r)}<button class="linkbtn back" type="button" data-a="home">← 활동 목록</button><div class="room-head">
     <div class="rmeta"><span class="year">${esc(r.year||"")}</span>${r.subject?`<span>${esc(r.subject)}</span>`:""}<span>${esc(r.unit||"")}</span>
       <span class="chip tpl"><span aria-hidden="true">${TEMPLATES[r.template]?.icon||""}</span>${esc(TEMPLATES[r.template]?.label||"")}${TEMPLATES[r.template]?.studentMode ? ` · <span aria-hidden="true">${TEMPLATES[r.template].modeIcon}</span> ${esc(TEMPLATES[r.template].mode)}` : ""}</span>
       ${statusChip(r)}${dueChip(r)}${r.duration ? `<span class="chip">⏱ ${esc(r.duration)}분</span>` : ""}</div>
@@ -3469,6 +3538,7 @@ function viewRoomTeacher(r){
       ${statusButtons(r, true)}${statusOf(r) !== "archived" && statusOf(r) !== "draft" ? `<button class="btn sm" type="button" data-a="status" data-id="${esc(r.id)}" data-v="archived" title="${STATUS.archived.d}">🗄 보관</button>` : ""}
       <button class="btn sm danger" type="button" data-a="del-ask" data-id="${esc(r.id)}">🗑 삭제</button>
     </div></section>`;
+  if(!isNotes(r)) h += tmrPanel(r);                                    // ⏱ 수업 타이머 (오늘의 필기는 과제라 뺀다)
   h += gselBar(r);
   if(isNotes(r)) return h + viewNotesTeacher(r);                    // 오늘의 필기: 학생별 사진 확인
   // 상단 요약: 활동에 맞는 숫자만
@@ -3653,7 +3723,7 @@ function viewPresent(r){
   const modes = presentModes(r, sub);
   let mode = S.pmode; if(!modes.some(x => x[0] === mode)) mode = hasSt ? "stance" : "thoughts";
   const quote = (p, big) => `<div class="pquote${big?" big":""}"><span class="who muted">익명 학생의 생각 ${p.stance && hasSt ? stanceChip(r,p.stance) : ""}</span>${drawingHTML(finalBody(p).drawing, "익명 학생의 그림")}<p>${esc(presentThought(r,p))}</p></div>`;
-  let h = `<div class="present"><div class="pbar"><span>생각이음 · 📽 수업에서 함께 보기${S.gsel && S.gselRoom === r.id ? ` · ${esc(groupName(r.courseId, S.gsel))}` : ""}</span><span class="row">
+  let h = `<div class="present"><div class="pbar"><span>생각이음 · 📽 수업에서 함께 보기${S.gsel && S.gselRoom === r.id ? ` · ${esc(groupName(r.courseId, S.gsel))}` : ""}</span><span class="row">${(() => { const t = tmrOf(r); return t && !(t.st === "end" && t.ago > 10 * 60000) ? `<span class="ptmr ${tmrCls(t)}" data-tmr="${esc(r.id)}">${t.st === "end" ? "⏰ 시간 종료" : `⏱ <b class="tmr-t">${mmss(t.left)}</b>`}</span>` : "" })()}
       <button class="btn sm" type="button" data-a="fullscreen">전체 화면</button><button class="btn sm pri" type="button" data-a="present-exit">나가기</button></span></div>
     <nav class="pmodes" aria-label="발표 모드">${modes.map(([k,l]) => `<button type="button" data-a="pmode" data-v="${k}" aria-pressed="${mode===k}">${esc(l)}</button>`).join("")}</nav>
     <h1>${esc(r.prompt)}</h1>`;
@@ -3742,7 +3812,7 @@ function teacherCard(r, p, ps, nav){
    ========================================================= */
 /* 🔄 새 버전 알림: 배포 때마다 APP_VERSION과 version.json의 v를 같은 값으로 올린다.
    GitHub Pages는 화면을 10분쯤 기억하므로, 옛 화면이면 아래쪽에 ‘새로고침’ 띠를 띄우고 주소를 바꿔 새로 받는다 */
-const APP_VERSION = "2026-10-12d";
+const APP_VERSION = "2026-10-12e";
 async function checkVersion(){
   if(!/^https?:$/.test(location.protocol)) return;
   try{
@@ -6015,6 +6085,21 @@ async function act(a, b){
       if(ok){ S.modal = null; toast({open: statusOf(rr)==="open" ? "공개했어요. 학생들이 참여할 수 있어요." : "", closed:"마감했어요. 기존 응답은 그대로 남아요.", archived:"보관했어요. ‘보관’에서 다시 꺼낼 수 있어요."}[v] || "바꿨어요.") }
       break;
     }
+    case "tmr-start": {
+      const rr = S.rooms.find(x=>x.id===b.dataset.id), m = Math.min(120, Math.max(1, parseInt(b.dataset.v || F("tmr").m) || 0));
+      if(!rr) break; if(!(parseInt(b.dataset.v || F("tmr").m) > 0)){ toast("몇 분으로 할지 적어 주세요."); document.getElementById("tmr-min")?.focus(); return }
+      const now = Date.now(), ok = await setTimer(rr, {dur:m * 60000, endsAt:now + m * 60000, left:null, at:now});
+      if(ok){ dropForm("tmr"); toast(`⏱ ${m}분 타이머를 시작했어요. 학생 화면에도 보여요.`) } break;
+    }
+    case "tmr-add": case "tmr-pause": case "tmr-resume": {
+      const rr = S.rooms.find(x=>x.id===b.dataset.id), t = tmrOf(rr); if(!t) break;
+      const now = Date.now(), cur = rr.timer;
+      if(a === "tmr-add") await setTimer(rr, t.st === "paused" ? {...cur, dur:cur.dur + 60000, left:t.left + 60000, at:now} : {...cur, dur:cur.dur + 60000, endsAt:now + t.left + 60000, at:now});
+      if(a === "tmr-pause") await setTimer(rr, {...cur, left:t.left, endsAt:null, at:now});
+      if(a === "tmr-resume") await setTimer(rr, {...cur, endsAt:now + t.left, left:null, at:now});
+      break;
+    }
+    case "tmr-stop": { const rr = S.rooms.find(x=>x.id===b.dataset.id); if(rr) await setTimer(rr, null); break }
     case "edit-room": { S.modal = null; const rr = S.rooms.find(x=>x.id===b.dataset.id); S.form.create = formFromRoom(rr); saveFormsSoon(); S.tplNaming = false; S.view = "create"; scrollTo(0,0); break }
     case "dup": {
       const rr = S.rooms.find(x=>x.id===b.dataset.id), nr = await duplicateRoom(rr);
