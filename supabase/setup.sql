@@ -634,6 +634,23 @@ $$;
 revoke execute on function public.my_student_ids() from public, anon;
 grant execute on function public.my_student_ids() to authenticated;
 
+-- ---------------------------------------------------------------------
+-- 📚 활동 자료 사진: 공개 보관함 materials/{교사 id}/…  (선생님만 자기 폴더에 올리고 지운다, 보기는 주소를 아는 누구나)
+-- ---------------------------------------------------------------------
+insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
+values ('materials', 'materials', true, 5242880, array['image/jpeg','image/png','image/webp'])
+on conflict (id) do nothing;
+do $$ begin
+  if not exists (select 1 from pg_policies where schemaname = 'storage' and tablename = 'objects' and policyname = 'materials_insert') then
+    create policy materials_insert on storage.objects for insert to authenticated
+      with check (bucket_id = 'materials' and public.is_teacher() and (storage.foldername(name))[1] = auth.uid()::text);
+  end if;
+  if not exists (select 1 from pg_policies where schemaname = 'storage' and tablename = 'objects' and policyname = 'materials_delete') then
+    create policy materials_delete on storage.objects for delete to authenticated
+      using (bucket_id = 'materials' and public.is_teacher() and (storage.foldername(name))[1] = auth.uid()::text);
+  end if;
+end $$;
+
 -- =====================================================================
 -- 마지막으로 관리자(나)의 구글 이메일을 등록하세요 (따옴표 안을 바꿔서 실행)
 -- 다른 선생님은 등록하지 않아도 구글로 로그인하면 바로 교사가 돼요

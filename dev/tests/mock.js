@@ -45,7 +45,7 @@
   }
   let rpcImpl;
   const client={
-    auth:{ getSession: async()=>({data:{session: {user:{is_anonymous: !isT}}}}), signInAnonymously: async()=>({data:{session:{user:{is_anonymous:true}}}}),
+    auth:{ getSession: async()=>({data:{session: {user:{id: isT ? "teacher-uid" : uid, is_anonymous: !isT}}}}), signInAnonymously: async()=>({data:{session:{user:{is_anonymous:true}}}}),
       signInWithOAuth: async(o)=>{ window.__oauth=o; return {data:{}} }, signOut: async()=>{ sessionStorage.removeItem("uid"); window.__signedOut=true; return {} } },
     rpc: (fn, p) => { const pr = rpcImpl(fn, p); return {then:(a,b) => pr.then(a,b)} },   // 실제 supabase-js처럼 .catch 없음
     rpcImpl_: 0,
@@ -76,7 +76,9 @@
       window.__lastHist = body.history;
       return {data:{text:"(AI가 연기하는 가상 인물) 질문 고마워요. '"+last.slice(0,20)+"'에 대해 말하자면…", remaining:3}, error:null} } },
     from: qb,
-    storage:{ from:(bucket)=>({
+    storage:{ from:(bucket)=> bucket==="materials" ? ({
+      upload: async (path, blob) => { if(!isT) return {error:{message:"denied"}}; const d = await new Promise(ok=>{const fr=new FileReader(); fr.onload=()=>ok(fr.result); fr.readAsDataURL(blob)}); const st=JSON.parse(localStorage.getItem("__sbstore")||"{}"); st["m/"+path]=d; localStorage.setItem("__sbstore",JSON.stringify(st)); window.__sbLog.push("mupload:"+path); return {data:{path},error:null} },
+      getPublicUrl: (path) => ({data:{publicUrl: JSON.parse(localStorage.getItem("__sbstore")||"{}")["m/"+path]}}) }) : ({
       upload: async (path, blob, o) => { const sid=path.split("/")[1]; if(isT || D.sessions[uid]!==sid) return {error:{message:"new row violates row-level security policy"}};
         const d = await new Promise(ok=>{const fr=new FileReader(); fr.onload=()=>ok(fr.result); fr.readAsDataURL(blob)});
         const st=JSON.parse(localStorage.getItem("__sbstore")||"{}"); if(st[path]) return {error:{message:"exists"}}; st[path]=d; localStorage.setItem("__sbstore",JSON.stringify(st)); window.__sbLog.push("upload:"+path); return {data:{path},error:null} },
