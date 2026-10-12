@@ -212,6 +212,16 @@
 - 📊 학생별 활동 현황(과목 포트폴리오, `coursePortfolio`): 과목 화면에서 접어 두고 펼칠 때만 계산(`details[data-lazy]`). 학생 × 활동 칸(✓ 완료 · … 하는 중 · · 아직 안 함), 칸 → 그 학생 사고 과정(`port-open`), 이름 → 학생 포트폴리오 창(`port-student`). 이미 불러온 글로만 계산(서버 요청 없음). 둘러보기에 단계 추가.
 - `APP_VERSION`/`version.json` = `2026-10-12g`. 테스트: `t46.py`.
 
+### 2-12. 추가 수정 (PR #25, 2026-10-12)
+- 마키 속도 높임: `--mq-t = max(2.5, 넘친 px/70 + 1.6)초`, 멈춤 구간 12%.
+- 👀 조회 기록(DB 추가, 비파괴): 표 `room_views(tid, room_id, student_id, first_at, last_at, n)` — RLS 켜고 아무 권한 없음.
+  - `room_view(p_room)`: 학생이 활동을 열면(이름 확인 뒤 `viewRoomStudent` → `markViewed`) 페이지당 활동마다 한 번 호출. 수강 학생(room_for_me)만 남는다.
+  - `room_viewers(p_room)`: 교사 본인 활동만. 교사 활동 화면에서 `viewersOf(r)`가 30초마다 새로 읽고, 학생 id → 명단 이름표로 바꾼다.
+  - 화면: 요약 숫자 맨 앞 ‘👀 조회 n/전체’(참여한 학생 포함), 참여 현황 표 위 요약(조회·참여·조회만·안 들어옴), 학생 줄 상태 ‘👀 조회만 함’과 마지막 조회 시각. 체험은 `S.demoViews`.
+  - setup.sql 반영, 서버에는 마이그레이션 `room_views`로 적용. 로컬 검사: `dev/sql/views_test.sql`.
+  - 이 기능 이전에 연 기록은 없다(그때 글을 쓴 학생은 참여로 셈).
+- `APP_VERSION`/`version.json` = `2026-10-12h`. 테스트: `t47.py`.
+
 ---
 
 ## 3. 파일 및 코드 구조

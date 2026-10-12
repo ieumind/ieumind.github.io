@@ -478,6 +478,8 @@ details.adv > div{padding:2px 20px 16px;display:grid;gap:12px}
 .pstat{font-weight:600}
 .pstat.done{color:var(--accent)}
 .pstat.none{color:var(--muted);font-weight:400}
+.pstat.viewed{color:var(--s1);font-weight:500}
+.vsum{display:flex;flex-wrap:wrap;gap:4px 14px;margin:2px 0 10px}.vsum .vw{color:var(--s1)}
 .namebtn{border:0;background:none;padding:0;cursor:pointer;font-weight:600;text-decoration:underline;text-underline-offset:3px;text-decoration-color:var(--line);text-align:left}
 .tscroll{overflow-x:auto}
 .chgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px}
@@ -738,7 +740,7 @@ a.autolink{color:var(--accent);text-decoration:underline;text-underline-offset:2
 .mq{display:block;flex:0 1 auto;min-width:0;overflow:hidden;white-space:nowrap}
 .mq-in{display:inline-block;will-change:transform}
 .mq.run .mq-in{animation:mq var(--mq-t,8s) ease-in-out infinite alternate}
-@keyframes mq{0%,18%{transform:translateX(0)}82%,100%{transform:translateX(var(--mq-x,0))}}
+@keyframes mq{0%,12%{transform:translateX(0)}88%,100%{transform:translateX(var(--mq-x,0))}}
 @media (prefers-reduced-motion:reduce){.mq.run .mq-in{animation:none}.mq{text-overflow:ellipsis}}
 .dcard .dw{font-size:13.5px;color:var(--muted)}
 .dcard .dn{font-size:14px;background:var(--warn-soft);color:var(--fg);border-radius:10px;padding:6px 10px;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
@@ -1472,6 +1474,8 @@ function demoData(){
   S.replies = [{id:"dr0", roomId:"park-1965", postId:"dp0", author:names[1], kind:"rebuttal", text:"경제 성장은 맞지만 피해자 배상이 빠진 점은 문제라고 생각해.", evidence:"지금도 강제 동원 배상 문제가 이어지고 있어.", createdAt:now - 40 * m},
                {id:"dr1", roomId:"park-1965", postId:"dp1", author:names[3], kind:"comment", text:"6·3 시위 사례가 설득력 있어!", createdAt:now - 35 * m}];
   S._rep = S.replies; S._trep = [];
+  S.demoViews = {"park-1965":[{who:names[4], at:now - 12 * m}], "demo-draw":[{who:names[0], at:now - 30 * m}, {who:names[1], at:now - 8 * m}],
+    "joseon-minbon":[{who:names[0], at:now - 20 * m}, {who:names[5], at:now - 6 * m}], "demo-notes":[{who:names[3], at:now - 3 * m}]};
   S.tnotes = ["demo-notes", "demo-draw", "demo-chat", "park-1965", "joseon-minbon", "comfort-relay"].map(id => ({id, roster:names}));
   S.loaded = {rooms:1, posts:1, replies:1, courses:1, treplies:1, config:1, tnotes:1, ttemplates:1};
 }
@@ -2051,7 +2055,7 @@ function mqFit(){
   document.querySelectorAll(".mq").forEach(el => {
     const d = el.firstElementChild.scrollWidth - el.clientWidth, run = d > 2;
     el.classList.toggle("run", run);
-    if(run){ el.style.setProperty("--mq-x", -d + "px"); el.style.setProperty("--mq-t", Math.max(5, d / 25 + 3).toFixed(1) + "s") }
+    if(run){ el.style.setProperty("--mq-x", -d + "px"); el.style.setProperty("--mq-t", Math.max(2.5, d / 70 + 1.6).toFixed(1) + "s") }
   });
 }
 addEventListener("resize", () => { clearTimeout(mqFit.t); mqFit.t = setTimeout(mqFit, 150) });
@@ -2387,6 +2391,7 @@ function viewRoomStudent(r){
   if(r._ready){ const a = r.assign[r._gid]; return roomHead(r) + `<div class="stage" id="stage"><div class="empty">⏳ 아직 시작 전인 활동이에요.${a?.startAt ? `<br>${esc(fmt(a.startAt))}에 열려요.` : " 선생님이 시작하면 참여할 수 있어요."}</div></div>` }
   const p = myPost(r);
   if(!S.name) return roomHead(r) + `<div class="stage" id="stage">${nameForm()}</div>`;
+  markViewed(r);                                                       // 👀 들어와 본 것만으로도 ‘조회’로 남긴다
   if(isNotes(r)) return viewNotesStudent(r, p);                      // 오늘의 필기: 사진 제출 화면
   if(S.work !== r.id) return roomHead(r, {sourceOpen:false}) + roomTabs(r, "board") + roomBoard(r, p);   // 처음에는 우리 반 게시판
   const sel = selectedStep(r, p), phs = phasesOf(r);
@@ -3564,6 +3569,28 @@ function courseRoster(r, gid = ""){
   else if(!gid && ag.length && ag.every(g => Array.isArray(gm(g)))) ids = new Set(ag.flatMap(g => gm(g)));   // 일부 그룹에만 배포한 활동
   return (S.roster || []).filter(x => ids.has(x.id)).map(rosterLabel);
 }
+/* 👀 조회 기록: 학생이 활동을 열면 room_view()로 한 번 남기고, 선생님은 room_viewers()로 본다 (30초마다 새로) */
+const VIEWED = new Set();
+function markViewed(r){
+  if(S.mode !== "supa" || S.demo || S.preview || isTeacher() || !S.name || !SB || VIEWED.has(r.id)) return;
+  VIEWED.add(r.id); rpcSafe("room_view", {p_room:r.id});
+}
+const viewsOn = () => S.demo || (S.mode === "supa" && !!SB);
+function viewersOf(r){                                                   // 이름표 → {first, last, n}
+  const m = new Map();
+  if(S.demo){ (S.demoViews?.[r.id] || []).forEach(v => m.set(v.who, {first:v.at, last:v.at, n:1})); return m }
+  if(S.mode !== "supa" || !SB) return m;
+  S.views = S.views || {};
+  const c = S.views[r.id];
+  if(!c?.loading && (!c || Date.now() - c.at > 30000)){
+    S.views[r.id] = {list:c?.list || [], at:c?.at || 0, loading:true};
+    rpcSafe("room_viewers", {p_room:r.id}).then(res => { S.views[r.id] = {list:Array.isArray(res?.data) ? res.data : (c?.list || []), at:Date.now()}; if(S.view === "room" && S.roomId === r.id) render() });
+  }
+  if(S.roster === undefined && !S.rosterLoading){ S.rosterLoading = true; loadRoster().then(() => { S.rosterLoading = false; render() }) }
+  const byId = new Map((S.roster || []).map(x => [x.id, rosterLabel(x)]));
+  (S.views[r.id]?.list || []).forEach(v => { const n = byId.get(v.student_id); if(n) m.set(n, {first:Date.parse(v.first_at), last:Date.parse(v.last_at), n:v.n}) });
+  return m;
+}
 function teacherStats(r){
   const gs = S.gsel && S.gselRoom === r.id;                       // 그룹별 보기: 활동 전체 명단·학생 수는 쓰지 않는다
   const cr = courseRoster(r, gs ? S.gsel : "");
@@ -3610,6 +3637,9 @@ function viewRoomTeacher(r){
   if(isNotes(r)) return h + viewNotesTeacher(r);                    // 오늘의 필기: 학생별 사진 확인
   // 상단 요약: 활동에 맞는 숫자만
   const k = [];
+  if(viewsOn()){ st.vw = viewersOf(r); const ok = n => !st.roster.length || st.roster.includes(n);
+    st.viewed = new Set([...st.vw.keys(), ...st.all.map(p => p.author)].filter(ok)).size;
+    k.push(`<div class="kpi" title="활동을 한 번이라도 열어 본 학생 (참여한 학생 포함)"><b>${st.viewed}${st.total?`<small> / ${st.total}</small>`:""}</b><span>👀 조회</span></div>`) }
   k.push(`<div class="kpi"><b>${st.participants}${st.total?`<small> / ${st.total}</small>`:""}</b><span>참여</span></div>`);
   k.push(`<div class="kpi"><b>${st.sub.length}</b><span>응답 완료</span></div>`);
   k.push(`<div class="kpi"><b>${st.inProgress}</b><span>진행 중</span></div>`);
@@ -3663,17 +3693,20 @@ function tabOverview(r, st){
 }
 /* ---- 탭: 참여 현황 (학생별 진행) ---- */
 function tabProgress(r, st){
-  const names = [...new Set([...(st.roster||[]), ...st.all.map(p=>p.author)])];
+  const vw = st.vw || new Map();
+  const names = [...new Set([...(st.roster||[]), ...st.all.map(p=>p.author), ...(st.roster?.length ? [] : vw.keys())])];
   if(!names.length) return `<div class="empty">아직 참여한 학생이 없어요. 학생 링크를 공유해 보세요. 설정 탭에서 명단을 넣으면 미참여 학생도 이름으로 보여요.</div>`;
-  const rows = names.map(n => { const p = st.all.find(x=>x.author===n); return {n, p, pr:progressOf(r,p)} })
-    .sort((a,b) => (a.pr.cls==="none") - (b.pr.cls==="none") || a.pr.pct - b.pr.pct);
-  const steps = stepsOf(r);
-  return `<section class="card"><h3>학생별 진행 상태 <span class="muted small">이름을 누르면 단계별로 볼 수 있어요</span></h3><div class="tscroll"><table class="ptable">
+  const rows = names.map(n => { const p = st.all.find(x=>x.author===n), v = vw.get(n);
+      return {n, p, v, pr: !p && v ? {label:"👀 조회만 함", cls:"viewed", pct:0} : progressOf(r,p)} })
+    .sort((a,b) => ({none:2, viewed:1}[a.pr.cls] || 0) - ({none:2, viewed:1}[b.pr.cls] || 0) || a.pr.pct - b.pr.pct);
+  const steps = stepsOf(r), nView = rows.filter(x => x.pr.cls === "viewed").length, nNone = rows.filter(x => x.pr.cls === "none").length;
+  return `<section class="card"><h3>학생별 진행 상태 <span class="muted small">이름을 누르면 단계별로 볼 수 있어요</span></h3>
+    ${viewsOn() ? `<p class="vsum small"><span>👀 조회 <b>${rows.filter(x => x.p || x.v).length}</b>명</span><span>✏️ 참여 <b>${rows.filter(x => x.p).length}</b>명</span><span class="vw">조회만 하고 시작 안 함 <b>${nView}</b>명</span><span class="muted">아직 안 들어옴 <b>${nNone}</b>명</span></p>` : ""}<div class="tscroll"><table class="ptable">
     <thead><tr><th>학생</th><th>상태</th><th>진행</th><th>마지막 활동</th></tr></thead><tbody>
-    ${rows.map(({n,p,pr}) => `<tr><td>${p ? `<button class="namebtn" type="button" data-a="open-student" data-id="${esc(p.id)}">${esc(n)}</button>` : esc(n)}</td>
+    ${rows.map(({n,p,v,pr}) => `<tr><td>${p ? `<button class="namebtn" type="button" data-a="open-student" data-id="${esc(p.id)}">${esc(n)}</button>` : esc(n)}</td>
       <td><span class="pstat ${pr.cls}">${esc(pr.label)}</span>${S.pexp===n && p ? `<div class="sprog">${steps.map(s=>`<span class="${stepDone(r,p,s)?"on":""}">${esc(STEP[s].t)}</span>`).join("")}</div>` : ""}</td>
       <td><span class="pbar" aria-hidden="true"><i style="width:${pr.pct}%"></i></span><span class="mono small">${pr.pct}%</span></td>
-      <td class="muted small">${p ? fmtRel(p.updatedAt||p.createdAt) : "–"}</td></tr>`).join("")}
+      <td class="muted small">${p ? fmtRel(p.updatedAt||p.createdAt) : v ? `👀 ${fmtRel(v.last)}` : "–"}</td></tr>`).join("")}
     </tbody></table></div>
     ${!st.roster.length ? `<p class="muted small" style="margin-top:10px">명단이 없어서 참여한 학생만 보여요. <button class="linkbtn" type="button" data-a="ttab" data-v="settings">설정에서 명단 넣기</button></p>` : ""}</section>`;
 }
@@ -3879,7 +3912,7 @@ function teacherCard(r, p, ps, nav){
    ========================================================= */
 /* 🔄 새 버전 알림: 배포 때마다 APP_VERSION과 version.json의 v를 같은 값으로 올린다.
    GitHub Pages는 화면을 10분쯤 기억하므로, 옛 화면이면 아래쪽에 ‘새로고침’ 띠를 띄우고 주소를 바꿔 새로 받는다 */
-const APP_VERSION = "2026-10-12g";
+const APP_VERSION = "2026-10-12h";
 async function checkVersion(){
   if(!/^https?:$/.test(location.protocol)) return;
   try{

@@ -651,6 +651,41 @@ do $$ begin
   end if;
 end $$;
 
+-- ---------------------------------------------------------------------
+-- 👀 활동 조회 기록: 학생이 활동을 열어 보면 남는다 (글을 쓰지 않아도)
+--   학생은 room_view()로 자기 기록만 남기고, 선생님은 room_viewers()로 자기 활동의 기록만 본다
+--   표에 직접 읽고 쓰는 권한은 아무에게도 주지 않는다
+-- ---------------------------------------------------------------------
+create table if not exists public.room_views (
+  tid        uuid not null,
+  room_id    text not null,
+  student_id uuid not null,
+  first_at   timestamptz not null default now(),
+  last_at    timestamptz not null default now(),
+  n          int not null default 1,
+  primary key (tid, room_id, student_id)
+);
+alter table public.room_views enable row level security;
+revoke all on public.room_views from public, anon, authenticated;
+create or replace function public.room_view(p_room text) returns void
+language plpgsql volatile security definer set search_path = public as $$
+declare v_tid uuid; v_sid uuid;
+begin
+  select d.tid into v_tid from public.docs d where d.col = 'rooms' and d.id = p_room limit 1;
+  if v_tid is null then return; end if;
+  v_sid := public.my_student(v_tid);
+  if v_sid is null or not public.tid_active(v_tid) or not public.room_for_me(p_room, v_tid) then return; end if;
+  insert into public.room_views (tid, room_id, student_id) values (v_tid, p_room, v_sid)
+    on conflict (tid, room_id, student_id) do update set last_at = now(), n = least(public.room_views.n + 1, 100000);
+end $$;
+create or replace function public.room_viewers(p_room text) returns table(student_id uuid, first_at timestamptz, last_at timestamptz, n int)
+language sql stable security definer set search_path = public as $$
+  select v.student_id, v.first_at, v.last_at, v.n from public.room_views v
+   where public.is_teacher() and v.tid = auth.uid() and v.room_id = p_room;
+$$;
+revoke execute on function public.room_view(text), public.room_viewers(text) from public, anon;
+grant execute on function public.room_view(text), public.room_viewers(text) to authenticated;
+
 -- =====================================================================
 -- 마지막으로 관리자(나)의 구글 이메일을 등록하세요 (따옴표 안을 바꿔서 실행)
 -- 다른 선생님은 등록하지 않아도 구글로 로그인하면 바로 교사가 돼요
