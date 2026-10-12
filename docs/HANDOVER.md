@@ -232,6 +232,17 @@
   - 과목을 저장(수정)해도 보관 상태 유지.
 - `APP_VERSION`/`version.json` = `2026-10-12i`. 테스트: `t48.py`.
 
+### 2-14. 추가 수정 (PR #27, 2026-10-12) · 저장소를 `ieumind/ieumind.github.io`로 옮긴 뒤 첫 PR
+- 저장소·주소 이전: `https://ieumind.github.io/`. `notify`의 VAPID subject를 새 주소로(배포 v3). 예전 주소는 개인 계정의 `taeneuu/thinklink` 저장소(넘겨 주기 index.html·404.html·sw.js)로 새 주소에 넘긴다.
+- 👥 한 학생이 여러 선생님 과목 듣기: 상단 ‘＋ 과목 추가’(`join-open` → `joinHTML` → `join-save` = `claim_student`)로 다른 선생님이 준 개인 코드를 넣으면 이 기기에 그 선생님이 더 연결된다(student_sessions는 원래 (uid, tid)마다 한 줄). 성공하면 새로 불러오고 안내.
+  - 선생님마다 명단 이름표가 다를 수 있다(학교 이름 등) → 새 함수 `my_students()` = [{tid, sid, name}] (setup.sql·서버 마이그레이션 `my_students`). `S.idents`, `S.myNames`.
+  - 문서마다 선생님(tid)을 `DOC_TID`에 기억(`select id,data,tid`, 실시간도). 글·댓글·하트를 쓸 때 `meFor(roomId)` = 그 활동 선생님의 이름표, ‘내 글인가’는 `isMe(author)`.
+  - 로컬 검사: `dev/sql/multi_teacher_test.sql`(이름표가 틀리면 RLS가 막는 것까지). 가짜 Supabase(mock.js)에 선생님 두 명(`?who=teacher2`, 문서·학생에 tid) 추가.
+- 과목 정렬: 사용자 지정(기본)·오래된 순·최신순(`CSORTS`, 이 기기에 `nonjae.csort`). 사용자 지정에서 ‘↔ 순서 바꾸기’ → 카드를 끌어 놓기(PC) 또는 ◀ ▶(휴대폰은 ▲ ▼).
+  - 교사: 과목 문서 `ord`(여러 기기에서 같은 순서, 과목 저장해도 유지). 학생: 이 기기의 `nonjae.corder`.
+  - 앞서 넣은 ‘최근에 쓴 순’(교사)·‘할 일 있는 과목 먼저’(학생) 자동 정렬은 이 설정으로 바뀌었다.
+- `APP_VERSION`/`version.json` = `2026-10-12j`. 테스트: `t49.py`.
+
 ---
 
 ## 3. 파일 및 코드 구조
