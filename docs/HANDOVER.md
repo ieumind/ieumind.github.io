@@ -16,7 +16,7 @@
   3. 다시 생각을 고쳐 쓴다.
 - 교사는 활동을 만들고, 학생의 생각 흐름과 참여 현황을 확인하고, 피드백한다.
 - 만든 사람: 이태형 선생님(한백고). 화면 맨 아래에 “제작 : 이태형T(한백고)”가 표시된다.
-- 공개 주소: <https://taeneuu.github.io/thinklink/>
+- 공개 주소: <https://ieumind.github.io/> (2026-10-12 이전: `taeneuu.github.io/thinklink/` → 새 주소로 넘겨 주는 저장소만 남김)
   - 교사 로그인: `#teacher`
   - 체험 모드: `?demo=1`
 
@@ -84,7 +84,7 @@
 ### 1-4. 사용 기술과 전체 구조
 - **프런트엔드**: 빌드 도구 없는 단일 `index.html`(약 5,960줄). 바닐라 JS + CSS.
   - 외부 스크립트: supabase-js(CDN), QR 코드(qrcodejs, 필요할 때만).
-- **호스팅**: GitHub Pages. 저장소 `taeneuu/thinklink`의 main 루트를 그대로 배포한다.
+- **호스팅**: GitHub Pages. 저장소 `ieumind/ieumind.github.io`(조직 사이트, 예전 `taeneuu/thinklink`)의 main 루트를 그대로 배포한다.
 - **백엔드**: Supabase. 프로젝트 ref `zgwahesadlejacmxojfg`, 서울 리전.
   - Postgres(RLS) + Auth(Google, Anonymous) + Realtime + Storage + Edge Functions(Deno).
 - **AI**
@@ -286,7 +286,7 @@
 - 입력 중에는 `dataChanged()`가 다시 그리지 않는다. 그래서 입력 칸 포커스가 유지된다.
 
 ### 3-3. GitHub 연동
-- **저장소**: `taeneuu/thinklink`. 기본 브랜치 `main` → GitHub Pages.
+- **저장소**: `ieumind/ieumind.github.io` (예전 `taeneuu/thinklink`에서 옮김). 기본 브랜치 `main` → GitHub Pages.
 - **작업 브랜치**: `supabase-version`.
   - 작업 → 커밋 → push → PR(`supabase-version` → `main`) → **사용자가 Merge**.
 - **커밋 작성자**: `git -c user.name="taeneuu" -c user.email="taeneuu@users.noreply.github.com" commit …`
@@ -297,7 +297,7 @@
   ```
 - **PR 열기**: `gh pr create`는 GraphQL 오류가 난다. 대신 아래처럼 연다.
   ```
-  gh api repos/taeneuu/thinklink/pulls -f title=… -f head=supabase-version -f base=main -F body=@파일
+  gh api repos/ieumind/ieumind.github.io/pulls -f title=… -f head=supabase-version -f base=main -F body=@파일
   ```
   - PR 본문 끝: `🤖 Generated with [Claude Code](https://claude.com/claude-code)` + 세션 링크.
 
@@ -367,7 +367,7 @@
 2. **알려진 개선 후보 (요청받지 않음, 하지 말 것 — 요청 시에만)**
    - 교사 결과 화면에 ❤️ 수 표시.
    - 오늘의 필기 Storage 정책(`note_can_write`)에 수강 여부 확인 추가. 지금은 비수강생에게 활동 자체가 안 보이므로 실질 위험은 낮다.
-   - `notify`의 VAPID subject가 `https://taeneuu.github.io/thinklink/`로 고정돼 있다. 다른 설치본은 수정 필요.
+   - `notify`의 VAPID subject가 `https://ieumind.github.io/`로 고정돼 있다. 다른 설치본은 수정 필요.
    - 체험 모드에서는 수강 학생 고르기를 체험할 수 없다(안내 문구만 표시).
 
 ---

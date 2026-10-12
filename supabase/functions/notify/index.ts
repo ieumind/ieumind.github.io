@@ -70,7 +70,7 @@ Deno.serve(async (req) => {
   if (!list.length) return json({ sent: 0, total: 0 });
   const { data: sec } = await admin.from("app_secrets").select("k,v").in("k", ["vapid_private", "vapid_public"]);
   const get = (k: string) => (sec ?? []).find((x: any) => x.k === k)?.v;
-  const vapid = { publicKey: get("vapid_public"), privateKey: get("vapid_private"), subject: "https://taeneuu.github.io/thinklink/" };
+  const vapid = { publicKey: get("vapid_public"), privateKey: get("vapid_private"), subject: "https://ieumind.github.io/" };
   if (!vapid.publicKey || !vapid.privateKey) return json({ error: "not_configured" });
   let sent = 0, gone = 0, failed = 0;
   await Promise.all(list.map(async (s) => {
