@@ -96,7 +96,7 @@
         const d = await new Promise(ok=>{const fr=new FileReader(); fr.onload=()=>ok(fr.result); fr.readAsDataURL(blob)});
         const st=JSON.parse(localStorage.getItem("__sbstore")||"{}"); if(st[path]) return {error:{message:"exists"}}; st[path]=d; localStorage.setItem("__sbstore",JSON.stringify(st)); window.__sbLog.push("upload:"+path); return {data:{path},error:null} },
       createSignedUrls: async (paths) => { const st=JSON.parse(localStorage.getItem("__sbstore")||"{}"); window.__sbLog.push("sign:"+paths.length);
-        return {data: paths.map(p => { const sid=p.split("/")[1], ok = isT || mySids().includes(sid); return {path:p, signedUrl: ok && st[p] ? st[p] : null, error: ok ? null : "denied"} })} },
+        return {data: paths.map(p => { const sid=p.split("/")[1], rm = D.docs["rooms/"+p.split("/")[0]], ok = isT || mySids().includes(sid) || (!!rm && (rm.data.reveal||"teacher") !== "teacher" && !!sidFor(tidOf(rm))); return {path:p, signedUrl: ok && st[p] ? st[p] : null, error: ok ? null : "denied"} })} },
       remove: async (paths) => { const st=JSON.parse(localStorage.getItem("__sbstore")||"{}"); paths.forEach(p=>{ const sid=p.split("/")[1]; if(isT || mySids().includes(sid)) delete st[p] }); localStorage.setItem("__sbstore",JSON.stringify(st)); window.__sbLog.push("remove:"+paths.length); return {error:null} }
     })},
     channel(){ const subs=[]; const c={ on(type,f,cb){ subs.push([f,cb]); return c }, subscribe(){ ch.push((ev,row)=>{ for(const [f,cb] of subs){ if(f.event!==ev) continue; if(f.filter && f.filter!=="col=eq."+row.col) continue; if(!canRead(row) && ev!=="DELETE") continue; cb(ev==="DELETE"?{old:row}:{new:{id:row.id,data:row.data,col:row.col}}) } }); return c } }; return c }
