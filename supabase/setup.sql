@@ -852,6 +852,27 @@ end $$;
 revoke execute on function public.teacher_set_name(text) from public, anon;
 grant execute on function public.teacher_set_name(text) to authenticated;
 
+-- ---------------------------------------------------------------------
+-- 📚 학습 나눔: 선생님이 ‘학생끼리 서로 보기’(reveal ≠ teacher)로 열면, 그 활동을 볼 수 있는 학생은 친구 사진도 본다
+--   기존 규칙(note_can_read: 자기 사진·선생님, 지우기도 같음)은 그대로 두고, ‘보기’ 규칙만 하나 더한다
+-- ---------------------------------------------------------------------
+create or replace function public.note_can_read_shared(p_name text) returns boolean
+language sql stable security definer set search_path = public as $$
+  select case when (storage.foldername(p_name))[1] is null then false else
+    public.my_student(public.room_tid((storage.foldername(p_name))[1])) is not null
+    and public.tid_active(public.room_tid((storage.foldername(p_name))[1]))
+    and public.room_open_to_peers((storage.foldername(p_name))[1], public.room_tid((storage.foldername(p_name))[1]))
+  end;
+$$;
+revoke execute on function public.note_can_read_shared(text) from public, anon;
+grant execute on function public.note_can_read_shared(text) to authenticated;
+do $p$ begin
+  if not exists (select 1 from pg_policies where schemaname = 'storage' and tablename = 'objects' and policyname = 'notes_read_shared') then
+    create policy notes_read_shared on storage.objects for select to authenticated
+      using (bucket_id = 'notes' and public.note_can_read_shared(name));
+  end if;
+end $p$;
+
 -- =====================================================================
 -- 마지막으로 관리자(나)의 구글 이메일을 등록하세요 (따옴표 안을 바꿔서 실행)
 -- 다른 선생님은 등록하지 않아도 구글로 로그인하면 바로 교사가 돼요
