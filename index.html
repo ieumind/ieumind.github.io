@@ -965,8 +965,6 @@ a.btn{text-decoration:none;color:inherit;display:inline-flex;align-items:center}
 .qtxt{min-width:0;flex:1;overflow-wrap:anywhere;font-size:14.5px}
 .qbtns{display:flex;gap:4px}
 .qbtns .btn{min-width:36px}
-.hintcard{background:var(--accent-soft);border-color:var(--accent)}
-.hintcard p{margin-top:6px;font-size:16px;line-height:1.6}
 .sdist{display:grid;gap:10px;margin-top:6px}
 .sd{display:grid;grid-template-columns:minmax(7em,auto) 1fr auto;gap:12px;align-items:center;font-size:15px}
 .sd .track{height:14px;border-radius:7px;background:var(--sunk);overflow:hidden}
@@ -1100,11 +1098,14 @@ a.btn{text-decoration:none;color:inherit;display:inline-flex;align-items:center}
 .pq-q{font-size:clamp(20px,2.2vw,28px);display:flex;gap:10px;align-items:center;margin:0 0 14px}
 .pq-n{flex:0 0 auto;display:inline-grid;place-items:center;min-width:28px;height:28px;border-radius:50%;background:var(--accent-soft);color:var(--accent);font-size:15px;font-weight:700}
 .pq-grid{grid-template-columns:repeat(auto-fit,minmax(260px,1fr))}
-.pstu{display:grid;gap:14px}.pstu-2{grid-template-columns:repeat(auto-fit,minmax(320px,1fr))}.pstu-3{grid-template-columns:repeat(auto-fit,minmax(260px,1fr))}
+.pstu{display:grid;gap:14px}.pstu-1{grid-template-columns:minmax(0,760px);justify-content:center}.pstu-1 .pstu-card li p{font-size:clamp(18px,1.9vw,24px)}.pstu-2{grid-template-columns:repeat(auto-fit,minmax(320px,1fr))}.pstu-3{grid-template-columns:repeat(auto-fit,minmax(260px,1fr))}
 .pstu-card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:16px 18px}
 .pstu-card header{display:flex;gap:8px;align-items:center;margin-bottom:10px;font-size:18px}
 .pstu-card ol{list-style:none;margin:0;padding:0;display:grid;gap:12px}
 .pstu-card li{display:flex;gap:10px}.pstu-card li p{font-size:clamp(16px,1.5vw,20px);margin-top:2px;white-space:pre-wrap}
+.sqbox{margin-top:12px;padding:12px 14px;border:1px solid var(--line);border-left:5px solid var(--accent);border-radius:10px;background:var(--paper)}
+.sqbox-h{font-weight:700;margin-bottom:8px}.sqbox ol{list-style:none;margin:0;padding:0;display:grid;gap:8px}.sqbox li{display:flex;gap:10px;align-items:baseline;font-size:16px}
+.nexthint{margin-top:10px;padding:8px 12px;border-radius:8px;background:var(--accent-soft);font-size:14.5px;line-height:1.6}
 .tname-btn{margin-left:4px;vertical-align:middle}
 .dmore-row{display:flex;justify-content:center;margin:10px 0 4px}
 .sec-h2{display:flex;align-items:baseline;justify-content:space-between;gap:10px;flex-wrap:wrap}
@@ -1600,7 +1601,7 @@ Object.defineProperty(S, "canTeach", {get: () => Auth.teacher, set(){} });      
 const isTeacher = () => Auth.teacher && S.role === "teacher";                       // 교사 권한 + 교사 화면(학생 화면 미리보기 중이면 false)
 /* 교사만 쓰는 동작: 학생 권한으로는 버튼이 없을 뿐 아니라 호출해도 실행되지 않는다 */
 const TEACHER_ACTS = new Set(["note-share","c-course","tname-open","tname-later","tname-save","q-custom","q-add","q-del","q-move","course-archive","courses-more","courses-arch","port-student","port-open","tmr-start","tmr-add","tmr-pause","tmr-resume","tmr-stop","ctx-img-del","qfb","qfb-close","fb-chip","pick-tool","mem-open","mem-cls","mem-all","mem-none","course-gsplit","ai-setup","ai-key-save","ai-key-del","ai-suggest","ai-pick","tadmin-open","tadmin-block","tadmin-tab","fbadmin-done","notice-add","notice-del","note-filter","note-req","note-req-send","note-req-cancel","note-dup","create","edit-room","dup","dup-list","del","del-yes","del-ask","del-room","status","toggle","save-feedback","class-fb","pin","pin-move","pin-clear",
-  "present","present-exit","pmode","pnav","pq","pper","prand","fullscreen","export","export-go","save-tset","tpl-save-open","tpl-save","tpl-cancel","use-tpl","create-save","draft-save","publish-draft","discard-form",
+  "present","present-exit","pmode","pnav","pq","pper","pnames","prand","fullscreen","export","export-go","save-tset","tpl-save-open","tpl-save","tpl-cancel","use-tpl","create-save","draft-save","publish-draft","discard-form",
   "preview","preview-form","preview-home","qr","copy-link","save-share","mcourse","course-new","course-edit","course-gadd","course-gdel","course-save","course-del","course-del-yes",
   "roster-open","roster-add","roster-reissue","roster-del","roster-print","gsel","asg-add-open","asg-add-cancel","asg-add","asg-st","racts","mview","sview","sfilter","sgo","snav","ttab","mfilter","open-student","goal","tpl","st-add","st-del","depth"]);
 // TODO: 실제 배포 시 교사 인증 및 권한 검증 필요
@@ -3763,12 +3764,14 @@ function statusButtons(r, big){
 /* ---- 탭: 개요 ---- */
 function tabOverview(r, st){
   const f = featuresOf(r), all = st.all;
-  let h = `<section class="card"><div class="eyebrow">${isRelay(r) ? "오늘의 주제" : "논제"}</div><p class="prompt" style="margin-top:4px">${lnk(r.prompt)}</p>
+  const sq = STEPQ_T.includes(r.template) ? effFields(r).filter(x => x.k !== "drawing") : [];
+  let h = `<section class="card"><div class="eyebrow">${isRelay(r) ? "오늘의 주제" : r.template === "inquiry" || sq.some(x => x.q) ? "🎯 핵심 질문" : "논제"}</div><p class="prompt" style="margin-top:4px">${lnk(r.prompt)}</p>
     ${r.intro ? `<p class="muted" style="margin-top:8px"><b>활동 소개</b> · ${lnk(r.intro)}</p>` : ""}
     ${srcBox(r)}
+    ${sq.length ? `<div class="sqbox"><div class="sqbox-h">🪜 단계별 질문 <span class="muted small">학생이 차례로 답해요</span></div><ol>${sq.map((x, i) => `<li><span class="pq-n">${i + 1}</span><span>${esc(sField(r, x).q)}${x.h && x.q ? `<span class="muted small"> · ${esc(x.h)}</span>` : ""}</span></li>`).join("")}</ol></div>` : ""}
     ${rulesHTML(r)}
     ${tnote(r).memo ? `<p class="small" style="margin-top:12px;background:var(--sunk);border-radius:8px;padding:8px 12px">📝 <b>교사용 메모</b> · ${esc(tnote(r).memo)} <span class="muted">(학생에게 보이지 않아요)</span></p>` : ""}</section>`;
-  h = asgCard(r) + hintCard(r, st) + stanceCard(r, st) + rateCard(r, st) + checkCard(r, st) + h;
+  h = asgCard(r) + stanceCard(r, st) + rateCard(r, st) + checkCard(r, st) + h;     // (예전 ‘지금 수업에서 볼 것’ 상자는 숫자가 겹쳐 빼고, 다음 진행 제안만 ‘참여와 완료’에 한 줄로)
   // 사고 과정 현황 (기존 막대)
   const rows = [], fields = effFields(r), total = st.total || all.length;
   if(f.initial || f.predict) rows.push([f.predict ? "예측" : "처음 생각", all.filter(p=>p.initial).length]);
@@ -3931,11 +3934,12 @@ function viewPresent(r){
   const modes = presentModes(r, sub);
   let mode = S.pmode; if(!modes.some(x => x[0] === mode)) mode = hasSt ? "stance" : "thoughts";
   const order = [...allPostsOf(r.id)].sort((a, b) => (a.createdAt||0) - (b.createdAt||0)).map(p => p.id);
-  const anon = p => `익명 ${order.indexOf(p.id) + 1}`;                       // 학생끼리 구분되게 (이름은 보이지 않는다)
+  const anon = p => S.pnames ? p.author : `익명 ${order.indexOf(p.id) + 1}`;   // 기본은 익명 번호, 선생님이 ‘이름 보기’를 켜면 이름
   const quote = (p, big) => `<div class="pquote${big?" big":""}"><span class="who muted">${anon(p)}의 생각 ${p.stance && hasSt ? stanceChip(r,p.stance) : ""}</span>${drawingHTML(finalBody(p).drawing, anon(p) + "의 그림")}<p>${esc(presentThought(r,p))}</p></div>`;
   const page = (list, per) => { const pages = Math.max(1, Math.ceil(list.length / per)), i = Math.max(0, Math.min(S.pidx || 0, pages - 1)); S.pidx = i;
-    return {i, pages, items:list.slice(i * per, i * per + per), label:`${list.length ? i * per + 1 : 0}–${Math.min(list.length, i * per + per)} / ${list.length}`} };
+    return {i, pages, items:list.slice(i * per, i * per + per), label: per === 1 ? `${list.length ? i + 1 : 0} / ${list.length}` : `${list.length ? i * per + 1 : 0}–${Math.min(list.length, i * per + per)} / ${list.length}`} };
   let h = `<div class="present"><div class="pbar"><span>생각이음 · 📽 수업에서 함께 보기${S.gsel && S.gselRoom === r.id ? ` · ${esc(groupName(r.courseId, S.gsel))}` : ""}</span><span class="row">${(() => { const t = tmrOf(r); return t && !(t.st === "end" && t.ago > 10 * 60000) ? `<span class="ptmr ${tmrCls(t)}" data-tmr="${esc(r.id)}">${t.st === "end" ? "⏰ 시간 종료" : `⏱ <b class="tmr-t">${mmss(t.left)}</b>`}</span>` : "" })()}
+      <button class="btn sm" type="button" data-a="pnames" aria-pressed="${!!S.pnames}" title="화면에 학생 이름을 보여 줄지 정해요">${S.pnames ? "🙈 익명으로 보기" : "👤 이름 보기"}</button>
       <button class="btn sm" type="button" data-a="fullscreen">전체 화면</button><button class="btn sm pri" type="button" data-a="present-exit">나가기</button></span></div>
     <nav class="pmodes" aria-label="발표 모드">${modes.map(([k,l]) => `<button type="button" data-a="pmode" data-v="${k}" aria-pressed="${mode===k}">${esc(l)}</button>`).join("")}</nav>
     <h1>${esc(r.prompt)}</h1>`;
@@ -3969,8 +3973,8 @@ function viewPresent(r){
       <h2 class="pq-q"><span class="pq-n">${qi + 1}</span>${esc(sField(r, x).q)}</h2>
       ${ans.length ? `<div class="pquotes pq-grid">${pg.items.map(p => `<div class="pquote"><span class="who muted">${anon(p)} ${p.stance && hasSt ? stanceChip(r,p.stance) : ""}</span><p>${esc(finalBody(p)[x.k])}</p></div>`).join("")}</div>${pagerHTML(pg.i, pg.pages, pg.label)}` : `<p class="lead">아직 이 질문에 답한 학생이 없어요.</p>`}`;
   }else if(mode === "bys"){                                           // 학생 한 명의 답을 질문 차례대로 (한 화면에 2~3명)
-    const qs = presentQs(r), per = S.pper === 2 ? 2 : 3, pg = page([...sub].sort((a, b) => order.indexOf(a.id) - order.indexOf(b.id)), per);
-    h += `<div class="pper" role="group" aria-label="한 화면에 몇 명"><span class="muted small">한 화면에</span><button type="button" data-a="pper" data-v="2" aria-pressed="${per === 2}">2명</button><button type="button" data-a="pper" data-v="3" aria-pressed="${per === 3}">3명</button></div>
+    const qs = presentQs(r), per = [1, 2, 3].includes(S.pper) ? S.pper : 3, pg = page([...sub].sort((a, b) => order.indexOf(a.id) - order.indexOf(b.id)), per);
+    h += `<div class="pper" role="group" aria-label="한 화면에 몇 명"><span class="muted small">한 화면에</span>${[1, 2, 3].map(k => `<button type="button" data-a="pper" data-v="${k}" aria-pressed="${per === k}">${k}명</button>`).join("")}</div>
       <div class="pstu pstu-${per}">${pg.items.map(p => { const b = finalBody(p);
         return `<article class="pstu-card"><header><b>${anon(p)}</b>${p.stance && hasSt ? stanceChip(r,p.stance) : ""}</header>
           <ol>${qs.map((x, j) => `<li><span class="pq-n">${j + 1}</span><div><span class="muted small">${esc(sField(r, x).q)}</span><p>${esc(b[x.k] || "—")}</p></div></li>`).join("")}</ol></article>` }).join("")}</div>
@@ -4039,7 +4043,7 @@ function teacherCard(r, p, ps, nav){
    ========================================================= */
 /* 🔄 새 버전 알림: 배포 때마다 APP_VERSION과 version.json의 v를 같은 값으로 올린다.
    GitHub Pages는 화면을 10분쯤 기억하므로, 옛 화면이면 아래쪽에 ‘새로고침’ 띠를 띄우고 주소를 바꿔 새로 받는다 */
-const APP_VERSION = "2026-10-13f";
+const APP_VERSION = "2026-10-13g";
 async function checkVersion(){
   if(!/^https?:$/.test(location.protocol)) return;
   try{
@@ -4192,7 +4196,7 @@ function welcomeSpotlight(){
           <span class="cb ai">🎭 나는 그저 명령에 따랐을 뿐이라고 생각했소…</span>
           <span class="cb me">그럼 책임은 누구에게 있죠?</span></div>
         <b>🎭 AI 가상 인물 대화 — 교과서 속 인물에게 직접 묻기</b>
-        <p>AI가 고종, 아이히만, 그레타 툰베리 같은 인물을 <b>연기</b>하고, 학생은 질문을 던지며 그 인물의 생각과 시대를 파고들어요. 대화를 마치면 “내 생각은 어떻게 달라졌나”를 정리하며 <b>비판적으로</b> 돌아봐요.</p>
+        <p>AI가 윤동주, 정조, 찰스 다윈, 존 롤스, 그레타 툰베리 등의 인물을 <b>연기</b>하고, 학생은 질문을 던지며 그 인물의 생각과 시대를 파고들어요. 대화를 마치면 “내 생각은 어떻게 달라졌나”를 정리하며 <b>비판적으로</b> 돌아봐요.</p>
         <ul><li>선생님이 넣은 자료를 먼저 참고해 답해요</li><li>질문 수 제한·안전 규칙은 서버가 지키고, 모든 대화는 선생님이 볼 수 있어요</li><li>무료 AI(Cloudflare)로 학생 계정 없이 바로</li></ul></div>
     </div></section>`;
 }
@@ -4992,9 +4996,6 @@ function lessonHints(r, st){
   else out.push(`${P}명 중 ${sc[k-1].n}명이 ${sc[k-1].l}까지 마쳤습니다. ${NEXT_HINT[sc[k].s] || `이제 ‘${sc[k].l}’ 단계로 안내하기 좋습니다.`}`);
   return out;
 }
-function hintCard(r, st){
-  return `<section class="card hintcard"><h3>💡 지금 수업에서 볼 것</h3>${lessonHints(r, st).map(x => `<p>${esc(x)}</p>`).join("")}</section>`;
-}
 function stanceCard(r, st){
   const sts = r.stances || [], sub = st.sub, n = sub.length;
   if(!sts.length) return "";
@@ -5012,11 +5013,11 @@ function stanceCard(r, st){
     ${interp ? `<p class="hint">💬 ${esc(interp)}</p>` : n ? `<p class="muted small" style="margin-top:8px">5명 이상 제출하면 분포를 간단히 풀어서 알려 드려요.</p>` : ""}</section>`;
 }
 function rateCard(r, st){
-  const P = st.participants;
+  const P = st.participants, next = P >= 3 ? lessonHints(r, st).slice(1).pop() : "";
   return `<section class="card"><h3>참여와 완료 <span class="muted small" style="font-weight:400">활동에 들어온 것과 끝낸 것은 달라요</span></h3><div class="bars" style="margin-top:8px">
       ${st.total ? barRow("참여", P, st.total) : `<div class="bar"><span>참여</span><span class="small muted">${P}명 · 설정에서 학생 수를 넣으면 비율이 보여요</span><span></span></div>`}
       ${barRow("완료", st.complete, P)}</div>
-    ${P && st.complete < P ? `<div class="cardh" style="margin-top:8px"><p class="small">참여했지만 아직 끝내지 않은 학생 <b class="mono">${P - st.complete}</b>명</p><button class="linkbtn" type="button" data-a="sgo" data-v="todo">보기 →</button></div>` : ""}</section>`;
+    ${P && st.complete < P ? `<div class="cardh" style="margin-top:8px"><p class="small">참여했지만 아직 끝내지 않은 학생 <b class="mono">${P - st.complete}</b>명</p><button class="linkbtn" type="button" data-a="sgo" data-v="todo">보기 →</button></div>` : ""}${next ? `<p class="nexthint">👉 <b>다음 진행 제안</b> · ${esc(next)}</p>` : ""}</section>`;
 }
 function checkCard(r, st){
   const all = studentEntries(r, st), fl = sfilters(r, st), items = [];
@@ -6565,7 +6566,8 @@ async function act(a, b){
     }
     case "pmode": S.pmode = b.dataset.v; S.pidx = 0; if(b.dataset.v === "random") S.prand = null; break;
     case "pq": S.pq = Number(b.dataset.v) || 0; S.pidx = 0; break;
-    case "pper": S.pper = Number(b.dataset.v) === 2 ? 2 : 3; S.pidx = 0; break;
+    case "pper": S.pper = [1, 2, 3].includes(Number(b.dataset.v)) ? Number(b.dataset.v) : 3; S.pidx = 0; break;
+    case "pnames": S.pnames = !S.pnames; break;
     case "pnav": S.pidx = Math.max(0, (S.pidx||0) + Number(b.dataset.v)); break;
     case "prand": {
       const sub = postsOf(r.id).filter(x => x.id !== S.prand);
