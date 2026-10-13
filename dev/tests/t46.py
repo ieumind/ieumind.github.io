@@ -34,7 +34,7 @@ async def main():
     for tpl in ['debate2','debateN','inquiry','relay','essay','sketch','draw','chat','notes']:
       await D.evaluate(f'(()=>{{applyTemplate("{tpl}"); render()}})()'); await W(D,120)
       print(' ', tpl, '|', await D.inner_text('label[for=c-prompt]'), '|', await D.get_attribute('#c-prompt','placeholder'))
-    print('course select h:', await D.evaluate('document.querySelector("#c-course").getBoundingClientRect().height'), 'due h:', await D.evaluate('document.querySelector("#c-due").getBoundingClientRect().height'))
+    print('course chip h:', await D.evaluate('document.querySelector("[data-a=c-course]").getBoundingClientRect().height'), 'due h:', await D.evaluate('document.querySelector("#c-due").getBoundingClientRect().height'))
     await D.evaluate('act("home",{dataset:{}})'); await W(D,300); await D.evaluate('act("mcourse",{dataset:{v:"c-demo"}})'); await W(D,400)
     print('pc chead btns:', await D.eval_on_selector_all('.chead-acts .btn','e=>e.filter(x=>getComputedStyle(x).display!=="none").map(x=>x.textContent.trim())'))
     print('cport closed body:', bool(await D.query_selector('.cport-body')))
