@@ -53,8 +53,8 @@
   }
   let rpcImpl;
   const client={
-    auth:{ getSession: async()=>({data:{session: {user:{id: isT ? (uid==="T2" ? "teacher2-uid" : "teacher-uid") : uid, is_anonymous: !isT}}}}), signInAnonymously: async()=>({data:{session:{user:{is_anonymous:true}}}}),
-      signInWithOAuth: async(o)=>{ window.__oauth=o; return {data:{}} }, signOut: async()=>{ sessionStorage.removeItem("uid"); window.__signedOut=true; return {} } },
+    auth:{ getSession: async()=>({data:{session: {user:{user_metadata: isT ? {full_name:"Google 이름", ...(q.get("newteacher") && !localStorage.getItem("__tname") ? {} : {display_name: localStorage.getItem("__tname") || "이태형"})} : {}, id: isT ? (uid==="T2" ? "teacher2-uid" : "teacher-uid") : uid, is_anonymous: !isT}}}}), signInAnonymously: async()=>({data:{session:{user:{is_anonymous:true}}}}),
+      signInWithOAuth: async(o)=>{ window.__oauth=o; return {data:{}} }, updateUser: async(o)=>{ window.__sbLog.push("updateUser:"+JSON.stringify(o)); if(o?.data?.display_name) localStorage.setItem("__tname", o.data.display_name); return {data:{},error:null} }, signOut: async()=>{ sessionStorage.removeItem("uid"); window.__signedOut=true; return {} } },
     rpc: (fn, p) => { const pr = rpcImpl(fn, p); return {then:(a,b) => pr.then(a,b)} },   // 실제 supabase-js처럼 .catch 없음
     rpcImpl_: 0,
     _rpc: async (fn, p) => { await new Promise(r=>setTimeout(r,5)); D=load(); window.__sbLog.push(fn);
@@ -65,6 +65,7 @@
       if(fn==="room_view"){ const sid=sidFor(tidOf(D.docs["rooms/"+p.p_room])); if(isT||!sid) return {data:null,error:null}; const v=JSON.parse(localStorage.getItem("__views")||"{}"); const r=v[p.p_room]=v[p.p_room]||{}; const now=new Date().toISOString(); r[sid]=r[sid]?{...r[sid],last_at:now,n:r[sid].n+1}:{first_at:now,last_at:now,n:1}; localStorage.setItem("__views",JSON.stringify(v)); return {data:null,error:null} }
       if(fn==="room_viewers"){ if(!isT) return {data:[],error:null}; const v=JSON.parse(localStorage.getItem("__views")||"{}")[p.p_room]||{}; return {data:Object.entries(v).map(([student_id,x])=>({student_id,...x})),error:null} }
       if(fn==="push_schedule"){ window.__sbLog.push("sched:"+p.p_room+"/"+p.p_group+"@"+(p.p_at?"set":"clear")); return {data:{ok:isT,scheduled:!!p.p_at},error:null} }
+      if(fn==="teacher_set_name"){ if(!isT) return {data:{ok:false,reason:"denied"}}; const v=(p.p_name||"").trim(); if(!v) return {data:{ok:false,reason:"empty"}}; window.__sbLog.push("tname:"+v); return {data:{ok:true,name:v},error:null} }
       if(fn==="my_student_ids") return {data: mySids(), error:null};
       if(fn==="my_students") return {data: isT ? [] : Object.entries(sess()).map(([tid,sid])=>({tid, sid, name:label(D.students.find(x=>x.id===sid))})), error:null};
       if(fn==="push_save"){ window.__push=p; return {data:null,error:null} }
