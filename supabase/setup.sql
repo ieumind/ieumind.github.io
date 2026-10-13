@@ -825,6 +825,33 @@ end $cron$;
 -- 이 프로젝트의 함수 주소를 한 번 넣어 주세요 (예: https://<프로젝트>.supabase.co/functions/v1)
 -- insert into public.app_secrets (k, v) values ('functions_url', 'https://<프로젝트>.supabase.co/functions/v1') on conflict (k) do update set v = excluded.v;
 
+-- ---------------------------------------------------------------------
+-- 👩‍🏫 교사 이름: 처음 구글로 로그인하면 선생님이 직접 정하고, 나중에도 바꿀 수 있다
+--   teachers.name_set = 선생님이 정한 이름 (그 뒤로는 구글 이름으로 덮어쓰지 않는다)
+-- ---------------------------------------------------------------------
+alter table public.teachers add column if not exists name_set boolean not null default false;
+create or replace function public.teacher_checkin() returns void
+language plpgsql volatile security definer set search_path = public as $$
+begin
+  if coalesce((auth.jwt() ->> 'is_anonymous')::boolean, false) or coalesce(auth.jwt() ->> 'email', '') = '' then return; end if;
+  insert into public.teachers (email, uid, name, first_at, last_at)
+  values (lower(auth.jwt() ->> 'email'), auth.uid(),
+          coalesce(auth.jwt() -> 'user_metadata' ->> 'display_name', auth.jwt() -> 'user_metadata' ->> 'full_name', auth.jwt() -> 'user_metadata' ->> 'name'), now(), now())
+  on conflict (email) do update set uid = excluded.uid,
+    name = case when public.teachers.name_set then public.teachers.name else coalesce(excluded.name, public.teachers.name) end, last_at = now();
+end $$;
+create or replace function public.teacher_set_name(p_name text) returns json
+language plpgsql volatile security definer set search_path = public as $$
+declare v text := left(regexp_replace(trim(coalesce(p_name, '')), '\s+', ' ', 'g'), 30);
+begin
+  if not public.is_teacher() then return json_build_object('ok', false, 'reason', 'denied'); end if;
+  if length(v) < 1 then return json_build_object('ok', false, 'reason', 'empty'); end if;
+  update public.teachers set name = v, name_set = true where lower(email) = lower(coalesce(auth.jwt() ->> 'email', ''));
+  return json_build_object('ok', true, 'name', v);
+end $$;
+revoke execute on function public.teacher_set_name(text) from public, anon;
+grant execute on function public.teacher_set_name(text) to authenticated;
+
 -- =====================================================================
 -- 마지막으로 관리자(나)의 구글 이메일을 등록하세요 (따옴표 안을 바꿔서 실행)
 -- 다른 선생님은 등록하지 않아도 구글로 로그인하면 바로 교사가 돼요
