@@ -1,5 +1,6 @@
 // 생각이음 · 새 활동·공지 알림 보내기 (Web Push)
-// - 교사만 보낼 수 있다: push_targets()/push_targets_for(과목)가 교사 확인 + 한 시간 30번 제한 + ‘내 학생(그 과목 수강 학생) 기기’만 돌려준다
+// - 교사만 보낼 수 있다: push_targets_for(과목)/push_targets_groups(과목, 그룹)가 교사 확인 + 한 시간 30번 제한 + ‘그 과목(그룹) 수강 학생 기기’만 돌려준다
+// - 과목이 없는 활동은 보내지 않는다
 // - 알림 열쇠(VAPID)는 app_secrets 표에만 있고, 서버(관리자 열쇠)만 읽는다
 // - 암호화는 표준(RFC 8291 aes128gcm)과 서명(RFC 8292 VAPID)을 Web Crypto로 직접 한다
 import { createClient } from "jsr:@supabase/supabase-js@2";
@@ -63,8 +64,12 @@ Deno.serve(async (req) => {
   const URL_ = Deno.env.get("SUPABASE_URL")!;
   const user = createClient(URL_, Deno.env.get("SUPABASE_ANON_KEY")!, { global: { headers: { Authorization: req.headers.get("Authorization") ?? "" } } });
   const admin = createClient(URL_, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
-  const course = String(body?.course ?? "").slice(0, 80);              // 과목 공지·과목 활동이면 그 과목 수강 학생에게만
-  const { data: targets, error } = course ? await user.rpc("push_targets_for", { p_course: course }) : await user.rpc("push_targets");
+  const course = String(body?.course ?? "").slice(0, 80);              // 과목 공지·과목 활동만, 그 과목 수강 학생에게만
+  if (!course) return json({ error: "no_course", sent: 0, total: 0 });   // 과목이 없는 활동은 알림을 보내지 않는다
+  const groups = Array.isArray(body?.groups) ? body.groups.map((g: unknown) => String(g).slice(0, 80)).filter(Boolean).slice(0, 30) : [];
+  const { data: targets, error } = groups.length   // 그룹에만 공개한 활동이면 그 그룹 학생에게만
+    ? await user.rpc("push_targets_groups", { p_course: course, p_groups: groups })
+    : await user.rpc("push_targets_for", { p_course: course });
   if (error) return json({ error: "denied" });
   const list = (targets ?? []) as { endpoint: string; p256dh: string; auth: string }[];
   if (!list.length) return json({ sent: 0, total: 0 });

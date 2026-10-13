@@ -25,7 +25,7 @@ async def main():
     await T.click('[data-a=home]'); await W(T); await T.click('[data-a=mcourse][data-v=""]'); await W(T)
     await T.click('[data-a=create]'); await W(T); await T.fill('#c-prompt','시의 화자는 누구일까?'); await T.fill('#c-title','화자 찾기')
     await T.evaluate('document.querySelectorAll("details.adv").forEach(d=>d.open=true)'); await T.fill('#c-subject','국어')
-    await T.uncheck('[data-k=notify]'); await W(T)
+    print('no-course notify box:', bool(await T.query_selector('[data-k=notify]')))
     await T.click('[data-a=create-save]'); await W(T,600)
     print('log:', [x for x in await T.evaluate('__sbLog') if x.startswith('notify')])
     # student

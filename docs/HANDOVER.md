@@ -243,6 +243,28 @@
   - 앞서 넣은 ‘최근에 쓴 순’(교사)·‘할 일 있는 과목 먼저’(학생) 자동 정렬은 이 설정으로 바뀌었다.
 - `APP_VERSION`/`version.json` = `2026-10-12j`. 테스트: `t49.py`.
 
+### 2-15. 추가 수정 (PR #28, 2026-10-13)
+- 🔔 알림은 과목이 있는 활동·공지만:
+  - 활동 만들기의 ‘🔔 학생 알림’ 칸은 과목을 골랐을 때만 보인다(`roomPushOn`).
+  - `notify` 함수(v4)는 course가 없으면 보내지 않는다(`no_course`).
+  - 예전 `push_targets_for`는 없는 과목이면 모든 학생에게 보내던 것을 막았다(→ `course_push_targets`).
+- 👥 그룹별 공개(추천: 활동은 하나, 그룹마다 공개 상태·시각 — 결과를 한곳에서 그룹별로 비교):
+  - 활동 만들기 ④에 그룹마다 ‘바로 공개 / ⏰ 공개 예약(시각)’ + 그룹 마감(`gsm:/gsa:/gsd:<그룹>` 폼 값 → `assign[g] = {status:"ready", startAt}`).
+  - 수정할 때 `formFromRoom`이 다시 채운다. 예전 ‘그룹 배포’ 카드(활동 화면 개요)도 그대로 쓸 수 있다.
+- 그룹 알림:
+  - 공개할 때 지금 열린 그룹 학생에게만(`notify`에 groups → `push_targets_groups`). 그룹에 학생 명단이 없으면(학생이 고르는 그룹) 과목 전체에 보낸다.
+  - 개요 카드에서 ‘시작 전→진행 중’으로 바꾸면 그 그룹에 알림.
+  - 활동에 `notify:false`면(만들 때 끔) 알림·예약 없음.
+- ⏰ 예약 알림(서버, 비파괴 추가):
+  - `push_jobs` 표: 활동·그룹마다 하나, RLS 켜고 권한 없음.
+  - `push_schedule()`: 교사만, 과목 활동만, 120일 안. 시각이 지났거나 열린 그룹이면 예약을 지운다.
+  - `push_due_take()`: service_role만. 마감·작성 중·보관 활동, 종료 그룹은 건너뜀.
+  - pg_cron 작업 `push-due`가 1분마다, 때가 된 예약이 있을 때만 pg_net으로 `notify-due` 함수(verify_jwt 끔, `x-cron-key` = `app_secrets.cron_key` 확인)를 부른다.
+  - 클라이언트 `schedSync(r)`가 저장·그룹 상태/시각 변경 때마다 맞춘다.
+  - setup.sql에 반영(pg_cron/pg_net 없으면 건너뜀, `functions_url`은 직접 넣기). 서버에는 마이그레이션 `group_push_and_schedule`로 적용. 로컬 검사 `dev/sql/group_push_test.sql`.
+- 주의: 그룹 공개는 지금처럼 화면에서 거르는 방식(같은 과목 학생은 서버 권한상 읽을 수는 있음).
+- `APP_VERSION`/`version.json` = `2026-10-13a`. 테스트: `t50.py`(t29는 과목 없는 활동에 알림 칸이 없는지 확인으로 바꿈).
+
 ---
 
 ## 3. 파일 및 코드 구조

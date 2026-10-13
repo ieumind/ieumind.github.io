@@ -700,6 +700,131 @@ $$;
 revoke execute on function public.my_students() from public, anon;
 grant execute on function public.my_students() to authenticated;
 
+-- ---------------------------------------------------------------------
+-- 🔔 알림은 과목이 있는 활동·공지만, 그 과목(과 고른 그룹) 학생에게만
+--   course_push_targets: 과목이 없으면 아무에게도 안 보낸다. 그룹에 학생 명단이 있으면 그 그룹 학생만 (학생이 고르는 그룹이면 과목 전체)
+-- ---------------------------------------------------------------------
+create or replace function public.course_push_targets(p_tid uuid, p_course text, p_groups text[]) returns table(endpoint text, p256dh text, auth text)
+language sql stable security definer set search_path = public as $$
+  with c as (select d.data from public.docs d where d.col = 'courses' and d.id = p_course and d.tid = p_tid limit 1),
+       gs as (select g from c, jsonb_array_elements(case when jsonb_typeof(c.data -> 'groups') = 'array' then c.data -> 'groups' else '[]'::jsonb end) g
+               where g ->> 'id' = any(coalesce(p_groups, '{}'))),
+       byg as (select coalesce(array_length(p_groups, 1), 0) > 0
+                  and (select count(*) from gs) = array_length(p_groups, 1)
+                  and not exists (select 1 from gs where jsonb_typeof(g -> 'members') is distinct from 'array') as v),
+       gids as (select x as sid from gs, jsonb_array_elements_text(g -> 'members') x)
+  select s.endpoint, s.p256dh, s.auth from public.push_subs s
+    join public.student_sessions ss on ss.uid = s.uid and ss.tid = p_tid
+   where exists (select 1 from c)
+     and (case when (select v from byg) then ss.student_id::text in (select sid from gids)
+               when jsonb_typeof((select data -> 'members' from c)) = 'array' then (select data -> 'members' from c) ? ss.student_id::text
+               else true end);
+$$;
+revoke execute on function public.course_push_targets(uuid, text, text[]) from public, anon, authenticated;
+-- 과목 공지·새 활동(그룹 지정 없음): 과목이 없으면 보내지 않는다
+create or replace function public.push_targets_for(p_course text) returns table(endpoint text, p256dh text, auth text)
+language plpgsql security definer set search_path = public as $$
+begin
+  if not public.is_teacher() then return; end if;
+  if not exists (select 1 from public.docs where col = 'courses' and id = p_course and tid = auth.uid()) then return; end if;
+  if (select count(*) from public.notify_log where tid = auth.uid() and at > now() - interval '1 hour') >= 30 then return; end if;
+  insert into public.notify_log (tid) values (auth.uid());
+  return query select * from public.course_push_targets(auth.uid(), p_course, null);
+end $$;
+revoke execute on function public.push_targets_for(text) from public, anon;
+grant execute on function public.push_targets_for(text) to authenticated;
+-- 그룹에만 공개한 활동: 그 그룹 학생에게만
+create or replace function public.push_targets_groups(p_course text, p_groups text[]) returns table(endpoint text, p256dh text, auth text)
+language plpgsql security definer set search_path = public as $$
+begin
+  if not public.is_teacher() then return; end if;
+  if not exists (select 1 from public.docs where col = 'courses' and id = p_course and tid = auth.uid()) then return; end if;
+  if (select count(*) from public.notify_log where tid = auth.uid() and at > now() - interval '1 hour') >= 30 then return; end if;
+  insert into public.notify_log (tid) values (auth.uid());
+  return query select * from public.course_push_targets(auth.uid(), p_course, p_groups);
+end $$;
+revoke execute on function public.push_targets_groups(text, text[]) from public, anon;
+grant execute on function public.push_targets_groups(text, text[]) to authenticated;
+
+-- ---------------------------------------------------------------------
+-- ⏰ 예약 알림: 그룹 공개 시각이 되면 그 그룹 학생에게 알림 (pg_cron이 1분마다 notify-due 함수를 부른다)
+--   push_jobs: 활동·그룹마다 하나 (시각을 바꾸면 덮어씀). 선생님은 push_schedule()로만 넣고 지운다
+-- ---------------------------------------------------------------------
+create table if not exists public.push_jobs (
+  tid uuid not null, room_id text not null, grp text not null default '', course text not null,
+  title text not null, body text not null default '', url text not null default '', tag text not null default '',
+  send_at timestamptz not null, sent_at timestamptz, created_at timestamptz not null default now(),
+  primary key (tid, room_id, grp));
+create index if not exists push_jobs_due_idx on public.push_jobs (send_at) where sent_at is null;
+alter table public.push_jobs enable row level security;
+revoke all on public.push_jobs from public, anon, authenticated;
+create or replace function public.push_schedule(p_room text, p_group text, p_at bigint, p_title text, p_body text) returns json
+language plpgsql volatile security definer set search_path = public as $$
+declare d public.docs; v_course text; v_at timestamptz; g text := coalesce(p_group, '');
+begin
+  if not public.is_teacher() then return json_build_object('ok', false, 'reason', 'denied'); end if;
+  select * into d from public.docs where col = 'rooms' and id = p_room and tid = auth.uid() limit 1;
+  if not found then return json_build_object('ok', false, 'reason', 'denied'); end if;
+  v_course := coalesce(d.data ->> 'courseId', '');
+  v_at := case when p_at is null then null else to_timestamp(p_at / 1000.0) end;
+  if v_course = '' or not exists (select 1 from public.docs where col = 'courses' and id = v_course and tid = auth.uid())
+     or v_at is null or v_at <= now() or v_at > now() + interval '120 days' then
+    delete from public.push_jobs where tid = auth.uid() and room_id = p_room and grp = g and sent_at is null;
+    return json_build_object('ok', true, 'scheduled', false);
+  end if;
+  if (select count(*) from public.push_jobs where tid = auth.uid() and sent_at is null) >= 300 then return json_build_object('ok', false, 'reason', 'too_many'); end if;
+  insert into public.push_jobs (tid, room_id, grp, course, title, body, url, tag, send_at)
+  values (auth.uid(), p_room, g, v_course, left(coalesce(p_title, '생각이음'), 80), left(coalesce(p_body, ''), 200), '#' || p_room, 'r-' || p_room, v_at)
+  on conflict (tid, room_id, grp) do update set course = excluded.course, title = excluded.title, body = excluded.body, url = excluded.url, tag = excluded.tag,
+    send_at = excluded.send_at, sent_at = null, created_at = now();
+  return json_build_object('ok', true, 'scheduled', true);
+end $$;
+revoke execute on function public.push_schedule(text, text, bigint, text, text) from public, anon;
+grant execute on function public.push_schedule(text, text, bigint, text, text) to authenticated;
+-- 서버(notify-due, 관리자 열쇠)만: 때가 된 예약을 꺼내 보낼 기기와 함께 돌려주고 ‘보냄’으로 표시
+--   활동이 지워졌거나, 마감·작성 중·보관이거나, 그 그룹이 종료면 보내지 않는다
+create or replace function public.push_due_take(p_limit int default 50) returns json
+language plpgsql volatile security definer set search_path = public as $$
+declare out json;
+begin
+  with due as (
+    select j.* from public.push_jobs j where j.sent_at is null and j.send_at <= now() order by j.send_at limit greatest(1, least(p_limit, 200)) for update skip locked),
+  mark as (update public.push_jobs j set sent_at = now() from due where j.tid = due.tid and j.room_id = due.room_id and j.grp = due.grp returning j.*),
+  ok as (
+    select m.* from mark m join public.docs r on r.col = 'rooms' and r.id = m.room_id and r.tid = m.tid
+     where coalesce(r.data ->> 'status', 'open') = 'open' and coalesce(r.data ->> 'open', 'true') <> 'false'
+       and (m.grp = '' or coalesce(r.data -> 'assign' -> m.grp ->> 'status', 'open') <> 'closed'))
+  select coalesce(json_agg(json_build_object('title', ok.title, 'body', ok.body, 'url', ok.url, 'tag', ok.tag,
+           'targets', (select coalesce(json_agg(json_build_object('endpoint', t.endpoint, 'p256dh', t.p256dh, 'auth', t.auth)), '[]'::json)
+                         from public.course_push_targets(ok.tid, ok.course, case when ok.grp = '' then null else array[ok.grp] end) t))), '[]'::json)
+    into out from ok;
+  return out;
+end $$;
+revoke execute on function public.push_due_take(int) from public, anon, authenticated;
+grant execute on function public.push_due_take(int) to service_role;
+-- 1분마다: 때가 된 예약이 있을 때만 notify-due를 부른다. 주소·열쇠는 app_secrets(functions_url, cron_key)에서 읽는다 (없으면 건너뜀)
+do $cron$
+begin
+  if exists (select 1 from pg_available_extensions where name = 'pg_cron') and exists (select 1 from pg_available_extensions where name = 'pg_net') then
+    create extension if not exists pg_cron;
+    create extension if not exists pg_net;
+    insert into public.app_secrets (k, v) values ('cron_key', replace(gen_random_uuid()::text, '-', '') || replace(gen_random_uuid()::text, '-', '')) on conflict (k) do nothing;
+    if exists (select 1 from cron.job where jobname = 'push-due') then perform cron.unschedule('push-due'); end if;
+    perform cron.schedule('push-due', '* * * * *', $job$
+      select net.http_post(
+        url := (select v from public.app_secrets where k = 'functions_url') || '/notify-due',
+        headers := jsonb_build_object('Content-Type', 'application/json', 'x-cron-key', (select v from public.app_secrets where k = 'cron_key')),
+        body := '{}'::jsonb)
+      where exists (select 1 from public.push_jobs where sent_at is null and send_at <= now())
+        and exists (select 1 from public.app_secrets where k = 'functions_url')
+    $job$);
+  else
+    raise notice 'pg_cron/pg_net 없음: 예약 알림은 건너뜀';
+  end if;
+end $cron$;
+-- 이 프로젝트의 함수 주소를 한 번 넣어 주세요 (예: https://<프로젝트>.supabase.co/functions/v1)
+-- insert into public.app_secrets (k, v) values ('functions_url', 'https://<프로젝트>.supabase.co/functions/v1') on conflict (k) do update set v = excluded.v;
+
 -- =====================================================================
 -- 마지막으로 관리자(나)의 구글 이메일을 등록하세요 (따옴표 안을 바꿔서 실행)
 -- 다른 선생님은 등록하지 않아도 구글로 로그인하면 바로 교사가 돼요
