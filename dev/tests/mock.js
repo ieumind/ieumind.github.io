@@ -64,6 +64,7 @@
       if(fn==="ai_key_set"){ if(!isT) return {data:{ok:false,reason:"denied"}}; const k=(p.p_key||"").trim(); if(!k){ localStorage.removeItem("__aikey"); return {data:{ok:true,has:false}} } if(!/^[A-Za-z0-9_.-]{20,200}$/.test(k)) return {data:{ok:false,reason:"format"}}; localStorage.setItem("__aikey",k); return {data:{ok:true,has:true,tail:k.slice(-4)}} }
       if(fn==="room_view"){ const sid=sidFor(tidOf(D.docs["rooms/"+p.p_room])); if(isT||!sid) return {data:null,error:null}; const v=JSON.parse(localStorage.getItem("__views")||"{}"); const r=v[p.p_room]=v[p.p_room]||{}; const now=new Date().toISOString(); r[sid]=r[sid]?{...r[sid],last_at:now,n:r[sid].n+1}:{first_at:now,last_at:now,n:1}; localStorage.setItem("__views",JSON.stringify(v)); return {data:null,error:null} }
       if(fn==="room_viewers"){ if(!isT) return {data:[],error:null}; const v=JSON.parse(localStorage.getItem("__views")||"{}")[p.p_room]||{}; return {data:Object.entries(v).map(([student_id,x])=>({student_id,...x})),error:null} }
+      if(fn==="push_schedule"){ window.__sbLog.push("sched:"+p.p_room+"/"+p.p_group+"@"+(p.p_at?"set":"clear")); return {data:{ok:isT,scheduled:!!p.p_at},error:null} }
       if(fn==="my_student_ids") return {data: mySids(), error:null};
       if(fn==="my_students") return {data: isT ? [] : Object.entries(sess()).map(([tid,sid])=>({tid, sid, name:label(D.students.find(x=>x.id===sid))})), error:null};
       if(fn==="push_save"){ window.__push=p; return {data:null,error:null} }
@@ -78,7 +79,7 @@
     },
     functions:{ invoke: async (name, {body}) => { await new Promise(r=>setTimeout(r,20)); if(name==="suggest"){ window.__sbLog.push("suggest:"+JSON.stringify(body)); const k=localStorage.getItem("__aikey"); if(!isT) return {data:{error:"denied"},error:null}; if(!k) return {data:{error:"no_key"},error:null}; if(k.startsWith("BAD")) return {data:{error:"bad_key"},error:null}; if(body.test) return {data:{ok:true,model:"gemini-3.5-flash-lite"},error:null};
         return {data:{items:[{q:"["+body.keywords+"] 콜럼버스의 항해는 발견인가 침략인가?", a:"발견", b:"침략", why:"관점 차이"},{q:"두 번째 논제?", a:"가", b:"나", why:"이유"}], model:"gemini-3.5-flash-lite"},error:null} }
-      if(name==="notify"){ window.__sbLog.push("notify:"+body.title+"|"+body.body+"|"+body.url+"|course="+(body.course||"")); return {data:{sent:2,gone:0,failed:0,total:2},error:null} }
+      if(name==="notify"){ window.__sbLog.push("notify:"+body.title+"|"+body.body+"|"+body.url+"|course="+(body.course||"")+(body.groups?"|groups="+body.groups.join("+"):"")); if(!body.course) return {data:{error:"no_course",sent:0,total:0},error:null}; return {data:{sent:2,gone:0,failed:0,total:2},error:null} }
       window.__sbLog.push("fn:"+name+":"+(body.op||"chat"));
       if(body.op==="status") return {data:{ready: q.get("ai")!=="0"}, error:null};
       const last = body.history[body.history.length-1]?.content || "";

@@ -1063,6 +1063,12 @@ a.btn{text-decoration:none;color:inherit;display:inline-flex;align-items:center}
 .dmv button{border:1px solid var(--line);background:var(--paper);border-radius:8px;min-width:40px;min-height:34px;font-size:15px;cursor:pointer;color:var(--fg)}
 .dmv .grip{font-size:12px;color:var(--muted)}
 .corder-tip{margin:-2px 0 8px}
+.gsched .gsrow{display:flex;flex-wrap:wrap;align-items:center;gap:6px 12px;padding:8px 0;border-top:1px solid var(--line)}
+.gsched .gsrow:first-of-type{border-top:0}.gsched .gsrow.off{opacity:.75}
+.gsched .gs-ctl{display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px}
+.gsched .gs-ctl select{width:auto;min-height:38px;padding:5px 10px;font-size:14px;line-height:1.4}
+.gsched .gs-due{display:inline-flex;align-items:center;gap:6px;font-size:14px;color:var(--muted)}
+.gsched input[type=datetime-local]{min-height:38px;padding:5px 8px;font-size:14px}
 .dmore-row{display:flex;justify-content:center;margin:10px 0 4px}
 .sec-h2{display:flex;align-items:baseline;justify-content:space-between;gap:10px;flex-wrap:wrap}
 .archbox{margin-top:12px;padding:12px;border:1px dashed var(--line);border-radius:12px;background:var(--sunk)}.archbox .dgrid{margin-top:8px}.archbox .dcard{opacity:.8}
@@ -2748,9 +2754,24 @@ async function notifyStudents(msg){
 }
 const pushNote = d => !d ? " (알림은 보내지 못했어요)" : d.sent ? ` 학생 기기 ${d.sent}대에 알림을 보냈어요.` : !d.total ? " (아직 알림을 켠 학생이 없어요)" : "";
 function roomPlace(r){ const c = courseOf(r.courseId); return c ? c.title : (r.subject || "").trim() }
+/* 🔔 새 활동 알림: 과목이 있는 활동만, 그 과목 학생에게만. 그룹에만 공개했으면 지금 열린 그룹 학생에게만,
+   예약한 그룹은 그 시각에 서버가 보낸다(push_schedule → pg_cron → notify-due) */
+const newRoomMsg = r => ({title:"🆕 새 활동이 올라왔어요", body:`${roomPlace(r) ? roomPlace(r) + " · " : ""}${r.title}`});
+const roomPushOn = r => canPush() && !!courseOf(r.courseId) && r.notify !== false;
+async function schedSync(r){                                           // 그룹별 예약 알림을 지금 설정에 맞춘다 (지난 시각·열린 그룹은 예약을 지운다)
+  if(!canPush() || !courseOf(r.courseId)) return;
+  const ids = asgIds(r), m = newRoomMsg(r), on = roomPushOn(r) && statusOf(r) === "open";
+  await Promise.all(ids.map(g => { const a = r.assign[g] || {}, at = on && a.status === "ready" && a.startAt > Date.now() ? a.startAt : null;
+    return rpcSafe("push_schedule", {p_room:r.id, p_group:g, p_at:at, p_title:m.title, p_body:m.body}) }));
+}
 async function notifyNewRoom(r){
-  const d = await notifyStudents({title:"🆕 새 활동이 올라왔어요", body:`${roomPlace(r) ? roomPlace(r) + " · " : ""}${r.title}`, url:"#" + r.id, tag:"r-" + r.id, ...(courseOf(r.courseId) ? {course:r.courseId} : {})});   // 과목 활동이면 그 과목 학생에게만
-  toast("공개했어요." + pushNote(d));
+  if(!roomPushOn(r)){ toast("공개했어요."); return }
+  const ids = asgIds(r), open = ids.filter(g => asgStatus(r.assign[g]) === "open"), later = ids.filter(g => asgStatus(r.assign[g]) === "ready" && r.assign[g].startAt);
+  schedSync(r);
+  const tail = later.length ? ` 예약한 ${later.length}개 그룹은 공개 시각에 알림이 가요.` : "";
+  if(ids.length && !open.length){ toast("공개했어요." + tail); return }
+  const d = await notifyStudents({...newRoomMsg(r), url:"#" + r.id, tag:"r-" + r.id, course:r.courseId, ...(ids.length ? {groups:open} : {})});   // 과목(그룹) 학생에게만
+  toast("공개했어요." + pushNote(d) + tail);
 }
 /* 알림을 누르거나 주소 뒤(#…)가 바뀌면 그 활동·과목으로 간다 */
 addEventListener("hashchange", () => { const h = location.hash.slice(1); if(!h) return; S.hashRoom = h; applyHash(); render() });
@@ -3935,7 +3956,7 @@ function teacherCard(r, p, ps, nav){
    ========================================================= */
 /* 🔄 새 버전 알림: 배포 때마다 APP_VERSION과 version.json의 v를 같은 값으로 올린다.
    GitHub Pages는 화면을 10분쯤 기억하므로, 옛 화면이면 아래쪽에 ‘새로고침’ 띠를 띄우고 주소를 바꿔 새로 받는다 */
-const APP_VERSION = "2026-10-12j";
+const APP_VERSION = "2026-10-13a";
 async function checkVersion(){
   if(!/^https?:$/.test(location.protocol)) return;
   try{
@@ -5175,6 +5196,7 @@ function formFromRoom(r){
     prompt:r.prompt||"", title:r.title||"", context:r.context||"", ctxImgs:ctxImgsOf(r), intro:r.intro||"",
     maxPages:String(r.noteCfg?.maxPages||3), personaName:r.persona?.name||"", personaAbout:r.persona?.about||"", personaStyle:r.persona?.style||"persona", maxTurns:String(r.persona?.maxTurns||8),
     subject:r.subject||"", unit:r.unit||"", year:r.year||"", grade:r.grade||"", duration:String(r.duration||""), dueAt:dtv(r.dueAt), stage:r.stage||"", memo:tnote(r).memo||"",
+    ...Object.fromEntries(asgIds(r).flatMap(g => { const a = r.assign[g] || {}; return [["gsm:" + g, a.status === "ready" && a.startAt ? "at" : "now"], ["gsa:" + g, dtv(a.startAt)], ["gsd:" + g, dtv(a.dueAt)]] })),
     qtype:r.qtype||t.qtype||"", reveal:r.reveal||t.reveal, anonymous:!!r.anonymous, minChars:String(r.minChars||0),
     stances:(r.stances||[]).join(", "), nst:(r.stances||[]).length,
     initial:f.initial, predict:f.predict, evidenceType:f.evidenceType, evidenceTypes:f.evidenceTypes, warrant:f.warrant, counter:f.counter,
@@ -5586,8 +5608,12 @@ function viewCreate(){
         ${lockC ? `<p class="hint">학생 응답이 있어 과목은 바꿀 수 없어요.</p>` : ""}</div>` : ""}
       <div class="q"><label for="c-due">마감 <span class="opt">(선택)</span></label><input type="datetime-local" id="c-due" data-form="create" data-k="dueAt" value="${esc(f.dueAt||"")}">
         <p class="hint">이 시각에 저절로 마감돼요.${f.dueAt ? ` <button class="linkbtn" type="button" data-a="due-clear">지우기</button>` : ""}</p></div></div>
-      ${c && groupsOf(c).length ? `<fieldset class="q"><legend style="font-size:15px">대상 그룹 <span class="opt">그룹마다 따로 열고 닫을 수 있어요</span></legend><div class="row" style="flex-wrap:wrap">${groupsOf(c).map(g => { const on = (f.groups||[]).includes(g.id), keep = usedG.has(g.id);
-          return `<label class="choice" style="min-height:36px"><input type="checkbox" data-form="create" data-k="groups" data-multi value="${esc(g.id)}" ${on||keep?"checked":""} ${keep?"disabled":""}><span>${esc(g.name)}${keep?" · 응답 있음":""}</span></label>` }).join("")}</div></fieldset>` : ""}</div>` })()}
+      ${c && groupsOf(c).length ? `<fieldset class="q gsched"><legend style="font-size:15px">그룹별 공개 <span class="opt">그룹마다 따로 열거나, 공개 시각을 예약해요</span></legend>${groupsOf(c).map(g => { const on = (f.groups||[]).includes(g.id), keep = usedG.has(g.id), id = esc(g.id), mode = f["gsm:" + g.id] || "now";
+          return `<div class="gsrow${on || keep ? "" : " off"}"><label class="choice" style="min-height:36px"><input type="checkbox" data-form="create" data-k="groups" data-multi value="${id}" ${on||keep?"checked":""} ${keep?"disabled":""}><span>${esc(g.name)}${Array.isArray(g.members) ? ` <span class="muted small">${g.members.length}명</span>` : ""}${keep?" · 응답 있음":""}</span></label>
+            ${on || keep ? `<span class="gs-ctl"><select data-form="create" data-k="gsm:${id}" aria-label="${esc(g.name)} 공개 시각"><option value="now" ${mode === "now" ? "selected" : ""}>바로 공개</option><option value="at" ${mode === "at" ? "selected" : ""}>⏰ 공개 예약</option></select>
+              ${mode === "at" ? `<input type="datetime-local" data-form="create" data-k="gsa:${id}" value="${esc(f["gsa:" + g.id] || "")}" aria-label="${esc(g.name)} 공개 시각">` : ""}
+              <label class="gs-due">마감 <input type="datetime-local" data-form="create" data-k="gsd:${id}" value="${esc(f["gsd:" + g.id] || "")}" aria-label="${esc(g.name)} 마감 (선택)"></label></span>` : `<span class="muted small">이 그룹에는 열지 않아요</span>`}</div>` }).join("")}
+          <p class="hint">예약한 그룹은 그 시각에 저절로 열리고${canPush() ? ", 학생 알림도 그 그룹에만 그때 가요" : ""}. 마감은 비워 두면 위의 ‘마감’을 따라요.</p></fieldset>` : ""}</div>` })()}
 
   <details class="adv" data-keep="info" ${(S.advOpen?.info ?? !!editR) ? "open" : ""}><summary>📋 수업 정보 <span class="opt">학년·단원·차시·교사용 메모</span></summary><div><div class="form-grid">
       <div class="q"><label for="c-grade">학년</label><select id="c-grade" data-form="create" data-k="grade"><option value="">선택 안 함</option>${GRADES.map(g=>`<option ${f.grade===g?"selected":""}>${g}</option>`).join("")}</select></div>
@@ -5630,7 +5656,7 @@ function viewCreate(){
     <div class="row"><input type="text" id="tpl-name" maxlength="30" placeholder="예: 한국사 토론 기본형" aria-label="템플릿 이름"><button class="btn sm pri" type="button" data-a="tpl-save">저장</button><button class="btn sm" type="button" data-a="tpl-cancel">취소</button></div></div>`;
   h += `<div class="foot"><div class="row"><button class="btn" type="button" data-a="preview-form">👀 학생 화면 미리보기</button>
       ${!locked && !S.tplNaming ? `<button class="linkbtn" type="button" data-a="tpl-save-open">💾 내 템플릿으로 저장</button>` : ""}</div>
-    <div class="row">${(!editR || isDraft) && canPush() ? `<label class="choice" style="min-height:36px" title="공개할 때 우리 반 학생 앱에 알림을 보내요"><input type="checkbox" data-form="create" data-k="notify" ${f.notify === false ? "" : "checked"}><span>🔔 학생 알림</span></label>` : ""}${!editR || isDraft ? `<button class="btn" type="button" data-a="draft-save">임시 저장</button>` : ""}
+    <div class="row">${(!editR || isDraft) && canPush() && courseOf(f.courseId) ? `<label class="choice" style="min-height:36px" title="공개할 때 이 과목(고른 그룹) 학생 앱에 알림을 보내요"><input type="checkbox" data-form="create" data-k="notify" ${f.notify === false ? "" : "checked"}><span>🔔 학생 알림</span></label>` : ""}${!editR || isDraft ? `<button class="btn" type="button" data-a="draft-save">임시 저장</button>` : ""}
       <button class="btn pri" type="button" data-a="${editR && !isDraft ? "create-save" : (isDraft ? "publish-draft" : "create-save")}">${editR ? (isDraft ? "공개하기" : "변경사항 저장") : "활동 만들기"}</button></div></div>`;
   return h;
 }
@@ -5688,7 +5714,7 @@ document.addEventListener("change", e => {
     const r = S.rooms.find(x => x.id === S.roomId), g = el.dataset.asg, v = el.value ? new Date(el.value).getTime() : null;
     const assign = JSON.parse(JSON.stringify(r.assign || {})); assign[g] = {...(assign[g]||{status:"open"})};
     if(v) assign[g][el.dataset.f] = v; else delete assign[g][el.dataset.f];
-    saveAssign(r, assign).then(ok => { if(ok){ toast("그룹 시간을 저장했어요."); render() } });
+    saveAssign(r, assign).then(ok => { if(ok){ toast("그룹 시간을 저장했어요." + (roomPushOn(r) && el.dataset.f === "startAt" && v > Date.now() ? " 그 시각에 이 그룹 학생에게 알림이 가요." : "")); schedSync({...r, assign}); render() } });
     return;
   }
   if(el.id === "m-sort" || el.id === "m-dur" || el.id === "s-sort" || el.id === "h-sort"){ S[{"m-sort":"msort","m-dur":"mdur","s-sort":"ss","h-sort":"hsort"}[el.id]] = el.value; if(el.id === "h-sort") lsSet("nonjae.hsort", el.value); render(); document.getElementById(el.id)?.focus(); return }
@@ -6309,7 +6335,7 @@ async function act(a, b){
       if(!pick.length){ toast("추가할 그룹을 골라 주세요."); return }
       const assign = {...JSON.parse(JSON.stringify(r.assign || {}))}; pick.forEach(g => assign[g] = assign[g] || {status:"open"});
       const ok = await saveAssign(r, assign);
-      if(ok){ S.asgAdd = false; toast(`${pick.length}개 그룹에 배포했어요.`) }
+      if(ok){ S.asgAdd = false; toast(`${pick.length}개 그룹에 배포했어요.`); schedSync({...r, assign}) }
       break;
     }
     case "asg-st": {
@@ -6317,9 +6343,14 @@ async function act(a, b){
       const assign = JSON.parse(JSON.stringify(r.assign || {})), a = {...(assign[g] || {}), status:v};
       if(v === "open"){ if(a.startAt > now) delete a.startAt; if(a.dueAt && a.dueAt < now) delete a.dueAt }   // 직접 고른 상태가 바로 보이도록
       if(v === "ready" && a.startAt && a.startAt <= now) delete a.startAt;
+      const was = asgStatus(r.assign?.[g]);
       assign[g] = a;
       const ok = await saveAssign(r, assign);
-      if(ok) toast(`${groupName(r.courseId, g)}: ${ASG[v].l}`);
+      if(ok){ schedSync({...r, assign});
+        if(v === "open" && was === "ready" && roomPushOn(r) && statusOf(r) === "open"){                       // 시작 전 → 진행 중: 그 그룹에 알림
+          const d = await notifyStudents({...newRoomMsg(r), url:"#" + r.id, tag:"r-" + r.id, course:r.courseId, groups:[g]});
+          toast(`${groupName(r.courseId, g)}: ${ASG[v].l}.` + pushNote(d)) }
+        else toast(`${groupName(r.courseId, g)}: ${ASG[v].l}`) }
       break;
     }
     case "pick-group": setMyGroup(b.dataset.c, b.dataset.v); S.anim = true; break;
@@ -6534,8 +6565,8 @@ async function act(a, b){
     }
     case "create-save": case "draft-save": case "publish-draft": {
       const f = createForm(), data = roomFromForm(f), t = TEMPLATES[data.template], asDraft = a === "draft-save";
-      const editR = f.editId ? S.rooms.find(x=>x.id===f.editId) : null, locked = editR && allPostsOf(editR.id).length > 0;
-      const willNotify = !asDraft && (!editR || (a === "publish-draft" && statusOf(editR) === "draft")) && f.notify !== false && canPush();
+      const editR = f.editId ? S.rooms.find(x=>x.id===f.editId) : null, locked = editR && allPostsOf(editR.id).length > 0, isDraftR = !!editR && statusOf(editR) === "draft";
+      const willNotify = !asDraft && (!editR || (a === "publish-draft" && statusOf(editR) === "draft")) && f.notify !== false && canPush() && !!courseOf(f.courseId || editR?.courseId);
       if(!data.prompt && data.template === "notes") data.prompt = NOTES_PROMPT;
       if(!data.prompt && !asDraft){ toast("주제나 질문을 적어 주세요."); document.getElementById("c-prompt")?.focus(); return }
       if(!asDraft && !locked && t.stances.length && data.stances.length < 2){ toast("입장 이름을 두 개 이상 적어 주세요."); return }
@@ -6546,7 +6577,16 @@ async function act(a, b){
       const prevA = editR?.assign || {}, cid = courseOf(f.courseId) ? f.courseId : (locked && courseOf(editR?.courseId) ? editR.courseId : "");
       const keepG = editR ? allPostsOf(editR.id).map(p => p.groupId).filter(g => g && prevA[g]) : [];
       const selG = cid ? [...new Set([...(f.groups||[]).filter(g => groupsOf(courseOf(cid)).some(x => x.id === g)), ...keepG])] : [];
-      const asg = {courseId:cid, assign:Object.fromEntries(selG.map(g => [g, prevA[g] || {status:"open"}]))};
+      // 그룹별 공개: 바로 공개 / 공개 예약(그 시각까지 ‘시작 전’) · 그룹 마감
+      const gsOf = g => { const pv = {...(prevA[g] || {status:"open"})};
+        if(f["gsm:" + g] === undefined && f["gsd:" + g] === undefined) return pv;
+        const at = f["gsm:" + g] === "at" && f["gsa:" + g] ? new Date(f["gsa:" + g]).getTime() : null, due = f["gsd:" + g] ? new Date(f["gsd:" + g]).getTime() : null;
+        if(at && at > now){ pv.status = "ready"; pv.startAt = at } else { delete pv.startAt; if(pv.status !== "closed") pv.status = "open" }
+        if(due) pv.dueAt = due; else delete pv.dueAt;
+        return pv };
+      const noAt = selG.find(g => f["gsm:" + g] === "at" && !f["gsa:" + g]);
+      if(noAt && !asDraft){ toast(`${groupName(cid, noAt)}의 공개 시각을 적어 주세요.`); return }
+      const asg = {courseId:cid, assign:Object.fromEntries(selG.map(g => [g, gsOf(g)])), ...(cid && (!editR || isDraftR) ? {notify:f.notify !== false} : {})};
       let id, doc, ok;
       if(editR){
         id = editR.id;
@@ -6564,7 +6604,9 @@ async function act(a, b){
       if((f.memo||"").trim() !== (tnote({id}).memo||"")) await saveTnote({id}, {memo:(f.memo||"").trim()});
       if(asDraft){ f.editId = id; saveFormsSoon(); toast("임시 저장했어요. ‘내 과목’의 작성 중에서 이어서 만들 수 있어요."); break }
       dropForm("create"); S.view = "room"; S.roomId = id; S.ttab = "overview"; S.pendingRoom = id; S.gsel = ""; S.gselRoom = id; S.asgAdd = false;
-      if(willNotify){ scrollTo(0,0); render(); notifyNewRoom({id, ...doc, title:doc.title || data.title}); return }
+      const fresh = {...(editR || {}), id, ...doc};                    // 저장소에서 돌아오기 전이라도 방금 저장한 값으로
+      if(willNotify){ scrollTo(0,0); render(); notifyNewRoom(fresh); return }
+      if(canPush()) schedSync(fresh);       // 고친 공개 시각에 맞춰 예약 알림도 바꾼다
       toast(editR ? (a === "publish-draft" ? "공개했어요. 학생 링크를 공유해 보세요." : "변경사항을 저장했어요.") : "활동을 만들었어요. 학생 링크를 공유해 보세요.");
       scrollTo(0,0);
       break;
