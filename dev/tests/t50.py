@@ -25,7 +25,7 @@ async def main():
     await T.click('[data-a=create]'); await W(T)
     print('course notify box:', bool(await T.query_selector('[data-k=notify]')), '| group rows:', await T.eval_on_selector_all('.gsrow','e=>e.map(x=>x.innerText.replace(/\\s+/g," ").trim())'))
     await T.fill('#c-prompt','개항은 기회였을까?')
-    await T.select_option('select[data-k="gsm:g4"]','at'); await W(T)
+    await T.click('.gsched-d summary'); await W(T,300); await T.select_option('select[data-k="gsm:g4"]','at'); await W(T)
     await T.click('[data-a=create-save]'); await W(T,500); print('no time toast:', await T.evaluate('document.getElementById("toast")?.textContent'))
     await T.evaluate('''(()=>{const d=new Date(Date.now()+3*3600e3), z=n=>String(n).padStart(2,"0"); const v=`${d.getFullYear()}-${z(d.getMonth()+1)}-${z(d.getDate())}T${z(d.getHours())}:${z(d.getMinutes())}`; const el=document.querySelector('input[data-k="gsa:g4"]'); el.value=v; el.dispatchEvent(new Event("input",{bubbles:true}))})()''')
     await T.screenshot(path='/tmp/claude-0/smoke/mob/gsched_pc.png', clip={'x':0,'y':await T.evaluate('document.querySelector(".gsched").getBoundingClientRect().top+scrollY-60'),'width':1280,'height':330}, full_page=True)

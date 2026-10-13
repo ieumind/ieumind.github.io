@@ -28,7 +28,7 @@ async def main():
     print('all-activities count (archived hidden):', len(await T.query_selector_all('.mcard')))
     await T.click('[data-a=courses-arch]'); await W(T); print('archbox:', await T.eval_on_selector_all('.archbox .dt','e=>e.map(x=>x.innerText.trim())'))
     await T.screenshot(path='/tmp/claude-0/smoke/mob/courses_arch.png', full_page=True)
-    await T.click('[data-a=create]'); await W(T); print('create select has archived:', await T.evaluate(f'[...document.querySelectorAll("#c-course option")].some(o=>o.value==="{cid}")'))
+    await T.click('[data-a=create]'); await W(T); print('create select has archived:', await T.evaluate(f'[...document.querySelectorAll("[data-a=c-course]")].some(o=>o.dataset.v==="{cid}")'))
     # edit course keeps archived
     await T.evaluate(f'act("home",{{dataset:{{}}}}); act("mcourse",{{dataset:{{v:"{cid}"}}}})'); await W(T,300)
     print('banner:', await T.inner_text('.archwarn'))
