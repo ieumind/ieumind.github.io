@@ -1,0 +1,71 @@
+# 재제출 요청 → 그 학생에게 알림 · 학생 개별 안내(보내기·읽음·거두기) · 학생이 앱을 열면 크게 뜨는 안내
+import asyncio, re
+from playwright.async_api import async_playwright
+U='file:///tmp/claude-0/smoke/p26.html'
+async def main():
+  async with async_playwright() as p:
+    b=await p.chromium.launch(); ctx=await b.new_context(viewport={'width':1280,'height':900}); await ctx.route(re.compile(r'https://.*'), lambda r: r.abort())
+    errs=[]; W=lambda pg,ms=250: pg.wait_for_timeout(ms)
+    T=await ctx.new_page(); T.on('pageerror',lambda e:errs.append('T:'+str(e)))
+    await T.goto(U+'?who=teacher'); await T.evaluate('localStorage.clear()'); await T.reload(); await W(T,700)
+    await T.click('[data-a=roster-open]'); await W(T); await T.fill('#roster-add','10301 김가온\n10302 나다은\n10401 박하늘'); await T.click('[data-a=roster-add]'); await W(T,500); await T.keyboard.press('Escape'); await W(T)
+    st=(await T.evaluate('JSON.parse(localStorage.getItem("__sbmock"))'))['students']; code={x['name']:x['code'] for x in st}
+    # 학생 A 로그인 (안내 없음 → 팝업 없음)
+    K=await ctx.new_page(); await K.set_viewport_size({'width':390,'height':844}); K.on('pageerror',lambda e:errs.append('K:'+str(e)))
+    await K.goto(U+'?who=anon'); await W(K,500)
+    await K.fill('#f-num','10301'); await K.fill('#f-name','김가온'); await K.fill('#f-code',code['김가온']); await K.press('#f-code','Enter'); await W(K,1300)
+    print('K no msgs: pop', await K.evaluate('S.modal?.type||null'), '| bar', bool(await K.query_selector('.inboxbar')))
+    # 선생님: 개별 안내
+    print('top btns:', await T.eval_on_selector_all('.thead-hi .row .btn','e=>e.map(x=>x.textContent.trim())'))
+    await T.click('[data-a=msg-open]'); await W(T,500)
+    print('modal:', (await T.inner_text('#modal h3')), '| list:', await T.eval_on_selector_all('#msg-list .mrow','e=>e.map(x=>x.innerText.trim())'))
+    await T.click('[data-a=msg-send]'); await W(T,300); print('no student toast:', await T.evaluate('document.getElementById("toast")?.textContent'))
+    await T.fill('#msg-q','가온'); await W(T,200); print('search:', await T.eval_on_selector_all('#msg-list .mrow','e=>e.map(x=>x.innerText.trim())'))
+    await T.fill('#msg-q',''); await W(T,200)
+    await T.click('#msg-list [data-a=msg-cls]'); await W(T,200); print('class 1-3 sel:', await T.inner_text('#msg-count'))
+    await T.click('#msg-list [data-a=msg-cls]'); await W(T,200); print('class toggled off:', await T.inner_text('#msg-count'))
+    boxes=await T.query_selector_all('#msg-list input[data-msgsel]'); await boxes[0].check(); await boxes[1].check(); await W(T,200)
+    print('sel:', await T.inner_text('#msg-count'))
+    await T.fill('#msg-title','수행평가 보충 안내'); await T.click('[data-a=msg-send]'); await W(T,300); print('no body toast:', await T.evaluate('document.getElementById("toast")?.textContent'))
+    await T.fill('#msg-body','지난 시간에 결석했어요.\n이번 주 금요일까지 https://ieumind.github.io/ 에서 활동을 해 주세요.')
+    await T.screenshot(path='/tmp/claude-0/smoke/mob/msg_compose.png')
+    await T.click('[data-a=msg-send]'); await W(T,800)
+    print('sent toast:', await T.evaluate('document.getElementById("toast")?.textContent'), '| tab:', await T.evaluate('S.modal?.tab'))
+    print('notify log:', [x for x in await T.evaluate('__sbLog') if x.startswith('notify:')][-1:])
+    print('sent list:', (await T.inner_text('.msent')).replace('\n',' | ')[:200])
+    # 학생 A: 앱 다시 열면 크게
+    await K.reload(); await W(K,1500)
+    print('K pop:', await K.evaluate('S.modal?.type'), '|', (await K.inner_text('.bigmsg')).replace('\n',' | ')[:200])
+    print('K pop link:', await K.eval_on_selector_all('.bigmsg a','e=>e.map(x=>x.href)'))
+    await K.screenshot(path='/tmp/claude-0/smoke/mob/msg_pop.png')
+    await K.keyboard.press('Escape'); await W(K,200); print('esc keeps pop:', await K.evaluate('S.modal?.type'))
+    await K.click('.modal-bg'); await W(K,200); print('bg click keeps pop:', await K.evaluate('S.modal?.type'))
+    # 두 번째 안내도 보내 두기 (A만)
+    await T.click('[data-a=msg-tab][data-v=new]'); await W(T,200)
+    boxes=await T.query_selector_all('#msg-list input[data-msgsel]'); await boxes[0].check(); await T.fill('#msg-body','내일 색연필 가져오세요'); await T.click('#msg-push'); await T.click('[data-a=msg-send]'); await W(T,800)
+    print('second notify count:', len([x for x in await T.evaluate('__sbLog') if x.startswith('notify:')]), '(push off → no new)')
+    await K.click('[data-a=inbox-ok]'); await W(K,400); print('K after ok:', await K.evaluate('S.modal?.type||null'), '| log', [x for x in await K.evaluate('__sbLog') if x.startswith('msg_read')])
+    await K.reload(); await W(K,1500); print('K reopen pop:', await K.evaluate('S.modal?.type||null'), (await K.inner_text('.bigmsg')).replace('\n',' | ')[:80] if await K.query_selector('.bigmsg') else '')
+    await K.click('[data-a=inbox-ok]'); await W(K,300)
+    await K.reload(); await W(K,1500); print('K reopen after all read:', await K.evaluate('S.modal?.type||null'), '| bar:', (await K.inner_text('.inboxbar')).replace('\n',' '))
+    await K.click('.inboxbar'); await W(K,300); print('K inbox list:', (await K.inner_text('#modal')).replace('\n',' | ')[:220])
+    await K.screenshot(path='/tmp/claude-0/smoke/mob/msg_list.png'); await K.click('#modal [data-a=modal-close]'); await W(K)
+    print('K overflow:', await K.evaluate('document.documentElement.scrollWidth'))
+    # 학생 B는 첫 안내만
+    B=await ctx.new_page(); B.on('pageerror',lambda e:errs.append('B:'+str(e))); await B.goto(U+'?who=anon'); await W(B,500)
+    await B.fill('#f-num','10302'); await B.fill('#f-name','나다은'); await B.fill('#f-code',code['나다은']); await B.press('#f-code','Enter'); await W(B,1500)
+    print('B pop:', await B.evaluate('S.modal?.type'), '| unread', await B.evaluate('inboxUnread().length'))
+    # 선생님: 읽음 확인 · 거두기
+    await T.click('[data-a=msg-tab][data-v=sent]'); await W(T,500)
+    print('reads:', await T.eval_on_selector_all('.mread','e=>e.map(x=>x.textContent)'))
+    await T.click('.mitem:last-child > summary'); await W(T,200); print('rcpts:', await T.eval_on_selector_all('.mitem:last-child .mrc','e=>e.map(x=>x.innerText)'))
+    await T.screenshot(path='/tmp/claude-0/smoke/mob/msg_sent.png')
+    await T.click('.mitem:last-child [data-a=msg-repush]'); await W(T,400); print('repush:', await T.evaluate('document.getElementById("toast")?.textContent'), [x for x in await T.evaluate('__sbLog') if x.startswith('notify:')][-1:])
+    await T.click('.mitem:last-child [data-a=msg-del]'); await W(T,200); await T.click('.mitem:last-child [data-a=msg-withdraw]'); await W(T,700)
+    print('after withdraw:', len(await T.query_selector_all('.mitem')), await T.evaluate('document.getElementById("toast")?.textContent'))
+    await B.reload(); await W(B,1500); print('B after withdraw:', await B.evaluate('S.modal?.type||null'), '| bar', bool(await B.query_selector('.inboxbar')))
+    # 학생은 교사 기능을 못 씀
+    await B.evaluate('act("msg-open",{dataset:{}})'); await W(B,200); print('student msg-open blocked:', await B.evaluate('S.modal?.type||null'))
+    # 포트폴리오에서 이 학생에게
+    print('errors', errs); await b.close()
+asyncio.run(main())
