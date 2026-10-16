@@ -972,6 +972,74 @@ end $$;
 revoke execute on function public.push_targets_students(uuid[]), public.push_targets_post(text) from public, anon;
 grant execute on function public.push_targets_students(uuid[]), public.push_targets_post(text) to authenticated;
 
+-- ---------------------------------------------------------------------
+-- 📊 수행평가 점수 안내: 학생마다 내용이 다른 안내(점수) + 예/아니오 질문 (확인했나요? · 이의가 있나요?)
+--   kind = 'score', ask = 질문 목록, answers = 학생의 예/아니오(true/false) 목록, answered_at = 응답 시각
+-- ---------------------------------------------------------------------
+alter table public.student_msgs add column if not exists kind text not null default 'note';
+alter table public.student_msgs add column if not exists ask jsonb;
+alter table public.student_msgs add column if not exists answers jsonb;
+alter table public.student_msgs add column if not exists answered_at timestamptz;
+-- 선생님: 학생마다 다른 내용 보내기 p_items = [{sid, body}], p_ask = ["질문", …] (5개까지)
+create or replace function public.msg_send_each(p_title text, p_items jsonb, p_ask jsonb) returns json
+language plpgsql volatile security definer set search_path = public as $$
+declare v_title text := left(trim(coalesce(p_title, '')), 60); v_batch text := gen_random_uuid()::text; v_n int; v_ask jsonb;
+begin
+  if not public.is_teacher() then return json_build_object('ok', false, 'reason', 'denied'); end if;
+  if jsonb_typeof(p_items) is distinct from 'array' or jsonb_array_length(p_items) = 0 or jsonb_array_length(p_items) > 300 then
+    return json_build_object('ok', false, 'reason', 'students'); end if;
+  if (select count(distinct batch) from public.student_msgs where tid = auth.uid() and created_at > now() - interval '1 hour') >= 30 then
+    return json_build_object('ok', false, 'reason', 'limit'); end if;
+  select case when count(*) = 0 then null else jsonb_agg(left(trim(q), 100)) end into v_ask
+    from (select q from jsonb_array_elements_text(case when jsonb_typeof(p_ask) = 'array' then p_ask else '[]'::jsonb end) with ordinality a(q, i)
+           where trim(q) <> '' order by i limit 5) z;
+  insert into public.student_msgs (tid, batch, student_id, title, body, kind, ask)
+    select distinct on (s.id) auth.uid(), v_batch, s.id, v_title, left(trim(it ->> 'body'), 2000), 'score', v_ask
+      from jsonb_array_elements(p_items) it join public.students s on s.tid = auth.uid() and s.id::text = it ->> 'sid'
+     where length(trim(coalesce(it ->> 'body', ''))) > 0;
+  get diagnostics v_n = row_count;
+  if v_n = 0 then return json_build_object('ok', false, 'reason', 'students'); end if;
+  return json_build_object('ok', true, 'batch', v_batch, 'n', v_n);
+end $$;
+-- 학생: 예/아니오 답하기 (내 것만, 한 번만). 답하면 읽음으로도
+create or replace function public.msg_answer(p_id bigint, p_answers jsonb) returns json
+language plpgsql volatile security definer set search_path = public as $$
+declare m public.student_msgs;
+begin
+  select * into m from public.student_msgs x where x.id = p_id and x.withdrawn_at is null
+     and exists (select 1 from public.student_sessions ss where ss.uid = auth.uid() and ss.tid = x.tid and ss.student_id = x.student_id);
+  if m.id is null or m.ask is null then return json_build_object('ok', false, 'reason', 'denied'); end if;
+  if m.answered_at is not null then return json_build_object('ok', false, 'reason', 'done'); end if;
+  if jsonb_typeof(p_answers) is distinct from 'array' or jsonb_array_length(p_answers) <> jsonb_array_length(m.ask)
+     or exists (select 1 from jsonb_array_elements(p_answers) a where jsonb_typeof(a) <> 'boolean') then
+    return json_build_object('ok', false, 'reason', 'bad'); end if;
+  update public.student_msgs set answers = p_answers, answered_at = now(), read_at = coalesce(read_at, now()) where id = m.id;
+  return json_build_object('ok', true);
+end $$;
+revoke execute on function public.msg_send_each(text, jsonb, jsonb), public.msg_answer(bigint, jsonb) from public, anon;
+grant execute on function public.msg_send_each(text, jsonb, jsonb), public.msg_answer(bigint, jsonb) to authenticated;
+-- 보낸 안내·받은 안내에 종류·질문·응답을 함께 (점수 안내는 학생마다 내용이 달라 학생별 내용도)
+create or replace function public.msg_sent() returns json
+language sql stable security definer set search_path = public as $$
+  select coalesce(json_agg(b order by b.at desc), '[]'::json) from (
+    select m.batch, max(m.title) as title, max(m.body) as body, min(m.created_at) as at, max(m.kind) as kind, (array_agg(m.ask))[1] as ask,
+           json_agg(json_build_object('sid', m.student_id, 'read_at', m.read_at, 'answers', m.answers, 'answered_at', m.answered_at,
+                                      'body', case when m.kind = 'score' then m.body end)) as rcpt
+      from public.student_msgs m where public.is_teacher() and m.tid = auth.uid() and m.withdrawn_at is null
+     group by m.batch order by min(m.created_at) desc limit 100) b;
+$$;
+create or replace function public.my_msgs() returns json
+language sql stable security definer set search_path = public as $$
+  select coalesce(json_agg(x order by x.at desc), '[]'::json) from (
+    select m.id, m.title, m.body, m.created_at as at, m.read_at, coalesce(t.name, '') as teacher,
+           m.kind, m.ask, m.answers, m.answered_at
+      from public.student_msgs m
+      join public.student_sessions ss on ss.uid = auth.uid() and ss.tid = m.tid and ss.student_id = m.student_id
+      left join public.teachers t on t.uid = m.tid
+     where m.withdrawn_at is null and m.created_at > now() - interval '90 days' and public.tid_active(m.tid)
+     order by m.created_at desc limit 50) x;
+$$;
+
 -- =====================================================================
 -- 마지막으로 관리자(나)의 구글 이메일을 등록하세요 (따옴표 안을 바꿔서 실행)
 -- 다른 선생님은 등록하지 않아도 구글로 로그인하면 바로 교사가 돼요

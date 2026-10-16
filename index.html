@@ -704,6 +704,20 @@ a.autolink{color:var(--accent);text-decoration:underline;text-underline-offset:2
 .inboxbar>span:first-child{flex:1}.inboxbar .new{font-size:12px;padding:2px 8px;border-radius:99px;background:var(--warn-soft);color:var(--warn);font-weight:700}
 .inlist{display:grid;gap:8px;max-height:60vh;overflow:auto}.initem{border:1px solid var(--line);border-radius:10px;padding:10px 12px}.initem.new{border-color:var(--warn)}
 .initem .in-h{display:flex;gap:6px;align-items:baseline;flex-wrap:wrap}.initem p{margin-top:6px;white-space:pre-wrap;overflow-wrap:anywhere}
+.mkind{margin-top:2px}
+.modal.wide{max-width:min(760px,100%)}.sctbl th .btn{white-space:nowrap}
+.scpaste{border:1px dashed var(--line);border-radius:10px;padding:8px 10px}.scpaste>summary{cursor:pointer;font-weight:600}.scpaste textarea{min-height:90px;font-family:var(--f-mono);font-size:13px}
+.sctbl-wrap{overflow:auto;max-height:min(40vh,320px);border:1px solid var(--line);border-radius:10px}
+.sctbl{border-collapse:collapse;width:100%;font-size:14px}.sctbl th,.sctbl td{border-bottom:1px solid var(--line);padding:6px 8px;text-align:left;vertical-align:top}
+.sctbl thead th{position:sticky;top:0;background:var(--surface);z-index:1}.sctbl td:first-child{white-space:nowrap}
+.sctbl input{width:100%;min-width:64px;padding:6px 8px}.sctbl th input{min-width:90px;font-weight:600}
+.sctbl.scres tr.obj td{background:var(--warn-soft)}.yn.y{color:var(--accent)}.yn.n{color:var(--muted)}.scres .yn{font-size:14px}
+.scb>summary{cursor:pointer}.scb p{white-space:pre-wrap;max-width:320px}
+.scprev{background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:10px 12px}.scprev p{white-space:pre-wrap;overflow-wrap:anywhere;margin-top:4px}
+.modal .grow .in{min-width:22px;height:22px;border-radius:99px;display:inline-grid;place-items:center;background:var(--accent-soft);color:var(--accent);font-size:12px;font-weight:700}
+.askbox{display:grid;gap:10px;justify-self:stretch;text-align:left}.askq p{font-weight:600;margin-bottom:6px}
+.seg.yn{display:grid;grid-template-columns:1fr 1fr}.seg.yn button[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink)}.seg.yn button{padding:10px;font-size:16px}
+.initem .askbox{margin-top:8px}.initem .seg.yn button{padding:6px;font-size:14px}
 .mem-list{max-height:min(46vh,380px);overflow:auto;border:1px solid var(--line);border-radius:10px;padding:4px 8px;background:var(--paper)}
 .mgrp-h{font-size:12.5px;font-weight:700;color:var(--muted);padding:8px 4px 2px;position:sticky;top:0;background:var(--paper)}
 .mrow{display:flex;align-items:center;gap:10px;padding:7px 6px;border-radius:8px;cursor:pointer;font-size:15px}
@@ -1623,7 +1637,7 @@ const Auth = (() => { let t = null; return Object.freeze({ set(v){ if(t === null
 Object.defineProperty(S, "canTeach", {get: () => Auth.teacher, set(){} });        // 예전 코드 호환: 읽기만
 const isTeacher = () => Auth.teacher && S.role === "teacher";                       // 교사 권한 + 교사 화면(학생 화면 미리보기 중이면 false)
 /* 교사만 쓰는 동작: 학생 권한으로는 버튼이 없을 뿐 아니라 호출해도 실행되지 않는다 */
-const TEACHER_ACTS = new Set(["msg-open","msg-tab","msg-all","msg-none","msg-cls","msg-send","msg-del","msg-withdraw","msg-repush","note-share","c-course","tname-open","tname-later","tname-save","q-custom","q-add","q-del","q-move","course-archive","courses-more","courses-arch","port-student","port-open","tmr-start","tmr-add","tmr-pause","tmr-resume","tmr-stop","ctx-img-del","qfb","qfb-close","fb-chip","pick-tool","mem-open","mem-cls","mem-all","mem-none","course-gsplit","ai-setup","ai-key-save","ai-key-del","ai-suggest","ai-pick","tadmin-open","tadmin-block","tadmin-tab","fbadmin-done","notice-add","notice-del","note-filter","note-req","note-req-send","note-req-cancel","note-dup","create","edit-room","dup","dup-list","del","del-yes","del-ask","del-room","status","toggle","save-feedback","class-fb","pin","pin-move","pin-clear",
+const TEACHER_ACTS = new Set(["msg-kind","sc-iadd","sc-idel","sc-paste","sc-ins","sc-tpl-reset","sc-export","msg-open","msg-tab","msg-all","msg-none","msg-cls","msg-send","msg-del","msg-withdraw","msg-repush","note-share","c-course","tname-open","tname-later","tname-save","q-custom","q-add","q-del","q-move","course-archive","courses-more","courses-arch","port-student","port-open","tmr-start","tmr-add","tmr-pause","tmr-resume","tmr-stop","ctx-img-del","qfb","qfb-close","fb-chip","pick-tool","mem-open","mem-cls","mem-all","mem-none","course-gsplit","ai-setup","ai-key-save","ai-key-del","ai-suggest","ai-pick","tadmin-open","tadmin-block","tadmin-tab","fbadmin-done","notice-add","notice-del","note-filter","note-req","note-req-send","note-req-cancel","note-dup","create","edit-room","dup","dup-list","del","del-yes","del-ask","del-room","status","toggle","save-feedback","class-fb","pin","pin-move","pin-clear",
   "present","present-exit","pmode","pnav","pq","pper","pnames","prand","fullscreen","export","export-go","save-tset","tpl-save-open","tpl-save","tpl-cancel","use-tpl","create-save","draft-save","publish-draft","discard-form",
   "preview","preview-form","preview-home","qr","copy-link","save-share","mcourse","course-new","course-edit","course-gadd","course-gdel","course-save","course-del","course-del-yes",
   "roster-open","roster-add","roster-reissue","roster-del","roster-print","gsel","asg-add-open","asg-add-cancel","asg-add","asg-st","racts","mview","sview","sfilter","sgo","snav","ttab","mfilter","open-student","goal","tpl","st-add","st-del","depth"]);
@@ -4066,7 +4080,7 @@ function teacherCard(r, p, ps, nav){
    ========================================================= */
 /* 🔄 새 버전 알림: 배포 때마다 APP_VERSION과 version.json의 v를 같은 값으로 올린다.
    GitHub Pages는 화면을 10분쯤 기억하므로, 옛 화면이면 아래쪽에 ‘새로고침’ 띠를 띄우고 주소를 바꿔 새로 받는다 */
-const APP_VERSION = "2026-10-16a";
+const APP_VERSION = "2026-10-17a";
 async function checkVersion(){
   if(!/^https?:$/.test(location.protocol)) return;
   try{
@@ -4837,6 +4851,7 @@ function msgRefresh(full){                                      // full: 검색�
     box.querySelectorAll(".mgrp").forEach(g => { const xs = [...g.querySelectorAll("input[data-msgsel]")], n = xs.filter(i => i.checked).length, h = g.querySelector("[data-a=msg-cls]");
       if(h) h.innerHTML = `${n === xs.length ? "✓" : "＋"} ${esc(h.dataset.v)} <small class="muted">${n}/${xs.length}</small>` }) }
   if(ct) ct.textContent = `${f.sel.length}명`;
+  if(f.kind === "score"){ scoreRefresh(); const sb = document.querySelector("#modal [data-a=msg-send]"); if(sb && !S.msgBusy) sb.textContent = `점수 안내 보내기${f.sel.length ? ` (${f.sel.length}명)` : ""}` }
 }
 async function loadMsgSent(){
   if(S.demo){ S.msgSent = S.demoMsgs || []; return }
@@ -4850,32 +4865,125 @@ function msgOpen(pre){
   if(!S.demo && S.roster === undefined && !S.rosterLoading){ S.rosterLoading = true; loadRoster().then(() => { S.rosterLoading = false; if(S.modal?.type === "msg") renderModal() }) }
   loadMsgSent();
 }
-function msgModalHTML(m){
-  const f = MSGF(), sent = S.msgSent || [], tab = m.tab === "sent" ? "sent" : "new";
+/* 📊 수행평가 점수 안내: 학생마다 {학생명}·{점수}를 채운 안내 + 예/아니오 질문 → 응답을 엑셀(CSV)로 */
+const SCORE_TPL = "안녕하세요. 온라인 공동교육과정 담당 교사입니다. {학생명} 학생 수행평가 점수입니다. {점수}";
+const SCORE_ASK = ["개별 안내된 수행평가 점수를 확인하셨습니까?", "받은 점수에 이의를 제기합니다."];
+function scoreF(){
+  const f = MSGF();
+  if(!f.sc) f.sc = {tpl:lsGet("nonjae.scoretpl") || SCORE_TPL, items:["수행평가 A", "수행평가 B"], v:{}, ask:SCORE_ASK.slice(), title:"수행평가 점수 안내"};
+  return f.sc;
+}
+const scoreList = (sc, sid) => sc.items.map((n, i) => `${i + 1}) ${(n || "").trim() || "수행평가 " + (i + 1)} : ${String(sc.v[sid]?.[i] ?? "").trim() || "-"}`).join(" / ");
+const scoreBody = (sc, x) => (sc.tpl || SCORE_TPL).split("{학생명}").join(x.name || "").split("{점수}").join(scoreList(sc, x.id));
+const scoreRows = f => { const sel = new Set(f.sel); return msgRoster().filter(x => sel.has(x.id)) };
+function scoreTableHTML(f){
+  const sc = scoreF(), rows = scoreRows(f);
+  return `<div class="sctbl-wrap"><table class="sctbl"><thead><tr><th>학생</th>${sc.items.map((n, i) => `<th><span class="row" style="gap:4px;flex-wrap:nowrap"><input type="text" data-an="${i}" value="${esc(n)}" maxlength="30" aria-label="${i + 1}번 수행평가 이름">${sc.items.length > 1 ? `<button class="btn sm" type="button" data-a="sc-idel" data-v="${i}" aria-label="${i + 1}번 수행평가 빼기">✕</button>` : ""}</span></th>`).join("")}
+      <th><button class="btn sm" type="button" data-a="sc-iadd" ${sc.items.length >= 8 ? "disabled" : ""}>+ 평가</button></th></tr></thead>
+    <tbody>${rows.map(x => `<tr><td>${esc(rosterLabel(x))}</td>${sc.items.map((n, i) => `<td><input type="text" inputmode="decimal" data-sc="${esc(x.id)}" data-i="${i}" value="${esc(sc.v[x.id]?.[i] ?? "")}" maxlength="20" aria-label="${esc(rosterLabel(x))} ${esc(n)} 점수"></td>`).join("")}<td></td></tr>`).join("")
+      || `<tr><td colspan="${sc.items.length + 2}" class="muted small">위에서 학생을 고르거나, 아래에 엑셀 표를 붙여 넣으면 학생이 채워져요.</td></tr>`}</tbody></table></div>`;
+}
+function scorePreview(f){
+  const sc = scoreF(), x = scoreRows(f)[0] || {id:"", name:"김가온"};
+  return scoreBody(sc, x);
+}
+function scoreRefresh(){                                          // 학생을 고르면 점수 표·미리보기만 다시
+  const f = MSGF(), t = document.getElementById("sc-table"), pv = document.getElementById("sc-prev");
+  if(t) t.innerHTML = scoreTableHTML(f);
+  if(pv) pv.textContent = scorePreview(f);
+}
+function scorePaste(){                                            // 엑셀에서 복사: ‘학번 이름 점수…’ (첫 줄이 ‘학번’으로 시작하면 평가 이름으로)
+  const f = MSGF(), sc = scoreF(), txt = document.getElementById("sc-paste")?.value || "";
+  const lines = txt.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
+  if(!lines.length){ toast("엑셀에서 ‘학번 · 이름 · 점수…’ 칸을 복사해 붙여 넣어 주세요."); return }
+  const cells = l => l.includes("\t") ? l.split("\t").map(c => c.trim()) : l.split(/\s{2,}|,|\s+/).map(c => c.trim());
+  const ros = msgRoster(), sel = new Set(f.sel); let hit = 0; const miss = [];
+  lines.forEach((l, li) => {
+    const c = cells(l), ni = c.findIndex(v => /^\d{3,10}$/.test(v));
+    if(ni < 0){ if(li === 0 && c.length > 2){ const hi = c.findIndex(v => /학번/.test(v)); const names = c.slice((hi >= 0 ? hi : 0) + 2).filter(Boolean); if(names.length) sc.items = names.slice(0, 8) } return }
+    const num = c[ni], nm = (c[ni + 1] || "").replace(/\s/g, ""), x = ros.find(y => y.number === num && (!nm || y.name.replace(/\s/g, "") === nm)) || ros.find(y => y.number === num);
+    if(!x){ miss.push(num + (nm ? " " + nm : "")); return }
+    const vals = c.slice(ni + 2); while(sc.items.length < Math.min(vals.length, 8)) sc.items.push("수행평가 " + String.fromCharCode(65 + sc.items.length));
+    sc.v[x.id] = sc.items.map((_, i) => vals[i] ?? sc.v[x.id]?.[i] ?? ""); sel.add(x.id); hit++;
+  });
+  f.sel = [...sel]; const ta = document.getElementById("sc-paste"); if(ta) ta.value = "";
+  renderModal(); toast(`${hit}명의 점수를 넣었어요.` + (miss.length ? ` 명단에서 찾지 못한 학생: ${miss.slice(0, 3).join(", ")}${miss.length > 3 ? ` 외 ${miss.length - 3}명` : ""}` : ""));
+}
+const ynOf = v => v === true ? "예" : v === false ? "아니오" : "";
+function scoreSheetRows(b){                                       // 학교명/학번/이름/질문들/응답일시
+  const ask = Array.isArray(b.ask) && b.ask.length ? b.ask : SCORE_ASK, pad = n => String(n).padStart(2, "0");
+  const dt = v => { if(!v) return ""; const d = new Date(Date.parse(v) || v); return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}` };
+  const ros = msgRoster(), rows = (b.rcpt || []).map(r => { const x = ros.find(y => y.id === r.sid) || {school:"", number:"", name:"(명단에서 빠진 학생)"};
+    return [x.school || "", x.number || "", x.name || "", ...ask.map((q, i) => ynOf(r.answers?.[i])), r.answered_at ? dt(r.answered_at) : "미응답"] });
+  rows.sort((p, q) => koCmp(p[0], q[0]) || koCmp(p[1], q[1]));
+  return [["학교명", "학번", "이름", ...ask, "응답일시"], ...rows];
+}
+async function saveFile(name, data, mime = "text/csv;charset=utf-8"){   // 파일로 받기 (안 되는 환경이면 false)
+  try{ const dl = window.claude && typeof claude.use === "function" ? await claude.use("downloads") : null;
+    if(dl){ try{ await dl.save({filename:name, data}); return true }catch(e){ if(e?.code === "declined") return "declined" } } }catch(e){}
+  try{ const u = URL.createObjectURL(new Blob([data], {type:mime})), a = document.createElement("a");
+    a.href = u; a.download = name; document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(u), 4000); return true }catch(e){ return false }
+}
+const csvOf = rows => "﻿" + rows.map(row => row.map(v => { v = String(v ?? ""); return /[",\n]/.test(v) ? `"${v.replace(/"/g, '""')}"` : v }).join(",")).join("\r\n");
+async function scoreExport(batch){
+  const b = (S.msgSent || []).find(x => x.batch === batch); if(!b) return;
+  const csv = csvOf(scoreSheetRows(b)), d = new Date(Date.parse(b.at) || b.at), pad = n => String(n).padStart(2, "0");
+  const name = `생각이음_${(b.title || "수행평가 점수 안내").replace(/[\\/:*?"<>|]/g, " ").slice(0, 30)}_응답_${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}.csv`;
+  const ok = await saveFile(name, csv);
+  if(ok === true) toast("응답 파일(엑셀에서 열림)을 저장했어요.");
+  else if(ok !== "declined"){ S.modal = {type:"text", title:"응답 (CSV)", note:"이 화면에서는 파일로 바로 저장할 수 없어요. 아래 내용을 복사해 엑셀에 붙여 넣어 주세요.", text:csv.slice(1)}; render() }
+}
+function msgPickerHTML(f){
   const crs = activeCourses().filter(c => Array.isArray(c.members));
-  let h = `<h3>📨 학생에게 개별 안내</h3>
-    <div class="seg" role="tablist"><button type="button" data-a="msg-tab" data-v="new" aria-pressed="${tab === "new"}">✏️ 새 안내</button><button type="button" data-a="msg-tab" data-v="sent" aria-pressed="${tab === "sent"}">📬 보낸 안내${sent.length ? ` ${sent.length}` : ""}</button></div>`;
-  if(tab === "new"){
-    h += `<p class="small muted">고른 학생에게만 보여요. 학생이 다음에 생각이음을 열면 <b>화면 가운데에 크게</b> 뜨고, ‘확인했어요’를 누르면 <b>읽음</b>으로 표시돼요.</p>
-    <div class="q"><label>받는 학생 <span class="req">*</span> <span class="pill" id="msg-count">${f.sel.length}명</span></label>
+  return `<div class="q"><label>받는 학생 <span class="req">*</span> <span class="pill" id="msg-count">${f.sel.length}명</span></label>
       ${!S.demo && S.roster === undefined ? `<p class="muted small">학생 명단을 불러오는 중…</p>` : `
       <div class="row" style="margin:2px 0 6px;flex-wrap:wrap">${crs.length ? `<select id="msg-crs" aria-label="과목으로 좁히기" style="max-width:190px"><option value="">전체 학생</option>${crs.map(c => `<option value="${esc(c.id)}" ${f.crs === c.id ? "selected" : ""}>${esc(c.title)}</option>`).join("")}</select>` : ""}
         <input type="search" id="msg-q" placeholder="학번·이름으로 찾기" value="${esc(f.q)}" aria-label="학생 찾기" style="flex:1;min-width:130px">
         <button class="btn sm" type="button" data-a="msg-all">보이는 학생 모두</button><button class="btn sm" type="button" data-a="msg-none">모두 빼기</button></div>
-      <div id="msg-list" class="mem-list msg-list">${msgListHTML(f)}</div>`}</div>
-    <div class="q"><label for="msg-title">제목 <span class="opt">(선택)</span></label><input type="text" id="msg-title" maxlength="60" value="${esc(f.title)}" placeholder="예: 수행평가 보충 안내"></div>
-    <div class="q"><label for="msg-body">내용 <span class="req">*</span></label><textarea id="msg-body" class="msg-ta" rows="4" maxlength="1000" placeholder="예: 지난 시간 결석해서 3·1 운동 활동을 아직 못 했어요. 이번 주 금요일까지 해 주세요.">${esc(f.body)}</textarea></div>
-    ${S.demo ? "" : `<label class="tgl"><input type="checkbox" id="msg-push" ${f.push ? "checked" : ""}><span>🔔 알림을 켠 학생은 휴대폰 알림도 받기</span></label>`}
-    <div class="row end"><button class="btn" type="button" data-a="modal-close">닫기</button><button class="btn pri" type="button" data-a="msg-send" ${S.msgBusy ? "disabled" : ""}>${S.msgBusy ? "보내는 중…" : "보내기"}</button></div>`;
+      <div id="msg-list" class="mem-list msg-list">${msgListHTML(f)}</div>`}</div>`;
+}
+function msgModalHTML(m){
+  const f = MSGF(), sent = S.msgSent || [], tab = m.tab === "sent" ? "sent" : "new", score = f.kind === "score";
+  let h = `<h3>📨 학생에게 개별 안내</h3>
+    <div class="seg" role="tablist"><button type="button" data-a="msg-tab" data-v="new" aria-pressed="${tab === "new"}">✏️ 새 안내</button><button type="button" data-a="msg-tab" data-v="sent" aria-pressed="${tab === "sent"}">📬 보낸 안내${sent.length ? ` ${sent.length}` : ""}</button></div>`;
+  if(tab === "new"){
+    const push = S.demo ? "" : `<label class="tgl"><input type="checkbox" id="msg-push" ${f.push ? "checked" : ""}><span>🔔 알림을 켠 학생은 휴대폰 알림도 받기${score ? " (알림에는 점수가 보이지 않아요)" : ""}</span></label>`;
+    h += `<div class="seg mkind" role="group" aria-label="안내 종류"><button type="button" data-a="msg-kind" data-v="note" aria-pressed="${!score}">💬 일반 안내</button><button type="button" data-a="msg-kind" data-v="score" aria-pressed="${score}">📊 수행평가 점수 안내</button></div>`;
+    if(!score){
+      h += `<p class="small muted">고른 학생에게만 보여요. 학생이 다음에 생각이음을 열면 <b>화면 가운데에 크게</b> 뜨고, ‘확인했어요’를 누르면 <b>읽음</b>으로 표시돼요.</p>
+      ${msgPickerHTML(f)}
+      <div class="q"><label for="msg-title">제목 <span class="opt">(선택)</span></label><input type="text" id="msg-title" maxlength="60" value="${esc(f.title)}" placeholder="예: 수행평가 보충 안내"></div>
+      <div class="q"><label for="msg-body">내용 <span class="req">*</span></label><textarea id="msg-body" class="msg-ta" rows="4" maxlength="1000" placeholder="예: 지난 시간 결석해서 3·1 운동 활동을 아직 못 했어요. 이번 주 금요일까지 해 주세요.">${esc(f.body)}</textarea></div>`;
+    }else{
+      const sc = scoreF();
+      h += `<p class="small muted">학생마다 <b>자기 점수만</b> 담긴 안내가 가요. 학생은 안내를 본 뒤 아래 질문에 <b>예/아니오</b>로 답하고, 선생님은 ‘보낸 안내’에서 응답을 <b>엑셀 파일</b>로 받아요.</p>
+      ${msgPickerHTML(f)}
+      <details class="scpaste"><summary>📋 엑셀에서 점수 표 붙여 넣기</summary>
+        <p class="hint">엑셀에서 <b>학번 · 이름 · 점수A · 점수B…</b> 칸을 복사해 붙여 넣으세요. 첫 줄이 ‘학번 이름 보고서 발표’ 같은 제목 줄이면 평가 이름도 함께 들어가요. 붙여 넣은 학생은 자동으로 골라져요.</p>
+        <textarea id="sc-paste" rows="4" placeholder="학번&#9;이름&#9;보고서&#9;발표&#10;10301&#9;김가온&#9;18&#9;27&#10;10302&#9;나다은&#9;20&#9;25"></textarea>
+        <div class="row end"><button class="btn sm pri" type="button" data-a="sc-paste">붙여 넣은 표 넣기</button></div></details>
+      <div class="q"><label>점수 <span class="req">*</span> <span class="opt">고른 학생마다 입력 · 평가 이름도 고칠 수 있어요</span></label><div id="sc-table">${scoreTableHTML(f)}</div></div>
+      <div class="q"><label for="sc-title">제목</label><input type="text" id="sc-title" maxlength="60" value="${esc(sc.title)}"></div>
+      <div class="q"><label for="sc-tpl">안내 멘트 <span class="opt">{학생명}·{점수} 자리에 학생마다 채워져요</span></label>
+        <textarea id="sc-tpl" class="msg-ta" rows="3" maxlength="1500">${esc(sc.tpl)}</textarea>
+        <div class="row" style="gap:6px;margin-top:4px"><button class="btn sm" type="button" data-a="sc-ins" data-v="{학생명}">+ {학생명}</button><button class="btn sm" type="button" data-a="sc-ins" data-v="{점수}">+ {점수}</button><button class="linkbtn small" type="button" data-a="sc-tpl-reset">기본 멘트로</button></div></div>
+      <div class="scprev"><div class="small muted">미리보기 (${scoreRows(f).length ? "첫 학생" : "예시"})</div><p id="sc-prev">${esc(scorePreview(f))}</p></div>
+      <div class="q"><label>학생에게 물을 질문 <span class="opt">예/아니오로 답해요</span></label>
+        ${sc.ask.map((q, i) => `<div class="grow"><span class="in">${i + 1}</span><input type="text" data-ask="${i}" maxlength="100" value="${esc(q)}" aria-label="${i + 1}번 질문"></div>`).join("")}</div>`;
+    }
+    h += `${push}<div class="row end"><button class="btn" type="button" data-a="modal-close">닫기</button><button class="btn pri" type="button" data-a="msg-send" ${S.msgBusy ? "disabled" : ""}>${S.msgBusy ? "보내는 중…" : score ? `점수 안내 보내기${f.sel.length ? ` (${f.sel.length}명)` : ""}` : "보내기"}</button></div>`;
   }else{
     h += !sent.length ? `<p class="muted small">${S.msgSent === undefined ? "불러오는 중…" : "아직 보낸 안내가 없어요."}</p>` : `<div class="msent">${sent.map(b => {
-      const rc = Array.isArray(b.rcpt) ? b.rcpt : [], rd = rc.filter(x => x.read_at), un = rc.filter(x => !x.read_at), at = Date.parse(b.at) || b.at;
+      const rc = Array.isArray(b.rcpt) ? b.rcpt : [], rd = rc.filter(x => x.read_at), un = rc.filter(x => !x.read_at), at = Date.parse(b.at) || b.at, isSc = b.kind === "score";
+      const ask = Array.isArray(b.ask) ? b.ask : [], ans = rc.filter(x => x.answered_at), obj = ask.length > 1 ? rc.filter(x => x.answers?.[1] === true).length : 0;
       const lab = (x, ok) => `<span class="mrc ${ok ? "ok" : ""}">${ok ? "✓" : "○"} ${esc(msgName(x.sid))}${ok ? ` <small>${esc(fmt(Date.parse(x.read_at) || x.read_at))}</small>` : ""}</span>`;
-      return `<details class="mitem" data-keep="msg-${esc(b.batch)}" ${S.advOpen?.["msg-" + b.batch] ? "open" : ""}><summary><span class="mt"><b>${esc(b.title || String(b.body).slice(0, 40))}</b><small>${esc(fmt(at))} · ${rc.length === 1 ? esc(msgName(rc[0].sid)) : `${rc.length}명`}</small></span>
-          <span class="mread ${un.length ? "" : "all"}">${un.length ? `읽음 ${rd.length}/${rc.length}` : "모두 읽음"}</span></summary>
-        <p class="mbody">${lnk(b.body)}</p>
-        <div class="mrcs">${rd.map(x => lab(x, true)).join("")}${un.map(x => lab(x, false)).join("")}</div>
-        <div class="row end">${un.length && !S.demo ? `<button class="btn sm" type="button" data-a="msg-repush" data-v="${esc(b.batch)}">🔔 안 읽은 ${un.length}명에게 다시 알림</button>` : ""}
+      const badge = isSc ? `<span class="mread ${ans.length === rc.length ? "all" : ""}">응답 ${ans.length}/${rc.length}${obj ? ` · <b>이의 ${obj}</b>` : ""}</span>` : `<span class="mread ${un.length ? "" : "all"}">${un.length ? `읽음 ${rd.length}/${rc.length}` : "모두 읽음"}</span>`;
+      const pend = isSc ? rc.filter(x => !x.answered_at) : un;
+      const body = isSc ? `<div class="sctbl-wrap"><table class="sctbl scres"><thead><tr><th>학생</th>${ask.map(q => `<th>${esc(q)}</th>`).join("")}<th>응답일시</th></tr></thead><tbody>${rc.map(x => `<tr class="${x.answers?.[1] === true ? "obj" : ""}"><td>${esc(msgName(x.sid))}${x.body ? `<details class="scb"><summary class="small muted">보낸 내용</summary><p class="small">${esc(x.body)}</p></details>` : ""}</td>${ask.map((q, i) => `<td>${x.answered_at ? `<b class="yn ${x.answers?.[i] ? "y" : "n"}">${ynOf(x.answers?.[i])}</b>` : `<span class="muted">${x.read_at ? "읽음" : "–"}</span>`}</td>`).join("")}<td class="small">${x.answered_at ? esc(fmt(Date.parse(x.answered_at) || x.answered_at)) : ""}</td></tr>`).join("")}</tbody></table></div>`
+        : `<p class="mbody">${lnk(b.body)}</p><div class="mrcs">${rd.map(x => lab(x, true)).join("")}${un.map(x => lab(x, false)).join("")}</div>`;
+      return `<details class="mitem${isSc ? " sc" : ""}" data-keep="msg-${esc(b.batch)}" ${S.advOpen?.["msg-" + b.batch] ? "open" : ""}><summary><span class="mt"><b>${isSc ? "📊 " : ""}${esc(b.title || String(b.body).slice(0, 40))}</b><small>${esc(fmt(at))} · ${rc.length === 1 ? esc(msgName(rc[0].sid)) : `${rc.length}명`}</small></span>${badge}</summary>
+        ${body}
+        <div class="row end">${isSc ? `<button class="btn sm pri" type="button" data-a="sc-export" data-v="${esc(b.batch)}">⬇ 응답 엑셀로 받기</button>` : ""}${pend.length && !S.demo ? `<button class="btn sm" type="button" data-a="msg-repush" data-v="${esc(b.batch)}">🔔 ${isSc ? "답하지 않은" : "안 읽은"} ${pend.length}명에게 다시 알림</button>` : ""}
           ${S.msgDel === b.batch ? `<span class="small">학생 화면에서 사라져요.</span><button class="btn sm" type="button" data-a="msg-del" data-v="">취소</button><button class="btn sm danger" type="button" data-a="msg-withdraw" data-v="${esc(b.batch)}">거두기</button>`
             : `<button class="btn sm" type="button" data-a="msg-del" data-v="${esc(b.batch)}">↩ 거두기</button>`}</div></details>` }).join("")}</div>`;
     h += `<div class="row end"><button class="btn" type="button" data-a="modal-close">닫기</button></div>`;
@@ -4883,29 +4991,44 @@ function msgModalHTML(m){
   return h;
 }
 async function msgSend(){
-  const f = MSGF(), body = (f.body || "").trim(), title = (f.title || "").trim();
+  const f = MSGF(), score = f.kind === "score";
   if(!f.sel.length){ toast("받는 학생을 골라 주세요."); return }
-  if(!body){ toast("내용을 적어 주세요."); document.getElementById("msg-body")?.focus(); return }
+  let title, body = "", items = null, ask = null;
+  if(score){
+    const sc = scoreF(), rows = scoreRows(f), empty = rows.filter(x => sc.items.some((_, i) => !String(sc.v[x.id]?.[i] ?? "").trim()));
+    if(empty.length){ toast(`점수가 비어 있는 학생이 있어요: ${empty.slice(0, 3).map(x => x.name).join(", ")}${empty.length > 3 ? ` 외 ${empty.length - 3}명` : ""}`); return }
+    if(!(sc.tpl || "").trim()){ toast("안내 멘트를 적어 주세요."); return }
+    ask = sc.ask.map(q => q.trim()).filter(Boolean);
+    if(!ask.length){ toast("질문을 하나 이상 적어 주세요."); return }
+    title = (sc.title || "").trim() || "수행평가 점수 안내"; items = rows.map(x => ({sid:x.id, body:scoreBody(sc, x)}));
+    lsSet("nonjae.scoretpl", sc.tpl);
+  }else{
+    body = (f.body || "").trim(); title = (f.title || "").trim();
+    if(!body){ toast("내용을 적어 주세요."); document.getElementById("msg-body")?.focus(); return }
+  }
+  const reset = () => { if(score){ const sc = scoreF(); f.sc = {...sc, v:{}} } else { f.title = ""; f.body = "" } f.sel = [] };
   if(S.demo){
-    const at = Date.now(), batch = "dm" + at.toString(36);
-    S.demoMsgs = [{batch, title, body, at:new Date(at).toISOString(), rcpt:f.sel.map(sid => ({sid, read_at:null}))}, ...(S.demoMsgs || [])];
-    S.demoInbox = [{id:batch, title, body, at:new Date(at).toISOString(), read_at:null, teacher:"체험"}, ...(S.demoInbox || [])];
-    S.msgF = {...f, sel:[], title:"", body:""}; S.msgSent = S.demoMsgs; S.msgTab = S.modal.tab = "sent";
+    const at = new Date().toISOString(), batch = "dm" + Date.now().toString(36);
+    S.demoMsgs = [{batch, title, body:score ? items[0].body : body, at, kind:score ? "score" : "note", ask, rcpt:(score ? items : f.sel.map(sid => ({sid}))).map(x => ({sid:x.sid || x, read_at:null, body:score ? x.body : null}))}, ...(S.demoMsgs || [])];
+    S.demoInbox = [{id:batch, title, body:score ? scoreBody(scoreF(), {id:items[0].sid, name:"미리보기 학생"}) : body, at, read_at:null, teacher:"체험", kind:score ? "score" : "note", ask}, ...(S.demoInbox || [])];
+    reset(); S.msgSent = S.demoMsgs; S.msgTab = S.modal.tab = "sent";
     toast("체험이라 실제로 보내지는 않아요. ‘학생 화면 미리보기’를 열면 학생에게 어떻게 뜨는지 볼 수 있어요."); return;
   }
   S.msgBusy = true; renderModal();
-  const r = await rpcSafe("msg_send", {p_students:f.sel, p_title:title, p_body:body}), d = r?.data || {};
+  const r = score ? await rpcSafe("msg_send_each", {p_title:title, p_items:items, p_ask:ask}) : await rpcSafe("msg_send", {p_students:f.sel, p_title:title, p_body:body}), d = r?.data || {};
   S.msgBusy = false;
   if(!d.ok){ toast(d.reason === "limit" ? "1시간에 30번까지 보낼 수 있어요. 잠시 뒤 다시 보내 주세요." : "보내지 못했어요. 잠시 뒤 다시 해 보세요."); renderModal(); return }
   const ids = f.sel.slice(), push = f.push;
-  S.msgF = {...f, sel:[], title:"", body:""}; S.msgTab = "sent"; if(S.modal?.type === "msg") S.modal.tab = "sent";
+  reset(); S.msgTab = "sent"; if(S.modal?.type === "msg") S.modal.tab = "sent";
   loadMsgSent(); renderModal();
-  const pd = push ? await notifyStudents({title:"📨 " + (title || "선생님 안내"), body:body.slice(0, 120), url:"", tag:"msg-" + d.batch, students:ids}) : null;
-  toast(`학생 ${d.n}명에게 안내를 보냈어요.` + (push ? pushNote(pd) : ""));
+  const pd = push ? await notifyStudents(score ? {title:"📊 " + title, body:"수행평가 점수 안내가 왔어요. 생각이음에서 확인하고 답해 주세요.", url:"", tag:"msg-" + d.batch, students:ids}
+    : {title:"📨 " + (title || "선생님 안내"), body:body.slice(0, 120), url:"", tag:"msg-" + d.batch, students:ids}) : null;
+  toast(`학생 ${d.n}명에게 ${score ? "점수 안내를" : "안내를"} 보냈어요.` + (push ? pushNote(pd) : ""));
 }
 /* 학생: 받은 안내 */
 const inboxOf = () => S.demo ? (S.preview ? (S.demoInbox || []) : []) : (S.preview ? [] : (S.inbox || []));
-const inboxUnread = () => inboxOf().filter(x => !x.read_at);
+const msgPending = x => Array.isArray(x.ask) && x.ask.length ? !x.answered_at : !x.read_at;   // 질문이 있으면 답할 때까지
+const inboxUnread = () => inboxOf().filter(msgPending);
 let INBOX_AT = 0;
 async function loadInbox(){
   if(!msgLive() || isTeacher() || !S.name) return;
@@ -4917,22 +5040,31 @@ function inboxPop(){                                             // 안 읽은 �
   if(!inboxUnread().length || S.modal || S.tour != null || S.view === "present") return;
   S.modal = {type:"inbox-pop"};
 }
+function askHTML(x, done){                                       // 예/아니오 질문 (답한 뒤에는 고른 답만 보인다)
+  const ask = Array.isArray(x.ask) ? x.ask : [], dr = (S.ansDraft = S.ansDraft || {})[x.id] || [];
+  return `<div class="askbox">${ask.map((q, i) => { const v = done ? x.answers?.[i] : dr[i];
+    return `<div class="askq"><p>${i + 1}. ${esc(q)}</p><div class="seg yn" role="group" aria-label="${esc(q)}">${[[true, "예"], [false, "아니오"]].map(([b, l]) =>
+      `<button type="button" ${done ? "disabled" : `data-a="inbox-ans" data-v="${esc(String(x.id))}" data-i="${i}" data-b="${b ? 1 : 0}"`} aria-pressed="${v === b}">${l}</button>`).join("")}</div></div>` }).join("")}</div>`;
+}
 function inboxPopHTML(){
-  const un = inboxUnread(), x = un[un.length - 1];                    // 오래된 것부터
+  const un = inboxUnread(), x = (S.modal?.id && un.find(y => String(y.id) === S.modal.id)) || un[un.length - 1];   // 오래된 것부터 (목록에서 고른 것이 있으면 그것)
   if(!x){ return "" }
-  const at = Date.parse(x.at) || x.at;
-  return `<div class="bigmsg"><div class="bm-ic" aria-hidden="true">📨</div>
+  const at = Date.parse(x.at) || x.at, ask = Array.isArray(x.ask) && x.ask.length, dr = S.ansDraft?.[x.id] || [];
+  const ready = ask && x.ask.every((_, i) => typeof dr[i] === "boolean");
+  return `<div class="bigmsg"><div class="bm-ic" aria-hidden="true">${x.kind === "score" ? "📊" : "📨"}</div>
     <div class="eyebrow">${x.teacher ? `${esc(String(x.teacher).replace(/\s*선생님$/, ""))} 선생님의 안내` : "선생님의 안내"}${un.length > 1 ? ` · ${un.length}개 중 1` : ""}</div>
     ${x.title ? `<h2>${esc(x.title)}</h2>` : ""}<p class="bm-body">${lnk(x.body)}</p><p class="muted small">${esc(fmt(at))}</p>
-    <button class="btn pri bm-ok" type="button" data-a="inbox-ok" data-v="${esc(String(x.id))}">${un.length > 1 ? "확인했어요 · 다음 안내 보기" : "✓ 확인했어요"}</button></div>`;
+    ${ask ? askHTML(x, false) + `<button class="btn pri bm-ok" type="button" data-a="inbox-submit" data-v="${esc(String(x.id))}" ${ready && !S.ansBusy ? "" : "disabled"}>${S.ansBusy ? "보내는 중…" : ready ? "✓ 답 보내기" : "질문에 모두 답해 주세요"}</button>`
+      : `<button class="btn pri bm-ok" type="button" data-a="inbox-ok" data-v="${esc(String(x.id))}">${un.length > 1 ? "확인했어요 · 다음 안내 보기" : "✓ 확인했어요"}</button>`}</div>`;
 }
 function inboxListHTML(){
   const xs = inboxOf();
-  return `<h3>📨 선생님 안내</h3>${xs.length ? `<div class="inlist">${xs.map(x => `<div class="initem ${x.read_at ? "" : "new"}"><div class="in-h">${x.read_at ? "" : `<span class="newdot">NEW</span>`}<b>${esc(x.title || "안내")}</b><small class="muted">${x.teacher ? esc(String(x.teacher).replace(/\s*선생님$/, "")) + " 선생님 · " : ""}${esc(fmt(Date.parse(x.at) || x.at))}</small></div><p>${lnk(x.body)}</p></div>`).join("")}</div>` : `<p class="muted small">받은 안내가 없어요.</p>`}
+  return `<h3>📨 선생님 안내</h3>${xs.length ? `<div class="inlist">${xs.map(x => `<div class="initem ${msgPending(x) ? "new" : ""}"><div class="in-h">${msgPending(x) ? `<span class="newdot">NEW</span>` : ""}<b>${x.kind === "score" ? "📊 " : ""}${esc(x.title || "안내")}</b><small class="muted">${x.teacher ? esc(String(x.teacher).replace(/\s*선생님$/, "")) + " 선생님 · " : ""}${esc(fmt(Date.parse(x.at) || x.at))}</small></div><p>${lnk(x.body)}</p>
+      ${Array.isArray(x.ask) && x.ask.length ? (x.answered_at ? askHTML(x, true) + `<p class="small muted">${esc(fmt(Date.parse(x.answered_at) || x.answered_at))}에 답했어요.</p>` : `<button class="btn sm pri" type="button" data-a="inbox-answer" data-v="${esc(String(x.id))}">답하기</button>`) : ""}</div>`).join("")}</div>` : `<p class="muted small">받은 안내가 없어요.</p>`}
     <div class="row end"><button class="btn pri" type="button" data-a="modal-close">닫기</button></div>`;
 }
-const inboxBarHTML = () => { const xs = inboxOf(), un = xs.filter(x => !x.read_at).length;
-  return xs.length ? `<button class="inboxbar" type="button" data-a="inbox-open"><span>📨 <b>선생님 안내</b> ${xs.length}개</span>${un ? `<span class="new">새 안내 ${un}</span>` : `<span class="muted small">모두 확인했어요</span>`}<span aria-hidden="true">→</span></button>` : "" };
+const inboxBarHTML = () => { const xs = inboxOf(), un = xs.filter(msgPending).length;
+  return xs.length ? `<button class="inboxbar" type="button" data-a="inbox-open"><span>📨 <b>선생님 안내</b> ${xs.length}개</span>${un ? `<span class="new">확인할 안내 ${un}</span>` : `<span class="muted small">모두 확인했어요</span>`}<span aria-hidden="true">→</span></button>` : "" };
 document.addEventListener("visibilitychange", () => { if(!document.hidden && Date.now() - INBOX_AT > 60000) loadInbox() });
 
 /* 📢 과목 공지: 학생의 과목 화면 맨 위에 1~2개 띄운다 (과목 문서의 notices에 저장) */
@@ -5415,7 +5547,7 @@ function renderModal(){
       <input type="text" id="share-url" placeholder="https://claude.ai/…" aria-label="공유 링크">
       <div class="row end"><button class="btn" type="button" data-a="modal-close">취소</button><button class="btn pri" type="button" data-a="save-share">저장</button></div>`;
   }
-  el.innerHTML = `<div class="modal-bg" data-a="modal-bg"><div class="modal${m.type === "note" ? " lb" : ""}" role="dialog" aria-modal="true">${h}</div></div>`;
+  el.innerHTML = `<div class="modal-bg" data-a="modal-bg"><div class="modal${m.type === "note" ? " lb" : m.type === "msg" ? " wide" : ""}" role="dialog" aria-modal="true">${h}</div></div>`;
   if(m.type === "qr"){
     const link = linkFor(m.kind || "room", m.id, m.g);
     loadQR().then(ok => { const box = document.getElementById("qrbox"); if(!box) return; box.innerHTML = "";
@@ -5541,12 +5673,9 @@ async function exportCSV(r, kind = "all"){
   const rows = exportRowsKind(r, kind);
   const csv = "﻿" + rows.map(row => row.map(v => /[",\n]/.test(v) ? `"${v.replace(/"/g,'""')}"` : v).join(",")).join("\r\n");
   const name = `생각이음_${(r.title||"활동").replace(/[\\/:*?"<>|]/g," ").slice(0,40)}${kind && kind !== "all" ? "_" + EXPORTS[kind] : ""}${S.gsel && S.gselRoom === r.id ? "_" + groupName(r.courseId, S.gsel) : ""}_${(d => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`)(new Date())}.csv`;
-  let dl = null;
-  try{ dl = window.claude && typeof claude.use === "function" ? await claude.use("downloads") : null }catch(e){}
-  if(dl){
-    try{ await dl.save({filename:name, data:csv}); toast("결과 파일을 저장했어요."); return }
-    catch(e){ if(e?.code === "declined") return }
-  }
+  const ok = await saveFile(name, csv);
+  if(ok === true){ toast("결과 파일을 저장했어요."); return }
+  if(ok === "declined") return;
   S.modal = {type:"text", title:`결과 (CSV) · ${EXPORTS[kind] || "전체 결과"}`, note:"이 화면에서는 파일로 바로 저장할 수 없어요. 아래 내용을 복사해 메모장에 붙여 넣고 .csv로 저장하면 엑셀에서 열려요.", text:csv.slice(1)};
   render();
 }
@@ -5991,6 +6120,10 @@ document.addEventListener("input", e => {
   if(el.id === "roster-q"){ S.rosterQ = el.value; const box = el.closest(".modal"); if(box){ const at = el.selectionStart; render(); const n = document.getElementById("roster-q"); if(n){ n.focus(); n.setSelectionRange(at, at) } } return }
   if(el.id === "n-q"){ S.nq = el.value; const at = el.selectionStart; render(); const n = document.getElementById("n-q"); if(n){ n.focus(); n.setSelectionRange(at, at) } return }
   if(el.id === "msg-q"){ MSGF().q = el.value; msgRefresh(true); return }
+  if(el.dataset.sc){ const sc = scoreF(); sc.v[el.dataset.sc] = sc.v[el.dataset.sc] || []; sc.v[el.dataset.sc][+el.dataset.i] = el.value; const pv = document.getElementById("sc-prev"); if(pv) pv.textContent = scorePreview(MSGF()); return }
+  if(el.dataset.an !== undefined){ scoreF().items[+el.dataset.an] = el.value; const pv = document.getElementById("sc-prev"); if(pv) pv.textContent = scorePreview(MSGF()); return }
+  if(el.dataset.ask !== undefined){ scoreF().ask[+el.dataset.ask] = el.value; return }
+  if(el.id === "sc-tpl" || el.id === "sc-title"){ scoreF()[el.id === "sc-tpl" ? "tpl" : "title"] = el.value; const pv = document.getElementById("sc-prev"); if(pv) pv.textContent = scorePreview(MSGF()); return }
   if(el.id === "msg-title" || el.id === "msg-body"){ MSGF()[el.id === "msg-title" ? "title" : "body"] = el.value; return }
   if(el.id === "mem-q" && S.form.course){ S.form.course.q = el.value; const box = document.getElementById("mem-list"); if(box) box.innerHTML = memListHTML(S.form.course); return }
   if(el.id === "m-q"){ S.mq = el.value; const box = document.getElementById("mlist"); if(box) box.innerHTML = manageList(); return }
@@ -6780,6 +6913,14 @@ async function act(a, b){
     }
     case "modal-close": case "modal-bg": S.modal = null; break;
     case "msg-open": msgOpen(b.dataset.v || ""); break;
+    case "msg-kind": MSGF().kind = b.dataset.v === "score" ? "score" : "note"; if(MSGF().kind === "score") scoreF(); break;
+    case "sc-iadd": { const sc = scoreF(); if(sc.items.length < 8) sc.items.push("수행평가 " + String.fromCharCode(65 + sc.items.length)); break }
+    case "sc-idel": { const sc = scoreF(), i = +b.dataset.v; if(sc.items.length > 1){ sc.items.splice(i, 1); Object.values(sc.v).forEach(a => Array.isArray(a) && a.splice(i, 1)) } break }
+    case "sc-paste": scorePaste(); return;
+    case "sc-ins": { const ta = document.getElementById("sc-tpl"), sc = scoreF(); if(!ta) return; const a0 = ta.selectionStart ?? ta.value.length, a1 = ta.selectionEnd ?? a0;
+      ta.value = ta.value.slice(0, a0) + b.dataset.v + ta.value.slice(a1); sc.tpl = ta.value; ta.focus(); ta.setSelectionRange(a0 + b.dataset.v.length, a0 + b.dataset.v.length); scoreRefresh(); return }
+    case "sc-tpl-reset": scoreF().tpl = SCORE_TPL; break;
+    case "sc-export": await scoreExport(b.dataset.v); return;
     case "msg-tab": S.msgTab = S.modal.tab = b.dataset.v; S.msgDel = null; if(b.dataset.v === "sent") loadMsgSent(); break;
     case "msg-all": { const f = MSGF(); f.sel = [...new Set([...f.sel, ...msgPool(f).map(x => x.id)])]; msgRefresh(); return }
     case "msg-none": MSGF().sel = []; msgRefresh(); return;
@@ -6801,6 +6942,16 @@ async function act(a, b){
       toast(d?.sent ? `학생 기기 ${d.sent}대에 다시 알림을 보냈어요.` : d && !d.total ? "안 읽은 학생 중 알림을 켠 학생이 없어요." : "알림을 보내지 못했어요. 잠시 뒤 다시 해 보세요."); return;
     }
     case "inbox-open": S.modal = {type:"inbox"}; break;
+    case "inbox-answer": S.modal = {type:"inbox-pop", id:b.dataset.v}; break;
+    case "inbox-ans": { const d = (S.ansDraft = S.ansDraft || {}), k = b.dataset.v; d[k] = d[k] || []; d[k][+b.dataset.i] = b.dataset.b === "1"; renderModal(); return }
+    case "inbox-submit": {
+      const id = b.dataset.v, x = inboxOf().find(y => String(y.id) === id); if(!x) { S.modal = null; break }
+      const ans = (S.ansDraft?.[id] || []).slice(0, x.ask.length); if(ans.length !== x.ask.length || ans.some(v => typeof v !== "boolean")) return;
+      if(!S.demo){ S.ansBusy = true; renderModal(); const r = await rpcSafe("msg_answer", {p_id:Number(id), p_answers:ans}); S.ansBusy = false;
+        if(!r?.data?.ok && r?.data?.reason !== "done"){ toast("답을 보내지 못했어요. 잠시 뒤 다시 해 보세요."); renderModal(); return } }
+      const now = new Date().toISOString(); x.answers = ans; x.answered_at = now; x.read_at = x.read_at || now; delete S.ansDraft[id];
+      toast("선생님께 답을 보냈어요."); S.modal = inboxUnread().length ? {type:"inbox-pop"} : null; break;
+    }
     case "inbox-ok": {
       const id = b.dataset.v, x = inboxOf().find(y => String(y.id) === id); if(!x) { S.modal = null; break }
       x.read_at = new Date().toISOString();

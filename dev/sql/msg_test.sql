@@ -53,3 +53,16 @@ begin; set local role authenticated; select _as(:'TB'); select 'TB post targets'
 update teachers set blocked = true where email='a@x.kr';
 begin; set local role authenticated; select _as(:'S1'); select 'S1 inbox blocked', json_array_length(my_msgs()); commit;
 update teachers set blocked = false where email='a@x.kr';
+-- 📊 점수 안내
+begin; set local role authenticated; select _as(:'TA'); select 'each', msg_send_each('수행평가 점수 안내', '[{"sid":"11111111-1111-1111-1111-111111111111","body":"김가온 1) 보고서 : 18"},{"sid":"22222222-2222-2222-2222-222222222222","body":"나다은 1) 보고서 : 20"},{"sid":"33333333-3333-3333-3333-333333333333","body":"남의 학생"}]'::jsonb, '["확인하셨습니까?","이의를 제기합니다.",""]'::jsonb); commit;
+begin; set local role authenticated; select _as(:'S1'); select 'S1 score', my_msgs()->0->>'body', my_msgs()->0->>'kind', my_msgs()->0->'ask'; commit;
+select id as "SID1" from student_msgs where kind='score' and student_id='11111111-1111-1111-1111-111111111111' \gset
+select id as "SID2" from student_msgs where kind='score' and student_id='22222222-2222-2222-2222-222222222222' \gset
+begin; set local role authenticated; select _as(:'S2'); select 'S2 answers S1', msg_answer(:SID1, '[true,false]'); commit;
+begin; set local role authenticated; select _as(:'S1'); select 'S1 bad len', msg_answer(:SID1, '[true]'); select 'S1 bad type', msg_answer(:SID1, '["yes","no"]'); commit;
+begin; set local role authenticated; select _as(:'S1'); select 'S1 ok', msg_answer(:SID1, '[true,true]'); select 'S1 again', msg_answer(:SID1, '[true,false]'); commit;
+begin; set local role authenticated; select _as(:'TA'); select 'TA answer', msg_answer(:SID2, '[true,false]'); commit;
+begin; set local role authenticated; select _as(:'TA'); select 'TA sent score', msg_sent()->0->>'kind', msg_sent()->0->'ask', json_array_length(msg_sent()->0->'rcpt'),
+  (select string_agg(coalesce(r->>'answers','-')||'/'||coalesce(r->>'body',''), ' ; ') from json_array_elements(msg_sent()->0->'rcpt') r); commit;
+begin; set local role authenticated; select _as(:'TB'); select 'TB each to A', msg_send_each('x', '[{"sid":"11111111-1111-1111-1111-111111111111","body":"hack"}]'::jsonb, null); commit;
+begin; set local role authenticated; select _as(:'S1'); select 'student each', msg_send_each('x', '[{"sid":"22222222-2222-2222-2222-222222222222","body":"hack"}]'::jsonb, null); commit;
