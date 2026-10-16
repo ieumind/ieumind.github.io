@@ -63,6 +63,7 @@ async def main():
     await T.click('[data-a=note-nav][data-d="1"]'); await W(T); print('  next:', await T.text_content('.lb-h .muted'))
     await T.screenshot(path='mob/n5_viewer.png')
     await T.click('#modal [data-a=note-req]'); await W(T); await T.fill('#nreq-msg','두 번째 쪽이 흐려요. 다시 찍어 주세요.'); await T.click('[data-a=note-req-send]'); await W(T,500)
+    print('T req push:', [x for x in await T.evaluate('__sbLog') if x.startswith('notify:')][-1:], '| toast:', await T.evaluate('document.getElementById("toast")?.textContent'))
     print('T after req:', await T.eval_on_selector_all('.kpi','e=>e.map(x=>x.innerText.replace(/\\n/g," "))'))
     # A resubmit
     await A.reload(); await W(A,1200)

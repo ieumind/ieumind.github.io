@@ -873,6 +873,105 @@ do $p$ begin
   end if;
 end $p$;
 
+-- ---------------------------------------------------------------------
+-- 📨 학생 개별 안내: 선생님이 고른 학생에게만 보내는 안내 (학생이 앱을 열면 화면 가운데에 크게 뜬다)
+--   student_msgs: 받는 학생마다 한 줄. 같은 번에 보낸 것은 batch가 같다
+--   표에 직접 읽고 쓰는 권한은 아무에게도 주지 않는다. 선생님은 msg_send/msg_sent/msg_withdraw, 학생은 my_msgs/msg_read로만
+-- ---------------------------------------------------------------------
+create table if not exists public.student_msgs (
+  id         bigint generated always as identity primary key,
+  tid        uuid not null,
+  batch      text not null,
+  student_id uuid not null references public.students(id) on delete cascade,
+  title      text not null default '',
+  body       text not null,
+  created_at timestamptz not null default now(),
+  read_at    timestamptz
+);
+alter table public.student_msgs add column if not exists withdrawn_at timestamptz;   -- 선생님이 거둔 안내 (지우지 않고 숨긴다)
+create index if not exists student_msgs_sid_idx on public.student_msgs (student_id, created_at desc);
+create index if not exists student_msgs_tid_idx on public.student_msgs (tid, created_at desc);
+alter table public.student_msgs enable row level security;
+revoke all on public.student_msgs from public, anon, authenticated;
+-- 선생님: 내 명단의 학생에게만 보낸다 (한 번에 300명, 1시간에 30번까지)
+create or replace function public.msg_send(p_students uuid[], p_title text, p_body text) returns json
+language plpgsql volatile security definer set search_path = public as $$
+declare v_body text := left(trim(coalesce(p_body, '')), 1000); v_title text := left(trim(coalesce(p_title, '')), 60);
+        v_batch text := gen_random_uuid()::text; v_n int;
+begin
+  if not public.is_teacher() then return json_build_object('ok', false, 'reason', 'denied'); end if;
+  if length(v_body) < 1 then return json_build_object('ok', false, 'reason', 'empty'); end if;
+  if coalesce(array_length(p_students, 1), 0) = 0 or array_length(p_students, 1) > 300 then return json_build_object('ok', false, 'reason', 'students'); end if;
+  if (select count(distinct batch) from public.student_msgs where tid = auth.uid() and created_at > now() - interval '1 hour') >= 30 then
+    return json_build_object('ok', false, 'reason', 'limit'); end if;
+  insert into public.student_msgs (tid, batch, student_id, title, body)
+    select auth.uid(), v_batch, s.id, v_title, v_body from public.students s where s.tid = auth.uid() and s.id = any(p_students);
+  get diagnostics v_n = row_count;
+  if v_n = 0 then return json_build_object('ok', false, 'reason', 'students'); end if;
+  return json_build_object('ok', true, 'batch', v_batch, 'n', v_n);
+end $$;
+-- 선생님: 내가 보낸 안내 (최근 100번) · 학생마다 읽은 시각
+create or replace function public.msg_sent() returns json
+language sql stable security definer set search_path = public as $$
+  select coalesce(json_agg(b order by b.at desc), '[]'::json) from (
+    select m.batch, max(m.title) as title, max(m.body) as body, min(m.created_at) as at,
+           json_agg(json_build_object('sid', m.student_id, 'read_at', m.read_at)) as rcpt
+      from public.student_msgs m where public.is_teacher() and m.tid = auth.uid() and m.withdrawn_at is null
+     group by m.batch order by min(m.created_at) desc limit 100) b;
+$$;
+-- 선생님: 보낸 안내 거두기 (p_student가 없으면 그 번에 보낸 학생 모두) — 지우지 않고 withdrawn_at만 남겨 양쪽 화면에서 숨긴다
+create or replace function public.msg_withdraw(p_batch text, p_student uuid) returns int
+language plpgsql volatile security definer set search_path = public as $$
+declare v_n int;
+begin
+  if not public.is_teacher() then return 0; end if;
+  update public.student_msgs set withdrawn_at = now()
+   where tid = auth.uid() and batch = p_batch and withdrawn_at is null and (p_student is null or student_id = p_student);
+  get diagnostics v_n = row_count; return v_n;
+end $$;
+-- 학생: 나에게 온 안내 (최근 90일, 50개). 사용이 막힌 선생님의 안내는 빼고
+create or replace function public.my_msgs() returns json
+language sql stable security definer set search_path = public as $$
+  select coalesce(json_agg(x order by x.at desc), '[]'::json) from (
+    select m.id, m.title, m.body, m.created_at as at, m.read_at, coalesce(t.name, '') as teacher
+      from public.student_msgs m
+      join public.student_sessions ss on ss.uid = auth.uid() and ss.tid = m.tid and ss.student_id = m.student_id
+      left join public.teachers t on t.uid = m.tid
+     where m.withdrawn_at is null and m.created_at > now() - interval '90 days' and public.tid_active(m.tid)
+     order by m.created_at desc limit 50) x;
+$$;
+-- 학생: ‘확인했어요’ (내 것만)
+create or replace function public.msg_read(p_ids bigint[]) returns void
+language sql volatile security definer set search_path = public as $$
+  update public.student_msgs m set read_at = now()
+   where m.id = any(coalesce(p_ids, '{}')) and m.read_at is null
+     and exists (select 1 from public.student_sessions ss where ss.uid = auth.uid() and ss.tid = m.tid and ss.student_id = m.student_id);
+$$;
+revoke execute on function public.msg_send(uuid[], text, text), public.msg_sent(), public.msg_withdraw(text, uuid), public.my_msgs(), public.msg_read(bigint[]) from public, anon;
+grant execute on function public.msg_send(uuid[], text, text), public.msg_sent(), public.msg_withdraw(text, uuid), public.my_msgs(), public.msg_read(bigint[]) to authenticated;
+-- 🔔 개별 알림: 고른 학생(안내)·그 글을 쓴 학생(재제출 요청)의 기기에만. 1시간 30번 제한은 다른 알림과 함께 센다
+create or replace function public.push_targets_students(p_students uuid[]) returns table(endpoint text, p256dh text, auth text)
+language plpgsql security definer set search_path = public as $$
+begin
+  if not public.is_teacher() or coalesce(array_length(p_students, 1), 0) = 0 then return; end if;
+  if (select count(*) from public.notify_log where tid = auth.uid() and at > now() - interval '1 hour') >= 30 then return; end if;
+  insert into public.notify_log (tid) values (auth.uid());
+  return query select s.endpoint, s.p256dh, s.auth from public.push_subs s
+    join public.student_sessions ss on ss.uid = s.uid and ss.tid = auth.uid()
+   where ss.student_id = any(p_students);
+end $$;
+create or replace function public.push_targets_post(p_post text) returns table(endpoint text, p256dh text, auth text)
+language plpgsql security definer set search_path = public as $$
+declare v_sid uuid;
+begin
+  if not public.is_teacher() then return; end if;
+  select d.owner into v_sid from public.docs d where d.col = 'posts' and d.id = p_post and d.tid = auth.uid() limit 1;
+  if v_sid is null then return; end if;
+  return query select * from public.push_targets_students(array[v_sid]);
+end $$;
+revoke execute on function public.push_targets_students(uuid[]), public.push_targets_post(text) from public, anon;
+grant execute on function public.push_targets_students(uuid[]), public.push_targets_post(text) to authenticated;
+
 -- =====================================================================
 -- 마지막으로 관리자(나)의 구글 이메일을 등록하세요 (따옴표 안을 바꿔서 실행)
 -- 다른 선생님은 등록하지 않아도 구글로 로그인하면 바로 교사가 돼요

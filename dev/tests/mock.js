@@ -66,6 +66,14 @@
       if(fn==="room_viewers"){ if(!isT) return {data:[],error:null}; const v=JSON.parse(localStorage.getItem("__views")||"{}")[p.p_room]||{}; return {data:Object.entries(v).map(([student_id,x])=>({student_id,...x})),error:null} }
       if(fn==="push_schedule"){ window.__sbLog.push("sched:"+p.p_room+"/"+p.p_group+"@"+(p.p_at?"set":"clear")); return {data:{ok:isT,scheduled:!!p.p_at},error:null} }
       if(fn==="teacher_set_name"){ if(!isT) return {data:{ok:false,reason:"denied"}}; const v=(p.p_name||"").trim(); if(!v) return {data:{ok:false,reason:"empty"}}; window.__sbLog.push("tname:"+v); return {data:{ok:true,name:v},error:null} }
+      { const M=JSON.parse(localStorage.getItem("__msgs")||"[]"), saveM=()=>localStorage.setItem("__msgs",JSON.stringify(M));
+        if(fn==="msg_send"){ if(!isT) return {data:{ok:false,reason:"denied"}}; const body=(p.p_body||"").trim(); if(!body) return {data:{ok:false,reason:"empty"}};
+          const ok=p.p_students.filter(id=>D.students.some(x=>x.id===id && tidOf(x)===uid)); if(!ok.length) return {data:{ok:false,reason:"students"}};
+          const batch="b"+Math.random().toString(36).slice(2,8), at=new Date().toISOString(); ok.forEach(sid=>M.push({id:M.length+1,tid:uid,batch,student_id:sid,title:(p.p_title||"").trim(),body,created_at:at,read_at:null})); saveM(); window.__sbLog.push("msg_send:"+ok.length); return {data:{ok:true,batch,n:ok.length},error:null} }
+        if(fn==="msg_sent"){ if(!isT) return {data:[],error:null}; const by=new Map(); M.filter(m=>m.tid===uid).forEach(m=>{ if(!by.has(m.batch)) by.set(m.batch,{batch:m.batch,title:m.title,body:m.body,at:m.created_at,rcpt:[]}); by.get(m.batch).rcpt.push({sid:m.student_id,read_at:m.read_at}) }); return {data:[...by.values()].reverse(),error:null} }
+        if(fn==="msg_withdraw"){ if(!isT) return {data:0}; const n=M.length; const keep=M.filter(m=>!(m.tid===uid && m.batch===p.p_batch && (!p.p_student||m.student_id===p.p_student))); localStorage.setItem("__msgs",JSON.stringify(keep)); return {data:n-keep.length,error:null} }
+        if(fn==="my_msgs"){ if(isT) return {data:[],error:null}; const s=sess(); return {data:M.filter(m=>s[m.tid]===m.student_id).reverse().map(m=>({id:m.id,title:m.title,body:m.body,at:m.created_at,read_at:m.read_at,teacher:m.tid==="T"?"이태형":"김선생"})),error:null} }
+        if(fn==="msg_read"){ const s=sess(); M.forEach(m=>{ if(p.p_ids.includes(m.id) && s[m.tid]===m.student_id && !m.read_at) m.read_at=new Date().toISOString() }); saveM(); window.__sbLog.push("msg_read:"+p.p_ids.join(",")); return {data:null,error:null} } }
       if(fn==="my_student_ids") return {data: mySids(), error:null};
       if(fn==="my_students") return {data: isT ? [] : Object.entries(sess()).map(([tid,sid])=>({tid, sid, name:label(D.students.find(x=>x.id===sid))})), error:null};
       if(fn==="push_save"){ window.__push=p; return {data:null,error:null} }
@@ -80,7 +88,7 @@
     },
     functions:{ invoke: async (name, {body}) => { await new Promise(r=>setTimeout(r,20)); if(name==="suggest"){ window.__sbLog.push("suggest:"+JSON.stringify(body)); const k=localStorage.getItem("__aikey"); if(!isT) return {data:{error:"denied"},error:null}; if(!k) return {data:{error:"no_key"},error:null}; if(k.startsWith("BAD")) return {data:{error:"bad_key"},error:null}; if(body.test) return {data:{ok:true,model:"gemini-3.5-flash-lite"},error:null};
         return {data:{items:[{q:"["+body.keywords+"] 콜럼버스의 항해는 발견인가 침략인가?", a:"발견", b:"침략", why:"관점 차이"},{q:"두 번째 논제?", a:"가", b:"나", why:"이유"}], model:"gemini-3.5-flash-lite"},error:null} }
-      if(name==="notify"){ window.__sbLog.push("notify:"+body.title+"|"+body.body+"|"+body.url+"|course="+(body.course||"")+(body.groups?"|groups="+body.groups.join("+"):"")); if(!body.course) return {data:{error:"no_course",sent:0,total:0},error:null}; return {data:{sent:2,gone:0,failed:0,total:2},error:null} }
+      if(name==="notify"){ window.__sbLog.push("notify:"+body.title+"|"+body.body+"|"+body.url+"|course="+(body.course||"")+(body.groups?"|groups="+body.groups.join("+"):"")+(body.students?"|students="+body.students.length:"")+(body.post?"|post="+body.post:"")); if(body.students||body.post) return {data:{sent:1,gone:0,failed:0,total:1},error:null}; if(!body.course) return {data:{error:"no_course",sent:0,total:0},error:null}; return {data:{sent:2,gone:0,failed:0,total:2},error:null} }
       window.__sbLog.push("fn:"+name+":"+(body.op||"chat"));
       if(body.op==="status") return {data:{ready: q.get("ai")!=="0"}, error:null};
       const last = body.history[body.history.length-1]?.content || "";
