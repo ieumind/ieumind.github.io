@@ -2,6 +2,7 @@
 // - 선생님만 쓸 수 있다: ai_key_status()로 교사인지 확인
 // - API 키는 선생님이 넣은 것을 teacher_ai 표에서 서버(관리자 열쇠)로만 꺼내 쓴다. 화면으로는 돌려주지 않는다
 // - AI에게는 키워드·과목·학년·질문 유형만 보낸다 (학생 이름·글은 보내지 않음)
+// - op:"persona" — 가상 인물 대화의 ‘AI용 인물 자료’ 초안 (인물 이름·대화 장면·인물 소개만 보낸다). 선생님이 확인하고 고쳐 쓴다
 import { createClient } from "jsr:@supabase/supabase-js@2";
 
 const CORS = {
@@ -47,6 +48,25 @@ function buildPrompt(b: any) {
 - why에는 이 질문이 무엇을 생각하게 하는지 25자 안팎으로.`;
 }
 
+const SYSTEM_P = `너는 한국 중·고등학교 선생님의 수업 준비를 돕는 도우미야. 학생이 AI 역할극으로 대화할 인물에 대해, 역할극 AI가 근거로 삼을 '인물 자료'를 만든다.
+규칙:
+- 역사적으로 널리 확인된 사실만 쓴다. 조금이라도 불확실한 이름·날짜·숫자·단체는 쓰지 않는다.
+- 실제 발언을 인용하지 않는다(직접 인용문 금지).
+- 평가가 엇갈리는 일은 "평가가 엇갈린다"고 밝히고 여러 시각을 짧게 적는다. 가해·범죄가 있는 인물은 그 사실과 피해를 분명히 적는다.
+- 특정 정당·현직 정치인을 지지하거나 반대하지 않는다.
+- 한국어 개조식 문장으로, 꾸밈(굵은 글씨·표) 없이 쓴다.`;
+function buildPersonaPrompt(b: any) {
+  const name = clip(b.name, 30), scene = clip(b.scene, 300), about = clip(b.about, 200), subj = clip(b.subject, 30);
+  return `인물: ${name}\n대화 장면(시점): ${scene || "(정하지 않음 — 이 인물의 생애 전체)"}\n선생님이 쓴 인물 소개: ${about || "(없음)"}\n과목: ${subj || "(정하지 않음)"}
+
+아래 다섯 묶음으로, 각 줄은 "- "로 시작하는 한 문장으로 써. 전체 1,500자 안팎.
+[생애와 활동] 대화 장면 시점까지의 확인된 사실 6~10개(연도 포함). 장면보다 뒤에 일어난 일은 쓰지 않는다.
+[생각과 가치관] 이 인물이 중요하게 여긴 생각 3~5개
+[장면 속 상황] 그 시점에 이 인물이 처한 상황과 고민 2~3개
+[관계] 대화에 나올 만한 다른 인물·세력과의 관계 2~4개
+[말투] 이 인물다운 말투 1~2개(학생이 알아들을 수 있게)`;
+}
+
 async function callGemini(key: string, model: string, body: unknown) {
   const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`, {
     method: "POST", headers: { "Content-Type": "application/json", "x-goog-api-key": key }, body: JSON.stringify(body),
@@ -71,9 +91,12 @@ Deno.serve(async (req) => {
   const { data: row } = await admin.from("teacher_ai").select("gemini_key, model").eq("uid", u?.user?.id ?? "").maybeSingle();
   if (!row?.gemini_key) return json({ error: "no_key" });
 
-  const test = b?.test === true;
-  if (!test && clip(b?.keywords, 200).length < 1) return json({ error: "empty" });
-  const req_ = test
+  const test = b?.test === true, persona = b?.op === "persona";
+  if (persona && clip(b?.name, 30).length < 1) return json({ error: "empty" });
+  if (!test && !persona && clip(b?.keywords, 200).length < 1) return json({ error: "empty" });
+  const req_ = persona
+    ? { systemInstruction: { parts: [{ text: SYSTEM_P }] }, contents: [{ role: "user", parts: [{ text: buildPersonaPrompt(b) }] }], generationConfig: { temperature: 0.3, maxOutputTokens: 6000 } }
+    : test
     ? { contents: [{ role: "user", parts: [{ text: "연결 확인입니다. OK라고만 답하세요." }] }], generationConfig: { maxOutputTokens: 20 } }
     : {
       systemInstruction: { parts: [{ text: SYSTEM }] },
@@ -92,6 +115,11 @@ Deno.serve(async (req) => {
     if (status === 200) {
       if (m !== row.model) await admin.from("teacher_ai").update({ model: m }).eq("uid", u!.user!.id);
       if (test) return json({ ok: true, model: m });
+      if (persona) {
+        const t = (j?.candidates?.[0]?.content?.parts ?? []).filter((p: any) => !p.thought).map((p: any) => p.text ?? "").join("").replace(/\*\*/g, "").trim().slice(0, 3000);
+        if (!t) { last = "ai_error"; continue; }
+        return json({ text: t, model: m });
+      }
       const text = (j?.candidates?.[0]?.content?.parts ?? []).map((p: any) => p.text ?? "").join("");
       let items: any[] = [];
       try { items = JSON.parse(text.replace(/^```(json)?|```$/g, "").trim()); } catch { /* */ }
