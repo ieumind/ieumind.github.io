@@ -390,6 +390,7 @@ details.adv > div{padding:2px 20px 16px;display:grid;gap:12px}
 .types{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:8px}
 .tcard{text-align:left;border:1.5px solid var(--line);background:var(--surface);border-radius:12px;padding:12px 14px;cursor:pointer;display:grid;gap:2px}
 .tcard b{font-size:16px}
+.tcard .beta,.beta{display:inline-block;margin-left:6px;padding:1px 7px;border-radius:999px;font-size:11px;font-weight:700;letter-spacing:.02em;line-height:1.5;vertical-align:2px;color:var(--s4);background:var(--s4-soft);border:1px solid currentColor}
 .tcard span{font-size:13.5px;color:var(--muted)}
 .tcard[aria-pressed="true"]{border-color:var(--accent);background:var(--accent-soft);box-shadow:0 0 0 1px var(--accent)}
 
@@ -637,12 +638,14 @@ input[type=datetime-local]{min-height:44px;border:1px solid var(--line);border-r
 .wl-spot-card p{font-size:14.5px;line-height:1.65}
 .wl-spot-card ul{margin:0;padding-left:18px;font-size:13.5px;color:var(--muted);display:grid;gap:3px}
 .wl-spot-art{height:128px;border-radius:12px;background:var(--surface);display:grid;place-items:center;color:var(--s2);overflow:hidden}
-.wl-spot-art svg{width:100%;max-width:260px;height:120px}
+.wl-spot-art > svg{width:100%;max-width:280px;height:120px}
 .wl-spot-art .hub{fill:var(--s2-soft);stroke:currentColor}
 .wl-spot-art .hubt{font-weight:700}
+.wl-spot-art .node{fill:var(--surface);stroke:currentColor;stroke-width:1.5}
 .wl-spot-art .scrib{color:var(--s1);stroke:var(--s1)}
-.chatart{display:flex!important;flex-direction:column;justify-content:center;gap:6px;padding:10px 14px;align-items:stretch}
-.chatart .cb{font-size:12.5px;padding:6px 10px;border-radius:12px;max-width:85%;line-height:1.4;color:var(--fg)}
+.chatart{display:flex!important;flex-direction:column;justify-content:center;gap:6px;padding:12px 14px;align-items:stretch;height:auto;min-height:128px;overflow:visible}
+.chatart .cb{font-size:12.5px;padding:6px 10px;border-radius:12px;max-width:88%;line-height:1.45;color:var(--fg);overflow-wrap:anywhere}
+.chatart .cb .ti{margin-right:3px}
 .chatart .me{align-self:flex-end;background:var(--accent-soft)}
 .chatart .ai{align-self:flex-start;background:var(--warn-soft)}
 .demo-bar{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px;background:var(--warn-soft);border-color:transparent}
@@ -1428,7 +1431,7 @@ const GOALS = [
   {k:"look",     icon:"plant-2", l:"감상·성찰",     d:"활동 후 자신의 생각과 느낌을 돌아봐요.",                         t:["reflect"]},
   {k:"sketch",   icon:"pencil", l:"생각 스케치",   d:"그림, 도식, 키워드로 생각을 눈에 보이게 표현해요.",                t:["sketch","draw"], q:"어떤 방식으로 표현할까요?"},
   {k:"notes",    icon:"camera", l:"학습 나눔", d:"필기·마인드맵·스키마 등 정리한 것을 사진으로 올려 나눠요.", t:["notes"]},
-  {k:"chat",     icon:"masks-theater", l:"가상 인물 대화", d:"AI가 연기하는 역사·시사 인물과 대화하며 생각을 넓혀요.",             t:["chat"]}
+  {k:"chat",     icon:"masks-theater", l:"가상 인물 대화", beta:true, d:"AI가 연기하는 역사·시사 인물과 대화하며 생각을 넓혀요.",             t:["chat"]}
 ];
 /* 예전 활동 목적 이름(질문으로 생각하기 'concept', 질문이음 'ask')은 질문 활동으로 읽는다 — 이 기기에 남은 작성 중 내용 호환 */
 const goalOf = f => GOALS.find(g => g.k === f.goal) || GOALS.find(g => g.t.includes(f.template)) || GOALS[0];
@@ -4109,7 +4112,7 @@ function teacherCard(r, p, ps, nav){
    ========================================================= */
 /* 🔄 새 버전 알림: 배포 때마다 APP_VERSION과 version.json의 v를 같은 값으로 올린다.
    GitHub Pages는 화면을 10분쯤 기억하므로, 옛 화면이면 아래쪽에 ‘새로고침’ 띠를 띄우고 주소를 바꿔 새로 받는다 */
-const APP_VERSION = "2026-10-18a";
+const APP_VERSION = "2026-10-18b";
 async function checkVersion(){
   if(!/^https?:$/.test(location.protocol)) return;
   try{
@@ -4249,11 +4252,14 @@ function welcomeSpotlight(){
       <p>말로 꺼내기 어려운 생각은 그림과 가지로 펼치고, 교과서 속 인물에게는 직접 물어봐요. 학생의 생각이 한 문장에서 멈추지 않고 넓고 깊게 자라요.</p></div>
     <div class="wl-spot-grid">
       <div class="wl-spot-card"><div class="wl-spot-art" aria-hidden="true">
-          <svg viewBox="0 0 220 120" role="img"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
-            <path d="M110 60 L48 28 M110 60 L46 92 M110 60 L172 26 M110 60 L176 92 M48 28 L16 16 M48 28 L20 44 M172 26 L204 12"/></g>
-            <g font-size="11" text-anchor="middle" fill="currentColor"><rect x="80" y="46" width="60" height="28" rx="14" class="hub"/><text x="110" y="64" class="hubt">최초의 인류</text>
-            <text x="48" y="24">도구</text><text x="46" y="104">불</text><text x="172" y="20">무리 생활</text><text x="178" y="106">언어?</text></g>
-            <path d="M150 104 q14 -16 30 -2 t28 -6" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" class="scrib"/></svg></div>
+          <svg viewBox="0 0 240 120" role="img"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+            <path d="M88 52 L60 30 M152 52 L168 30 M88 68 L56 90 M152 68 L176 90"/></g>
+            <g font-size="11" text-anchor="middle" fill="currentColor"><rect x="82" y="47" width="76" height="26" rx="13" class="hub"/><text x="120" y="64" class="hubt">최초의 인류</text>
+            <rect x="16" y="11" width="44" height="21" rx="10.5" class="node"/><text x="38" y="25.5">도구</text>
+            <rect x="160" y="11" width="68" height="21" rx="10.5" class="node"/><text x="194" y="25.5">무리 생활</text>
+            <rect x="22" y="88" width="34" height="21" rx="10.5" class="node"/><text x="39" y="102.5">불</text>
+            <rect x="176" y="88" width="46" height="21" rx="10.5" class="node"/><text x="199" y="102.5">언어?</text></g>
+            <path d="M171 99 C170 84 225 81 228 96 C231 112 176 116 168 101" fill="none" stroke-width="2.2" stroke-linecap="round" class="scrib"/></svg></div>
         <b>${ic("pencil")} 생각 스케치 — 손으로 그리고, 가지로 뻗고</b>
         <p>“최초의 인류는 어떤 모습이었을까?” 같은 질문에 <b>손으로 그림을 그리거나</b>, 핵심어에서 <b>가지치기(생각 지도)</b>로 생각을 펼쳐요. 글이 서툰 학생도 생각을 꺼낼 수 있고, 친구들의 그림·가지가 게시판에 모여 비교할 거리가 돼요.</p>
         <ul><li>휴대폰·태블릿에서 손가락이나 펜으로 바로 그리기</li><li>키워드 → 가지 → 연결로 생각의 구조가 보이게</li></ul></div>
@@ -5966,7 +5972,7 @@ async function aiSuggest(body){
 /* 가상 인물 대화: ‘AI용 인물 자료’ 초안 (선생님의 Gemini 키 · 인물 이름·장면·소개만 보낸다) */
 async function aiPersona(body){
   if(!aiLive()){ await new Promise(r => setTimeout(r, 450));
-    return {demo:true, text:`[생애와 활동]\n- (체험 예시) 실제로는 선생님의 Gemini 키로 ‘${body.name}’에 대해 확인된 사실이 연도와 함께 이 자리에 채워져요.\n[생각과 가치관]\n- (체험 예시) 이 인물이 중요하게 여긴 생각\n[장면 속 상황]\n- (체험 예시) 대화 장면 시점에 처한 상황과 고민\n[관계]\n- (체험 예시) 함께 이야기될 인물·세력과의 관계\n[말투]\n- (체험 예시) 이 인물다운 말투`} }
+    return {demo:true, text:`[생애와 활동]\n- (체험 예시) 실제로는 선생님의 Gemini 키로 ‘${body.name}’에 대해 확인된 사실이 연도와 함께 이 자리에 채워져요.\n[생각과 가치관]\n- (체험 예시) 이 인물이 중요하게 여긴 생각\n[장면 속 상황]\n- (체험 예시) 대화 장면 시점에 처한 상황과 고민\n[관계]\n- (체험 예시) 함께 이야기될 인물·세력과의 관계\n[성격과 기질]\n- (체험 예시) 성격·감정 표현·습관\n[말투]\n- (체험 예시) 이 인물다운 말투`} }
   const r = await invokeSafe("suggest", body, 60000);
   return r.timeout ? {error:"timeout"} : r.error ? {error:"network"} : (r.data || {error:"ai_error"});
 }
@@ -6037,7 +6043,7 @@ function viewCreate(){
     <div class="q"><label for="c-title">활동 이름 <span class="opt">(선택 · 비워 두면 핵심 질문으로 정해져요)</span></label><input type="text" id="c-title" data-form="create" data-k="title" maxlength="60" placeholder="예: 누구를 위한 근대화였을까" value="${esc(f.title||"")}"></div>
     <div class="q"><label for="c-intro">활동 소개 <span class="opt">(선택 · 학생에게 보여요)</span></label><input type="text" id="c-intro" data-form="create" data-k="intro" maxlength="120" placeholder="예: 친구와 생각을 나누고 내 생각을 다시 돌아봐요." value="${esc(f.intro||"")}"></div></div></div>
   <div class="card" style="margin-top:16px"><h3>${N()} 어떤 활동을 할까요?<span class="req" title="꼭 적어야 해요" aria-label="필수">*</span></h3>${lockWrap(locked, `
-    <div class="types" role="group" aria-label="활동">${GOALS.map(g => `<button type="button" class="tcard" data-a="goal" data-v="${g.k}" aria-pressed="${g.k===goal.k}"><b>${ic(g.icon, "lg")} ${esc(g.l)}</b><span>${esc(g.d)}</span></button>`).join("")}</div>
+    <div class="types" role="group" aria-label="활동">${GOALS.map(g => `<button type="button" class="tcard" data-a="goal" data-v="${g.k}" aria-pressed="${g.k===goal.k}"><b>${ic(g.icon, "lg")} ${esc(g.l)}${g.beta ? `<span class="beta" title="시험 중인 기능이에요. AI 답이 틀릴 수 있어요.">Beta</span>` : ""}</b><span>${esc(g.d)}</span></button>`).join("")}</div>
     ${goal.t.length > 1 && !goal.hideModes ? `<h3 style="font-size:15px;margin:16px 0 8px">${esc(goal.q || "어떤 방식으로 할까요?")}</h3>
       <div class="types" role="group" aria-label="${esc(goal.l)} 방식">${goal.t.map(k => { const v = TEMPLATES[k]; return `<button type="button" class="tcard" data-a="tpl" data-v="${k}" aria-pressed="${k===f.template}"><b>${ic(v.modeIcon, "lg")} ${esc(v.modeLabel || v.mode)}</b>${v.modeWho ? `<span class="mwho">${esc(v.modeWho)}</span>` : ""}<span>${esc(v.modeDesc)}</span></button>` }).join("")}</div>` : ""}`)}</div>
 
@@ -6047,7 +6053,7 @@ function viewCreate(){
     ${isChat ? `<div class="q"><label for="c-pname">대화 상대<span class="req" title="꼭 적어야 해요" aria-label="필수">*</span></label><input type="text" id="c-pname" data-form="create" data-k="personaName" maxlength="30" value="${esc(f.personaName||"")}" placeholder="예: 고종, 그레타 툰베리"></div>
       <div class="q"><label for="c-pstyle">말투</label><select id="c-pstyle" data-form="create" data-k="personaStyle"><option value="persona" ${f.personaStyle!=="easy"?"selected":""}>인물다운 말투 (학생이 알아듣게)</option><option value="easy" ${f.personaStyle==="easy"?"selected":""}>쉬운 존댓말</option></select></div>
       <div class="q wide"><label for="c-pabout">인물 소개 <span class="opt">(학생에게도 보여요 · AI가 이 설정대로 말해요)</span></label><input type="text" id="c-pabout" data-form="create" data-k="personaAbout" maxlength="200" value="${esc(f.personaAbout||"")}" placeholder="예: 조선의 26대 왕이자 대한제국 황제. 1897년 대한제국을 선포했다."></div>
-      <div class="q wide pfacts"><label for="c-pfacts">AI용 인물 자료 <span class="opt">(학생 화면에는 보이지 않아요 · AI는 여기 적힌 사실 안에서만 구체적으로 말해요)</span></label>${ta("create","personaFacts",{rows:8, id:"c-pfacts", ph:"- 1945년 8월 15일 조선건국준비위원회(건준)를 만들어 위원장이 되었다.\n- 좌익과 우익이 함께 나라를 세워야 한다고 보았다.\n(사실·생각·그때의 상황·다른 인물과의 관계·말투를 한 줄씩)"})}
+      <div class="q wide pfacts"><label for="c-pfacts">AI용 인물 자료 <span class="opt">(학생 화면에는 보이지 않아요 · AI는 여기 적힌 사실 안에서만 구체적으로 말해요)</span></label>${ta("create","personaFacts",{rows:8, id:"c-pfacts", ph:"- 1945년 8월 15일 조선건국준비위원회(건준)를 만들어 위원장이 되었다.\n- 좌익과 우익이 함께 나라를 세워야 한다고 보았다.\n(사실·생각·성격과 기질·그때의 상황·관계·말투를 한 줄씩)"})}
         <div class="row" style="margin-top:6px;gap:8px;flex-wrap:wrap"><button class="btn sm wand" type="button" data-a="ai-persona" ${S.aiPersona?.loading ? "disabled" : ""}>${ic("wand", "sm")} ${S.aiPersona?.loading ? "초안을 만드는 중…" : "Gemini로 초안 만들기"}</button><span class="hint" style="margin:0">대화 상대·핵심 질문(장면)을 보고 확인된 사실을 정리해 줘요. 꼭 읽고 틀린 곳을 고쳐 주세요.</span></div></div>
       <div class="q"><label for="c-pmax">학생 한 명이 할 수 있는 질문 수</label><input type="number" id="c-pmax" data-form="create" data-k="maxTurns" min="1" max="30" value="${esc(f.maxTurns||"8")}"></div>
       <p class="hint wide" data-x>AI는 ‘AI용 인물 자료’와 ‘자료’를 근거로 말해요. 확인된 사실을 넣을수록 지어낸 말이 줄어요. 핵심 질문에 장면(예: 1945년 8월 해방 직후)을 적으면 그 시점의 인물로 말해요. 학생 화면에는 ‘AI가 연기하는 가상 인물이에요’ 안내가 늘 함께 보여요.</p>` : ""}
