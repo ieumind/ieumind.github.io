@@ -339,6 +339,18 @@
 - 서버(적용 완료): `student_msgs`에 kind·ask·answers·answered_at 열 추가. `msg_send_each(p_title, p_items[{sid, body}], p_ask)`(교사, 내 명단 학생만), `msg_answer(p_id, p_answers[boolean])`(본인·한 번·질문 수와 같아야), `msg_sent`·`my_msgs`가 종류·질문·응답을 함께 돌려준다.
 - 테스트: t57(실제 흐름·엑셀 파일 내용), t58(체험·휴대폰), dev/sql/msg_test.sql 뒷부분.
 
+### 2-22. 아이콘을 Tabler Icons로 통일 (PR #35, 2026-10-17)
+- UI의 이모지 아이콘을 모두 **Tabler Icons(outline, v3.49.0, MIT)** 한 세트로 바꿨다. 화면 글·디자인·동작은 그대로.
+- 방식: 외부 파일을 불러오지 않고 **쓰는 아이콘만 index.html 안에 SVG로** 넣는다(약 140개, 25KB) → 로딩 실패·깜빡임 없음.
+  - `ic(이름, 크기, 이름표)` → `<svg class="ti">`. 크기 `"sm"` 16px(작은 보조·칩·작은 버튼) · `"md"` 20px(기본) · `"lg"` 24px(기능 카드 대표). 선 굵기 1.8, 색은 글자색(currentColor).
+  - 이름표가 없으면 `aria-hidden`(버튼 글자가 뜻을 전한다). 아이콘만 있는 버튼은 버튼에 `aria-label`을 둔다(기존대로).
+  - CSS에서 그리는 표시(체크 상자 ✓, 진행 표시, 흐름 화살표)는 `var(--ti-이름)` 마스크로 같은 Tabler 아이콘을 쓴다.
+  - **아이콘을 새로 쓰면** `python3 dev/icons/build_icons.py [tabler-icons 저장소 경로]`를 한 번 돌린다. ic("이름")·`icon:/ic:/i:/ti:/mark:` 값·`data-ti`·`/*TI:LIST*/` 목록·`var(--ti-…)`에서 이름을 모아 `/*TI:BEGIN*/…/*TI:END*/`, `/*TIC:BEGIN*/…/*TIC:END*/`를 채운다. 저장소에 없는 이름이면 멈춘다. (저장소: `git clone --depth 1 https://github.com/tabler/tabler-icons`)
+  - 없는 이름을 ic()에 넘기면 콘솔에 `[icon] 없는 아이콘` 경고 → 테스트(mock.js)는 이것을 오류로 잡는다.
+- 자료 구조: TEMPLATES `icon/modeIcon`, GOALS `icon`, STEP `ic`, QTYPES `mark`, homeState `i`, cardLabel `{i,t}`, ASG·학생 상태·생각 변화 `ic`, RELAY_REACT `ic`, 투어 `ti` 는 이제 **아이콘 이름**이다. 과목 아이콘은 `courseIcon(c, 크기)`(HTML) / `courseIcName(c)`.
+- 남겨 둔 것: 학생·교사가 쓴 내용과 체험용 예시 글 속 이모지, 문장 안의 흐름 화살표(“처음 생각 → 친구 생각”), 알림(toast) 글은 이모지만 뺐다.
+- 테스트: dev/tests/t59.py — PC·390px에서 교사·학생·창 화면 120여 곳을 돌며 남은 이모지, 아이콘 크기(16/20/24)·선 굵기(1.8), 넘침, 없는 아이콘을 확인.
+
 ## 3. 파일 및 코드 구조
 
 ### 3-1. 저장소 파일
