@@ -459,7 +459,8 @@ begin
   if v_used >= v_lim then return json_build_object('ok', false, 'reason', 'limit'); end if;
   update public.chat_usage set n = n + 1, updated_at = now() where room_id = p_room and who = v_who;
   return json_build_object('ok', true, 'name', coalesce(nullif(p ->> 'name', ''), '인물'), 'about', coalesce(p ->> 'about', ''), 'style', coalesce(p ->> 'style', 'persona'),
-    'prompt', coalesce(d.data ->> 'prompt', ''), 'context', left(coalesce(d.data ->> 'context', ''), 6000), 'remaining', v_lim - v_used - 1);
+    'prompt', coalesce(d.data ->> 'prompt', ''), 'context', left(coalesce(d.data ->> 'context', ''), 6000), 'facts', left(coalesce(p ->> 'facts', ''), 4000),
+    'remaining', v_lim - v_used - 1);
 end $$;
 revoke execute on function public.chat_begin(text) from public, anon;
 grant execute on function public.chat_begin(text) to authenticated;
