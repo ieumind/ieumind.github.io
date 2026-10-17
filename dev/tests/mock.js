@@ -1,4 +1,5 @@
 (function(){
+  { const ow = console.warn; console.warn = (...a) => { if(String(a[0]).includes("[icon]")) setTimeout(() => { throw new Error("ICON missing: " + a[1]) }); ow(...a) } }   // 없는 아이콘 → 테스트 오류
   const KEY="__sbmock", q=new URLSearchParams(location.search), who=q.get("who")||"anon";
   const load=()=>JSON.parse(localStorage.getItem(KEY)||'{"docs":{},"students":[],"sessions":{}}');
   let D=load(); const save=()=>localStorage.setItem(KEY,JSON.stringify(D));
