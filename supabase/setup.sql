@@ -1297,7 +1297,9 @@ begin
     'prompt', coalesce(d.data ->> 'prompt', ''), 'context', left(coalesce(d.data ->> 'context', ''), 6000), 'facts', left(coalesce(p ->> 'facts', ''), 4000),
     'remaining', v_lim - v_used - 1,
     -- 선생님이 적용한 대화 지시문(프롬프트)과 학생 한 명의 최대 질문 수 (지시문이 없으면 빈 글 → 예전과 같은 규칙으로 대화)
-    'guide', left(coalesce(p ->> 'guide', ''), 6000), 'max_turns', least(30, greatest(1, coalesce(nullif(p ->> 'maxTurns', '')::int, 8))));
+    'guide', left(coalesce(p ->> 'guide', ''), 6000), 'max_turns', least(30, greatest(1, coalesce(nullif(p ->> 'maxTurns', '')::int, 8))),
+    -- 캐릭터 설정(학생에게 보이는 값): 시작 메시지, 학생의 역할, 캐릭터가 학생을 부르는 말 → chat 함수가 역할·호칭을 고정하는 데 쓴다
+    'greeting', left(coalesce(p ->> 'greeting', ''), 600), 'user_role', left(coalesce(p ->> 'user', ''), 80), 'call', left(coalesce(p ->> 'call', ''), 20));
 end $$;
 
 -- =====================================================================

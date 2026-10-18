@@ -3,7 +3,8 @@
 // - API 키는 선생님이 넣은 것을 teacher_ai 표에서 서버(관리자 열쇠)로만 꺼내 쓴다. 화면으로는 돌려주지 않는다
 // - AI에게는 키워드·과목·학년·질문 유형만 보낸다 (학생 이름·글은 보내지 않음)
 // - op:"persona" — 가상 인물 대화의 ‘AI용 인물 자료’ 초안 (인물 이름·대화 장면·인물 소개만 보낸다). 선생님이 확인하고 고쳐 쓴다
-// - op:"guide" — 가상 인물 대화의 ‘AI 대화 지시문’ 다듬기 (선생님이 고른 항목과 화면이 만든 기본 지시문만 보낸다). 선생님이 확인하고 적용한다
+// - op:"guide" — 가상 인물 대화의 ‘AI 프롬프트’ 쓰기 (캐릭터 설정·대화 주제·자료 앞부분·고른 항목·화면이 만든 기본 틀만 보낸다. 학생 글은 보내지 않는다)
+//   → {text: 프롬프트, greeting: 시작 메시지, user: 학생의 역할, call: 학생을 부르는 말, starters: 추천 질문} — 선생님이 확인하고 적용한다
 import { createClient } from "jsr:@supabase/supabase-js@2";
 
 const CORS = {
@@ -74,20 +75,27 @@ const GUIDE_HEADS = ["1. 활동 개요", "2. 가상 인물의 설정과 성격",
 const SYSTEM_G = `너는 한국 중·고등학교 선생님의 AI 역할극 수업 설계를 돕는 프롬프트 설계 도우미야. 선생님이 고른 설정과 '기본 지시문'을 바탕으로, 대화형 AI가 그대로 따를 수 있는 완성된 지시문을 쓴다.
 규칙:
 - 기본 지시문의 열 개 제목([1. 활동 개요] ~ [10. 교과 내용의 정확성을 위한 유의 사항])을 같은 순서, 같은 글자로 모두 남긴다.
-- 각 항목을 이 인물·상황·학습 목표에 맞게 구체화한다. 예: 인물의 시대적 배경·이해관계·고민·예상 반론, 협상 쟁점과 양보할 수 있는 선, 핵심 개념과 흔한 오개념, 판정 기준의 구체적인 예.
+- 각 항목을 이 캐릭터·대화 주제·학습 목표에 맞게 구체화한다. 예: 인물의 시대적 배경·이해관계·고민·예상 반론, 협상 쟁점과 양보할 수 있는 선, 핵심 개념과 흔한 오개념, 판정 기준의 구체적인 예.
+- [2. 가상 인물의 설정과 성격]에는 '확인된 사실'(널리 확인된 사실 5~8개, 장면 시점까지)과 '말투'(학생을 부르는 말, 말끝, 말버릇)를 꼭 넣는다.
+- 역할을 분명히 한다: AI는 캐릭터 자신이고, 학생은 [3]에 적힌 역할이다. 캐릭터에게 쓰는 호칭(예: 왕이면 전하·폐하)으로 학생을 부르지 않는다고 [4]에 적는다.
 - 기본 지시문의 규칙(학생이 먼저 말하게 하기, 대화 횟수와 단계, 지어내지 않기, 종료 조건, 최종 피드백 형식, 학생 지원 방식)은 빼거나 약하게 바꾸지 않는다.
 - 확실하지 않은 사실(이름·날짜·수치·조약 조항·실험값)은 쓰지 않거나 '(선생님 확인 필요)'를 붙인다. 실제 발언을 인용하지 않는다.
 - 특정 정당·현직 정치인을 지지하거나 반대하지 않는다. 혐오·차별·폭력을 부추기지 않는다.
 - 각 항목은 '- '로 시작하는 개조식 문장으로 쓴다. 굵은 글씨·표·# 제목 같은 꾸밈은 쓰지 않는다.
-- 전체 4,500자 이내. 지시문만 출력한다(머리말·맺음말·설명 없이).`;
+- prompt는 전체 4,500자 이내로, 지시문만 쓴다(머리말·맺음말·설명 없이).
+- 함께 만들 것(학생 화면에 보이는 값, 선생님이 이미 적은 값이 있으면 그것과 어울리게):
+  greeting = 캐릭터가 먼저 건네는 첫마디(1~3문장, 장면 묘사는 괄호로 짧게, 학생이 무엇을 말하면 될지 자연스럽게 열어 줌),
+  user_role = 학생의 역할(20자 안팎), call = 캐릭터가 학생을 부르는 말(예: 경, 그대, 자네, 학생),
+  starters = 학생이 처음 눌러 볼 만한 말 3개(학생 입장의 짧은 문장, 30자 안팎).`;
 function buildGuidePrompt(b: any) {
   return `[선생님이 고른 설정]
 활동 유형: ${clip(b.type, 40)}
 교과: ${clip(b.subject, 20)} / 대상 학생: ${clip(b.grade, 20)}
-가상 인물 또는 역할: ${clip(b.role, 120)}${clip(b.name, 30) ? ` (화면 이름: ${clip(b.name, 30)})` : ""}
-인물 소개: ${clip(b.about, 200) || "(없음)"}
-대화 상황: ${clip(b.situation, 400)}
-핵심 질문(학생 화면): ${clip(b.question, 300) || "(없음)"}
+캐릭터 이름: ${clip(b.name || b.role, 30)}
+캐릭터 소개: ${clip(b.about, 200) || "(없음)"}
+학생의 역할: ${clip(b.user, 60) || "(정하지 않음 — 알맞게 정해 줘)"} / 캐릭터가 학생을 부르는 말: ${clip(b.call, 15) || "(정하지 않음 — 알맞게 정해 줘)"}
+대화 주제(학생 과제, 학생 화면에 보임): ${String(b.question || b.situation || "").replace(/[\u0000-\u0009\u000b-\u001f]/g, " ").trim().slice(0, 500)}
+수업 자료 앞부분: ${clip(b.context, 1500) || "(없음)"}
 학생의 학습 목표: ${clip(b.goal, 400)}
 최대 대화 횟수: 학생 발언 ${Math.max(1, Math.min(30, Number(b.turns) || 8))}회 / 학생 지원 방식: ${clip(b.support, 30)}
 
@@ -124,7 +132,9 @@ Deno.serve(async (req) => {
   if (persona && clip(b?.name, 30).length < 1) return json({ error: "empty" });
   if (!test && !persona && !guide && clip(b?.keywords, 200).length < 1) return json({ error: "empty" });
   const req_ = guide
-    ? { systemInstruction: { parts: [{ text: SYSTEM_G }] }, contents: [{ role: "user", parts: [{ text: buildGuidePrompt(b) }] }], generationConfig: { temperature: b?.regen ? 0.9 : 0.5, maxOutputTokens: 8000 } }
+    ? { systemInstruction: { parts: [{ text: SYSTEM_G }] }, contents: [{ role: "user", parts: [{ text: buildGuidePrompt(b) }] }],
+        generationConfig: { temperature: b?.regen ? 0.9 : 0.5, maxOutputTokens: 9000, responseMimeType: "application/json",
+          responseSchema: { type: "OBJECT", properties: { prompt: { type: "STRING" }, greeting: { type: "STRING" }, user_role: { type: "STRING" }, call: { type: "STRING" }, starters: { type: "ARRAY", items: { type: "STRING" } } }, required: ["prompt"] } } }
     : persona
     ? { systemInstruction: { parts: [{ text: SYSTEM_P }] }, contents: [{ role: "user", parts: [{ text: buildPersonaPrompt(b) }] }], generationConfig: { temperature: 0.3, maxOutputTokens: 6000 } }
     : test
@@ -147,9 +157,13 @@ Deno.serve(async (req) => {
       if (m !== row.model) await admin.from("teacher_ai").update({ model: m }).eq("uid", u!.user!.id);
       if (test) return json({ ok: true, model: m });
       if (guide) {
-        const t = (j?.candidates?.[0]?.content?.parts ?? []).filter((p: any) => !p.thought).map((p: any) => p.text ?? "").join("").replace(/\*\*/g, "").replace(/^```\w*\n?|```$/g, "").trim().slice(0, 6000);
+        const raw = (j?.candidates?.[0]?.content?.parts ?? []).filter((p: any) => !p.thought).map((p: any) => p.text ?? "").join("").replace(/^```\w*\n?|```$/g, "").trim();
+        let o: any = {}; try { o = JSON.parse(raw); } catch { o = { prompt: raw }; }
+        const t = String(o?.prompt ?? "").replace(/\*\*/g, "").trim().slice(0, 6000);
         if (!t || !GUIDE_HEADS.every((h) => t.includes(h))) { last = "ai_error"; continue; }   // 열 가지 제목이 빠지면 다음 모델로
-        return json({ text: t, model: m });
+        const one = (v: unknown, n: number) => String(v ?? "").replace(/\*\*/g, "").trim().slice(0, n);
+        return json({ text: t, greeting: one(o.greeting, 400), user: one(o.user_role, 60), call: one(o.call, 15),
+          starters: (Array.isArray(o.starters) ? o.starters : []).map((x: unknown) => one(x, 80)).filter(Boolean).slice(0, 4), model: m });
       }
       if (persona) {
         const t = (j?.candidates?.[0]?.content?.parts ?? []).filter((p: any) => !p.thought).map((p: any) => p.text ?? "").join("").replace(/\*\*/g, "").trim().slice(0, 3000);
