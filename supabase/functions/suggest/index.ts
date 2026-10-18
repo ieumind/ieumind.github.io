@@ -3,6 +3,7 @@
 // - API 키는 선생님이 넣은 것을 teacher_ai 표에서 서버(관리자 열쇠)로만 꺼내 쓴다. 화면으로는 돌려주지 않는다
 // - AI에게는 키워드·과목·학년·질문 유형만 보낸다 (학생 이름·글은 보내지 않음)
 // - op:"persona" — 가상 인물 대화의 ‘AI용 인물 자료’ 초안 (인물 이름·대화 장면·인물 소개만 보낸다). 선생님이 확인하고 고쳐 쓴다
+// - op:"guide" — 가상 인물 대화의 ‘AI 대화 지시문’ 다듬기 (선생님이 고른 항목과 화면이 만든 기본 지시문만 보낸다). 선생님이 확인하고 적용한다
 import { createClient } from "jsr:@supabase/supabase-js@2";
 
 const CORS = {
@@ -68,6 +69,32 @@ function buildPersonaPrompt(b: any) {
 [말투] 이 인물다운 말투·말버릇·호칭 1~3개 (학생이 알아들을 수 있게, 예: 학생을 부르는 말, 자주 쓰는 표현)`;
 }
 
+const GUIDE_HEADS = ["1. 활동 개요", "2. 가상 인물의 설정과 성격", "3. 학생의 역할과 활동 목표", "4. 대화 진행 규칙", "5. 단계별 대화 진행 방식",
+  "6. 학생의 발언에 대한 대응 원칙", "7. 학습 목표 달성 기준", "8. 대화 종료 조건", "9. 최종 피드백 및 결과 제시 방식", "10. 교과 내용의 정확성을 위한 유의 사항"];
+const SYSTEM_G = `너는 한국 중·고등학교 선생님의 AI 역할극 수업 설계를 돕는 프롬프트 설계 도우미야. 선생님이 고른 설정과 '기본 지시문'을 바탕으로, 대화형 AI가 그대로 따를 수 있는 완성된 지시문을 쓴다.
+규칙:
+- 기본 지시문의 열 개 제목([1. 활동 개요] ~ [10. 교과 내용의 정확성을 위한 유의 사항])을 같은 순서, 같은 글자로 모두 남긴다.
+- 각 항목을 이 인물·상황·학습 목표에 맞게 구체화한다. 예: 인물의 시대적 배경·이해관계·고민·예상 반론, 협상 쟁점과 양보할 수 있는 선, 핵심 개념과 흔한 오개념, 판정 기준의 구체적인 예.
+- 기본 지시문의 규칙(학생이 먼저 말하게 하기, 대화 횟수와 단계, 지어내지 않기, 종료 조건, 최종 피드백 형식, 학생 지원 방식)은 빼거나 약하게 바꾸지 않는다.
+- 확실하지 않은 사실(이름·날짜·수치·조약 조항·실험값)은 쓰지 않거나 '(선생님 확인 필요)'를 붙인다. 실제 발언을 인용하지 않는다.
+- 특정 정당·현직 정치인을 지지하거나 반대하지 않는다. 혐오·차별·폭력을 부추기지 않는다.
+- 각 항목은 '- '로 시작하는 개조식 문장으로 쓴다. 굵은 글씨·표·# 제목 같은 꾸밈은 쓰지 않는다.
+- 전체 4,500자 이내. 지시문만 출력한다(머리말·맺음말·설명 없이).`;
+function buildGuidePrompt(b: any) {
+  return `[선생님이 고른 설정]
+활동 유형: ${clip(b.type, 40)}
+교과: ${clip(b.subject, 20)} / 대상 학생: ${clip(b.grade, 20)}
+가상 인물 또는 역할: ${clip(b.role, 120)}${clip(b.name, 30) ? ` (화면 이름: ${clip(b.name, 30)})` : ""}
+인물 소개: ${clip(b.about, 200) || "(없음)"}
+대화 상황: ${clip(b.situation, 400)}
+핵심 질문(학생 화면): ${clip(b.question, 300) || "(없음)"}
+학생의 학습 목표: ${clip(b.goal, 400)}
+최대 대화 횟수: 학생 발언 ${Math.max(1, Math.min(30, Number(b.turns) || 8))}회 / 학생 지원 방식: ${clip(b.support, 30)}
+
+[기본 지시문 — 구조와 규칙은 지키고 내용을 이 수업에 맞게 구체화한다]
+${String(b.base ?? "").slice(0, 7000)}`;
+}
+
 async function callGemini(key: string, model: string, body: unknown) {
   const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`, {
     method: "POST", headers: { "Content-Type": "application/json", "x-goog-api-key": key }, body: JSON.stringify(body),
@@ -92,10 +119,13 @@ Deno.serve(async (req) => {
   const { data: row } = await admin.from("teacher_ai").select("gemini_key, model").eq("uid", u?.user?.id ?? "").maybeSingle();
   if (!row?.gemini_key) return json({ error: "no_key" });
 
-  const test = b?.test === true, persona = b?.op === "persona";
+  const test = b?.test === true, persona = b?.op === "persona", guide = b?.op === "guide";
+  if (guide && (clip(b?.role, 120).length < 1 || String(b?.base ?? "").length < 100)) return json({ error: "empty" });
   if (persona && clip(b?.name, 30).length < 1) return json({ error: "empty" });
-  if (!test && !persona && clip(b?.keywords, 200).length < 1) return json({ error: "empty" });
-  const req_ = persona
+  if (!test && !persona && !guide && clip(b?.keywords, 200).length < 1) return json({ error: "empty" });
+  const req_ = guide
+    ? { systemInstruction: { parts: [{ text: SYSTEM_G }] }, contents: [{ role: "user", parts: [{ text: buildGuidePrompt(b) }] }], generationConfig: { temperature: b?.regen ? 0.9 : 0.5, maxOutputTokens: 8000 } }
+    : persona
     ? { systemInstruction: { parts: [{ text: SYSTEM_P }] }, contents: [{ role: "user", parts: [{ text: buildPersonaPrompt(b) }] }], generationConfig: { temperature: 0.3, maxOutputTokens: 6000 } }
     : test
     ? { contents: [{ role: "user", parts: [{ text: "연결 확인입니다. OK라고만 답하세요." }] }], generationConfig: { maxOutputTokens: 20 } }
@@ -116,6 +146,11 @@ Deno.serve(async (req) => {
     if (status === 200) {
       if (m !== row.model) await admin.from("teacher_ai").update({ model: m }).eq("uid", u!.user!.id);
       if (test) return json({ ok: true, model: m });
+      if (guide) {
+        const t = (j?.candidates?.[0]?.content?.parts ?? []).filter((p: any) => !p.thought).map((p: any) => p.text ?? "").join("").replace(/\*\*/g, "").replace(/^```\w*\n?|```$/g, "").trim().slice(0, 6000);
+        if (!t || !GUIDE_HEADS.every((h) => t.includes(h))) { last = "ai_error"; continue; }   // 열 가지 제목이 빠지면 다음 모델로
+        return json({ text: t, model: m });
+      }
       if (persona) {
         const t = (j?.candidates?.[0]?.content?.parts ?? []).filter((p: any) => !p.thought).map((p: any) => p.text ?? "").join("").replace(/\*\*/g, "").trim().slice(0, 3000);
         if (!t) { last = "ai_error"; continue; }

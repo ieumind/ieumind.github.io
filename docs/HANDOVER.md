@@ -492,6 +492,16 @@
 
 ## 4. 미완료 작업 / 앞으로 할 일
 
+**최근 변경 (2026-10-18d): 가상 인물 대화 · AI 대화 지시문(프롬프트) 만들기**
+- 생성 폼의 가상 인물 대화 칸에 ‘AI 대화 지시문’ 블록(`pguideHTML`)을 더했다. 탭 두 개: 항목별 설정으로 만들기 / 직접 작성.
+- 항목: 활동 유형 6개(`PG_TYPES`), 교과·대상(필수), 인물·상황·학습 목표(필수), 최대 대화 횟수 3/5/8/10(기본 8), 학생 지원 방식(기본 단계별).
+- `buildGuide(g)`: 유형마다 구조가 다른 10항목 지시문을 화면에서 만든다(대화 횟수에 맞춘 단계 계획 `pgPlan`, 교과별 정확성 `pgSubjRules`).
+- Gemini 키가 있으면 `suggest` op:"guide"로 기본 지시문을 다듬는다. 10개 제목이 다 있어야 쓰고, 아니면 기본 지시문을 쓴다.
+- ‘이 활동에 적용하기’ → `persona.guide`(최대 6,000자) + `persona.maxTurns`. 만든 항목은 `persona.gen`. 둘 다 없으면 persona 모양은 예전과 같다.
+- 서버: `chat_begin`이 `guide`, `max_turns`를 더 돌려준다. `chat` 함수는 guide가 있을 때만 `guideRules`를 쓴다. 이때 대화 전체(최대 20개)를 보고, 화면이 보낸 `turn`으로 마지막 차례를 알아 종료·피드백을 실행한다(마지막 차례 max_tokens 2000). guide가 없으면 시스템 프롬프트가 예전과 바이트 단위로 같다(45개 경우 비교).
+- 알아 둘 점: `persona.guide`는 `facts`처럼 활동 문서 안에 있어 화면에는 안 보이지만 학생 기기가 받는 데이터에는 들어 있다. 학생 첫 화면의 질문 예시 칩(CHAT_STARTERS)은 유형과 관계없이 예전 그대로다.
+- 테스트: `dev/tests/t62.py`, `dev/sql/guide_test.sql`.
+
 **최근 변경 (2026-10-18c): 과목 없는 활동의 임시 참가자(guest)**
 - 과목 없는 활동 링크·QR로 들어오면 개인 코드 없이 이름·닉네임만 적고 참여한다. 과목 활동은 그대로 코드.
 - 서버: `guest_sessions(uid, room_id, tid, nick, nick_key)` + `guest_join`/`my_guests`/`guest_owner`/`guest_can_read` 등. `docs_read/insert/update`, `docs_stamp`, `whoami`, `my_student_id`, `note_can_*`, `chat_begin`에 guest 분기 추가. 모두 setup.sql 맨 끝 근처 한 구역(idempotent). 익명 로그인 허용이 필요하다.

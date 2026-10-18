@@ -113,6 +113,8 @@
       if(fn==="doc_merge"){ const k=p.p_col+"/"+p.p_id, ex=D.docs[k]; if(!ex) return {error:null}; const row={...ex,data:{...ex.data,...p.p_patch}}; if(!isT && !mySids().includes(ex.owner) && ex.owner!==uid) return {error:null}; if(!canWrite(row)) return deny(); D.docs[k]=row; save(); notify("UPDATE",row); return {error:null} }
     },
     functions:{ invoke: async (name, {body}) => { await new Promise(r=>setTimeout(r,20)); if(name==="suggest"){ window.__sbLog.push("suggest:"+JSON.stringify(body)); const k=localStorage.getItem("__aikey"); if(!isT) return {data:{error:"denied"},error:null}; if(!k) return {data:{error:"no_key"},error:null}; if(k.startsWith("BAD")) return {data:{error:"bad_key"},error:null}; if(body.test) return {data:{ok:true,model:"gemini-3.5-flash-lite"},error:null};
+        if(body.op==="guide"){ const m=localStorage.getItem("__guidemode")||""; if(m==="err") return {data:{error:"quota"},error:null}; if(m==="bad") return {data:{text:"제목이 빠진 짧은 글", model:"gemini-3.5-flash-lite"},error:null};
+          return {data:{text:"(Gemini 다듬음 "+(body.regen?"다시":"처음")+") "+body.role+"\n"+body.base, model:"gemini-3.5-flash-lite"},error:null} }
         if(body.op==="persona") return {data:{text:"[생애와 활동]\n- "+body.name+" 테스트 사실 (장면: "+(body.scene||"")+")\n[말투]\n- 테스트 말투", model:"gemini-3.5-flash-lite"},error:null};
         return {data:{items:[{q:"["+body.keywords+"] 콜럼버스의 항해는 발견인가 침략인가?", a:"발견", b:"침략", why:"관점 차이"},{q:"두 번째 논제?", a:"가", b:"나", why:"이유"}], model:"gemini-3.5-flash-lite"},error:null} }
       if(name==="notify"){ window.__sbLog.push("notify:"+body.title+"|"+body.body+"|"+body.url+"|course="+(body.course||"")+(body.groups?"|groups="+body.groups.join("+"):"")+(body.students?"|students="+body.students.length:"")+(body.post?"|post="+body.post:"")); if(body.students||body.post) return {data:{sent:1,gone:0,failed:0,total:1},error:null}; if(!body.course) return {data:{error:"no_course",sent:0,total:0},error:null}; return {data:{sent:2,gone:0,failed:0,total:2},error:null} }
@@ -121,7 +123,7 @@
       const last = body.history[body.history.length-1]?.content || "";
       if(last.includes("!!quota")) return {data:{error:"quota"}, error:null};
       if(body.history[0]?.content?.includes("너는 한국 학교")) return {data:{error:"bad_request"}, error:null};
-      window.__lastHist = body.history;
+      window.__lastHist = body.history; window.__lastChat = body;
       return {data:{text:"(AI가 연기하는 가상 인물) 질문 고마워요. '"+last.slice(0,20)+"'에 대해 말하자면…", remaining:3}, error:null} } },
     from: qb,
     storage:{ from:(bucket)=> bucket==="materials" ? ({

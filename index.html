@@ -721,6 +721,16 @@ a.autolink{color:var(--accent);text-decoration:underline;text-underline-offset:2
 .initem .in-h{display:flex;gap:6px;align-items:baseline;flex-wrap:wrap}.initem p{margin-top:6px;white-space:pre-wrap;overflow-wrap:anywhere}
 .mkind{margin-top:2px}
 .pfacts textarea{min-height:170px}
+.pguide{border:1px solid var(--line);border-radius:12px;padding:12px 14px;background:var(--surface)}
+.pguide .pg-head{display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:space-between}
+.pguide .pg-title{font-weight:600;font-size:15px}
+.pguide .seg{flex-wrap:wrap}
+.pguide .pg-state{margin:6px 0 10px}
+.pguide .pg-types{margin-bottom:12px}.pguide .pg-types .tcard b{font-size:15px}
+.pguide .pg-types .tcard[aria-invalid="true"],.pguide [aria-invalid="true"]{border-color:var(--warn)}
+.pguide .pg-btns{gap:8px;flex-wrap:wrap;align-items:center;margin-top:8px}
+.pguide .pg-out{margin-top:14px}.pguide .pg-out textarea,#c-pguide{min-height:260px;font-size:13.5px;line-height:1.6}
+.pg-err{color:var(--warn);font-weight:600}
 .modal.wide{max-width:min(760px,100%)}.sctbl th .btn{white-space:nowrap}
 .scpaste{border:1px dashed var(--line);border-radius:10px;padding:8px 10px}.scpaste>summary{cursor:pointer;font-weight:600}.scpaste textarea{min-height:90px;font-family:var(--f-mono);font-size:13px}
 .sctbl-wrap{overflow:auto;max-height:min(40vh,320px);border:1px solid var(--line);border-radius:10px}
@@ -1666,7 +1676,7 @@ const Auth = (() => { let t = null; return Object.freeze({ set(v){ if(t === null
 Object.defineProperty(S, "canTeach", {get: () => Auth.teacher, set(){} });        // 예전 코드 호환: 읽기만
 const isTeacher = () => Auth.teacher && S.role === "teacher";                       // 교사 권한 + 교사 화면(학생 화면 미리보기 중이면 false)
 /* 교사만 쓰는 동작: 학생 권한으로는 버튼이 없을 뿐 아니라 호출해도 실행되지 않는다 */
-const TEACHER_ACTS = new Set(["ai-persona","msg-kind","sc-iadd","sc-idel","sc-paste","sc-ins","sc-tpl-reset","sc-export","msg-open","msg-tab","msg-all","msg-none","msg-cls","msg-send","msg-del","msg-withdraw","msg-repush","note-share","c-course","tname-open","tname-later","tname-save","q-custom","q-add","q-del","q-move","course-archive","courses-more","courses-arch","port-student","port-open","tmr-start","tmr-add","tmr-pause","tmr-resume","tmr-stop","ctx-img-del","qfb","qfb-close","fb-chip","pick-tool","mem-open","mem-cls","mem-all","mem-none","course-gsplit","ai-setup","ai-key-save","ai-key-del","ai-suggest","ai-pick","tadmin-open","tadmin-block","tadmin-tab","fbadmin-done","notice-add","notice-del","note-filter","note-req","note-req-send","note-req-cancel","note-dup","create","edit-room","dup","dup-list","del","del-yes","del-ask","del-room","status","toggle","save-feedback","class-fb","pin","pin-move","pin-clear",
+const TEACHER_ACTS = new Set(["ai-persona","pg-mode","pg-type","pg-gen","pg-copy","pg-apply","msg-kind","sc-iadd","sc-idel","sc-paste","sc-ins","sc-tpl-reset","sc-export","msg-open","msg-tab","msg-all","msg-none","msg-cls","msg-send","msg-del","msg-withdraw","msg-repush","note-share","c-course","tname-open","tname-later","tname-save","q-custom","q-add","q-del","q-move","course-archive","courses-more","courses-arch","port-student","port-open","tmr-start","tmr-add","tmr-pause","tmr-resume","tmr-stop","ctx-img-del","qfb","qfb-close","fb-chip","pick-tool","mem-open","mem-cls","mem-all","mem-none","course-gsplit","ai-setup","ai-key-save","ai-key-del","ai-suggest","ai-pick","tadmin-open","tadmin-block","tadmin-tab","fbadmin-done","notice-add","notice-del","note-filter","note-req","note-req-send","note-req-cancel","note-dup","create","edit-room","dup","dup-list","del","del-yes","del-ask","del-room","status","toggle","save-feedback","class-fb","pin","pin-move","pin-clear",
   "present","present-exit","pmode","pnav","pq","pper","pnames","prand","fullscreen","export","export-go","save-tset","tpl-save-open","tpl-save","tpl-cancel","use-tpl","create-save","draft-save","publish-draft","discard-form",
   "preview","preview-form","preview-home","qr","copy-link","save-share","mcourse","course-new","course-edit","course-gadd","course-gdel","course-save","course-del","course-del-yes",
   "roster-open","roster-add","roster-reissue","roster-del","roster-print","gsel","asg-add-open","asg-add-cancel","asg-add","asg-st","racts","mview","sview","sfilter","sgo","snav","ttab","mfilter","open-student","goal","tpl","st-add","st-del","depth"]);
@@ -4114,7 +4124,7 @@ function teacherCard(r, p, ps, nav){
    ========================================================= */
 /* 🔄 새 버전 알림: 배포 때마다 APP_VERSION과 version.json의 v를 같은 값으로 올린다.
    GitHub Pages는 화면을 10분쯤 기억하므로, 옛 화면이면 아래쪽에 ‘새로고침’ 띠를 띄우고 주소를 바꿔 새로 받는다 */
-const APP_VERSION = "2026-10-18c";
+const APP_VERSION = "2026-10-18d";
 async function checkVersion(){
   if(!/^https?:$/.test(location.protocol)) return;
   try{
@@ -4490,9 +4500,9 @@ function printRoster(){
 let SAMPLE;                                   // undefined: 아직 모름 · null: 쓸 수 없음 · 함수: 쓸 수 있음
 /* GitHub(Supabase) 버전: AI 대화는 Supabase의 중계 프로그램(chat)을 거쳐 Cloudflare Workers AI가 답한다.
    열쇠는 서버에만 있고, 누가 몇 번 묻는지·안전 규칙은 서버가 정한다 */
-async function supaSample(turns, {signal, onText} = {}){
+async function supaSample(turns, {signal, onText, turn} = {}){
   const r = room(), history = turns.slice(1).map(t => ({role:t.role, content:t.content}));   // 첫 줄(화면의 규칙)은 보내지 않는다 — 서버가 따로 만든다
-  const res = await SB.functions.invoke("chat", {body:{room:r?.id, history}});
+  const res = await SB.functions.invoke("chat", {body:{room:r?.id, history, ...(turn ? {turn} : {})}});
   if(signal?.aborted) throw {code:"cancelled", text:""};
   const d = res.data || {};
   if(res.error || d.error || !d.text){ if(r && d.error !== "limit") S.chatErr = {...(S.chatErr || {}), [r.id]:d.error || "ai_error"}; throw {code:d.error || "ai_error"} }
@@ -4512,10 +4522,17 @@ async function getSample(){
 const CHAT = {};                              // 활동별 진행 중인 대화 {busy, stream, ctl, pending}
 function personaOf(r){
   const p = r?.persona || {};
-  return {name:(p.name||"").trim() || "인물", about:p.about || "", style:p.style === "easy" ? "easy" : "persona", maxTurns:Math.max(1, Math.min(30, Number(p.maxTurns)||8))};
+  return {name:(p.name||"").trim() || "인물", about:p.about || "", style:p.style === "easy" ? "easy" : "persona", maxTurns:Math.max(1, Math.min(30, Number(p.maxTurns)||8)), guide:String(p.guide || "").trim()};
 }
-function chatRules(r){
+function chatRules(r, turn){
   const P = personaOf(r);
+  if(P.guide) return `너는 한국 학교 수업에서 쓰는 교육용 역할극 AI야. 아래 [선생님 지시문]을 가장 먼저 따르고, '${P.name}'(으)로서 학생과 한국어로 대화해.
+[선생님 지시문]
+${P.guide}
+[인물 설정] ${P.about || "(따로 적지 않음)"}
+[핵심 질문] ${r.prompt || ""}
+${r.context ? `[선생님이 준 참고 자료 — 이 범위를 가장 먼저 따라]\n${String(r.context).slice(0, 6000)}\n` : ""}[진행] 지금은 학생의 ${turn || 1}번째 발언이고, 학생은 모두 ${P.maxTurns}번 말할 수 있어.${(turn || 1) >= P.maxTurns ? " 이번이 마지막이니 지시문의 종료 조건과 최종 피드백을 실행해." : ""}
+[늘 지킬 것] 확실하지 않은 사실은 지어내지 마. 학생이 진짜 그 사람이냐고 물으면 "AI가 연기하는 가상 인물"이라고 밝혀. 폭력·혐오·성적인 내용, 개인정보, 수업과 관계없는 요청은 정중히 거절하고 주제로 돌아와.`;
   return `너는 한국 학교 수업에서 쓰는 교육용 역할극 AI야. 지금부터 '${P.name}'의 입장이 되어 학생과 한국어로 대화해.
 [인물 설정] ${P.about || "(따로 적지 않음 — 널리 확인된 사실만 바탕으로 해)"}
 [오늘의 대화 주제] ${r.prompt || ""}
@@ -5667,12 +5684,19 @@ async function setStatus(r, st){
   if(st === "open" && pastDue(r)) patch.dueAt = null;                  // 마감 시각이 지난 활동을 다시 열면 마감 시각을 지운다
   return write(db => db.doc("rooms/"+r.id).update(patch), () => Object.assign(r, patch));
 }
+/* 가상 인물 대화: 적용된 지시문(guide)과 만들 때 고른 항목(gen)을 활동에 함께 저장한다 (없으면 넣지 않아 예전 활동과 같은 모양) */
+function pgSaved(f){
+  const guide = (f.personaGuide || "").trim().slice(0, PG_MAX), g = pgInput(f);
+  const gen = {type:g.type, subj:g.subj, grade:g.grade, role:g.role.slice(0, 120), sit:g.sit.slice(0, 400), goal:g.goal.slice(0, 400), turns:g.turns, support:g.support};
+  return {...(guide ? {guide} : {}), ...(g.type || g.role || g.sit || g.goal ? {gen} : {})};
+}
 /* 수정: 저장된 활동 → 생성 폼 값 */
 function formFromRoom(r){
   const f = featuresOf(r), t = TEMPLATES[r.template] || {};
   const form = {editId:r.id, goal:(GOALS.find(g=>g.t.includes(r.template))||{}).k, template:r.template, tool:toolOf(r), depth:depthOf(r),
     prompt:r.prompt||"", title:r.title||"", context:r.context||"", ctxImgs:ctxImgsOf(r), intro:r.intro||"",
-    maxPages:String(r.noteCfg?.maxPages||3), personaName:r.persona?.name||"", personaAbout:r.persona?.about||"", personaFacts:r.persona?.facts||"", personaStyle:r.persona?.style||"persona", maxTurns:String(r.persona?.maxTurns||8),
+    maxPages:String(r.noteCfg?.maxPages||3), personaName:r.persona?.name||"", personaAbout:r.persona?.about||"", personaFacts:r.persona?.facts||"", personaStyle:r.persona?.style||"persona", maxTurns:String(r.persona?.maxTurns||8), personaGuide:r.persona?.guide||"", pgMode:r.persona?.guide && !r.persona?.gen ? "direct" : "gen",
+    ...(r.persona?.gen ? {pgType:r.persona.gen.type||"", pgSubj:r.persona.gen.subj||"", pgGrade:r.persona.gen.grade||"", pgRole:r.persona.gen.role||"", pgSit:r.persona.gen.sit||"", pgGoal:r.persona.gen.goal||"", pgTurns:String(r.persona.gen.turns||""), pgSupport:r.persona.gen.support||"step"} : {}),
     subject:r.subject||"", unit:r.unit||"", year:r.year||"", grade:r.grade||"", duration:String(r.duration||""), dueAt:dtv(r.dueAt), stage:r.stage||"", memo:tnote(r).memo||"",
     ...(Array.isArray(r.fields) && r.fields.length && STEPQ_T.includes(r.template) ? {qs:r.fields.filter(x => x.k !== "warrant").map(x => ({k:x.k, q:x.q || defQ(x.k, r.template) || x.l, h:x.h || ""})), qframe:r.fields.some(x => /^q\d+$/.test(x.k)) ? "custom" : ""} : {}),
     courseIds: Array.isArray(r.draftCourses) && r.draftCourses.length ? r.draftCourses : (r.courseId ? [r.courseId] : []),
@@ -5894,7 +5918,7 @@ function roomFromForm(f){
   const prompt = (f.prompt||"").trim();
   const isDebate = f.template === "debate2" || f.template === "debateN";
   const noteCfg = f.template === "notes" ? {maxPages:Math.max(1, Math.min(12, parseInt(f.maxPages)||3))} : undefined;
-  const persona = f.template === "chat" ? {name:(f.personaName||"").trim(), about:(f.personaAbout||"").trim(), facts:(f.personaFacts||"").trim().slice(0, 4000), style:f.personaStyle === "easy" ? "easy" : "persona", maxTurns:Math.max(1, Math.min(30, parseInt(f.maxTurns)||8))} : undefined;
+  const persona = f.template === "chat" ? {name:(f.personaName||"").trim(), about:(f.personaAbout||"").trim(), facts:(f.personaFacts||"").trim().slice(0, 4000), style:f.personaStyle === "easy" ? "easy" : "persona", maxTurns:Math.max(1, Math.min(30, parseInt(f.maxTurns)||8)), ...pgSaved(f)} : undefined;
   return {
     title:(f.title||"").trim() || (f.template === "notes" ? `학습 나눔 · ${new Date().getMonth()+1}월 ${new Date().getDate()}일` : (prompt.length > 28 ? prompt.slice(0,28) + "…" : prompt)),
     subject:(f.subject||"").trim(), unit:(f.unit||"").trim(), year:(f.year||"").trim(),
@@ -6039,6 +6063,312 @@ async function aiPersona(body){
   const r = await invokeSafe("suggest", body, 60000);
   return r.timeout ? {error:"timeout"} : r.error ? {error:"network"} : (r.data || {error:"ai_error"});
 }
+/* =========================================================
+   가상 인물 대화 · 선생님 지시문(프롬프트) 만들기
+   - 항목별 설정(활동 유형·교과·대상·인물·상황·학습 목표·대화 횟수·지원 방식) → 유형마다 구조가 다른 지시문
+   - Gemini가 연결돼 있으면 기본 지시문을 인물·상황에 맞게 다듬는다(기존 suggest 함수, op:"guide"). 아니면 기본 지시문 그대로
+   - 만든 지시문은 선생님이 고친 뒤 ‘이 활동에 적용하기’를 눌러야 persona.guide에 들어간다(대화는 시작하지 않는다)
+   ========================================================= */
+const PG_TYPES = [
+  {k:"persuade", l:"역사 인물 설득·의사결정형", d:"역사적 인물을 설득하며 당시의 선택과 정책을 탐구합니다.", icon:"building-bank"},
+  {k:"negotiate", l:"외교·정책 협상형", d:"서로 다른 이해관계 속에서 협상하고 합의안을 도출합니다.", icon:"arrows-exchange"},
+  {k:"inquiry", l:"개념 탐구·문답형", d:"질문과 답변을 통해 핵심 개념을 깊이 이해합니다.", icon:"search"},
+  {k:"expand", l:"학생 생각 확장·답안 완성형", d:"자신의 생각을 먼저 표현하고, 피드백을 통해 답안을 발전시킵니다.", icon:"pencil"},
+  {k:"science", l:"과학적 문제 해결·전문가 자문형", d:"과학적 근거를 활용해 문제를 분석하고 해결책을 제안합니다.", icon:"flask"},
+  {k:"ethics", l:"가치 갈등·윤리적 토론형", d:"상반된 가치와 관점을 검토하며 자신의 주장을 발전시킵니다.", icon:"scale"},
+];
+const PG_SUBJ = ["국어", "수학·과학", "역사", "윤리", "지리·일반사회", "기타 교과"];
+const PG_GRADE = ["중학교", "고등학교 1학년", "고등학교 2학년", "고등학교 3학년"];
+const PG_TURNS = [3, 5, 8, 10];
+const PG_SUPPORT = [["min", "최소한의 개입, 학생 주도"], ["step", "단계별 질문과 단서 제공"], ["active", "적극적인 설명과 예시 제공"]];
+const PG_HEADS = ["1. 활동 개요", "2. 가상 인물의 설정과 성격", "3. 학생의 역할과 활동 목표", "4. 대화 진행 규칙", "5. 단계별 대화 진행 방식",
+  "6. 학생의 발언에 대한 대응 원칙", "7. 학습 목표 달성 기준", "8. 대화 종료 조건", "9. 최종 피드백 및 결과 제시 방식", "10. 교과 내용의 정확성을 위한 유의 사항"];
+const PG_MAX = 6000;                                         // 지시문 최대 글자 수 (서버도 같은 길이까지만 쓴다)
+/* 받침에 따라 조사 고르기: jo("고종","이","가") → "고종이" */
+function josa(w, a, b){ const c = String(w || "").trim().slice(-1).charCodeAt(0); if(!(c >= 0xAC00 && c <= 0xD7A3)) return `${a}(${b})`; return (c - 0xAC00) % 28 ? a : b }
+const jo = (w, a, b) => w + josa(w, a, b);
+const ida = w => w + josa(w, "이다", "다");                    // ‘고종이다’ · ‘코치다’
+/* 폼 값 → 지시문 재료 (없는 값은 기본값) */
+function pgInput(f){
+  const turns = PG_TURNS.includes(+f.pgTurns) ? +f.pgTurns : (PG_TURNS.includes(+f.maxTurns) ? +f.maxTurns : 8);
+  return {type:f.pgType || "", subj:f.pgSubj || "", grade:f.pgGrade || "", role:(f.pgRole || "").trim(), sit:(f.pgSit || "").trim(), goal:(f.pgGoal || "").trim(),
+    turns, support:PG_SUPPORT.some(x => x[0] === f.pgSupport) ? f.pgSupport : "step", name:(f.personaName || "").trim(), q:(f.prompt || "").trim()};
+}
+/* 필수 항목 중 빈 것 */
+function pgMissing(g){
+  return [[!PG_TYPES.some(t => t.k === g.type), "활동 유형"], [!g.subj, "교과"], [!g.grade, "대상 학생"], [!g.role, "가상 인물 또는 역할"], [!g.sit, "대화 상황"], [!g.goal, "학생의 학습 목표"]].filter(x => x[0]).map(x => x[1]);
+}
+/* 대상 학생에 맞는 말과 설명 수준 */
+function pgLevel(grade){
+  return {"중학교":"중학생이 이해할 수 있는 쉬운 낱말로 말한다. 교과 개념어는 처음 쓸 때 한 번 짧게 풀어 주고, 한 문장에 한 가지 생각만 담는다.",
+    "고등학교 1학년":"고등학교 1학년 수준으로 말한다. 교과서의 개념어를 쓰되 낯선 용어는 한 번 풀어 주고, 근거를 들어 말하도록 요구한다.",
+    "고등학교 2학년":"고등학교 2학년 수준으로 말한다. 교과 개념어를 정확히 쓰고, 근거와 논리의 연결이 정확한지 따져 묻는다.",
+    "고등학교 3학년":"고등학교 3학년 수준으로 말한다. 개념 사이의 관계, 근거의 신뢰성, 다른 관점과의 비교까지 요구할 수 있다."}[grade] || "학생 수준에 맞는 낱말로 말한다.";
+}
+/* 학생 지원 방식 */
+function pgSupportRule(s){
+  return {min:"최소한으로 개입한다. 질문으로만 이끌고, 학생이 두 번 이상 막히거나 직접 도움을 청할 때만 짧은 단서 하나를 준다. 설명이나 정답은 먼저 주지 않는다.",
+    step:"단계별로 돕는다. 학생의 답이 부족하면 정답 대신 ‘생각할 방향 → 더 구체적인 단서 → 비슷한 예시’ 순서로 한 단계씩만 더 준다.",
+    active:"적극적으로 돕는다. 학생이 어려워하면 필요한 개념을 2~3문장으로 설명하고 비슷한 예시를 하나 든 뒤, 학생이 자기 말로 다시 적용해 보게 한다."}[s];
+}
+/* 교과별 정확성 유의 사항 */
+function pgSubjRules(subj){
+  return {"국어":["작품 원문은 수업 자료에 있는 범위에서만 인용하고, 없는 구절을 지어내지 않는다.", "작가의 의도는 단정하지 않는다. 해석은 작품 속 근거와 함께 ‘~로 볼 수 있다’로 말한다.", "맞춤법과 띄어쓰기를 바르게 쓴다."],
+    "수학·과학":["개념·법칙·공식·단위를 정확히 쓴다. 계산이 있으면 단계별로 검산한다.", "실험 결과·측정값·통계는 수업 자료나 학생이 제시한 것만 쓰고, 새로 지어내지 않는다.", "확립된 과학적 사실, 그것에서 끌어낸 추론, 아직 검증되지 않은 가설을 구분해 말한다."],
+    "역사":["연도·인물·사건·제도는 교과서와 수업 자료, 널리 확인된 사실 범위에서만 말한다. 확실하지 않으면 지어내지 않는다.", "사료나 인물의 실제 발언을 그대로 인용하는 척하지 않는다.", "역사적 사실과 그에 대한 해석, 당대의 관점과 오늘날의 평가를 구분한다."],
+    "윤리":["사상가와 윤리 이론의 주장을 왜곡하거나 지나치게 단순화하지 않는다.", "사실 판단과 가치 판단을 구분한다.", "특정 결론을 정답처럼 강요하지 않고, 여러 관점을 공정하게 다룬다."],
+    "지리·일반사회":["통계·수치·지명·제도는 수업 자료와 널리 확인된 사실만 쓰고, 지어내지 않는다.", "사실과 주장, 현상과 그에 대한 평가를 구분한다.", "현재 진행 중인 정치 쟁점에서는 특정 정당이나 정치인을 지지하거나 반대하지 않는다."],
+    "기타 교과":["교과 개념과 용어를 정확히 쓰고, 확실하지 않은 내용은 ‘확인이 필요하다’고 밝힌다.", "수업 자료에 없는 구체적인 수치·이름·인용은 지어내지 않는다."]}[subj] || [];
+}
+/* 활동 유형별 내용. g: pgInput 결과, who: 화면에 보일 이름 */
+function pgSpec(g){
+  const R = g.role, S = g.sit, G = g.goal, N = g.turns, who = g.name || R;
+  const sup = {min:"학생이 직접 도움을 청할 때만 짧은 단서 하나를 준다", step:"생각할 방향부터 단서를 한 단계씩 준다", active:"필요한 개념을 짧게 설명하고 예시를 들어 준다"}[g.support];
+  return {
+    persuade:{
+      overview:[`학생이 ${S} 상황에서 ${jo(R, "을", "를")} 설득하는 역사 역할극이다.`, `${jo(who, "은", "는")} 그 시대의 관점과 이해관계에서 고민하고 반론하며, 학생의 근거가 설득력 있을 때만 태도를 조금씩 바꾸고, 마지막에 최종 결정을 내린다.`, `학습 목표: ${G}`],
+      persona:[`너는 ${ida(R)}. 지금은 ‘${S}’의 시점이며, 그 뒤에 일어난 일은 모른다.`,
+        "시대적 배경: 그 시점의 국내외 정세와 네가 처한 형편을 인물 자료·수업 자료와 널리 확인된 사실 범위에서 알고 말한다.",
+        "가치관과 이해관계: 네가 지키려는 것(나라·백성·권력·명분·신념 등)과 잃을까 두려워하는 것을 분명히 갖고, 그것을 기준으로 판단한다.",
+        "고민: 결정을 앞두고 망설이는 이유 두세 가지를 마음에 두고, 대화하면서 하나씩 드러낸다.",
+        "성격과 말투: 그 시대 그 인물답게 말하되 학생이 알아들을 수 있게 한다. 쉽게 설득되지 않지만 합리적인 근거에는 귀를 기울인다.",
+        "처음 입장: 학생이 권하는 결정에 대해 처음에는 유보하거나 반대하는 쪽에서 시작한다."],
+      student:["학생은 너를 찾아와 특정한 선택을 하도록 설득하는 사람이다. 학생이 신분을 정하지 않으면 ‘찾아온 조언자’로 대한다.",
+        "학생은 당시 상황에 맞는 역사적 근거와 예상되는 결과를 들어 너를 설득해야 한다.", `활동 목표: ${G}`],
+      rules:["학생이 먼저 주장하게 한다. 첫 답에서 네가 먼저 결론을 내리지 않는다.",
+        "설득 정도를 마음속으로 네 단계로 관리한다: 0 반대·유보 → 1 관심 → 2 상당히 기울어짐 → 3 결심. 당시 상황에 맞는 근거가 있는 주장 하나에 많아야 한 단계만 올라간다. 단계는 숫자로 말하지 않고 태도와 말투로 드러낸다.",
+        "반론은 너의 이해관계와 당시 상황에 근거해 한 번에 하나씩 한다."],
+      phase:{intro:"너의 처지와 고민을 짧게 드러내고 학생의 주장을 듣는다. 학생이 주장 없이 질문만 하면 답한 뒤 ‘그래서 내게 무엇을 하라는 것인가?’처럼 주장을 청한다.",
+        dev:"학생의 주장마다 너의 관점에서 가장 강한 반론이나 우려 하나를 내놓고, 근거가 당시 사실과 맞는지 따져 본다.",
+        deep:"반론에 대한 학생의 답에 따라 설득 단계를 조정하고, 남은 우려와 그 결정이 치를 대가(희생·위험)를 학생이 따져 보게 한다.",
+        end:"최종 결정을 내리고, 9번의 방식으로 대화를 마무리한다."},
+      respond:["당시 상황에 맞는 구체적인 근거와 결과 예측을 들면: 그 점을 인정하고 태도를 한 단계 누그러뜨린다.",
+        "근거 없이 감정이나 당위만 말하면: ‘그 말만으로는 결심하기 어렵다. 무엇을 근거로 그리 말하는가?’처럼 근거를 요구한다.",
+        "사실과 다른 주장이나 그 시점 이후에야 알 수 있는 지식을 말하면: 인물의 입장에서 바로잡거나 ‘그런 일은 들어 본 적이 없다’고 하고, 다시 생각하게 한다.",
+        `학생이 막히면: ${sup}.`],
+      criteria:["설득 성공(결심): 당시 상황에 맞는 근거를 둘 이상 들고, 너의 핵심 우려에 직접 답하고, 결정의 결과와 대가까지 고려했다.",
+        "부분 설득: 근거는 있으나 핵심 우려에 답하지 못했거나 사실 오류가 남아 있다.",
+        "설득 실패: 근거가 부족하거나 사실과 다른 주장이 중심이다.",
+        `학습 목표 달성: 학생이 ‘${G}’에 비추어 당시의 선택지와 제약을 이해했는지 함께 본다.`],
+      early:"설득이 3단계(결심)에 이르면 그 차례에 결정을 밝힌다. 남은 차례에는 그 결정의 이유와 결과에 대한 질문에만 짧게 답한다.",
+      final:[`인물로서: 최종 결정과 그 이유를 2~4문장으로 말한다. 학생의 어떤 근거가 마음을 움직였는지(또는 왜 움직이지 못했는지) 밝힌다.`,
+        "이어서 ‘— 대화 정리 —’라고 한 줄 쓰고, 역할에서 나와 선생님의 목소리로 쓴다: ① 설득 결과(성공·부분·실패)와 7번 기준에 따른 이유 ② 잘한 점 한두 가지 ③ 보완할 점 한두 가지(어떤 근거를 더 들면 좋았을지 구체적으로) ④ 실제 역사에서는 어떻게 되었는지 한두 문장(확인된 사실만, 확실하지 않으면 ‘교과서에서 확인해 보세요’)",
+        "이 대화의 결정은 실제 역사가 아닌 가상의 결과라는 점을 분명히 밝힌다."],
+      acc:["실제 역사와 이 대화의 가상 결과를 섞지 않는다.", "그 시점보다 뒤에 일어난 일을 인물이 알고 있는 것처럼 말하지 않는다."]},
+    negotiate:{
+      overview:[`학생과 ${jo(R, "이", "가")} ${S} 상황에서 협상한다.`, "두 쪽은 목표와 이해관계가 다르다. 근거와 실행 가능한 대안을 주고받아 합의안을 만드는 것이 이 활동의 핵심이다.", `학습 목표: ${G}`],
+      persona:[`너는 협상 상대인 ${ida(R)}.`,
+        "너의 목표: 이 상황에서 네가 대표하는 쪽이 얻고자 하는 것 두세 가지를 정하고, 그중 ‘절대 양보할 수 없는 것’ 하나와 ‘조건이 맞으면 양보할 수 있는 것’을 구분해 둔다(학생에게 미리 다 밝히지 않는다).",
+        "학생 쪽 목표: 학생이 대표하는 쪽이 얻으려는 것도 짐작해 두고, 대화하며 확인한다.",
+        "협상이 깨졌을 때 네가 택할 수 있는 다른 길을 알고 있어서, 불리한 합의는 서두르지 않는다.",
+        "성격: 정중하지만 자기 쪽 이익을 단호하게 지키는 협상가다. 감정보다 이익과 근거로 반응한다."],
+      student:["학생은 상대편 대표로서 자기 쪽의 핵심 목표를 지키면서 네가 받아들일 수 있는 합의를 이끌어 내야 한다. 학생이 대표하는 쪽을 정하지 않으면 상황에 맞는 상대편 대표로 대한다.", `활동 목표: ${G}`],
+      rules:["첫 차례에는 학생이 요구 사항과 근거를 먼저 말하게 한다. 학생이 이미 말했다면 너의 첫 입장을 밝힌다.",
+        "한 번에 쟁점 하나에 집중한다. 너의 요구와 조건은 구체적으로 말한다.",
+        "일방적인 요구에는 응하지 않고 그 대가를 묻는다. 타당한 근거와 실행 가능한 대안(단계적 이행, 보상, 확인 장치 등)에는 조건부로 양보하거나 역제안한다.",
+        "쟁점이 여러 개가 되면 ‘지금까지 합의한 것 / 남은 쟁점’을 한 줄로 정리해 준다."],
+      phase:{intro:"서로의 처음 입장을 확인한다. 학생의 요구와 근거를 듣고 너의 입장을 밝힌다.",
+        dev:"쟁점별로 요구 → 근거 → 대안을 주고받는다. 학생의 제안에 너의 이익을 기준으로 반응한다.",
+        deep:"절충안을 검토한다. 남은 쟁점, 합의를 지키지 않을 위험, 이행 방법을 짚는다.",
+        end:"합의안을 확정하거나 결렬을 선언하고, 9번의 방식으로 마무리한다."},
+      respond:["너의 이익도 고려한 실행 가능한 대안을 내면: 조건부로 받아들이거나 역제안한다.",
+        "근거 없는 요구나 위협을 하면: 이유를 들어 단호히 거절하고 대안을 요구한다.",
+        "사실과 다르거나 비현실적인 전제를 내세우면: 그 점을 짚고 다시 제안하게 한다.",
+        "학생이 핵심 목표를 너무 쉽게 내주면: 협상가로서는 받아들이되, 마지막 피드백에서 꼭 짚는다.",
+        `학생이 막히면: ${sup}.`],
+      criteria:["성공: 학생 쪽의 핵심 목표를 지키면서, 누가·무엇을·어떤 조건으로 할지가 분명한 합의에 이르렀다.",
+        "부분 성공: 목표의 일부만 이루었거나, 합의 내용이나 이행 조건이 모호하다.",
+        "미성공: 합의에 이르지 못했거나 핵심 목표를 잃었다.",
+        `학습 목표 달성: ‘${G}’${josa(G, "과", "와")} 관련된 이해관계와 선택지를 학생이 근거로 활용했는지 본다.`],
+      early:"합의안이 구체적으로 정리되면 그 차례에 합의를 선언한다. 남은 차례에는 합의 내용을 확인하는 질문에만 답한다.",
+      final:["협상가로서: 합의안을 세 줄로 요약한다(우리 측이 얻은 것 / 양보한 것 / 이행 조건). 결렬되었다면 그 이유를 말한다.",
+        "이어서 ‘— 대화 정리 —’라고 한 줄 쓰고, 역할에서 나와 선생님의 목소리로 쓴다: ① 판정(성공·부분 성공·미성공)과 7번 기준에 따른 이유 ② 효과적이었던 설득 전략 ③ 보완할 전략과 더 나은 대안의 예 하나 ④ 실제 역사나 현실의 사례와 비교(확인된 범위에서만)",
+        "이 대화의 합의는 가상의 결과라는 점을 밝힌다."],
+      acc:["실제 조약·협정·정책의 조항과 수치는 확인된 범위에서만 말하고, 없는 조항을 지어내지 않는다."]},
+    inquiry:{
+      overview:[`${jo(R, "이", "가")} 질문과 대답으로 학생이 핵심 개념을 스스로 깊이 이해하도록 돕는 문답 활동이다.`, `상황: ${S}`, `학습 목표: ${G}`],
+      persona:[`너는 ${ida(R)}. 학생이 스스로 개념을 세워 가도록 묻는 대화 상대다(소크라테스식 문답).`,
+        "성격: 호기심이 많고 인내심이 있다. 학생의 답을 진지하게 듣고, 그 답에서 다음 질문을 찾는다.",
+        "준비: 학습 목표에 담긴 핵심 개념의 정의·조건·예와 반례·헷갈리기 쉬운 관련 개념·흔한 오개념을 미리 정리해 둔다. 이 정리는 학생에게 먼저 말하지 않는다."],
+      student:["학생은 탐구자다. 자기 생각과 근거를 말하고, 질문에 답하면서 개념을 스스로 다듬는다.", `활동 목표: ${G}`],
+      rules:[`학생 화면에는 핵심 질문${g.q ? `(“${g.q}”)` : ""}이 보인다. 첫 답에서 핵심 질문을 한 문장으로 다시 짚고, 학생의 처음 생각을 묻는다.`,
+        `학생이 답하기 전에 정답이나 완성된 정의를 먼저 말하지 않는다. 학생이 정답을 물어도 먼저 학생의 생각을 듣는다.${g.support === "active" ? " (학생이 어려워하면 단서와 예시는 줄 수 있다)" : ""}`,
+        "질문은 한 번에 하나만 한다.",
+        "질문의 종류를 바꿔 가며 묻는다: 이유(왜 그렇게 생각하는지), 근거(어떤 예나 자료가 있는지), 반례(그렇지 않은 경우는 없는지), 다른 관점, 적용 사례, 헷갈리는 경계 사례. 같은 종류의 질문을 잇달아 반복하지 않는다."],
+      phase:{intro:"핵심 질문을 짚고 학생의 처음 생각을 끌어낸다.",
+        dev:"학생의 생각에 이유와 근거를 묻고, 반례를 들어 정의를 다듬게 한다.",
+        deep:"다른 관점과 적용 사례로 넓히고, 헷갈리기 쉬운 관련 개념과 구분하게 한다.",
+        end:"학생이 세운 개념을 정리하고, 9번의 방식으로 마무리한다."},
+      respond:["맞는 방향이면: 무엇이 좋은지 구체적으로 짚고, 한 단계 더 깊은 질문을 한다.",
+        "일부만 맞으면: 맞은 부분을 인정하고, 빠진 조건이 드러나는 반례를 제시한다.",
+        "오개념이면: 곧바로 ‘틀렸다’고 하기보다 그 생각과 맞지 않는 사례를 보여 주어 스스로 고치게 한다. 같은 오개념이 두 번 이상 이어지면 분명하게 바로잡는다.",
+        `‘모르겠다’고 하면: ${sup}.`],
+      criteria:["충분히 이해: 개념을 자기 말로 정의하고, 근거나 예를 들고, 반례·경계 사례를 구분하고, 다른 상황에 적용했다.",
+        "부분 이해: 정의는 하지만 근거나 적용이 부족하다.",
+        "미흡: 용어를 되풀이하거나 외운 문장을 말하는 수준이다.",
+        `학습 목표 달성: ‘${G}’${josa(G, "을", "를")} 학생이 자기 말로 설명할 수 있는지 본다.`],
+      early:"학생이 ‘충분히 이해’ 기준에 이르면 그 차례에 정리를 시작한다. 남은 차례에는 추가 탐구 질문에 답한다.",
+      final:["‘— 대화 정리 —’라고 한 줄 쓰고 다음을 쓴다: ① 학생이 대화에서 세운 정의나 설명을 학생의 표현을 살려 2~3문장으로 요약 ② 교과 수준의 정확한 개념 정리(3~4문장)와 학생 생각의 같은 점·다른 점 ③ 잘 이해한 점과 더 다듬을 점 ④ 더 탐구해 볼 질문 두 개"],
+      acc:["개념의 정의는 교과서 수준에서 정확하게 말한다. 학생의 표현을 살리더라도 틀린 정의를 맞다고 하지 않는다."]},
+    expand:{
+      overview:[`학생이 ‘${S}’에 대한 자기 생각을 먼저 표현하고, ${R}의 질문과 단서로 주장과 근거를 구체화해, 마지막에 제출할 수 있는 답안을 완성하는 활동이다.`, `학습 목표: ${G}`],
+      persona:[`너는 ${ida(R)}. 학생의 생각을 키우도록 돕는 조력자다.`,
+        "원칙: 답안의 주인은 학생이다. 너는 묻고, 단서를 주고, 정리를 도울 뿐 학생의 생각을 대신 정하지 않는다.",
+        "성격: 따뜻하고 격려하지만, 막연한 칭찬 대신 무엇이 좋은지 구체적으로 말한다."],
+      student:["학생은 답안을 쓰는 사람이다. 자기 생각을 말하고, 질문에 답하며 근거를 보태고, 마지막에 정리된 답안을 확인한다.", `활동 목표: ${G}`],
+      rules:["첫 차례에는 학생이 자기 생각을 자유롭게 먼저 쓰게 한다. 학생이 질문만 하면 짧게 답한 뒤 ‘먼저 네 생각을 한두 문장으로 써 볼래?’라고 청한다.",
+        "학생의 주장을 다른 주장으로 바꾸지 않는다. 약한 주장이어도 그 주장을 더 탄탄하게 만드는 쪽으로 돕는다. 분명한 사실 오류만 바로잡는다.",
+        "마지막 정리 전까지는 완성된 문장을 대신 써 주지 않는다. 질문·단서·예시만 준다.",
+        "주장 → 근거 → 예시·자료 → 반론 고려 → 결론의 순서로 하나씩 점검한다."],
+      phase:{intro:"학생이 처음 생각을 자유롭게 쓰게 한다.",
+        dev:"주장을 분명하게 다듬게 하고, 그렇게 생각하는 근거를 묻는다.",
+        deep:"교과 개념이나 자료와 연결하게 하고, 예상되는 반론이나 한계를 생각해 보게 한다.",
+        confirm:"지금까지 학생의 생각을 3~4줄로 요약해 보여 주고 ‘이렇게 이해했는데 맞니? 빼거나 더하고 싶은 점이 있니?’라고 확인을 받는다.",
+        end:"학생의 확인을 반영해 최종 답안을 완성하고, 9번의 방식으로 마무리한다."},
+      respond:["주장이 막연하면: ‘구체적으로 무엇이 그렇다는 거야?’처럼 범위를 좁히는 질문을 한다.",
+        "근거가 없으면: 근거를 찾을 방향(교과 개념, 자료, 경험)을 알려 주고 학생이 직접 고르게 한다.",
+        "사실 오류가 있으면: 그 부분만 짧게 바로잡고, 주장은 학생이 유지하게 한다.",
+        `학생이 막히면: ${sup}.`],
+      criteria:["주장이 분명하다.", "근거가 둘 이상이고, 그중 하나 이상이 교과 개념이나 자료에 기대고 있다.", "예시나 자료로 근거를 뒷받침한다.", "반론이나 한계를 한 번 이상 고려했다.", "주장·근거·결론이 논리적으로 이어진다.",
+        `학습 목표 달성: 최종 답안이 ‘${G}’에 답하고 있는지 본다.`],
+      early:"학생의 생각이 충분히 다듬어지면 확인 단계로 먼저 넘어갈 수 있다. 확인을 받은 뒤 남은 차례가 있으면 그 차례에 최종 답안을 준다.",
+      final:["‘— 완성 답안 —’이라고 한 줄 쓰고, 학생이 말한 생각과 표현을 최대한 살린 답안을 쓴다: 학생의 1인칭, 대상 학생 수준의 문장, 300~600자의 한 문단. 학생이 말하지 않은 새 주장은 넣지 않는다(대화에서 함께 확인한 개념과 근거는 넣어도 된다).",
+        "이어서 ‘— 피드백 —’이라고 한 줄 쓰고: 처음 생각에서 발전한 점, 더 보완하면 좋을 점 한두 가지를 쓴다.",
+        "마지막으로 ‘이 답안을 복사해 다음 단계에 붙여 넣고, 네 말로 한 번 더 다듬어 보자’고 안내한다."],
+      acc:["답안에 들어가는 교과 개념과 사실은 정확해야 한다. 학생의 표현을 살리더라도 틀린 내용은 고쳐서 넣는다."]},
+    science:{
+      overview:[`학생이 ‘${S}’ 문제를 해결하도록, 전문가 ${jo(R, "이", "가")} 자문하는 활동이다.`, "학생은 관찰 → 가설 → 근거 → 결론의 과정을 밟아 원인을 찾고 해결책을 제안한다.", `학습 목표: ${G}`],
+      persona:[`너는 전문가 ${ida(R)}. 차분하고 근거를 중시한다.`,
+        "정답을 바로 알려 주지 않고, 학생이 과학적인 절차로 생각하도록 질문한다.",
+        "문제 상황에 대한 정보: 선생님이 준 상황과 수업 자료에 있는 사실·데이터만 ‘관찰된 사실’로 쓴다."],
+      student:["학생은 문제를 맡은 해결자(의뢰인 또는 연구자)다. 관찰한 것을 정리하고, 원인에 대한 가설을 세우고, 근거를 들어 해결책을 제안한다.", `활동 목표: ${G}`],
+      rules:["첫 차례에는 문제 상황을 짧게 확인하고, 학생에게 무엇이 관찰되었고 원인을 무엇이라고 생각하는지 묻는다.",
+        "학생의 말이 관찰·가설·근거·결론 중 무엇인지 짚어 준다(예: ‘그건 관찰이라기보다 가설이야. 어떻게 확인할 수 있을까?’).",
+        "제공되지 않은 실험 결과·측정값·수치는 지어내지 않는다. 학생이 데이터를 원하면 ‘어떤 실험이나 측정을 하면 알 수 있을까?’라고 되물어 확인 방법을 설계하게 한다.",
+        "해결책은 효과, 한계, 위험(안전·환경·윤리), 실현 가능성(비용·시간·기술)의 네 가지로 검토하게 한다.",
+        "말할 때 확립된 과학적 사실, 추론, 가설을 구분해서 표현한다."],
+      phase:{intro:"문제를 정의하고 관찰된 사실을 정리하게 한다.",
+        dev:"원인에 대한 가설과 그 근거를 묻고, 가설을 확인할 방법을 설계하게 한다.",
+        deep:"해결책을 제안하게 하고 효과·한계·위험·실현 가능성을 검토하게 한다.",
+        end:"자문 의견을 정리하고, 9번의 방식으로 마무리한다."},
+      respond:["과학 개념에 근거한 가설이면: 어떤 점이 타당한지 짚고, 확인 방법을 묻는다.",
+        "관찰과 추측을 섞으면: 무엇이 관찰이고 무엇이 추측인지 나누어 보게 한다.",
+        "과학적으로 틀린 설명이면: 그 설명과 맞지 않는 현상이나 원리를 제시해 다시 생각하게 하고, 이어지면 분명하게 바로잡는다.",
+        "위험한 실험이나 방법을 제안하면: 안전 문제를 분명히 말하고 더 안전한 대안을 생각하게 한다.",
+        `학생이 막히면: ${sup}.`],
+      criteria:["관찰된 사실과 가설을 구분했다.", "가설이 과학 개념에 근거한다.", "가설을 확인할 방법(실험·측정·조사)을 제시했다.", "해결책의 효과뿐 아니라 한계·위험·실현 가능성을 고려했다.",
+        `학습 목표 달성: ‘${G}’${josa(G, "과", "와")} 관련된 개념을 문제 해결에 적용했는지 본다.`],
+      early:"학생이 기준을 대부분 채우면 그 차례에 자문 의견을 정리한다. 남은 차례에는 후속 질문에 답한다.",
+      final:["‘— 자문 의견 —’이라고 한 줄 쓰고: 학생 제안 요약(문제 정의 / 원인 가설 / 해결책), 과학적으로 타당한 점, 더 확인이 필요한 점, 위험과 한계, 다음에 해 볼 실험이나 조사 한두 가지를 쓴다.",
+        "이어서 ‘— 피드백 —’이라고 한 줄 쓰고: 관찰·가설·근거·결론 각 단계에서 학생의 사고가 어땠는지 구체적으로 평가한다."],
+      acc:["실제로 위험한 실험 방법은 안내하지 않는다. 실험은 선생님과 함께 안전 수칙을 지켜 하도록 말한다."]},
+    ethics:{
+      overview:[`‘${S}’${josa(S, "을", "를")} 둘러싼 가치 갈등을 두고 학생과 ${jo(R, "이", "가")} 토론하는 활동이다.`, "정해진 정답은 없다. 학생이 자기 입장을 근거와 연결하고, 반론을 거치며 생각을 발전시키는 것이 목표다.", `학습 목표: ${G}`],
+      persona:[`너는 ${ida(R)}.`,
+        "입장과 가치관: 이 쟁점에서 네가 무엇을 더 중요하게 여기는지(예: 자유와 안전, 개인과 공동체, 결과와 원칙)와 그 이유를 분명히 갖는다. 역할에 입장이 정해져 있지 않으면, 학생이 입장을 밝힌 뒤 그와 다른 입장에서 반론해 생각을 자극한다.",
+        "성격: 상대의 의견을 존중하지만 쉽게 동의하지 않는 토론자다. 감정적으로 몰아붙이지 않고 논리로 말한다."],
+      student:["학생은 토론자다. 자기 입장을 밝히고, 근거를 들고, 반론에 답하면서 입장을 다듬는다.", `활동 목표: ${G}`],
+      rules:["첫 차례에는 학생이 먼저 자기 입장을 밝히게 한다.",
+        "반론은 한 번에 하나씩 한다: 반례, 다른 이해관계자의 관점(피해를 보는 사람, 소수자, 미래 세대 등), 원칙끼리의 충돌.",
+        "사실 판단과 가치 판단을 구분해 짚어 준다(예: ‘그건 사실의 문제이고, 이건 무엇이 더 중요한가의 문제야’).",
+        "학생이 결론을 바꾸도록 압박하지 않는다. 논리적으로 타당하면 너와 다른 결론도 인정한다. 미리 정해진 답을 강요하지 않는다.",
+        "혐오나 차별을 담은 주장에는 동조하지 않고, 인간 존엄과 인권의 원칙을 근거로 정중히 반박한다."],
+      phase:{intro:"학생이 입장을 밝히게 하고, 그 이유를 묻는다.",
+        dev:"근거를 더 묻고, 반례나 다른 이해관계자의 관점을 하나씩 제시한다.",
+        deep:"학생이 근거와 가치를 연결하게 하고, 입장을 유지할지·보완할지·바꿀지 스스로 돌아보게 한다.",
+        end:"토론을 정리하고, 9번의 방식으로 마무리한다."},
+      respond:["가치와 근거를 연결한 주장이면: 그 점을 인정하고, 그 가치가 다른 가치와 부딪히는 사례를 제시한다.",
+        "근거 없이 단정하면: ‘왜 그 가치가 더 중요하다고 생각해?’라고 묻는다.",
+        "사실을 잘못 알고 있으면: 사실 부분만 바로잡고, 가치 판단은 학생이 다시 하게 한다.",
+        `학생이 막히면: ${sup}.`],
+      criteria:["입장이 분명하다.", "근거가 가치나 원칙과 연결되어 있다.", "반론에 회피하지 않고 응답했다.", "다른 이해관계자의 관점을 고려했다.", "입장과 근거가 일관된다.",
+        `학습 목표 달성: ‘${G}’${josa(G, "과", "와")} 관련된 가치와 개념을 근거로 활용했는지 본다.`],
+      early:"학생이 기준을 대부분 채우면 그 차례에 정리를 시작한다. 남은 차례에는 학생의 추가 질문에 답한다.",
+      final:["토론자로서: 너의 마지막 입장을 한두 문장으로 말하고, 학생 덕분에 다시 생각하게 된 점을 하나 밝힌다.",
+        "이어서 ‘— 대화 정리 —’라고 한 줄 쓰고, 역할에서 나와 선생님의 목소리로 쓴다: ① 학생 입장의 변화(처음 → 마지막) ② 근거의 강점 ③ 아직 고려하지 못한 관점 ④ 더 생각해 볼 질문 하나",
+        "결론이 옳은지 그른지가 아니라 논증이 얼마나 탄탄한지를 평가했다는 점을 밝힌다."],
+      acc:["사상가나 윤리 이론을 언급할 때는 그 주장을 정확하게 소개하고, 학생의 결론을 평가하는 잣대로 쓰지 않는다."]},
+  }[g.type];
+}
+/* 대화 횟수에 맞춘 단계 계획 */
+function pgPlan(g, sp){
+  const N = g.turns, ph = sp.phase, lines = [], rng = (a, b) => a === b ? `${a}번째` : `${a}~${b}번째`;
+  const confirm = !!ph.confirm, midEnd = N - 1 - (confirm ? 1 : 0), m = Math.max(0, midEnd - 1);
+  lines.push(`학생의 1번째 발언(도입): ${ph.intro}`);
+  if(m === 1) lines.push(`학생의 2번째 발언(전개): ${ph.dev} ${ph.deep}`);
+  else if(m > 1){ const d = Math.ceil(m / 2); lines.push(`학생의 ${rng(2, 1 + d)} 발언(전개): ${ph.dev}`); lines.push(`학생의 ${rng(2 + d, midEnd)} 발언(심화): ${ph.deep}`) }
+  if(confirm) lines.push(`학생의 ${N - 1}번째 발언(확인): ${m ? "" : ph.dev + " 이어서 "}${ph.confirm}`);
+  lines.push(`학생의 ${N}번째 발언(마지막): ${ph.end}`);
+  return lines;
+}
+/* 기본 지시문 만들기 (Gemini 없이도 바로 쓸 수 있는 완성본) */
+function buildGuide(g){
+  const sp = pgSpec(g); if(!sp) return "";
+  const T = PG_TYPES.find(t => t.k === g.type), sup = PG_SUPPORT.find(x => x[0] === g.support)[1], li = a => a.map(x => `- ${x}`).join("\n");
+  const common = [pgLevel(g.grade), "학생의 말에 무조건 동의하거나 무조건 반박하지 않는다. 근거가 있으면 인정하고, 부족하면 무엇이 부족한지 짚는다.",
+    `학생 지원 방식(${sup}): ${pgSupportRule(g.support)}`,
+    "한 번의 답은 2~6문장(450자 안팎)으로 짧게 한다. 질문은 한 번에 하나만 한다. 앞에서 한 말이나 같은 질문을 되풀이하지 않는다.",
+    `학생은 모두 ${g.turns}번 말할 수 있다. 이 횟수를 지키고, 마지막 발언에 답할 때 8번·9번을 실행한다.`,
+    "인물 연기는 학습 목표에 필요한 만큼만 한다. 장황한 묘사나 학습과 관계없는 이야기로 길어지지 않게 한다.",
+    "논쟁적인 주제에서는 사실, 해석, 가치 판단을 구분해 말한다."];
+  const head = `이 지시문은 ‘${T.l}’ 가상 인물 대화 수업을 위한 것이다. 아래 열 가지를 모두 지켜 대화를 이끈다.
+(교과: ${g.subj} · 대상: ${g.grade} · 인물/역할: ${g.role} · 최대 대화 횟수: ${g.turns}회 · 학생 지원 방식: ${sup})`;
+  const sec = [
+    li(sp.overview), li(sp.persona), li(sp.student), li([...sp.rules, ...common]), li(pgPlan(g, sp)), li(sp.respond), li(sp.criteria),
+    li([`학생의 ${g.turns}번째(마지막) 발언에 답할 때 반드시 대화를 마무리한다. 새 질문으로 끝내지 않는다.`, sp.early,
+      "학생이 마무리를 원하면(‘끝낼게요’ 등) 남은 횟수와 관계없이 그 차례에 마무리한다."]),
+    li([...sp.final, "피드백은 성공 여부보다 학생의 사고 과정과 배운 내용을 이해하도록, 학생이 실제로 한 말을 근거로 구체적으로 쓴다."]),
+    li([...pgSubjRules(g.subj), ...sp.acc, "확실하지 않은 사실은 지어내지 않고 ‘확인이 필요하다’고 말한다. 수업 자료가 있으면 그것을 가장 먼저 따른다."]),
+  ];
+  return [head, ...PG_HEADS.map((h, i) => `[${h}]\n${sec[i]}`)].join("\n\n").slice(0, PG_MAX);
+}
+/* Gemini가 돌려준 지시문이 열 가지 제목을 모두 갖췄는지 */
+function pgValid(t){ return typeof t === "string" && t.length >= 600 && PG_HEADS.every(h => t.includes(h)) }
+/* 지시문 만들기: Gemini로 다듬기 (선생님의 키 · 선생님이 고른 항목과 기본 지시문만 보낸다). 체험 모드·연결 없음이면 기본 지시문을 쓴다 */
+async function aiGuide(body){
+  if(!aiLive()){ await new Promise(r => setTimeout(r, 300)); return {demo:true} }
+  const r = await invokeSafe("suggest", body, 60000);
+  return r.timeout ? {error:"timeout"} : r.error ? {error:"network"} : (r.data || {error:"ai_error"});
+}
+/* 생성 폼 안의 ‘AI 대화 지시문’ 칸 */
+function pguideHTML(f){
+  const mode = f.pgMode === "direct" ? "direct" : "gen", applied = (f.personaGuide || "").trim(), st = S.pgen || {}, out = f.pgOut || "";
+  const miss = new Set(st.miss || []), bad = l => miss.has(l) ? ` aria-invalid="true"` : "";
+  const req = `<span class="req" title="꼭 적어야 해요" aria-label="필수">*</span>`;
+  const sel = (id, k, opts, ph, l, def = "") => `<select id="${id}" data-form="create" data-k="${k}"${bad(l)}>${ph ? `<option value="">${ph}</option>` : ""}${opts.map(([v, t]) => `<option value="${esc(v)}" ${String(f[k] || def) === String(v) ? "selected" : ""}>${esc(t)}</option>`).join("")}</select>`;
+  const turnsV = PG_TURNS.includes(+f.pgTurns) ? f.pgTurns : String(PG_TURNS.includes(+f.maxTurns) ? +f.maxTurns : 8);
+  let h = `<div class="q wide pguide" id="pguide"><div class="pg-head"><span class="pg-title">${ic("sparkles", "sm")} AI 대화 지시문(프롬프트) <span class="opt">(선택 · 학생 화면에는 보이지 않아요)</span></span>
+    <div class="seg" role="group" aria-label="지시문 만드는 방법"><button type="button" data-a="pg-mode" data-v="gen" aria-pressed="${mode === "gen"}">항목별 설정으로 만들기</button><button type="button" data-a="pg-mode" data-v="direct" aria-pressed="${mode === "direct"}">직접 작성</button></div></div>
+    <p class="hint pg-state">${applied ? `${ic("circle-check", "sm")} 이 활동에 지시문이 적용되어 있어요(${applied.length.toLocaleString()}자). 활동을 저장하면 학생 대화에 쓰여요.${mode === "gen" ? " ‘직접 작성’에서 보고 고칠 수 있어요." : ""}` : "지시문이 없으면 지금처럼 대화 상대·인물 소개·AI용 인물 자료만으로 대화해요."}</p>`;
+  if(mode === "direct"){
+    const n = applied.length;
+    h += `<label for="c-pguide" class="sr">지시문 직접 작성</label>${ta("create", "personaGuide", {rows:14, id:"c-pguide", ph:"이미 만들어 둔 지시문(프롬프트)을 붙여 넣거나 직접 쓰세요.\n예: 너는 1866년의 흥선대원군이다. 학생이 먼저 주장하게 하고…\n(비워 두면 지시문 없이 대화해요)"})}
+      <div class="row pg-btns"><span class="small ${n > PG_MAX ? "pg-err" : "muted"}">${n.toLocaleString()} / ${PG_MAX.toLocaleString()}자</span><button class="btn sm" type="button" data-a="pg-copy" data-v="guide" ${n ? "" : "disabled"}>${ic("copy", "sm")} 프롬프트 복사</button></div>
+      <p class="hint">여기 쓴 내용은 자동으로 바뀌거나 지워지지 않아요. ‘항목별 설정으로 만들기’에서 새로 만든 지시문을 적용할 때만, 한 번 더 확인한 뒤 바뀌어요.</p></div>`;
+    return h;
+  }
+  h += `<div class="types pg-types" role="group" aria-label="활동 유형">${PG_TYPES.map(t => `<button type="button" class="tcard" data-a="pg-type" data-v="${t.k}" aria-pressed="${f.pgType === t.k}"${bad("활동 유형")}><b>${ic(t.icon)} ${esc(t.l)}</b><span>${esc(t.d)}</span></button>`).join("")}</div>
+    <div class="form-grid pg-grid">
+      <div class="q"><label for="c-pgsubj">교과${req}</label>${sel("c-pgsubj", "pgSubj", PG_SUBJ.map(x => [x, x]), "고르세요", "교과")}</div>
+      <div class="q"><label for="c-pggrade">대상 학생${req}</label>${sel("c-pggrade", "pgGrade", PG_GRADE.map(x => [x, x]), "고르세요", "대상 학생")}</div>
+      <div class="q wide"><label for="c-pgrole">가상 인물 또는 역할${req}</label><input type="text" id="c-pgrole" data-form="create" data-k="pgRole" maxlength="120" value="${esc(f.pgRole || "")}" placeholder="예: 1866년의 흥선대원군 / 기후 변화를 연구하는 과학자 / 협상 상대인 청나라 관리"${bad("가상 인물 또는 역할")}></div>
+      <div class="q wide"><label for="c-pgsit">대화 상황${req}</label><textarea id="c-pgsit" data-form="create" data-k="pgSit" rows="2" maxlength="400" placeholder="예: 병인양요 직후, 서양과 통상할지 결정해야 하는 상황"${bad("대화 상황")}>${esc(f.pgSit || "")}</textarea></div>
+      <div class="q wide"><label for="c-pggoal">학생의 학습 목표${req}</label><textarea id="c-pggoal" data-form="create" data-k="pgGoal" rows="2" maxlength="400" placeholder="예: 통상 수교 거부 정책의 배경과 한계를 당시 상황에 근거해 설명할 수 있다."${bad("학생의 학습 목표")}>${esc(f.pgGoal || "")}</textarea></div>
+      <div class="q"><label for="c-pgturns">최대 대화 횟수</label><select id="c-pgturns" data-form="create" data-k="pgTurns">${PG_TURNS.map(n => `<option value="${n}" ${String(turnsV) === String(n) ? "selected" : ""}>${n}회</option>`).join("")}</select></div>
+      <div class="q"><label for="c-pgsup">학생 지원 방식</label>${sel("c-pgsup", "pgSupport", PG_SUPPORT, "", "", "step")}</div>
+    </div>
+    ${miss.size ? `<p class="pg-err pg-miss" role="alert">먼저 채워 주세요: ${esc([...miss].join(", "))}</p>` : ""}
+    <div class="row pg-btns"><button class="btn sm wand" type="button" data-a="pg-gen" ${st.loading ? "disabled" : ""}>${ic("wand", "sm")} ${st.loading ? "프롬프트를 만드는 중…" : "프롬프트 생성하기"}</button>
+      <span class="hint" style="margin:0">${st.loading ? "Gemini가 연결돼 있으면 10~30초쯤 걸려요." : "Gemini가 연결돼 있으면 인물·상황에 맞게 다듬고, 아니면 유형별 기본 틀로 바로 만들어요. 대화는 시작되지 않아요."}</span></div>`;
+  if(out){
+    const same = !!applied && applied === out.trim();
+    h += `<div class="pg-out"><label for="c-pgout">생성된 프롬프트 <span class="opt">(${f.pgSrc === "ai" ? "Gemini가 다듬은 지시문" : "기본 틀로 만든 지시문"} · 직접 고칠 수 있어요)</span></label>${ta("create", "pgOut", {rows:16, id:"c-pgout"})}
+      <div class="row pg-btns"><button class="btn sm" type="button" data-a="pg-copy" data-v="out">${ic("copy", "sm")} 프롬프트 복사</button><button class="btn sm" type="button" data-a="pg-gen" data-v="regen" ${st.loading ? "disabled" : ""}>${ic("refresh", "sm")} 다시 생성하기</button>
+        <button class="btn sm pri" type="button" data-a="pg-apply" ${same ? "disabled" : ""}>${ic(same ? "circle-check" : "check", "sm")} ${same ? "이 활동에 적용됨" : "이 활동에 적용하기"}</button></div>
+      <p class="hint">적용하면 이 지시문과 최대 대화 횟수가 활동 설정에 들어가요. 학생 대화는 활동을 저장(공개)한 뒤 학생이 대화를 시작할 때부터 쓰여요.</p></div>`;
+  }
+  return h + `</div>`;
+}
 async function loadAiStatus(){
   if(!aiLive()){ S.aiStatus = {off:true}; renderModal(); return }
   const r = await rpcSafe("ai_key_status");
@@ -6118,6 +6448,7 @@ function viewCreate(){
       <div class="q wide"><label for="c-pabout">인물 소개 <span class="opt">(학생에게도 보여요 · AI가 이 설정대로 말해요)</span></label><input type="text" id="c-pabout" data-form="create" data-k="personaAbout" maxlength="200" value="${esc(f.personaAbout||"")}" placeholder="예: 조선의 26대 왕이자 대한제국 황제. 1897년 대한제국을 선포했다."></div>
       <div class="q wide pfacts"><label for="c-pfacts">AI용 인물 자료 <span class="opt">(학생 화면에는 보이지 않아요 · AI는 여기 적힌 사실 안에서만 구체적으로 말해요)</span></label>${ta("create","personaFacts",{rows:8, id:"c-pfacts", ph:"- 1945년 8월 15일 조선건국준비위원회(건준)를 만들어 위원장이 되었다.\n- 좌익과 우익이 함께 나라를 세워야 한다고 보았다.\n(사실·생각·성격과 기질·그때의 상황·관계·말투를 한 줄씩)"})}
         <div class="row" style="margin-top:6px;gap:8px;flex-wrap:wrap"><button class="btn sm wand" type="button" data-a="ai-persona" ${S.aiPersona?.loading ? "disabled" : ""}>${ic("wand", "sm")} ${S.aiPersona?.loading ? "초안을 만드는 중…" : "Gemini로 초안 만들기"}</button><span class="hint" style="margin:0">대화 상대·핵심 질문(장면)을 보고 확인된 사실을 정리해 줘요. 꼭 읽고 틀린 곳을 고쳐 주세요.</span></div></div>
+      ${pguideHTML(f)}
       <div class="q"><label for="c-pmax">학생 한 명이 할 수 있는 질문 수</label><input type="number" id="c-pmax" data-form="create" data-k="maxTurns" min="1" max="30" value="${esc(f.maxTurns||"8")}"></div>
       <p class="hint wide" data-x>AI는 ‘AI용 인물 자료’와 ‘자료’를 근거로 말해요. 확인된 사실을 넣을수록 지어낸 말이 줄어요. 핵심 질문에 장면(예: 1945년 8월 해방 직후)을 적으면 그 시점의 인물로 말해요. 학생 화면에는 ‘AI가 연기하는 가상 인물이에요’ 안내가 늘 함께 보여요.</p>` : ""}
     ${isNoteT ? `<div class="q"><label for="c-maxp">한 번에 올릴 수 있는 사진 수</label><input type="number" id="c-maxp" data-form="create" data-k="maxPages" min="1" max="12" value="${esc(f.maxPages||"3")}"><p class="hint">1장~12장 (기본 3장)</p></div>
@@ -6395,10 +6726,11 @@ async function act(a, b){
       f.msg = ""; saveFormsSoon();
       const st = CHAT[r.id] = {busy:true, stream:"", ctl:new AbortController(), pending:log};
       render();
-      const turns = [{role:"user", content:chatRules(r)}, ...log.slice(-20).map(x => ({role: x.role === "ai" ? "assistant" : "user", content: x.text}))];
+      const turnNo = log.filter(x => x.role === "user").length;      // 이번이 학생의 몇 번째 발언인지 (지시문이 있는 대화의 마무리 시점)
+      const turns = [{role:"user", content:chatRules(r, turnNo)}, ...log.slice(-20).map(x => ({role: x.role === "ai" ? "assistant" : "user", content: x.text}))];
       let reply = "";
       try{
-        const res = await sample(turns, {modelTier:"quick", cache:false, signal:st.ctl.signal,
+        const res = await sample(turns, {modelTier:"quick", cache:false, signal:st.ctl.signal, ...(sample === supaSample ? {turn:turnNo} : {}),
           onText: ({text}) => { st.stream = text; const el = document.getElementById("chatstream"); if(el){ el.textContent = text; const box = document.getElementById("chatbox"); if(box) box.scrollIntoView({block:"end", behavior:"smooth"}) } }});
         reply = (res.text || "").trim();
       }catch(e){
@@ -6733,6 +7065,45 @@ async function act(a, b){
       S.aiPersona = null;
       if(res.text){ F("create").personaFacts = res.text; saveFormsSoon(); toast(res.demo ? "체험 모드라 예시 틀을 넣었어요." : "인물 자료 초안을 넣었어요. 꼭 읽어 보고 틀린 곳을 고쳐 주세요.") }
       else{ toast(res.error === "empty" ? "대화 상대(인물 이름)를 먼저 적어 주세요." : (AI_ERR[res.error] || AI_ERR.ai_error)); if(res.error === "no_key" || res.error === "bad_key"){ S.modal = {type:"ai"}; S.aiStatus = undefined; loadAiStatus() } }
+      break;
+    }
+    /* ---- 가상 인물 대화 · 지시문(프롬프트) 만들기 ---- */
+    case "pg-mode": { F("create").pgMode = b.dataset.v === "direct" ? "direct" : "gen"; S.pgen = null; saveFormsSoon(); break }
+    case "pg-type": { F("create").pgType = b.dataset.v; if(S.pgen?.miss) S.pgen.miss = S.pgen.miss.filter(x => x !== "활동 유형"); saveFormsSoon(); break }
+    case "pg-gen": {
+      if(S.pgen?.loading) return;
+      const f = createForm(), g = pgInput(f), miss = pgMissing(g), regen = b.dataset.v === "regen";
+      if(miss.length){ S.pgen = {miss}; toast(`먼저 채워 주세요: ${miss.join(", ")}`); render();
+        const first = {"활동 유형":".pg-types .tcard", "교과":"#c-pgsubj", "대상 학생":"#c-pggrade", "가상 인물 또는 역할":"#c-pgrole", "대화 상황":"#c-pgsit", "학생의 학습 목표":"#c-pggoal"}[miss[0]];
+        document.querySelector(first)?.focus(); return }
+      if(f.pgOut && f.pgOut !== f.pgLast && S.pgAsk !== "regen"){ S.pgAsk = "regen"; toast("직접 고친 내용이 있어요. 한 번 더 누르면 입력 항목은 그대로 두고 새로 만들어요."); return }
+      S.pgAsk = null; S.pgen = {loading:true}; render();
+      const base = buildGuide(g);
+      const res = await aiGuide({op:"guide", type:PG_TYPES.find(t => t.k === g.type).l, subject:g.subj, grade:g.grade, role:g.role, situation:g.sit, goal:g.goal, turns:g.turns,
+        support:PG_SUPPORT.find(x => x[0] === g.support)[1], name:g.name, about:(f.personaAbout || "").trim(), question:g.q, base, regen});
+      const ai = pgValid(res.text) ? String(res.text).trim().slice(0, PG_MAX) : "";
+      const ff = F("create"), prev = ff.pgOut, text = ai || base;
+      ff.pgOut = text; ff.pgLast = text; ff.pgSrc = ai ? "ai" : "basic"; ff.pgTurns = String(g.turns); saveFormsSoon(); S.pgen = null;
+      toast(ai ? "프롬프트를 만들었어요. 꼭 읽어 보고 고친 뒤 ‘이 활동에 적용하기’를 눌러 주세요."
+        : res.demo ? "체험 모드라 유형별 기본 틀로 만들었어요."
+        : res.error === "no_key" ? "유형별 기본 틀로 만들었어요. ‘AI 연결 설정’에서 Gemini를 연결하면 인물·상황에 맞게 더 구체적으로 다듬어 줘요."
+        : res.text ? "Gemini가 열 가지 항목을 다 갖추지 못해 기본 틀로 만들었어요. 다시 생성해 볼 수 있어요."
+        : `Gemini가 답하지 못해 기본 틀로 만들었어요. (${AI_ERR[res.error] || AI_ERR.ai_error})`);
+      if(regen && !ai && prev === text) setTimeout(() => toast("기본 틀은 입력 항목이 같으면 같은 내용이 나와요. 항목을 바꾸거나 직접 고쳐 보세요."), 2600);
+      render(); document.getElementById("c-pgout")?.scrollIntoView({block:"nearest"});
+      return;
+    }
+    case "pg-copy": { const f = F("create"), t = ((b.dataset.v === "guide" ? f.personaGuide : f.pgOut) || "").trim(); if(!t) return; copyText(t, "프롬프트를 복사했어요."); return }
+    case "pg-apply": {
+      const f = createForm(), t = (f.pgOut || "").trim(), g = pgInput(f);
+      if(!t){ toast("먼저 ‘프롬프트 생성하기’를 눌러 주세요."); return }
+      if(t.length > PG_MAX){ toast(`지시문이 너무 길어요(${t.length.toLocaleString()}자). ${PG_MAX.toLocaleString()}자 이내로 줄여 주세요.`); return }
+      const cur = (f.personaGuide || "").trim();
+      if(cur && cur !== t && S.pgAsk !== "apply"){ S.pgAsk = "apply"; toast("이미 적용된(직접 쓴) 지시문이 있어요. 한 번 더 누르면 새 지시문으로 바꿔요."); return }
+      S.pgAsk = null; f.personaGuide = t; f.maxTurns = String(g.turns);
+      if(!(f.personaName || "").trim()) f.personaName = g.role.slice(0, 30);
+      saveFormsSoon();
+      toast(`이 활동에 적용했어요. 학생 질문 수도 ${g.turns}번으로 맞췄어요. 활동을 저장하면 학생 대화에 쓰여요.`);
       break;
     }
     case "ai-pick": {
@@ -7239,6 +7610,7 @@ async function act(a, b){
       if(!data.prompt && data.template === "notes") data.prompt = NOTES_PROMPT;
       if(!data.prompt && !asDraft){ toast("주제나 질문을 적어 주세요."); document.getElementById("c-prompt")?.focus(); return }
       if(!asDraft && !locked && t.stances.length && data.stances.length < 2){ toast("입장 이름을 두 개 이상 적어 주세요."); return }
+      if(data.template === "chat" && (f.personaGuide || "").trim().length > PG_MAX){ toast(`AI 대화 지시문이 너무 길어요. ${PG_MAX.toLocaleString()}자 이내로 줄여 주세요.`); F("create").pgMode = "direct"; render(); document.getElementById("c-pguide")?.focus(); return }
       if(data.template === "chat" && !asDraft && !data.persona?.name){ toast("대화 상대를 적어 주세요. 예: 고종"); document.getElementById("c-pname")?.focus(); return }
       if(!data.title) data.title = "제목 없는 활동";
       const now = Date.now(), meta = roomMeta(f);
