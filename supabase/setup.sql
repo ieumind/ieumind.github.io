@@ -1266,6 +1266,7 @@ language sql stable security definer set search_path = public as $$
 $$;
 
 -- 🎭 가상 인물 대화: 참가자도 쓸 수 있다 (질문 횟수는 참가자마다 같은 제한 + 활동 하나의 참가자 전체 600번까지)
+--   선생님 지시문(persona.guide)과 최대 질문 수도 돌려준다 → chat 함수가 지시문이 있는 활동만 지시문 규칙으로 대화
 create or replace function public.chat_begin(p_room text) returns json
 language plpgsql volatile security definer set search_path = public as $$
 declare d public.docs; v_sid uuid; v_who text; v_lim int; v_used int; v_st text; p jsonb; v_guest boolean := false;
@@ -1294,7 +1295,9 @@ begin
   update public.chat_usage set n = n + 1, updated_at = now() where room_id = p_room and who = v_who;
   return json_build_object('ok', true, 'name', coalesce(nullif(p ->> 'name', ''), '인물'), 'about', coalesce(p ->> 'about', ''), 'style', coalesce(p ->> 'style', 'persona'),
     'prompt', coalesce(d.data ->> 'prompt', ''), 'context', left(coalesce(d.data ->> 'context', ''), 6000), 'facts', left(coalesce(p ->> 'facts', ''), 4000),
-    'remaining', v_lim - v_used - 1);
+    'remaining', v_lim - v_used - 1,
+    -- 선생님이 적용한 대화 지시문(프롬프트)과 학생 한 명의 최대 질문 수 (지시문이 없으면 빈 글 → 예전과 같은 규칙으로 대화)
+    'guide', left(coalesce(p ->> 'guide', ''), 6000), 'max_turns', least(30, greatest(1, coalesce(nullif(p ->> 'maxTurns', '')::int, 8))));
 end $$;
 
 -- =====================================================================
