@@ -1041,6 +1041,262 @@ language sql stable security definer set search_path = public as $$
      order by m.created_at desc limit 50) x;
 $$;
 
+-- ---------------------------------------------------------------------
+-- 🙋 과목 없는 활동: 학생 코드 없이 이름·닉네임만 넣고 바로 참여 (임시 참가자)
+--   guest_sessions: 이 기기(익명 세션)가 어느 활동에 어떤 이름으로 들어왔는지 (활동마다 한 줄)
+--   · 과목이 없는 활동(courseId가 비어 있음)의 링크·QR로 들어온 사람만 참가자가 될 수 있고, 들어온 활동의 글·댓글·하트만 쓰고 본다
+--   · 한 기기는 이름 하나만 쓴다(여러 활동에 들어가도 같은 이름). 같은 활동에서는 이름이 겹치지 않는다
+--   · 학번처럼 숫자만 있는 낱말(3~10자리)이 들어간 이름은 못 쓴다 → 코드로 들어온 학생의 이름표(‘학번 이름’)를 흉내 낼 수 없다
+--   · 활동 하나에 참가자는 500명까지. 참가자는 읽기·쓰기·고치기만 가능하고 지울 수는 없다
+-- ---------------------------------------------------------------------
+create table if not exists public.guest_sessions (
+  uid        uuid not null,
+  room_id    text not null,
+  tid        uuid not null,               -- 활동을 만든 선생님
+  nick       text not null,               -- 화면에 보이는 이름
+  nick_key   text not null,               -- 겹침 확인용(공백 없애고 소문자)
+  created_at timestamptz not null default now(),
+  primary key (uid, room_id)
+);
+create unique index if not exists guest_sessions_room_nick on public.guest_sessions (room_id, nick_key);
+create index if not exists guest_sessions_tid_idx on public.guest_sessions (tid);
+alter table public.guest_sessions enable row level security;
+revoke all on public.guest_sessions from public, anon, authenticated;
+
+-- 과목이 없는 활동인가
+create or replace function public.room_is_free(p_room text) returns boolean
+language sql stable security definer set search_path = public as $$
+  select exists (select 1 from public.docs r
+                  where r.col = 'rooms' and r.id = p_room and coalesce(r.data ->> 'courseId', '') = '');
+$$;
+-- 지금 새로 들어올 수 있는 활동인가 (과목 없음 · 작성 중/보관 아님 · 선생님이 막히지 않음)
+create or replace function public.guest_room_ok(p_room text) returns boolean
+language sql stable security definer set search_path = public as $$
+  select exists (select 1 from public.docs r
+                  where r.col = 'rooms' and r.id = p_room
+                    and coalesce(r.data ->> 'courseId', '') = ''
+                    and coalesce(r.data ->> 'status', 'open') not in ('draft', 'archived')
+                    and public.tid_active(r.tid));
+$$;
+create or replace function public.guest_in(p_room text) returns boolean
+language sql stable security definer set search_path = public as $$
+  select exists (select 1 from public.guest_sessions g where g.uid = auth.uid() and g.room_id = p_room);
+$$;
+create or replace function public.my_guest_name(p_room text) returns text
+language sql stable security definer set search_path = public as $$
+  select g.nick from public.guest_sessions g where g.uid = auth.uid() and g.room_id = p_room;
+$$;
+-- 참가자가 쓴 글의 주인 표시 = 자기 계정 번호 (이 활동에 들어와 있을 때만)
+create or replace function public.guest_owner(p_room text) returns uuid
+language sql stable security definer set search_path = public as $$
+  select case when public.guest_in(p_room) and public.room_is_free(p_room) then auth.uid() end;
+$$;
+-- 참가자가 볼 수 있는 문서: 들어온 활동, 그 활동의 글(내 글 + 친구에게 열린 글)·댓글·하트, 내게 온 선생님 피드백과 반 전체 피드백
+create or replace function public.guest_can_read(p_col text, p_id text, p_room text, p_tid uuid, p_owner uuid, p_data jsonb) returns boolean
+language sql stable security definer set search_path = public as $$
+  select auth.uid() is not null
+     and exists (select 1 from public.guest_sessions g
+                  where g.uid = auth.uid() and g.tid = p_tid and g.room_id = case when p_col = 'rooms' then p_id else p_room end)
+     and public.room_is_free(case when p_col = 'rooms' then p_id else p_room end)
+     and public.tid_active(p_tid)
+     and case p_col
+           when 'rooms'    then true
+           when 'posts'    then p_owner = auth.uid() or public.room_open_to_peers(p_room, p_tid)
+           when 'replies'  then true
+           when 'treplies' then coalesce(p_data ->> 'kind', '') = 'class'
+                                or exists (select 1 from public.docs x
+                                            where x.col = 'posts' and x.id = p_data ->> 'postId' and x.tid = p_tid and x.owner = auth.uid())
+           else false end;
+$$;
+
+-- 활동 링크로 들어온 사람이 이름·닉네임을 넣고 참가자가 된다 (익명 세션만, 교사·코드 학생은 해당 없음)
+create or replace function public.guest_join(p_room text, p_nick text) returns json
+language plpgsql volatile security definer set search_path = public as $$
+declare r public.docs; v_have text; v_nick text; v_key text;
+begin
+  if auth.uid() is null or not coalesce((auth.jwt() ->> 'is_anonymous')::boolean, false) then
+    return json_build_object('ok', false, 'reason', 'denied'); end if;
+  select * into r from public.docs where col = 'rooms' and id = p_room limit 1;
+  if not found or not public.guest_room_ok(p_room) then return json_build_object('ok', false, 'reason', 'denied'); end if;
+  if public.my_student(r.tid) is not null then return json_build_object('ok', false, 'reason', 'student'); end if;
+  select nick into v_have from public.guest_sessions where uid = auth.uid() and room_id = p_room;       -- 이미 들어와 있으면 그대로
+  if v_have is not null then return json_build_object('ok', true, 'name', v_have); end if;
+  select nick into v_have from public.guest_sessions where uid = auth.uid() order by created_at limit 1;  -- 이 기기의 이름은 하나
+  v_nick := regexp_replace(regexp_replace(trim(coalesce(v_have, p_nick, '')), '[[:cntrl:]]', '', 'g'), '\s+', ' ', 'g');
+  if char_length(v_nick) < 1 then return json_build_object('ok', false, 'reason', 'empty'); end if;
+  if char_length(v_nick) > 20 then return json_build_object('ok', false, 'reason', 'long'); end if;
+  if exists (select 1 from unnest(string_to_array(v_nick, ' ')) as t(x) where x ~ '^[0-9]{3,10}$') then
+    return json_build_object('ok', false, 'reason', 'number'); end if;
+  v_key := lower(replace(v_nick, ' ', ''));
+  if v_key in ('선생님', '선생', 'teacher', '관리자', '익명') then return json_build_object('ok', false, 'reason', 'reserved'); end if;
+  if (select count(*) from public.guest_sessions where room_id = p_room) >= 500 then return json_build_object('ok', false, 'reason', 'full'); end if;
+  begin
+    insert into public.guest_sessions (uid, room_id, tid, nick, nick_key) values (auth.uid(), p_room, r.tid, v_nick, v_key);
+  exception when unique_violation then
+    return json_build_object('ok', false, 'reason', 'taken');
+  end;
+  return json_build_object('ok', true, 'name', v_nick);
+end $$;
+
+-- 이 기기가 들어온 활동들 [{room, nick}]
+create or replace function public.my_guests() returns json
+language sql stable security definer set search_path = public as $$
+  select coalesce(json_agg(json_build_object('room', g.room_id, 'nick', g.nick) order by g.created_at), '[]'::json)
+    from public.guest_sessions g where g.uid = auth.uid();
+$$;
+
+revoke execute on function public.room_is_free(text), public.guest_room_ok(text), public.guest_in(text), public.my_guest_name(text), public.guest_owner(text),
+  public.guest_can_read(text, text, text, uuid, uuid, jsonb), public.guest_join(text, text), public.my_guests() from public, anon;
+grant execute on function public.room_is_free(text), public.guest_room_ok(text), public.guest_in(text), public.my_guest_name(text), public.guest_owner(text),
+  public.guest_can_read(text, text, text, uuid, uuid, jsonb), public.guest_join(text, text), public.my_guests() to authenticated;
+
+-- 글을 저장할 때 서버가 채우는 ‘글 주인’: 코드로 들어온 학생이면 학생 번호, 참가자면 자기 계정 번호
+create or replace function public.docs_stamp() returns trigger
+language plpgsql security definer set search_path = public as $$
+begin
+  new.room_id := new.data ->> 'roomId';
+  new.updated_at := now();
+  if tg_op = 'INSERT' then
+    if public.is_teacher() then
+      new.tid := auth.uid();
+      new.owner := null;
+    else                                            -- 학생 글: 그 활동을 만든 교사의 것
+      new.tid := (select r.tid from public.docs r where r.col = 'rooms' and r.id = new.room_id limit 1);
+      new.owner := coalesce(public.my_student(new.tid), public.guest_owner(new.room_id));
+    end if;
+    new.created_at := now();
+  else
+    new.tid := old.tid;
+    new.owner := old.owner;
+    new.created_at := old.created_at;
+  end if;
+  return new;
+end $$;
+
+-- 규칙: 기존 학생 규칙은 그대로 두고, 참가자 규칙을 한 줄씩 더한다
+alter policy docs_read on public.docs using (
+  (public.is_teacher() and tid = auth.uid())
+  or (public.is_my_teacher(tid) and public.tid_active(tid) and (
+        col = 'config'
+     or (col = 'courses' and public.course_for_me(id, tid))
+     or (col = 'rooms' and public.course_for_me(coalesce(data ->> 'courseId', ''), tid))
+     or (col = 'posts' and (owner = public.my_student(tid) or public.room_open_to_peers(room_id, tid)))
+     or (col in ('replies', 'treplies') and public.room_for_me(room_id, tid))))
+  or public.guest_can_read(col, id, room_id, tid, owner, data)
+);
+alter policy docs_insert on public.docs with check (
+  (public.is_teacher() and tid = auth.uid())
+  or (col in ('posts', 'replies') and owner is not null and owner = public.my_student(tid) and public.tid_active(tid) and public.room_for_me(room_id, tid)
+      and data ->> 'author' = public.my_student_name(tid) and coalesce(data ->> 'kind', '') not in ('teacher', 'class'))
+  or (col in ('posts', 'replies') and owner is not null and owner = public.guest_owner(room_id) and public.tid_active(tid)
+      and data ->> 'author' = public.my_guest_name(room_id) and coalesce(data ->> 'kind', '') not in ('teacher', 'class'))
+);
+alter policy docs_update on public.docs
+  using ((public.is_teacher() and tid = auth.uid())
+         or (col in ('posts', 'replies') and owner is not null and owner = public.my_student(tid) and public.tid_active(tid))
+         or (col in ('posts', 'replies') and owner is not null and owner = public.guest_owner(room_id) and public.tid_active(tid)))
+  with check ((public.is_teacher() and tid = auth.uid())
+    or (col in ('posts', 'replies') and owner is not null and owner = public.my_student(tid) and public.tid_active(tid) and public.room_for_me(room_id, tid)
+        and data ->> 'author' = public.my_student_name(tid) and coalesce(data ->> 'kind', '') not in ('teacher', 'class'))
+    or (col in ('posts', 'replies') and owner is not null and owner = public.guest_owner(room_id) and public.tid_active(tid)
+        and data ->> 'author' = public.my_guest_name(room_id) and coalesce(data ->> 'kind', '') not in ('teacher', 'class')));
+
+-- 지금 접속한 사람이 누구인지 (참가자 정보 추가)
+--   guest_room: 이 링크의 활동에 이름만 넣고 들어올 수 있나 · guest_name: 이 활동에 들어온 내 이름 · guest_nick: 이 기기가 쓰는 이름 · ref_found: 링크가 가리키는 활동·수업을 찾았나
+create or replace function public.whoami(p_ref text default null) returns json
+language plpgsql stable security definer set search_path = public as $$
+declare t uuid; nm text; anon boolean := coalesce((auth.jwt() ->> 'is_anonymous')::boolean, false);
+        gnm text; gnick text; groom boolean := false; gtitle text; gteach text;
+begin
+  if p_ref is not null and p_ref <> '' then
+    select d.tid into t from public.docs d where d.id = p_ref and d.col in ('rooms', 'courses') limit 1;
+  end if;
+  if t is not null then
+    nm := public.my_student_name(t);
+  else
+    select case when s.school <> '' then s.school || ' ' else '' end || s.number || ' ' || s.name into nm
+      from public.student_sessions ss join public.students s on s.id = ss.student_id
+     where ss.uid = auth.uid() order by ss.created_at desc limit 1;
+  end if;
+  if anon then
+    select g.nick into gnick from public.guest_sessions g where g.uid = auth.uid() order by g.created_at limit 1;
+    if p_ref is not null and p_ref <> '' then
+      gnm := public.my_guest_name(p_ref);
+      if nm is null and public.guest_room_ok(p_ref) then
+        groom := true;
+        select r.data ->> 'title', r.data ->> 'teacherName' into gtitle, gteach from public.docs r where r.col = 'rooms' and r.id = p_ref limit 1;
+      end if;
+    end if;
+  end if;
+  return json_build_object(
+    'teacher', public.is_teacher(),
+    'admin', public.is_admin(),
+    'blocked', (not anon) and exists (select 1 from public.teachers x where x.blocked and lower(x.email) = lower(coalesce(auth.jwt() ->> 'email', ''))),
+    'email', case when anon then null else auth.jwt() ->> 'email' end,
+    'student_name', nm, 'ref_found', t is not null,
+    'guest_room', groom, 'guest_name', gnm, 'guest_nick', gnick, 'guest_title', gtitle, 'guest_teacher', gteach);
+end $$;
+
+-- 📸 학습 나눔 사진: 참가자의 폴더 이름은 자기 계정 번호 (코드 학생은 학생 번호)
+create or replace function public.my_student_id(p_room text) returns uuid
+language sql stable security definer set search_path = public as $$
+  select coalesce(public.my_student(public.room_tid(p_room)), public.guest_owner(p_room));
+$$;
+create or replace function public.note_can_read(p_name text) returns boolean
+language sql stable security definer set search_path = public as $$
+  select case when (storage.foldername(p_name))[1] is null then false else
+    (public.is_teacher() and public.room_tid((storage.foldername(p_name))[1]) = auth.uid())
+    or coalesce((storage.foldername(p_name))[2] = public.my_student(public.room_tid((storage.foldername(p_name))[1]))::text, false)
+    or coalesce((storage.foldername(p_name))[2] = public.guest_owner((storage.foldername(p_name))[1])::text, false)
+  end;
+$$;
+create or replace function public.note_can_write(p_name text) returns boolean
+language sql stable security definer set search_path = public as $$
+  select coalesce(((storage.foldername(p_name))[2] = public.my_student(public.room_tid((storage.foldername(p_name))[1]))::text
+                   or (storage.foldername(p_name))[2] = public.guest_owner((storage.foldername(p_name))[1])::text)
+                  and public.tid_active(public.room_tid((storage.foldername(p_name))[1])), false);
+$$;
+create or replace function public.note_can_read_shared(p_name text) returns boolean
+language sql stable security definer set search_path = public as $$
+  select case when (storage.foldername(p_name))[1] is null then false else
+    (public.my_student(public.room_tid((storage.foldername(p_name))[1])) is not null or public.guest_owner((storage.foldername(p_name))[1]) is not null)
+    and public.tid_active(public.room_tid((storage.foldername(p_name))[1]))
+    and public.room_open_to_peers((storage.foldername(p_name))[1], public.room_tid((storage.foldername(p_name))[1]))
+  end;
+$$;
+
+-- 🎭 가상 인물 대화: 참가자도 쓸 수 있다 (질문 횟수는 참가자마다 같은 제한 + 활동 하나의 참가자 전체 600번까지)
+create or replace function public.chat_begin(p_room text) returns json
+language plpgsql volatile security definer set search_path = public as $$
+declare d public.docs; v_sid uuid; v_who text; v_lim int; v_used int; v_st text; p jsonb; v_guest boolean := false;
+begin
+  select * into d from public.docs where col = 'rooms' and id = p_room limit 1;
+  if not found or coalesce(d.data ->> 'template', '') <> 'chat' then return json_build_object('ok', false, 'reason', 'denied'); end if;
+  p := coalesce(d.data -> 'persona', '{}'::jsonb);
+  if public.is_teacher() and d.tid = auth.uid() then
+    v_who := 'T:' || auth.uid(); v_lim := 200;
+  else
+    v_sid := public.my_student(d.tid);
+    if v_sid is null then v_sid := public.guest_owner(p_room); v_guest := v_sid is not null; end if;
+    if v_sid is null or not public.tid_active(d.tid) or not public.room_for_me(p_room, d.tid) then return json_build_object('ok', false, 'reason', 'denied'); end if;
+    v_st := coalesce(d.data ->> 'status', 'open');
+    if v_st in ('draft', 'archived', 'closed') or d.data ->> 'open' = 'false'
+       or (jsonb_typeof(d.data -> 'dueAt') = 'number' and (d.data ->> 'dueAt')::numeric <= extract(epoch from now()) * 1000) then
+      return json_build_object('ok', false, 'reason', 'closed'); end if;
+    v_who := case when v_guest then 'G:' || v_sid::text else v_sid::text end;
+    if v_guest and (select coalesce(sum(n), 0) from public.chat_usage where room_id = p_room and who like 'G:%') >= 600 then
+      return json_build_object('ok', false, 'reason', 'limit'); end if;
+    v_lim := least(30, greatest(1, coalesce(nullif(p ->> 'maxTurns', '')::int, 8))) + 2;
+  end if;
+  insert into public.chat_usage (room_id, who, n) values (p_room, v_who, 0) on conflict do nothing;
+  select n into v_used from public.chat_usage where room_id = p_room and who = v_who for update;
+  if v_used >= v_lim then return json_build_object('ok', false, 'reason', 'limit'); end if;
+  update public.chat_usage set n = n + 1, updated_at = now() where room_id = p_room and who = v_who;
+  return json_build_object('ok', true, 'name', coalesce(nullif(p ->> 'name', ''), '인물'), 'about', coalesce(p ->> 'about', ''), 'style', coalesce(p ->> 'style', 'persona'),
+    'prompt', coalesce(d.data ->> 'prompt', ''), 'context', left(coalesce(d.data ->> 'context', ''), 6000), 'facts', left(coalesce(p ->> 'facts', ''), 4000),
+    'remaining', v_lim - v_used - 1);
+end $$;
+
 -- =====================================================================
 -- 마지막으로 관리자(나)의 구글 이메일을 등록하세요 (따옴표 안을 바꿔서 실행)
 -- 다른 선생님은 등록하지 않아도 구글로 로그인하면 바로 교사가 돼요

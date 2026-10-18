@@ -492,6 +492,13 @@
 
 ## 4. 미완료 작업 / 앞으로 할 일
 
+**최근 변경 (2026-10-18c): 과목 없는 활동의 임시 참가자(guest)**
+- 과목 없는 활동 링크·QR로 들어오면 개인 코드 없이 이름·닉네임만 적고 참여한다. 과목 활동은 그대로 코드.
+- 서버: `guest_sessions(uid, room_id, tid, nick, nick_key)` + `guest_join`/`my_guests`/`guest_owner`/`guest_can_read` 등. `docs_read/insert/update`, `docs_stamp`, `whoami`, `my_student_id`, `note_can_*`, `chat_begin`에 guest 분기 추가. 모두 setup.sql 맨 끝 근처 한 구역(idempotent). 익명 로그인 허용이 필요하다.
+- 클라이언트: `guestGate`/`viewGuestGate`/`guestProbe`, act `guest-join/guest-skip/guest-code/guest-reset`, `S.guest`.
+- 한계: 기기당 이름 하나, 다른 활동에서 쓴 이름이면 “새 이름으로 시작”, 초기화하면 이전 글 수정 권한을 잃음, guest는 푸시 없음, 교사 ‘미제출’ 명단에 guest는 안 나옴.
+- 테스트: `dev/sql/guest_test.sql`(17단계), `dev/tests/t61.py`.
+
 **진행 중인 작업은 없다**(PR #15까지 병합, 작업 트리 깨끗함). 아래는 확인·후속 과제다.
 
 1. **사용자 쪽 확인 필요 (코드 변경 아님)**
