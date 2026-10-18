@@ -2155,6 +2155,7 @@ function applyHash(){
   }
   const [rid, gid] = h.split("/"), r = S.rooms.find(x => x.id === rid);   // 활동 링크: #활동id[/그룹id] (예전 링크 그대로)
   if(r){ S.view = "room"; S.roomId = r.id; if(gid && r.courseId) setMyGroup(r.courseId, gid) }
+  else if(S.mode === "supa" && !Auth.teacher && rid && !S.guestProbed?.has(rid)) guestProbe(rid);   // 아직 못 보는 활동이면 ‘이름만 넣고 들어오는 활동’인지 확인
   S.hashRoom = "";
 }
 
@@ -2173,6 +2174,7 @@ function render(){
   else if(!S.canWrite && !(S.mode === "supa" && !Auth.teacher && (S.wantTeacher || !S.name))) h += `<div class="notice"><b>보기 전용</b> · 이 계정은 글을 읽을 수만 있어요. 선생님께 참여 권한을 요청하세요.</div>`;
 
   if(S.mode === "supa" && S.wantTeacher && !Auth.teacher) h += viewTeacherLogin();
+  else if(S.mode === "supa" && !Auth.teacher && S.guestGate) h += viewGuestGate();         // 과목 없는 활동: 이름·닉네임만 넣고 들어온다
   else if(S.mode === "supa" && !Auth.teacher && !S.name) h += viewCodeGate();          // 이 선생님 반 학생으로 확인되기 전에는 활동이 보이지 않는다
   else if(S.mode !== "local" && !S.loaded.rooms) h += `<p class="who">활동을 불러오는 중…</p>`;
   else if(S.view === "present" && room() && isTeacher()) h += viewPresent(room());
@@ -2223,7 +2225,7 @@ function renderTop(){
   if(isTeacher() && S.mode === "supa" && S.isAdmin) h += `<button class="btn sm" type="button" data-a="tadmin-open">${ic("user-cog")} 교사 관리</button>`;
   if(isTeacher() && S.mode === "supa") h += `<button class="btn sm" type="button" data-a="t-logout" title="${esc(S.sbEmail)}">로그아웃</button>`;
   if(!isTeacher()){
-    if(S.name) h += `<span class="who">${esc(S.name)} · <button class="linkbtn" type="button" data-a="rename">${S.mode === "supa" ? "다른 학생으로" : "이름 바꾸기"}</button>${S.mode === "supa" && !S.preview ? ` · <button class="linkbtn" type="button" data-a="join-open" title="다른 선생님의 과목을 함께 들어요">${ic("plus", "sm")} 과목 추가</button>` : ""}</span>`;
+    if(S.name) h += `<span class="who">${esc(S.name)} · <button class="linkbtn" type="button" data-a="rename">${S.mode === "supa" ? (S.guest ? "다른 이름으로" : "다른 학생으로") : "이름 바꾸기"}</button>${S.mode === "supa" && !S.preview && !S.guest ? ` · <button class="linkbtn" type="button" data-a="join-open" title="다른 선생님의 과목을 함께 들어요">${ic("plus", "sm")} 과목 추가</button>` : ""}</span>`;
     const rr = S.view === "room" ? room() : null, gcid = rr?._gid ? rr.courseId : (S.view === "home" ? S.course : "");
     if(gcid && myGroup(gcid) && myGroup(gcid) !== "_none") h += `<span class="who">${esc(groupName(gcid, myGroup(gcid)))}${groupByTeacher(courseOf(gcid)) ? "" : ` · <button class="linkbtn" type="button" data-a="regroup" data-c="${esc(gcid)}">그룹 바꾸기</button>`}</span>`;
     if(S.name) h += `<button class="btn sm" type="button" data-a="mine">${ic("notebook")} 내 생각 기록</button>`;   // 로그인(코드 확인) 전에는 보이지 않는다
@@ -2331,7 +2333,7 @@ function viewHomeStudent(all){
   return viewDashList(groups, all);
 }
 function pushBarHTML(){
-  if(S.mode !== "supa" || S.preview || lsGet("nonjae.pushhide")) return "";
+  if(S.mode !== "supa" || S.preview || S.guest || lsGet("nonjae.pushhide")) return "";   // 이름만으로 참여 중이면 알림 안내를 보이지 않는다(알림은 과목 활동에만 가요)
   const ios = deviceOS() === "ios" && /iPhone|iPad|iPod|Macintosh/.test(navigator.userAgent);
   if(S.push === "on") return "";
   if(!pushSupported()){
@@ -4112,7 +4114,7 @@ function teacherCard(r, p, ps, nav){
    ========================================================= */
 /* 🔄 새 버전 알림: 배포 때마다 APP_VERSION과 version.json의 v를 같은 값으로 올린다.
    GitHub Pages는 화면을 10분쯤 기억하므로, 옛 화면이면 아래쪽에 ‘새로고침’ 띠를 띄우고 주소를 바꿔 새로 받는다 */
-const APP_VERSION = "2026-10-18b";
+const APP_VERSION = "2026-10-18c";
 async function checkVersion(){
   if(!/^https?:$/.test(location.protocol)) return;
   try{
@@ -4158,14 +4160,26 @@ async function initSupa(){
     const meta = session?.user?.user_metadata || {};
     S.sbName = who.teacher ? (meta.display_name || meta.full_name || meta.name || "") : "";   // 선생님이 정한 이름이 먼저 (없으면 구글 이름)
     if(who.teacher && !meta.display_name && !lsGet("nonjae.tname.later")) S.modal = {type:"tname", first:true};   // 처음 로그인: 학생에게 보일 이름 정하기
-    if(!who.teacher){ S.name = who.student_name || ""; lsSet("nonjae.name", S.name)
+    if(!who.teacher){
+      let gname = who.guest_name || "";                              // 🙋 과목 없는 활동: 코드 없이 이름·닉네임만으로 참여
+      S.guestProbed = new Set(ref ? [ref] : []);
+      if(who.guest_room && !gname){
+        const info = {room:ref, title:who.guest_title || "", teacher:who.guest_teacher || ""};
+        if(who.guest_nick){                                           // 이 기기가 이미 쓰는 이름이 있으면 묻지 않고 그 이름으로 들어간다
+          const j = (await rpcSafe("guest_join", {p_room:ref, p_nick:who.guest_nick})).data;
+          if(j?.ok) gname = j.name; else S.guestGate = {...info, nick:who.guest_nick, err:j?.reason || "denied"};
+        }else S.guestGate = info;
+      }
+      S.name = who.student_name || gname || (!who.ref_found && who.guest_nick) || "";
+      S.guest = !who.student_name && !!S.name && (!!gname || !who.ref_found);
+      lsSet("nonjae.name", S.name)
       if(S.name){ const ms = await rpcSafe("my_students");                // 연결된 선생님마다 내 학생 번호·이름표
         S.idents = Array.isArray(ms.data) ? ms.data : [];
         if(!S.idents.length){ const ids = await rpcSafe("my_student_ids"); S.mySids = new Set(Array.isArray(ids.data) ? ids.data : []) }   // 예전 서버
         else S.mySids = new Set(S.idents.map(x => x.sid));
         S.myNames = new Set(S.idents.map(x => x.name)); setTimeout(loadInbox, 0) }
       if(lsGet("nonjae.joined")){ lsSet("nonjae.joined", ""); setTimeout(() => toast("새 선생님의 과목을 추가했어요. ‘내 과목’에서 볼 수 있어요."), 600) } }   // 선생님이 정한 그룹을 알아보려고 내 학생 번호(들)
-    S.canWrite = !!who.teacher || !!who.student_name;
+    S.canWrite = !!who.teacher || !!S.name;
     S.db = supaDB(SB);
     ["rooms","posts","replies","treplies","config","courses"].forEach(sub);
     if(Auth.teacher) ["tnotes","ttemplates"].forEach(sub);
@@ -4240,7 +4254,7 @@ const WELCOME_FEATURES = /*TI:LIST*/[
   ["layout-board","우리 반 게시판","학생 생각이 패들렛처럼 카드로 모여요. 내 생각을 올리기 전에는 친구 글이 흐리게 가려져요."],
   ["camera","학습 나눔","필기·마인드맵 등 정리한 결과를 사진으로 올려요. 미제출자 확인·재제출 요청, 원하면 친구끼리 나눠 보기도."],
   ["trending-up","생각의 변화","처음 생각 → 친구 생각 → 지금 생각. 학생마다 생각이 어떻게 자랐는지 한눈에 보여요."],
-  ["topology-star","로그인 없는 학생 참여","학생은 학번·이름·개인 코드로 들어와요. 링크나 QR만 나눠 주면 되고, 휴대폰에 앱처럼 설치할 수 있어요."],
+  ["topology-star","로그인 없는 학생 참여","학생은 학번·이름·개인 코드로 들어오고, 과목 없는 활동은 이름·닉네임만 적어도 돼요. 링크나 QR만 나눠 주면 되고, 휴대폰에 앱처럼 설치할 수 있어요."],
   ["alarm","수업 운영 도구","마감 시각이 되면 자동 마감, 수업에서 함께 보기, 피드백, 결과 내보내기(CSV)."],
   ["wand","AI 질문 추천","키워드만 넣으면 AI가 토론 논제와 탐구 질문을 여러 개 제안해요. 마음에 드는 걸 눌러 고쳐 쓰면 끝."],
   ["bell-ringing","과목 대시보드 · 알림","과목별로 활동과 공지를 모아 보여 줘요. 공지나 새 활동을 올리면 학생 휴대폰에 알림이 가요."]];
@@ -4309,6 +4323,50 @@ function viewCodeGate(){
     <div id="stage" class="gate-form">${codeForm()}</div></section>
     <p class="muted small" style="margin-top:18px">선생님이신가요? <button class="linkbtn" type="button" data-a="t-start">교사로 시작하기 ${ic("arrow-right", "sm")}</button></p>
     <p class="muted small" style="margin-top:6px"><a href="privacy.html" target="_blank" rel="noopener">개인정보처리방침</a> · <a href="terms.html" target="_blank" rel="noopener">이용약관</a></p>`;
+}
+/* 🙋 과목 없는 활동 링크로 들어온 학생: 개인 코드 없이 이름·닉네임만 넣고 바로 참여 */
+const GUEST_ERR = {empty:"이름이나 닉네임을 적어 주세요.", long:"20자 안으로 적어 주세요.", number:"숫자만 있는 낱말(예: 학번)은 넣을 수 없어요. 이름이나 닉네임만 적어 주세요.",
+  reserved:"이 이름은 쓸 수 없어요. 다른 이름이나 닉네임을 써 주세요.", taken:"이 활동에서 이미 쓰고 있는 이름이에요. 다른 이름이나 닉네임을 써 주세요.",
+  full:"이 활동은 참가 인원이 가득 찼어요. 선생님께 알려 주세요.", student:"이미 이 선생님의 학생으로 확인된 기기예요. 화면을 새로고침해 보세요.",
+  denied:"지금은 이 활동에 들어갈 수 없어요. 선생님께 활동이 열려 있는지 물어봐 주세요."};
+function guestForm(){
+  const g = S.guestGate || {}, msg = GUEST_ERR[g.err] || "";
+  if(g.nick && g.err === "taken")                                      // 이 기기가 쓰던 이름을 이 활동의 다른 친구가 이미 쓰고 있을 때
+    return `<div class="card"><p><b>이 기기에서 쓰던 이름 ‘${esc(g.nick)}’을(를) 이 활동의 다른 친구가 이미 쓰고 있어요.</b></p>
+      <p class="hint" style="margin-top:8px">한 기기는 이름 하나만 써요. 새 이름으로 시작하려면 아래 버튼을 눌러 이 기기를 처음부터 다시 시작해 주세요.</p>
+      <div class="foot"><span></span><button class="btn pri" type="button" data-a="guest-reset">새 이름으로 시작하기</button></div>
+      ${S.name ? `<p class="muted small" style="margin-top:10px"><button class="linkbtn" type="button" data-a="guest-skip">${S.guest ? "활동 목록으로" : "내 과목으로"} 돌아가기</button></p>` : ""}</div>`;
+  return `<div class="card"><p><b>이름이나 닉네임을 적어 주세요.</b> 개인 코드는 필요 없어요.</p>
+    <div class="form-grid" style="margin-top:10px"><div class="q wide"><label for="g-nick">이름 · 닉네임</label>
+      <input type="text" id="g-nick" maxlength="20" autocomplete="off" placeholder="예: 김지우 또는 지우" value="${esc(g.typed || g.nick || "")}"></div></div>
+    ${msg ? `<p class="notice" role="alert" style="margin-top:10px">${msg}</p>` : ""}
+    <p class="hint">친구와 선생님에게 이 이름으로 보여요. 이 기기가 기억해서 다음부터는 묻지 않아요.</p>
+    <div class="foot"><span></span><button class="btn pri" type="button" data-a="guest-join">시작하기</button></div>
+    <p class="muted small" style="margin-top:10px">선생님께 개인 코드를 받았나요? <button class="linkbtn" type="button" data-a="guest-code">코드로 들어가기</button>${S.name ? ` · <button class="linkbtn" type="button" data-a="guest-skip">${S.guest ? "활동 목록으로" : "내 과목으로"} 돌아가기</button>` : ""}</p></div>`;
+}
+function viewGuestGate(){
+  const g = S.guestGate || {};
+  return `<section class="gate"><div class="gate-hero"><div class="gate-logo" aria-hidden="true">${ic("bubble", "lg")}</div><div class="eyebrow">생각이음${g.teacher ? ` · ${esc(g.teacher)} 선생님` : " · 학생"}</div>
+      <h1>${g.title ? esc(g.title) : "생각을 잇는 교실에<br>오신 걸 환영해요!"}</h1>
+      <p>${g.title ? "선생님이 열어 둔 활동이에요. " : ""}개인 코드 없이 <b>이름이나 닉네임</b>만 적으면 바로 시작해요.</p>
+      <ol class="gate-steps"><li><b>1</b><span>이름 적기</span></li><li><b>2</b><span>생각 쓰기</span></li><li><b>3</b><span>친구 생각 만나기</span></li></ol></div>
+    <div id="stage" class="gate-form">${guestForm()}</div></section>
+    <p class="muted small" style="margin-top:18px">선생님이신가요? <button class="linkbtn" type="button" data-a="t-start">교사로 시작하기 ${ic("arrow-right", "sm")}</button></p>
+    <p class="muted small" style="margin-top:6px"><a href="privacy.html" target="_blank" rel="noopener">개인정보처리방침</a> · <a href="terms.html" target="_blank" rel="noopener">이용약관</a></p>`;
+}
+/* 이미 앱을 연 채로 과목 없는 활동 링크가 새로 열렸을 때(해시 변경): 들어갈 수 있는 활동인지 서버에 묻는다 */
+async function guestProbe(rid){
+  (S.guestProbed = S.guestProbed || new Set()).add(rid);
+  const who = (await rpcSafe("whoami", {p_ref: rid})).data || {};
+  if(!who.guest_room) return;
+  const info = {room:rid, title:who.guest_title || "", teacher:who.guest_teacher || ""};
+  let ok = !!who.guest_name;
+  if(!ok && who.guest_nick){
+    const j = (await rpcSafe("guest_join", {p_room:rid, p_nick:who.guest_nick})).data; ok = !!j?.ok;
+    if(!ok) S.guestGate = {...info, nick:who.guest_nick, err:j?.reason || "denied"};
+  }else if(!ok) S.guestGate = info;
+  if(ok){ location.reload(); return }                                  // 들어온 활동을 새로 불러온다 (주소의 활동 링크는 그대로)
+  render();
 }
 /* 관리자: 가입한 교사 목록 · 막기/풀기 */
 async function loadTadmin(){
@@ -5489,12 +5547,17 @@ function renderModal(){
     <p class="hint">이름만 적어 주세요. 학생의 과목 카드에 ‘${esc(S.sbName || "○○○")} 선생님’처럼 ‘선생님’이 저절로 붙어요. 바꾸면 지금까지 만든 과목·활동에도 함께 바뀌어요. 언제든 인사말 옆 ‘이름 바꾸기’로 다시 바꿀 수 있어요.</p>
     <div class="row end"><button class="btn" type="button" data-a="${m.first ? "tname-later" : "modal-close"}">${m.first ? "나중에" : "취소"}</button><button class="btn pri" type="button" data-a="tname-save">저장</button></div>` }
   else if(m.type === "join"){ h = joinHTML(m) }
+  else if(m.type === "gswitch"){ h = `<h3>${ic("user")} 다른 이름으로 시작할까요?</h3>
+    <p class="small">이 기기에서 쓰던 이름 <b>${esc(S.name)}</b>을(를) 지우고 처음부터 새로 시작해요.</p>
+    <p class="hint">지금까지 쓴 글은 선생님에게는 그대로 남지만, 이 기기에서는 더 이상 고칠 수 없어요.</p>
+    <div class="row end"><button class="btn" type="button" data-a="modal-close">취소</button><button class="btn danger" type="button" data-a="guest-reset">새 이름으로 시작</button></div>` }
   else if(m.type === "qr"){
     const kind = m.kind || "room", link = linkFor(kind, m.id, m.g);
     const c = kind === "course" ? courseOf(m.id) : null, r = kind === "room" ? S.rooms.find(x=>x.id===m.id) : null;
     const cid = c ? c.id : r?.courseId, gids = c ? groupsOf(c).map(g => g.id) : asgIds(r);
     const title = c ? `${c.title} 과목 참여` : `오늘의 활동 참여 · ${r.title}`;
     h = `<h3>${ic("qrcode")} ${kind === "course" ? "과목 QR" : "활동 QR"}</h3><p><b>${esc(title)}</b>${m.g ? ` · ${esc(groupName(cid, m.g))}` : ""}</p>
+      ${kind === "room" && !cid && S.mode === "supa" ? `<p class="small muted">과목이 없는 활동이라 학생은 개인 코드 없이 이름·닉네임만 적고 들어와요.</p>` : ""}
       ${gids.length ? `<div class="gsel" style="margin-top:0" role="group" aria-label="그룹"><span>그룹</span><button type="button" data-a="qr" data-kind="${kind}" data-id="${esc(m.id)}" aria-pressed="${!m.g}">${kind === "course" ? "그룹 고르기" : "모든 그룹"}</button>${gids.map(g => `<button type="button" data-a="qr" data-kind="${kind}" data-id="${esc(m.id)}" data-g="${esc(g)}" aria-pressed="${m.g===g}">${esc(groupName(cid, g))}</button>`).join("")}</div>
         <p class="small muted">${m.g ? "이 그룹 학생은 그룹을 고르지 않고 바로 들어와요." : "학생이 처음 들어올 때 한 번 그룹을 골라요."}</p>` : ""}
       <div id="qrbox">QR 코드를 만드는 중…</div><p class="linkline">${esc(link)}</p>
@@ -6091,6 +6154,7 @@ function viewCreate(){
         <div class="cpick" role="group" aria-label="과목">${list.map(x => `<button type="button" class="cchip" data-a="c-course" data-v="${esc(x.id)}" aria-pressed="${sel.includes(x.id)}" ${lockC ? "disabled" : ""}>${courseIcon(x, "sm")} ${esc(x.title)}${x.archived ? " (보관)" : ""}</button>`).join("")}
           <button type="button" class="cchip none" data-a="c-course" data-v="" aria-pressed="${!sel.length}" ${lockC ? "disabled" : ""}>과목 없이 (링크 하나로 사용)</button></div>
         ${lockC ? `<p class="hint">학생 응답이 있어 과목은 바꿀 수 없어요.</p>` : sel.length > 1 ? `<p class="hint">${ic("check", "sm")} ${sel.length}개 과목을 골랐어요. 저장하면 과목마다 같은 활동이 만들어지고, 결과는 과목별로 따로 모여요.</p>` : ""}</div>` : ""}
+      ${!sel.length && S.mode === "supa" ? `<p class="hint" style="margin-top:6px">${ic("users", "sm")} 과목 없이 만들면 학생이 링크·QR로 들어와 <b>개인 코드 없이 이름이나 닉네임만 적고</b> 바로 참여해요. (개인 코드로 들어온 학생은 그대로 학번·이름으로 보여요.)</p>` : ""}
       <div class="form-grid" style="margin-top:12px"><div class="q"><label for="c-due">마감 <span class="opt">(선택)</span></label><input type="datetime-local" id="c-due" data-form="create" data-k="dueAt" value="${esc(f.dueAt||"")}">
         <p class="hint">이 시각에 저절로 마감돼요.${f.dueAt ? ` <button class="linkbtn" type="button" data-a="due-clear">지우기</button>` : ""}</p></div></div>
       ${sel.map(cid => gschedHTML(courseOf(cid), f, usedG)).join("")}</div>` })()}
@@ -6243,6 +6307,7 @@ function refreshWriteStatus(){
   revealFields(r);
 }
 document.addEventListener("keydown", e => { if(e.key==="Enter" && !e.isComposing && (e.target.id==="f-name" && S.mode !== "supa" || e.target.id==="f-code")){ e.preventDefault(); act("setname") } });
+document.addEventListener("keydown", e => { if(e.key==="Enter" && !e.isComposing && e.target.id==="g-nick"){ e.preventDefault(); act("guest-join", document.querySelector('[data-a="guest-join"]')) } });   // 이름·닉네임 칸에서 Enter
 document.addEventListener("keydown", e => {                       // 가상 인물 대화: Enter로 보내기, Shift+Enter는 줄바꿈 (한글 입력 중에는 보내지 않음)
   if(e.key !== "Enter" || e.shiftKey || e.isComposing || e.keyCode === 229) return;
   if(!(e.target.dataset?.form || "").startsWith("chat:")) return;
@@ -6387,8 +6452,21 @@ async function act(a, b){
 
     /* ---- 이름 ---- */
     case "rename":
+      if(S.mode === "supa" && S.guest){ S.modal = {type:"gswitch"}; break }            // 이름만으로 참여 중이면 한 번 더 확인 (지난 글을 이 기기에서 못 고치게 되므로)
       if(S.mode === "supa"){ lsSet("nonjae.name", ""); await SB.auth.signOut(); location.reload(); return }   // 다른 학생으로: 이 기기의 연결을 끊는다
       S.name = ""; lsSet("nonjae.name",""); S.form = {}; S.step = {}; if(S.view!=="room") S.view = "mine"; break;
+    case "guest-reset": lsSet("nonjae.name", ""); await SB.auth.signOut(); location.reload(); return;   // 새 이름으로 시작: 이 기기의 연결을 끊는다
+    case "guest-skip": S.guestGate = null; break;
+    case "guest-code": S.guestGate = null; if(S.name) S.modal = {type:"join"}; break;      // 개인 코드를 받은 학생은 코드로 들어간다
+    case "guest-join": {
+      const g = S.guestGate; if(!g?.room) return;
+      const nick = (document.getElementById("g-nick")?.value || "").trim().replace(/\s+/g, " ");
+      if(!nick){ S.guestGate = {...g, typed:"", err:"empty"}; break }
+      if(b) b.disabled = true;
+      const res = await rpcSafe("guest_join", {p_room:g.room, p_nick:nick});
+      if(res.error || !res.data?.ok){ S.guestGate = {...g, nick:"", typed:nick, err:res.data?.reason || "denied"}; break }
+      lsSet("nonjae.name", res.data.name); location.reload(); return;                   // 들어온 활동을 새로 불러온다
+    }
     case "join-open": S.modal = {type:"join"}; break;
     case "note-share": { const v = b.dataset.v === "after" ? "after" : "teacher"; if(!r || r.reveal === v) break;
       const ok = await write(db => db.doc("rooms/" + r.id).update({reveal:v, updatedAt:Date.now()}), () => { r.reveal = v });

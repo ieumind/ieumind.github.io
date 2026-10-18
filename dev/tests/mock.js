@@ -20,8 +20,18 @@
   const courseOk = (cid, t) => { const c = cid && D.docs["courses/"+cid]; if(!c || !Array.isArray(c.data.members)) return true; return c.data.members.includes(sidFor(t || tidOf(c))) };
   const roomOk = rid => { const r = D.docs["rooms/"+rid]; return !r || courseOk(r.data.courseId, tidOf(r)) };
   const canRead0 = r => isT ? tidOf(r)===uid : !!sidFor(tidOf(r)) && (["config","treplies"].includes(r.col) || (r.col==="courses" && courseOk(r.id)) || (r.col==="rooms" && courseOk(r.data.courseId)) || (r.col==="posts" && (mySids().includes(r.owner) || ((D.docs["rooms/"+r.data.roomId]?.data?.reveal||"after")!=="teacher" && roomOk(r.data.roomId)))) || (r.col==="replies" && roomOk(r.data.roomId)));
-  const canRead = r => canRead0(r);
-  const canWrite = (r) => isT ? tidOf(r)===uid : (["posts","replies"].includes(r.col) && !!sidFor(tidOf(r)) && r.data.author===nameFor(tidOf(r)) && roomOk(r.data.roomId) && !["teacher","class"].includes(r.data.kind||""));
+  /* 🙋 임시 참가자(과목 없는 활동에 이름·닉네임만 넣고 참여): D.guests = [{uid, room, tid, nick}] */
+  const gList = () => D.guests || [];
+  const gIn = rid => gList().some(g => g.uid===uid && g.room===rid);
+  const gNick = rid => gList().find(g => g.uid===uid && g.room===rid)?.nick;
+  const roomFree = rid => { const r = D.docs["rooms/"+rid]; return !!r && !(r.data.courseId||""); };
+  const guestRead = r => { if(isT) return false; const rid = r.col==="rooms" ? r.id : r.data.roomId; if(!rid || !gIn(rid) || !roomFree(rid)) return false;
+    if(r.col==="rooms" || r.col==="replies") return true;
+    if(r.col==="posts") return r.owner===uid || (D.docs["rooms/"+rid]?.data?.reveal||"after")!=="teacher";
+    if(r.col==="treplies") return r.data.kind==="class" || D.docs["posts/"+r.data.postId]?.owner===uid; return false };
+  const guestWrite = r => !isT && ["posts","replies"].includes(r.col) && !!r.data.roomId && gIn(r.data.roomId) && roomFree(r.data.roomId) && r.data.author===gNick(r.data.roomId) && !["teacher","class"].includes(r.data.kind||"");
+  const canRead = r => canRead0(r) || guestRead(r);
+  const canWrite = (r) => isT ? tidOf(r)===uid : guestWrite(r) || (["posts","replies"].includes(r.col) && !!sidFor(tidOf(r)) && r.data.author===nameFor(tidOf(r)) && roomOk(r.data.roomId) && !["teacher","class"].includes(r.data.kind||""));
   const deny = () => ({data:null, error:{message:"new row violates row-level security policy"}});
   function qb(table){
     const st={table, filters:[], op:"select", rng:null};
@@ -32,8 +42,8 @@
         if(st.op==="upsert"||st.op==="insert"){ const k=st.row.col+"/"+st.row.id, ex=D.docs[k];
           if(ex && st.op==="insert") return {error:{message:"duplicate"}};
           const rt = isT ? uid : tidOf(D.docs["rooms/"+(st.row.data||{}).roomId]);
-          const row={...st.row, tid: ex ? tidOf(ex) : rt, owner: ex ? ex.owner : (isT?null:sidFor(rt)||null)};
-          if(ex && !isT && !mySids().includes(ex.owner)) return deny();
+          const row={...st.row, tid: ex ? tidOf(ex) : rt, owner: ex ? ex.owner : (isT?null:sidFor(rt)||((st.row.data||{}).roomId && gIn((st.row.data||{}).roomId) ? uid : null))};
+          if(ex && !isT && !mySids().includes(ex.owner) && ex.owner!==uid) return deny();
           if(!canWrite(row)) return deny();
           D.docs[k]=row; save(); notify(ex?"UPDATE":"INSERT",row); return {data:null,error:null} }
         if(st.op==="delete"){ if(!isT) return {data:null,error:null}; const [c,i]=[st.filters.find(f=>f[0]==="col")[1],st.filters.find(f=>f[0]==="id")[1]]; delete D.docs[c+"/"+i]; save(); notify("DELETE",{col:c,id:i}); return {error:null} }
@@ -59,7 +69,19 @@
     rpc: (fn, p) => { const pr = rpcImpl(fn, p); return {then:(a,b) => pr.then(a,b)} },   // 실제 supabase-js처럼 .catch 없음
     rpcImpl_: 0,
     _rpc: async (fn, p) => { await new Promise(r=>setTimeout(r,5)); D=load(); window.__sbLog.push(fn);
-      if(fn==="whoami") return {data:{teacher:isT, admin:isT, blocked:false, email:isT?(uid==="T2"?"t2@school.kr":"t@school.kr"):null, student_name: isT?null:myName()}};
+      if(fn==="whoami"){ const ref=p&&p.p_ref, rr=ref&&D.docs["rooms/"+ref], coded=!!rr && !!sidFor(tidOf(rr)), fr=!isT && !!rr && !(rr.data.courseId||"") && !["draft","archived"].includes(rr.data.status||"open") && !coded;
+        return {data:{teacher:isT, admin:isT, blocked:false, email:isT?(uid==="T2"?"t2@school.kr":"t@school.kr"):null, student_name: isT?null:myName(),
+          ref_found: !!(ref && (rr || D.docs["courses/"+ref])), guest_room: fr, guest_name: ref&&!isT ? (gNick(ref)||null) : null, guest_nick: isT ? null : (gList().find(g=>g.uid===uid)?.nick||null), guest_title: fr ? rr.data.title : null, guest_teacher: fr ? (rr.data.teacherName||null) : null}} }
+      if(fn==="my_guests") return {data: isT ? [] : gList().filter(g=>g.uid===uid).map(g=>({room:g.room, nick:g.nick})), error:null};
+      if(fn==="guest_join"){ const rr=D.docs["rooms/"+p.p_room], bad=r=>({data:{ok:false,reason:r},error:null});
+        if(isT || !rr || (rr.data.courseId||"") || ["draft","archived"].includes(rr.data.status||"open")) return bad("denied");
+        if(sidFor(tidOf(rr))) return bad("student");
+        const mine=gList().find(g=>g.uid===uid && g.room===p.p_room); if(mine) return {data:{ok:true,name:mine.nick},error:null};
+        const dev=gList().find(g=>g.uid===uid)?.nick, nick=(dev||p.p_nick||"").trim().replace(/\s+/g," ");
+        if(!nick) return bad("empty"); if(nick.length>20) return bad("long"); if(nick.split(" ").some(x=>/^\d{3,10}$/.test(x))) return bad("number");
+        const key=nick.replace(/ /g,"").toLowerCase(); if(["선생님","선생","teacher","관리자","익명"].includes(key)) return bad("reserved");
+        if(gList().filter(g=>g.room===p.p_room).some(g=>g.nick.replace(/ /g,"").toLowerCase()===key)) return bad("taken");
+        D.guests=[...gList(), {uid, room:p.p_room, tid:tidOf(rr), nick}]; save(); window.__sbLog.push("guest_join:"+nick); return {data:{ok:true,name:nick},error:null} }
       if(fn==="teacher_checkin") return {data:null,error:null};
       if(fn==="ai_key_status"){ const k=localStorage.getItem("__aikey"); return {data:{teacher:isT, has:!!k && isT, tail:k?k.slice(-4):null, model:k?"gemini-3.5-flash-lite":null}} }
       if(fn==="ai_key_set"){ if(!isT) return {data:{ok:false,reason:"denied"}}; const k=(p.p_key||"").trim(); if(!k){ localStorage.removeItem("__aikey"); return {data:{ok:true,has:false}} } if(!/^[A-Za-z0-9_.-]{20,200}$/.test(k)) return {data:{ok:false,reason:"format"}}; localStorage.setItem("__aikey",k); return {data:{ok:true,has:true,tail:k.slice(-4)}} }
@@ -87,8 +109,8 @@
       if(fn==="admin_list_teachers"){ const bl=JSON.parse(localStorage.getItem("__tblock")||"{}"); return {data:[{email:"t@school.kr",name:"이태형",first_at:"2026-10-11T05:29:00Z",last_at:new Date().toISOString(),blocked:false,admin:true,rooms:3,students:30,photos:42,photo_mb:11.3},{email:"new@example.com",name:"새선생",first_at:"2026-10-11T07:00:00Z",last_at:"2026-10-11T07:10:00Z",blocked:!!bl["new@example.com"],admin:false,rooms:1,students:2,photos:3,photo_mb:0.8}],error:null} }
       if(fn==="admin_set_blocked"){ const bl=JSON.parse(localStorage.getItem("__tblock")||"{}"); bl[p.p_email]=p.p_blocked; localStorage.setItem("__tblock",JSON.stringify(bl)); window.__sbLog.push("block:"+p.p_email+":"+p.p_blocked); return {data:null,error:null} }
       if(fn==="claim_student"){ const s=D.students.find(s=>s.number===p.p_number.trim() && s.name.replace(/ /g,"")===p.p_name.replace(/ /g,"") && s.code.toUpperCase()===p.p_code.trim().toUpperCase()); if(!s) return {data:null}; D.sess2=D.sess2||{}; D.sess2[uid]={...sess(), [tidOf(s)]:s.id}; D.sessions[uid]=s.id; save(); return {data:{id:s.id,name:(s.school ? s.school+" " : "")+s.number+" "+s.name}} }
-      if(fn==="my_student_id") return {data: isT ? null : (D.sessions[uid]||null)};
-      if(fn==="doc_merge"){ const k=p.p_col+"/"+p.p_id, ex=D.docs[k]; if(!ex) return {error:null}; const row={...ex,data:{...ex.data,...p.p_patch}}; if(!isT && !mySids().includes(ex.owner)) return {error:null}; if(!canWrite(row)) return deny(); D.docs[k]=row; save(); notify("UPDATE",row); return {error:null} }
+      if(fn==="my_student_id") return {data: isT ? null : (D.sessions[uid] || (gIn(p.p_room) ? uid : null))};
+      if(fn==="doc_merge"){ const k=p.p_col+"/"+p.p_id, ex=D.docs[k]; if(!ex) return {error:null}; const row={...ex,data:{...ex.data,...p.p_patch}}; if(!isT && !mySids().includes(ex.owner) && ex.owner!==uid) return {error:null}; if(!canWrite(row)) return deny(); D.docs[k]=row; save(); notify("UPDATE",row); return {error:null} }
     },
     functions:{ invoke: async (name, {body}) => { await new Promise(r=>setTimeout(r,20)); if(name==="suggest"){ window.__sbLog.push("suggest:"+JSON.stringify(body)); const k=localStorage.getItem("__aikey"); if(!isT) return {data:{error:"denied"},error:null}; if(!k) return {data:{error:"no_key"},error:null}; if(k.startsWith("BAD")) return {data:{error:"bad_key"},error:null}; if(body.test) return {data:{ok:true,model:"gemini-3.5-flash-lite"},error:null};
         if(body.op==="persona") return {data:{text:"[생애와 활동]\n- "+body.name+" 테스트 사실 (장면: "+(body.scene||"")+")\n[말투]\n- 테스트 말투", model:"gemini-3.5-flash-lite"},error:null};
@@ -105,7 +127,7 @@
     storage:{ from:(bucket)=> bucket==="materials" ? ({
       upload: async (path, blob) => { if(!isT) return {error:{message:"denied"}}; const d = await new Promise(ok=>{const fr=new FileReader(); fr.onload=()=>ok(fr.result); fr.readAsDataURL(blob)}); const st=JSON.parse(localStorage.getItem("__sbstore")||"{}"); st["m/"+path]=d; localStorage.setItem("__sbstore",JSON.stringify(st)); window.__sbLog.push("mupload:"+path); return {data:{path},error:null} },
       getPublicUrl: (path) => ({data:{publicUrl: JSON.parse(localStorage.getItem("__sbstore")||"{}")["m/"+path]}}) }) : ({
-      upload: async (path, blob, o) => { const sid=path.split("/")[1]; if(isT || !mySids().includes(sid)) return {error:{message:"new row violates row-level security policy"}};
+      upload: async (path, blob, o) => { const sid=path.split("/")[1]; if(isT || !(mySids().includes(sid) || (sid===uid && gIn(path.split("/")[0])))) return {error:{message:"new row violates row-level security policy"}};
         const d = await new Promise(ok=>{const fr=new FileReader(); fr.onload=()=>ok(fr.result); fr.readAsDataURL(blob)});
         const st=JSON.parse(localStorage.getItem("__sbstore")||"{}"); if(st[path]) return {error:{message:"exists"}}; st[path]=d; localStorage.setItem("__sbstore",JSON.stringify(st)); window.__sbLog.push("upload:"+path); return {data:{path},error:null} },
       createSignedUrls: async (paths) => { const st=JSON.parse(localStorage.getItem("__sbstore")||"{}"); window.__sbLog.push("sign:"+paths.length);
