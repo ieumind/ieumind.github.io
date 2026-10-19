@@ -879,6 +879,10 @@ a.autolink{color:var(--accent);text-decoration:underline;text-underline-offset:2
 .ncard.none{border-style:dashed;background:transparent}
 .ncard.redo{border-color:var(--warn)}
 .ncard-h{display:flex;flex-wrap:wrap;align-items:center;gap:6px}
+.nudge{display:flex;flex-wrap:wrap;align-items:center;gap:6px 8px;margin:10px 0}
+.ncheck{display:inline-flex;align-items:center;justify-content:center;min-width:28px;min-height:28px;margin-right:2px;cursor:pointer;vertical-align:middle}
+.ncheck input{width:18px;height:18px;margin:0}
+.ptable th.nck,.ptable td.nck{width:34px;padding-right:0}
 .ncard-h b{margin-right:auto}
 .ncard .ngrid{grid-template-columns:repeat(3,1fr)}
 .ncard-memo{white-space:pre-wrap;overflow-wrap:anywhere}
@@ -1691,7 +1695,7 @@ const Auth = (() => { let t = null; return Object.freeze({ set(v){ if(t === null
 Object.defineProperty(S, "canTeach", {get: () => Auth.teacher, set(){} });        // 예전 코드 호환: 읽기만
 const isTeacher = () => Auth.teacher && S.role === "teacher";                       // 교사 권한 + 교사 화면(학생 화면 미리보기 중이면 false)
 /* 교사만 쓰는 동작: 학생 권한으로는 버튼이 없을 뿐 아니라 호출해도 실행되지 않는다 */
-const TEACHER_ACTS = new Set(["pg-facts","avatar-del","pg-mode","pg-type","pg-gen","pg-copy","pg-apply","msg-kind","sc-iadd","sc-idel","sc-paste","sc-ins","sc-tpl-reset","sc-export","msg-open","msg-tab","msg-all","msg-none","msg-cls","msg-send","msg-del","msg-withdraw","msg-repush","note-share","c-course","tname-open","tname-later","tname-save","q-custom","q-add","q-del","q-move","course-archive","courses-more","courses-arch","port-student","port-open","tmr-start","tmr-add","tmr-pause","tmr-resume","tmr-stop","ctx-img-del","qfb","qfb-close","fb-chip","pick-tool","mem-open","mem-cls","mem-all","mem-none","course-gsplit","ai-setup","ai-key-save","ai-key-del","ai-suggest","ai-pick","tadmin-open","tadmin-block","tadmin-tab","fbadmin-done","notice-add","notice-del","note-filter","note-req","note-req-send","note-req-cancel","note-dup","create","edit-room","dup","dup-list","del","del-yes","del-ask","del-room","status","toggle","save-feedback","class-fb","pin","pin-move","pin-clear",
+const TEACHER_ACTS = new Set(["pg-facts","avatar-del","pg-mode","pg-type","pg-gen","pg-copy","pg-apply","msg-kind","sc-iadd","sc-idel","sc-paste","sc-ins","sc-tpl-reset","sc-export","msg-open","msg-tab","msg-all","msg-none","msg-cls","msg-send","msg-del","msg-withdraw","msg-repush","note-share","c-course","tname-open","tname-later","tname-save","q-custom","q-add","q-del","q-move","course-archive","courses-more","courses-arch","port-student","port-open","tmr-start","tmr-add","tmr-pause","tmr-resume","tmr-stop","ctx-img-del","qfb","qfb-close","fb-chip","pick-tool","mem-open","mem-cls","mem-all","mem-none","course-gsplit","ai-setup","ai-key-save","ai-key-del","ai-suggest","ai-pick","tadmin-open","tadmin-block","tadmin-tab","fbadmin-done","notice-add","notice-del","note-filter","note-req","note-req-send","note-req-cancel","nudge-open","nudge-all","nudge-clear","create","edit-room","dup","dup-list","del","del-yes","del-ask","del-room","status","toggle","save-feedback","class-fb","pin","pin-move","pin-clear",
   "present","present-exit","pmode","pnav","pq","pper","pnames","prand","fullscreen","export","export-go","save-tset","tpl-save-open","tpl-save","tpl-cancel","use-tpl","create-save","draft-save","publish-draft","discard-form",
   "preview","preview-form","preview-home","qr","copy-link","save-share","mcourse","course-new","course-edit","course-gadd","course-gdel","course-save","course-del","course-del-yes",
   "roster-open","roster-add","roster-reissue","roster-del","roster-print","gsel","asg-add-open","asg-add-cancel","asg-add","asg-st","racts","mview","sview","sfilter","sgo","snav","ttab","mfilter","open-student","goal","tpl","st-add","st-del","depth"]);
@@ -2620,6 +2624,7 @@ function viewRoomStudent(r){
    ========================================================= */
 const isNotes = r => r?.template === "notes";
 const NOTE_MAX = r => Math.max(1, Math.min(12, Number(r?.noteCfg?.maxPages) || 3));
+const memoQOf = r => String(r?.noteCfg?.memoQ || "").trim();         // 선생님이 적은 ‘한 줄 메모’ 질문 (없으면 그냥 메모)
 const noteRedoReq = p => p?.resubmitReq && p.resubmitReq.at > (p.notes?.submittedAt || 0) ? p.resubmitReq : null;
 const NDRAFT = {};                    // 활동 id → 제출 전 고른 사진 [{blob, url, w, h}] (이 화면에만)
 const NURL = {};                      // 저장된 사진 경로 → 잠깐 쓰는 주소
@@ -2748,7 +2753,7 @@ function noteViewerHTML(m){
     <div class="row lb-nav"><button class="btn" type="button" data-a="note-nav" data-d="-1" ${i > 0 ? "" : "disabled"}>${ic("chevron-left")} 앞 쪽</button>
       ${cur?.u && !m.draft ? `<a class="btn" href="${esc(cur.u)}" target="_blank" rel="noopener">원본 열기</a>` : ""}
       <button class="btn" type="button" data-a="note-nav" data-d="1" ${i < imgs.length - 1 ? "" : "disabled"}>뒤 쪽 ${ic("chevron-right")}</button></div>
-    ${p?.notes?.memo ? `<p class="txt small"><span class="muted">메모 · </span>${esc(p.notes.memo)}</p>` : ""}
+    ${p?.notes?.memo ? `<p class="txt small"><span class="muted">${esc(memoQOf(S.rooms.find(x => x.id === p.roomId)) || "메모")} · </span>${esc(p.notes.memo)}</p>` : ""}
     ${isTeacher() && p && !m.draft ? `<div class="row end">${noteRedoReq(p) ? `<span class="chip nchip redo">${ic("rotate-clockwise", "sm")} 재제출 요청 중</span><button class="btn sm" type="button" data-a="note-req-cancel" data-pid="${esc(p.id)}">요청 취소</button>` : `<button class="btn sm" type="button" data-a="note-req" data-pid="${esc(p.id)}">${ic("rotate-clockwise")} 재제출 요청</button>`}</div>` : ""}`;
 }
 /* 학생: 필기 사진 제출 */
@@ -2760,12 +2765,12 @@ function viewNotesStudent(r, p){
      : req ? `<div class="cta todo"><div><b>${ic("rotate-clockwise")} 선생님이 다시 제출해 달라고 했어요</b><span>${req.msg ? ic("message-circle", "sm") + " " + esc(req.msg) : "아래에서 내 사진을 확인하고, 새 사진으로 다시 올려 주세요."}</span></div></div>`
      : `<div class="cta done"><div><b>${ic("circle-check")} 제출 완료</b><span>${esc(fmt(n.submittedAt))} · ${n.images.length}장${n.version > 1 ? ` · ${n.version}번째 제출` : ""}</span></div></div>`;
   if(n) h += `<section class="card nsub"><div class="nsub-h"><b>내가 올린 학습 결과</b>${open && S.canWrite && !showUp ? `<button class="btn sm" type="button" data-a="note-redo">${ic("rotate-clockwise")} 새 사진으로 다시 제출</button>` : ""}</div>
-    ${noteThumbs(p, n.images)}${n.memo ? `<p class="txt small"><span class="muted">메모 · </span>${esc(n.memo)}</p>` : ""}</section>`;
+    ${noteThumbs(p, n.images)}${n.memo ? `<p class="txt small"><span class="muted">${esc(memoQOf(r) || "메모")} · </span>${esc(n.memo)}</p>` : ""}</section>`;
   const gal = noteGallery(r, p);                                       // 선생님이 ‘서로 보기’로 열면, 올린 학생끼리 친구 사진도 본다
   if(!open) return h + (n ? "" : closedNote()) + gal;
   if(!S.canWrite) return h + readonlyNote() + gal;
   if(!showUp) return h + gal;
-  const max = NOTE_MAX(r), busy = S.noteBusy, key = "note:" + r.id;
+  const max = NOTE_MAX(r), busy = S.noteBusy, key = "note:" + r.id, mq = memoQOf(r);
   F(key, () => ({memo:""}));
   return h + `<section class="card nup" id="stage"><h3>${n ? "새 사진으로 다시 제출하기" : "사진 올리기"}</h3>
     <p class="muted small">${n ? "다시 제출하면 지금 낸 사진은 새 사진으로 바뀌어요. " : ""}여러 쪽이면 여러 장을 골라도 돼요. (최대 ${max}장 · 글씨가 잘 보이게 밝은 곳에서 찍어 주세요)</p>
@@ -2775,7 +2780,7 @@ function viewNotesStudent(r, p){
     ${draft.length ? `<div class="ngrid">${draft.map((x, i) => `<figure class="nthumb"><button type="button" class="nzoom" data-a="note-view" data-draft="${esc(r.id)}" data-i="${i}" aria-label="${i+1}쪽 크게 보기"><img src="${x.url}" alt=""></button><span class="npg">${i+1}쪽</span>
         <span class="nact">${i ? `<button type="button" data-a="note-move" data-i="${i}" data-d="-1" aria-label="${i+1}쪽을 앞으로">${ic("chevron-left", "sm")}</button>` : ""}${i < draft.length - 1 ? `<button type="button" data-a="note-move" data-i="${i}" data-d="1" aria-label="${i+1}쪽을 뒤로">${ic("chevron-right", "sm")}</button>` : ""}<button type="button" data-a="note-rm" data-i="${i}" aria-label="${i+1}쪽 빼기">${ic("x", "sm")}</button></span></figure>`).join("")}</div>
       <p class="muted small">사진을 누르면 크게 볼 수 있어요. 화살표 버튼으로 순서를 바꾸고, ${ic("x", "sm")} 버튼으로 뺄 수 있어요.</p>` : `<div class="nempty">아직 고른 사진이 없어요.<br>위의 버튼으로 필기 사진을 찍거나 골라 주세요.</div>`}
-    <div class="q"><label for="${key}-memo">한 줄 메모 <span class="opt">(선택)</span></label>${ta(key, "memo", {rows:2, ph:"예: 오늘 배운 것 중 가장 중요한 것은 ___"})}</div>
+    <div class="q"><label for="${key}-memo">${mq ? `<b>${esc(mq)}</b>` : "한 줄 메모"} <span class="opt">(선택${mq ? " · 한 줄로 답해 주세요" : ""})</span></label>${ta(key, "memo", {rows:2, ph:mq ? "여기에 답을 적어 주세요" : "예: 오늘 배운 것 중 가장 중요한 것은 ___"})}</div>
     <div class="foot"><span class="muted small" role="status">${busy ? esc(busy) : draft.length ? `${draft.length}장 골랐어요` : ""}</span><div class="row">
       ${draft.length && !busy ? `<button class="btn" type="button" data-a="note-clear">모두 빼고 다시 고르기</button>` : ""}${n && !req && !busy ? `<button class="btn" type="button" data-a="note-redo-cancel">취소</button>` : ""}
       <button class="btn pri" type="button" data-a="note-submit" ${busy || !draft.length ? "disabled" : ""}>${n ? "다시 제출하기" : `제출하기${draft.length ? ` (${draft.length}장)` : ""}`}</button></div></div></section>`;
@@ -2796,33 +2801,34 @@ function viewNotesTeacher(r){
   const ps = allPostsOf(r.id).filter(p => !gs || p.groupId === gs);
   const cr = courseRoster(r, gs);                                  // 과목 수강 학생(그룹)만
   const names = cr || (S.mode === "supa" ? (S.roster || []).map(rosterLabel) : (tnote(r).roster || []));
-  const byName = new Map(ps.map(p => [p.author, p]));
-  const rows = [...new Set([...(gs && !cr ? [] : names), ...ps.map(p => p.author)])].map(nm => {
+  const byName = new Map(ps.map(p => [p.author, p])), vw = viewsOn() ? viewersOf(r) : new Map();      // 👀 조회 기록(열어 본 학생)
+  const rows = [...new Set([...(gs && !cr ? [] : names), ...ps.map(p => p.author), ...(names.length || gs ? [] : vw.keys())])].map(nm => {
     const p = byName.get(nm), st = !p?.notes ? "none" : noteRedoReq(p) ? "redo" : "done";
     const sa = splitAuthor(nm);
-    return {nm, p, st, cls: sa.school || clsOf(sa.number)};                          // 여러 학교면 학교별, 아니면 학년·반별
+    return {nm, p, st, v:vw.get(nm), cls: sa.school || clsOf(sa.number)};                          // 여러 학교면 학교별, 아니면 학년·반별
   }).sort((a, b) => koCmp(a.nm, b.nm));
   const clss = [...new Set(rows.map(x => x.cls).filter(Boolean))].sort(koCmp);
   const cls = clss.includes(S.ncls) ? S.ncls : "";
   const inCls = rows.filter(x => !cls || x.cls === cls);
   const c = k => inCls.filter(x => x.st === k).length;
-  const nf = ["all","done","none","redo"].includes(S.nf) ? S.nf : "all", q = (S.nq || "").trim();
-  const list = inCls.filter(x => (nf === "all" || x.st === nf) && (!q || x.nm.includes(q)));
+  const nf = ["all","done","none","redo","viewed"].includes(S.nf) ? S.nf : "all", q = (S.nq || "").trim();
+  const pass = x => nf === "all" || (nf === "viewed" ? x.st === "none" && !!x.v : x.st === nf);
+  const list = inCls.filter(x => pass(x) && (!q || x.nm.includes(q))), unsubN = inCls.filter(x => x.st === "none").map(x => x.nm);
   const LBL = {done:`${ic("check", "sm")} 제출 완료`, none:"미제출", redo:`${ic("rotate-clockwise", "sm")} 재제출 요청`};
-  let h = `<div class="kpis"><div class="kpi"><b>${c("done") + c("redo")}${names.length && !gs ? `<small> / ${inCls.length}</small>` : ""}</b><span>제출</span></div>
+  let h = `<div class="kpis">${viewsOn() ? `<div class="kpi" title="활동을 한 번이라도 열어 본 학생 (제출한 학생 포함)"><b>${inCls.filter(x => x.p?.notes || x.v).length}${names.length && !gs ? `<small> / ${inCls.length}</small>` : ""}</b><span>${ic("eye", "sm")} 조회</span></div>` : ""}<div class="kpi"><b>${c("done") + c("redo")}${names.length && !gs ? `<small> / ${inCls.length}</small>` : ""}</b><span>제출</span></div>
     <div class="kpi"><b>${names.length || gs ? c("none") : "–"}</b><span>미제출</span></div><div class="kpi"><b>${c("redo")}</b><span>재제출 요청</span></div></div>
     <div class="nshare-row"><span>${ic("lock", "sm")} 올린 사진 보기</span><span class="seg3" role="group" aria-label="올린 사진 보기"><button type="button" data-a="note-share" data-v="teacher" aria-pressed="${r.reveal !== "after"}">선생님만</button><button type="button" data-a="note-share" data-v="after" aria-pressed="${r.reveal === "after"}">학생끼리 서로 보기</button></span>${r.reveal === "after" ? `<span class="muted small">${r.anonymous ? "친구에게는 이름 없이 보여요" : "친구에게 이름이 보여요"}</span>` : ""}</div>
-    <div class="row" style="margin-top:12px;flex-wrap:wrap;gap:8px"><button class="btn" type="button" data-a="note-dup" data-id="${esc(r.id)}">${ic("copy")} 다음 시간용으로 복제</button>
-      ${S.mode === "supa" ? `<button class="btn" type="button" data-a="roster-open">${ic("users")} 학생 명단</button>` : ""}<span class="muted small">복제하면 제목과 안내만 바꿔 바로 쓸 수 있어요.</span></div>`;
+${memoQOf(r) ? `<p class="small" style="margin-top:10px">${ic("message-circle", "sm")} <b>한 줄 메모 질문</b> · ${esc(memoQOf(r))}</p>` : ""}`;
   if(!names.length && !gs) h += `<p class="notice" style="margin-top:12px">${S.mode === "supa" ? (S.roster === undefined ? "학생 명단을 불러오는 중…" : "학생 명단(학생 코드)에 학생을 넣으면 미제출 학생도 함께 보여요.") : "설정 탭의 학생 명단을 넣으면 미제출 학생도 함께 보여요."}</p>`;
-  h += `<div class="nbar"><div class="mfilters">${[["all","전체",inCls.length],["done","제출 완료",c("done")],["none","미제출",c("none")],["redo","재제출 요청",c("redo")]].map(([k,l,n]) => `<button type="button" data-a="note-filter" data-v="${k}" aria-pressed="${nf===k}">${l} <span class="mono">${n}</span></button>`).join("")}</div>
+  h += `<div class="nbar"><div class="mfilters">${[["all","전체",inCls.length],["done","제출 완료",c("done")],["none","미제출",c("none")],["redo","재제출 요청",c("redo")], ...(viewsOn() ? [["viewed","조회만 함",inCls.filter(x => x.st === "none" && x.v).length]] : [])].map(([k,l,n]) => `<button type="button" data-a="note-filter" data-v="${k}" aria-pressed="${nf===k}">${l} <span class="mono">${n}</span></button>`).join("")}</div>
     ${clss.length > 1 ? `<select id="n-cls" aria-label="학교·반"><option value="">모든 학교·반</option>${clss.map(x => `<option ${x===cls?"selected":""}>${esc(x)}</option>`).join("")}</select>` : ""}
     <input type="search" id="n-q" placeholder="이름·학번 찾기" value="${esc(S.nq||"")}" aria-label="학생 찾기"></div>`;
+  h += nudgeBar(r, unsubN, unsubN);                                       // 🔔 미제출 학생에게 제출 알림
   if(!list.length) return h + `<div class="empty">${rows.length ? "조건에 맞는 학생이 없어요." : "아직 제출한 학생이 없어요."}</div>`;
-  return h + `<div class="ncards">${list.map(({nm, p, st}) => `<article class="ncard ${st}"><div class="ncard-h"><b>${esc(nm)}</b><span class="chip nchip ${st}">${LBL[st]}</span></div>
+  return h + `<div class="ncards">${list.map(({nm, p, st, v}) => `<article class="ncard ${st}"><div class="ncard-h"><b>${st === "none" ? nudgeBox(nm) : ""}${esc(nm)}</b><span class="chip nchip ${st}">${st === "none" && v ? `${ic("eye", "sm")} 조회만 함` : LBL[st]}</span></div>
       ${p?.notes ? `<span class="muted small">${esc(fmt(p.notes.submittedAt))} · ${p.notes.images.length}장${p.notes.version > 1 ? ` · ${p.notes.version}번째 제출` : ""}</span>${noteThumbs(p, p.notes.images, 3)}${p.notes.memo ? `<p class="small ncard-memo">${esc(p.notes.memo)}</p>` : ""}
         <div class="row end">${st === "redo" ? `<button class="btn sm" type="button" data-a="note-req-cancel" data-pid="${esc(p.id)}">요청 취소</button>` : `<button class="btn sm" type="button" data-a="note-req" data-pid="${esc(p.id)}">${ic("rotate-clockwise")} 재제출 요청</button>`}<button class="btn sm pri" type="button" data-a="note-view" data-pid="${esc(p.id)}" data-i="0">크게 보기</button></div>`
-      : `<p class="muted small">${p ? "올리는 중이거나 아직 제출 전이에요." : "아직 제출하지 않았어요."}</p>`}</article>`).join("")}</div>`;
+      : `<p class="muted small">${p ? "올리는 중이거나 아직 제출 전이에요." : "아직 제출하지 않았어요."}</p>${viewsOn() ? `<p class="muted small">${v ? `${ic("eye", "sm")} 조회 ${v.n}회 · 마지막 ${esc(fmtRel(v.last))}` : "아직 열어 보지 않았어요."}</p>` : ""}`}</article>`).join("")}</div>`;
 }
 /* ---- 📲 휴대폰 홈 화면에 앱처럼 설치 (학생) ---- */
 /* 🧭 체험 모드 둘러보기: 주요 버튼을 하나씩 비추며 짧게 설명한다 */
@@ -3892,6 +3898,37 @@ function tabOverview(r, st){
   return h;
 }
 /* ---- 탭: 참여 현황 (학생별 진행) ---- */
+/* 🔔 제출 알림: 제출하지 않은 학생(또는 선생님이 고른 학생)에게 ‘개별 안내’(+ 휴대폰 알림)를 보낸다. 보내는 길은 개별 안내(msg_send) 그대로라 읽음 확인·다시 알림도 같다 */
+const NUDGE_OK = () => S.demo || msgLive();
+function nudgeBarInner(n){
+  return `<span class="muted small">${ic("bell", "sm")} 제출 알림</span>
+    <button class="btn sm" type="button" data-a="nudge-all" ${n.unsub.length ? "" : "disabled"}>미제출 ${n.unsub.length}명 모두 고르기</button>
+    ${n.sel.length ? `<button class="btn sm" type="button" data-a="nudge-clear">고른 학생 빼기</button>` : ""}
+    <button class="btn sm pri" type="button" data-a="nudge-open" ${n.sel.length ? "" : "disabled"}>${ic("bell")} ${n.sel.length ? `고른 ${n.sel.length}명에게 알림 보내기` : "아래에서 학생을 골라 주세요"}</button>`;
+}
+function nudgeBar(r, unsub, pick){                                   // unsub: 미제출 학생 · pick: 고를 수 있는 학생 (이름표)
+  if(!NUDGE_OK() || !pick.length) return "";
+  if(!S.nudge || S.nudge.room !== r.id) S.nudge = {room:r.id, sel:[], unsub:[]};
+  const n = S.nudge; n.unsub = unsub; n.sel = n.sel.filter(x => pick.includes(x));
+  return `<div class="nudge" id="nudge-bar">${nudgeBarInner(n)}</div>`;
+}
+const nudgeBox = nm => !NUDGE_OK() || !S.nudge ? "" : `<label class="ncheck" title="이 학생에게 제출 알림 보내기"><input type="checkbox" data-nudge="${esc(nm)}" ${S.nudge.sel.includes(nm) ? "checked" : ""} aria-label="${esc(nm)} 알림 받을 학생으로 고르기"></label>`;
+function nudgeRefresh(){                                              // 체크할 때는 그 자리에서만 고친다 (스크롤 유지)
+  const n = S.nudge, bar = document.getElementById("nudge-bar"); if(!n) return;
+  if(bar) bar.innerHTML = nudgeBarInner(n);
+  document.querySelectorAll("input[data-nudge]").forEach(i => { i.checked = n.sel.includes(i.dataset.nudge) });
+}
+function nudgeOpen(r){
+  const n = S.nudge; if(!r || !n || !n.sel.length) return;
+  const by = new Map(msgRoster().map(x => [rosterLabel(x), x.id])), ids = [], miss = [];
+  n.sel.forEach(nm => by.has(nm) ? ids.push(by.get(nm)) : miss.push(nm));
+  if(!ids.length){ toast("학생 명단에 있는 학생에게만 보낼 수 있어요. ‘학생 코드’에서 학생을 먼저 넣어 주세요."); return }
+  const f = MSGF(), link = linkFor("room", r.id, ""), due = r.dueAt ? ` ${fmtDue(r.dueAt)}까지 해 주세요.` : "";
+  Object.assign(f, {kind:"note", sel:ids, q:"", crs:"", push:true, title:"제출해 주세요",
+    body:`‘${r.title}’ 활동을 아직 마치지 않았어요.${due}\n${link ? "아래 링크로 들어가 제출해 주세요.\n" + link : "생각이음에서 열어 제출해 주세요."}`});
+  S.msgTab = "new"; msgOpen(null, {url:"#" + r.id});
+  if(miss.length) toast(`학생 명단에 없는 ${miss.length}명(${miss.slice(0, 2).join(", ")}${miss.length > 2 ? " 외" : ""})은 빼고 ${ids.length}명에게 보내요.`);
+}
 function tabProgress(r, st){
   const vw = st.vw || new Map();
   const names = [...new Set([...(st.roster||[]), ...st.all.map(p=>p.author), ...(st.roster?.length ? [] : vw.keys())])];
@@ -3900,10 +3937,11 @@ function tabProgress(r, st){
       return {n, p, v, pr: !p && v ? {label:"조회만 함", cls:"viewed", pct:0} : progressOf(r,p)} })
     .sort((a,b) => ({none:2, viewed:1}[a.pr.cls] || 0) - ({none:2, viewed:1}[b.pr.cls] || 0) || a.pr.pct - b.pr.pct);
   const steps = stepsOf(r), nView = rows.filter(x => x.pr.cls === "viewed").length, nNone = rows.filter(x => x.pr.cls === "none").length;
+  const pickN = rows.filter(x => x.pr.cls !== "done").map(x => x.n), bar = nudgeBar(r, rows.filter(x => !submitted(x.p)).map(x => x.n), pickN), ck = !!bar;   // 🔔 제출 알림
   return `<section class="card"><h3>학생별 진행 상태 <span class="muted small">이름을 누르면 단계별로 볼 수 있어요</span></h3>
-    ${viewsOn() ? `<p class="vsum small"><span>${ic("eye", "sm")} 조회 <b>${rows.filter(x => x.p || x.v).length}</b>명</span><span>${ic("pencil", "sm")} 참여 <b>${rows.filter(x => x.p).length}</b>명</span><span class="vw">조회만 하고 시작 안 함 <b>${nView}</b>명</span><span class="muted">아직 안 들어옴 <b>${nNone}</b>명</span></p>` : ""}<div class="tscroll"><table class="ptable">
-    <thead><tr><th>학생</th><th>상태</th><th>진행</th><th>마지막 활동</th></tr></thead><tbody>
-    ${rows.map(({n,p,v,pr}) => `<tr><td>${p ? `<button class="namebtn" type="button" data-a="open-student" data-id="${esc(p.id)}">${esc(n)}</button>` : esc(n)}</td>
+    ${viewsOn() ? `<p class="vsum small"><span>${ic("eye", "sm")} 조회 <b>${rows.filter(x => x.p || x.v).length}</b>명</span><span>${ic("pencil", "sm")} 참여 <b>${rows.filter(x => x.p).length}</b>명</span><span class="vw">조회만 하고 시작 안 함 <b>${nView}</b>명</span><span class="muted">아직 안 들어옴 <b>${nNone}</b>명</span></p>` : ""}${bar}<div class="tscroll"><table class="ptable">
+    <thead><tr>${ck ? `<th class="nck"><span class="sr">알림</span></th>` : ""}<th>학생</th><th>상태</th><th>진행</th><th>마지막 활동</th></tr></thead><tbody>
+    ${rows.map(({n,p,v,pr}) => `<tr>${ck ? `<td class="nck">${pickN.includes(n) ? nudgeBox(n) : ""}</td>` : ""}<td>${p ? `<button class="namebtn" type="button" data-a="open-student" data-id="${esc(p.id)}">${esc(n)}</button>` : esc(n)}</td>
       <td><span class="pstat ${pr.cls}">${esc(pr.label)}</span>${S.pexp===n && p ? `<div class="sprog">${steps.map(s=>`<span class="${stepDone(r,p,s)?"on":""}">${esc(STEP[s].t)}</span>`).join("")}</div>` : ""}</td>
       <td><span class="pbar" aria-hidden="true"><i style="width:${pr.pct}%"></i></span><span class="mono small">${pr.pct}%</span></td>
       <td class="muted small">${p ? fmtRel(p.updatedAt||p.createdAt) : v ? `${ic("eye", "sm")} ${fmtRel(v.last)}` : "–"}</td></tr>`).join("")}
@@ -4139,7 +4177,7 @@ function teacherCard(r, p, ps, nav){
    ========================================================= */
 /* 🔄 새 버전 알림: 배포 때마다 APP_VERSION과 version.json의 v를 같은 값으로 올린다.
    GitHub Pages는 화면을 10분쯤 기억하므로, 옛 화면이면 아래쪽에 ‘새로고침’ 띠를 띄우고 주소를 바꿔 새로 받는다 */
-const APP_VERSION = "2026-10-18g";
+const APP_VERSION = "2026-10-19a";
 async function checkVersion(){
   if(!/^https?:$/.test(location.protocol)) return;
   try{
@@ -4478,8 +4516,24 @@ async function loadRoster(){
   S.roster = r.data || []; if(S.modal?.type === "roster") render();
   if(S.modal?.type === "course"){ cmGuess(S.form.course); renderModal() }
 }
+/* 학생 코드 보기: 전체 / 과목별 / 그룹별 (값: "" · "c|과목" · "g|과목|그룹"). 수강 학생을 정하지 않은 과목은 모든 학생이 보인다 */
+function rosterViewIds(v){
+  const [k, cid, gid] = String(v || "").split("|"), c = courseOf(cid);
+  if(!c) return null;
+  const mem = k === "g" ? groupsOf(c).find(g => g.id === gid)?.members : c.members;
+  return Array.isArray(mem) ? new Set(mem) : null;
+}
+function rosterViewOpts(){
+  const cs = (S.courses || []).filter(c => !c.archived); if(!cs.length) return "";
+  const cur = S.rosterView || "", cnt = m => Array.isArray(m) ? ` (${m.length}명)` : " (학생 미지정)";
+  const o = (v, l) => `<option value="${esc(v)}" ${v === cur ? "selected" : ""}>${esc(l)}</option>`;
+  return `<optgroup label="과목별">${cs.map(c => o("c|" + c.id, c.title + cnt(c.members))).join("")}</optgroup>` +
+    cs.filter(c => groupsOf(c).length).map(c => `<optgroup label="${esc("그룹별 · " + c.title)}">${groupsOf(c).map(g => o("g|" + c.id + "|" + g.id, g.name + cnt(g.members))).join("")}</optgroup>`).join("");
+}
+const rosterPrintList = () => { const v = rosterViewIds(S.rosterView); return (S.roster || []).filter(x => !v || v.has(x.id)) };   // 코드 쪽지는 지금 고른 과목·그룹 학생만
 function rosterModalHTML(){
-  const q = (S.rosterQ || "").trim(), list = (S.roster || []).filter(x => !q || rosterLabel(x).includes(q)), hasSch = (S.roster || []).some(x => x.school);
+  const q = (S.rosterQ || "").trim(), vids = rosterViewIds(S.rosterView), vopts = rosterViewOpts();
+  const list = (S.roster || []).filter(x => (!vids || vids.has(x.id)) && (!q || rosterLabel(x).includes(q))), hasSch = (S.roster || []).some(x => x.school);
   return `<h3>${ic("users")} 학생 명단 · 개인 코드</h3>
     <p class="small muted">학생은 학번·이름·코드로 들어와요. 코드는 학생에게 보이지 않고, 선생님 화면에서만 볼 수 있어요.</p>
     <div class="q"><label for="roster-school">학교 <span class="opt">(선택 · 공동교육과정처럼 여러 학교 학생이 함께할 때)</span></label>
@@ -4489,8 +4543,8 @@ function rosterModalHTML(){
       <textarea id="roster-add" rows="4" placeholder="10301 김가온&#10;10302 나다은&#10;다라고 20105 박하늘"></textarea>
       <div class="row end" style="margin-top:6px"><button class="btn pri sm" type="button" data-a="roster-add">추가하고 코드 만들기</button></div></div>
     ${S.roster === undefined ? `<p class="muted small">불러오는 중…</p>` : `
-    <div class="row"><input type="search" id="roster-q" placeholder="학교·학번·이름으로 찾기" value="${esc(q)}" style="flex:1" aria-label="학생 찾기"><span class="muted small">${S.roster.length}명</span>
-      <button class="btn sm" type="button" data-a="roster-print" ${S.roster.length ? "" : "disabled"}>${ic("printer")} 코드 쪽지 인쇄</button></div>
+    <div class="row" style="flex-wrap:wrap">${vopts ? `<select id="roster-view" aria-label="과목·그룹으로 보기" style="max-width:260px"><option value="">전체 학생</option>${vopts}</select>` : ""}<input type="search" id="roster-q" placeholder="학교·학번·이름으로 찾기" value="${esc(q)}" style="flex:1;min-width:150px" aria-label="학생 찾기"><span class="muted small">${list.length === S.roster.length ? `${S.roster.length}명` : `${list.length}명 / 전체 ${S.roster.length}명`}</span>
+      <button class="btn sm" type="button" data-a="roster-print" ${rosterPrintList().length ? "" : "disabled"}>${ic("printer")} 코드 쪽지 인쇄${vids ? ` (${rosterPrintList().length}명)` : ""}</button></div>
     <div class="tscroll" style="max-height:46vh;overflow:auto"><table class="ptable"><thead><tr>${hasSch ? "<th>학교</th>" : ""}<th>학번</th><th>이름</th><th>코드</th><th><span class="sr">관리</span></th></tr></thead><tbody>
       ${list.map(x => `<tr>${hasSch ? `<td>${esc(x.school || "–")}</td>` : ""}<td class="mono">${esc(x.number)}</td><td>${esc(x.name)}</td><td class="mono"><b>${esc(x.code)}</b></td>
         <td style="white-space:nowrap"><button class="btn sm" type="button" data-a="roster-reissue" data-id="${esc(x.id)}">새 코드</button> <button class="btn sm danger" type="button" data-a="roster-del" data-id="${esc(x.id)}">빼기</button></td></tr>`).join("") || `<tr><td colspan="4" class="muted">아직 학생이 없어요.</td></tr>`}
@@ -4504,7 +4558,7 @@ function printRoster(){
   w.document.write(`<!doctype html><meta charset="utf-8"><title>생각이음 학생 코드</title>
     <style>body{font-family:system-ui,sans-serif;margin:12mm}.g{display:grid;grid-template-columns:repeat(3,1fr);gap:0}.s{border:1px dashed #999;padding:10px 12px;min-height:38mm;box-sizing:border-box;break-inside:avoid}
     .t{font-size:11px;color:#555}.n{font-size:16px;font-weight:700;margin:6px 0}.c{font-family:monospace;font-size:24px;letter-spacing:3px;font-weight:700}.u{font-size:10px;color:#555;word-break:break-all;margin-top:6px}</style>
-    <div class="g">${(S.roster || []).map(x => `<div class="s"><div class="t">생각이음 · 개인 코드 (다른 사람에게 보여 주지 마세요)</div><div class="n">${esc(rosterLabel(x))}</div><div class="c">${esc(x.code)}</div><div class="u">${esc(url)}</div></div>`).join("")}</div>
+    <div class="g">${rosterPrintList().map(x => `<div class="s"><div class="t">생각이음 · 개인 코드 (다른 사람에게 보여 주지 마세요)</div><div class="n">${esc(rosterLabel(x))}</div><div class="c">${esc(x.code)}</div><div class="u">${esc(url)}</div></div>`).join("")}</div>
     <script>setTimeout(()=>print(),300)<\/script>`);
   w.document.close();
 }
@@ -4982,8 +5036,8 @@ async function loadMsgSent(){
   const r = await rpcSafe("msg_sent"); S.msgSent = Array.isArray(r?.data) ? r.data : (S.msgSent || []);
   if(S.modal?.type === "msg") renderModal();
 }
-function msgOpen(pre){
-  const f = MSGF(); if(pre){ f.sel = [pre]; f.q = ""; f.crs = "" }
+function msgOpen(pre, opt){
+  const f = MSGF(); f.url = opt?.url || ""; if(pre){ f.sel = [pre]; f.q = ""; f.crs = "" }
   S.modal = {type:"msg", tab:pre ? "new" : (S.msgTab || "new")};
   if(!S.demo && S.roster === undefined && !S.rosterLoading){ S.rosterLoading = true; loadRoster().then(() => { S.rosterLoading = false; if(S.modal?.type === "msg") renderModal() }) }
   loadMsgSent();
@@ -5141,11 +5195,11 @@ async function msgSend(){
   const r = score ? await rpcSafe("msg_send_each", {p_title:title, p_items:items, p_ask:ask}) : await rpcSafe("msg_send", {p_students:f.sel, p_title:title, p_body:body}), d = r?.data || {};
   S.msgBusy = false;
   if(!d.ok){ toast(d.reason === "limit" ? "1시간에 30번까지 보낼 수 있어요. 잠시 뒤 다시 보내 주세요." : "보내지 못했어요. 잠시 뒤 다시 해 보세요."); renderModal(); return }
-  const ids = f.sel.slice(), push = f.push;
-  reset(); S.msgTab = "sent"; if(S.modal?.type === "msg") S.modal.tab = "sent";
+  const ids = f.sel.slice(), push = f.push, url = f.url || "";
+  reset(); f.url = ""; S.msgTab = "sent"; if(S.modal?.type === "msg") S.modal.tab = "sent";
   loadMsgSent(); renderModal();
   const pd = push ? await notifyStudents(score ? {title:title, body:"수행평가 점수 안내가 왔어요. 생각이음에서 확인하고 답해 주세요.", url:"", tag:"msg-" + d.batch, students:ids}
-    : {title:title || "선생님 안내", body:body.slice(0, 120), url:"", tag:"msg-" + d.batch, students:ids}) : null;
+    : {title:title || "선생님 안내", body:body.slice(0, 120), url, tag:"msg-" + d.batch, students:ids}) : null;
   toast(`학생 ${d.n}명에게 ${score ? "점수 안내를" : "안내를"} 보냈어요.` + (push ? pushNote(pd) : ""));
 }
 /* 학생: 받은 안내 */
@@ -5714,7 +5768,7 @@ function formFromRoom(r){
   const f = featuresOf(r), t = TEMPLATES[r.template] || {};
   const form = {editId:r.id, goal:(GOALS.find(g=>g.t.includes(r.template))||{}).k, template:r.template, tool:toolOf(r), depth:depthOf(r),
     prompt:r.prompt||"", title:r.title||"", context:r.context||"", ctxImgs:ctxImgsOf(r), intro:r.intro||"",
-    maxPages:String(r.noteCfg?.maxPages||3), personaName:r.persona?.name||"", personaAbout:r.persona?.about||"", personaFacts:r.persona?.facts||"", personaStyle:r.persona?.style||"persona", maxTurns:String(r.persona?.maxTurns||8), personaGuide:r.persona?.guide||"", pgMode:r.persona?.guide && !r.persona?.gen ? "direct" : "gen",
+    maxPages:String(r.noteCfg?.maxPages||3), memoQ:r.noteCfg?.memoQ||"", personaName:r.persona?.name||"", personaAbout:r.persona?.about||"", personaFacts:r.persona?.facts||"", personaStyle:r.persona?.style||"persona", maxTurns:String(r.persona?.maxTurns||8), personaGuide:r.persona?.guide||"", pgMode:r.persona?.guide && !r.persona?.gen ? "direct" : "gen",
     personaImg:r.persona?.img||"", personaUser:r.persona?.user||"", personaCall:r.persona?.call||"", personaGreeting:r.persona?.greeting||"", personaStarters:(r.persona?.starters||[]).join("\n"),
     ...(r.persona?.gen ? {pgType:pgTypeOf(r.persona.gen.type), pgSubj:r.persona.gen.subj||"", pgGrade:r.persona.gen.grade||"", pgGoal:r.persona.gen.goal||"", pgSupport:r.persona.gen.support||"step"} : {}),
     subject:r.subject||"", unit:r.unit||"", year:r.year||"", grade:r.grade||"", duration:String(r.duration||""), dueAt:dtv(r.dueAt), stage:r.stage||"", memo:tnote(r).memo||"",
@@ -5937,7 +5991,7 @@ function roomFromForm(f){
                                                 : String(f.stances||"").split(",").map(s=>s.trim()).filter(Boolean)).slice(0,4);
   const prompt = (f.prompt||"").trim();
   const isDebate = f.template === "debate2" || f.template === "debateN";
-  const noteCfg = f.template === "notes" ? {maxPages:Math.max(1, Math.min(12, parseInt(f.maxPages)||3))} : undefined;
+  const noteCfg = f.template === "notes" ? {maxPages:Math.max(1, Math.min(12, parseInt(f.maxPages)||3)), ...(String(f.memoQ || "").trim() ? {memoQ:String(f.memoQ).trim().slice(0, 120)} : {})} : undefined;
   const persona = f.template === "chat" ? {name:(f.personaName||"").trim(), about:(f.personaAbout||"").trim(), facts:(f.personaFacts||"").trim().slice(0, 4000), style:f.personaStyle === "easy" ? "easy" : "persona", maxTurns:turnsOf(f), ...charSaved(f), ...pgSaved(f)} : undefined;
   return {
     title:(f.title||"").trim() || (f.template === "notes" ? `학습 나눔 · ${new Date().getMonth()+1}월 ${new Date().getDate()}일` : (prompt.length > 28 ? prompt.slice(0,28) + "…" : prompt)),
@@ -6470,6 +6524,8 @@ function viewCreate(){
     ${aiSugHTML(f)}
     ${isNoteT ? `<div class="q"><label for="c-maxp">한 번에 올릴 수 있는 사진 수</label><input type="number" id="c-maxp" data-form="create" data-k="maxPages" min="1" max="12" value="${esc(f.maxPages||"3")}"><p class="hint">1장~12장 (기본 3장)</p></div>
       <p class="hint wide">학생은 ‘사진 찍기’나 ‘앨범에서 고르기’로 여러 장을 골라, 미리 보고 순서를 바꾸거나 뺀 뒤 제출해요. 활동 이름을 비워 두면 ‘학습 나눔 · 날짜’로 정해져요.</p>
+      <div class="q wide"><label for="c-memoq">한 줄 메모 질문 <span class="opt">(선택 · 학생이 사진과 함께 한 줄로 답해요)</span></label><input type="text" id="c-memoq" data-form="create" data-k="memoQ" maxlength="120" placeholder="예: 오늘 배운 것 중 가장 중요한 것은 무엇인가요?" value="${esc(f.memoQ || "")}">
+        <p class="hint">비워 두면 ‘한 줄 메모’ 칸만 보여요. 답은 선택이라 비워서 낼 수도 있어요.</p></div>
       <div class="q"><label for="c-nshare">올린 사진 보기</label><select id="c-nshare" data-form="create" data-k="reveal"><option value="teacher" ${f.reveal !== "after" ? "selected" : ""}>선생님만 보기 (기본)</option><option value="after" ${f.reveal === "after" ? "selected" : ""}>올린 학생끼리 서로 보기</option></select>
         <p class="hint">‘서로 보기’면 자기 사진을 올린 학생이 친구들의 사진도 볼 수 있어요. 활동 화면에서 언제든 바꿀 수 있어요.</p></div>
       ${f.reveal === "after" ? `<div class="q"><label class="choice" style="min-height:36px"><input type="checkbox" data-form="create" data-k="anonymous" ${f.anonymous ? "checked" : ""}><span>친구에게는 이름 없이 보이기</span></label></div>` : ""}` : ""}
@@ -6613,6 +6669,8 @@ document.addEventListener("change", e => {
   if(el.dataset.avatarFile !== undefined){ if(el.files?.[0]) avatarAdd(el.files[0]); el.value = ""; return }
   if(el.dataset.noteFile){ const r = S.rooms.find(x => x.id === el.dataset.noteFile); if(r && el.files?.length) noteAddFiles(r, el.files); el.value = ""; return }
   if(el.id === "n-cls"){ S.ncls = el.value; render(); return }
+  if(el.id === "roster-view"){ S.rosterView = el.value; render(); document.getElementById("roster-view")?.focus(); return }
+  if(el.dataset.nudge !== undefined && S.nudge){ const sel = new Set(S.nudge.sel); el.checked ? sel.add(el.dataset.nudge) : sel.delete(el.dataset.nudge); S.nudge.sel = [...sel]; nudgeRefresh(); return }
   if(el.id === "c-sort"){ lsSet("nonjae.csort", el.value); if(el.value !== "custom") S.corderEdit = false; render(); document.getElementById("c-sort")?.focus(); return }
   if(el.id === "m-sub" || el.id === "m-grade"){ S[el.id === "m-sub" ? "msub" : "mgrade"] = el.value; render(); return }
   if(el.dataset.asg){                                        // 그룹별 시작·마감 시각
@@ -6712,7 +6770,7 @@ async function act(a, b){
     case "t-logout": { await SB.auth.signOut(); location.hash = ""; location.reload(); return }
     case "t-cancel": S.wantTeacher = false; if(location.hash === "#teacher") history.replaceState(null, "", location.pathname); break;
     case "t-start": S.wantTeacher = true; history.replaceState(null, "", location.pathname + "#teacher"); scrollTo(0,0); break;
-    case "roster-open": S.modal = {type:"roster"}; S.roster = undefined; S.rosterQ = ""; loadRoster(); break;
+    case "roster-open": S.modal = {type:"roster"}; S.roster = undefined; S.rosterQ = ""; S.rosterView = ""; loadRoster(); break;
     case "roster-add": {
       S.rosterSchool = cleanSchool(document.getElementById("roster-school")?.value);
       const {ok, bad} = parseRoster(document.getElementById("roster-add")?.value, S.rosterSchool);
@@ -6978,13 +7036,9 @@ async function act(a, b){
       if(await write(db => db.doc("posts/"+p.id).update({resubmitReq:null}), () => { p.resubmitReq = null })) toast("요청을 취소했어요.");
       break;
     }
-    case "note-dup": {
-      const rr = S.rooms.find(x => x.id === b.dataset.id), nr = rr && await duplicateRoom(rr);
-      if(!nr) return;
-      const nf = formFromRoom(nr); nf.title = ""; S.form.create = nf; saveFormsSoon(); S.view = "create"; S.tplNaming = false; scrollTo(0,0);
-      toast("복제했어요. 제목과 안내만 바꾸고 ‘공개하기’를 누르세요.");
-      break;
-    }
+    case "nudge-all": if(S.nudge) S.nudge.sel = S.nudge.unsub.slice(); break;
+    case "nudge-clear": if(S.nudge) S.nudge.sel = []; break;
+    case "nudge-open": nudgeOpen(S.rooms.find(x => x.id === S.nudge?.room)); break;
     case "tadmin-open": S.modal = {type:"tadmin", tab:"t"}; S.tadmin = null; S.tfb = null; loadTadmin(); break;
     case "tadmin-tab": if(S.modal) S.modal.tab = b.dataset.v; break;
     case "fbadmin-done": { const r2 = await SB.rpc("admin_feedback_done", {p_id:+b.dataset.id, p_done:b.dataset.v === "1"}); if(r2.error){ toast("바꾸지 못했어요: " + r2.error.message); return } await loadTadmin(); return }
