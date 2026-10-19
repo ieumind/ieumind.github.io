@@ -10,42 +10,68 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="생각이음">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
-<meta name="theme-color" content="#1D6A4F">
+<meta name="theme-color" content="#183C43">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@400;700&family=IBM+Plex+Sans+KR:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500&display=swap">
 <style>
 /* =========================================================
    생각이음 — 생각을 잇다, 생각이 자라다
    레이아웃: 좁은 단일 열(학생) / 넓은 2열(교사 현황).
    칠판(지금 할 일) + 줄 노트(작성 칸) + 입장별 색과 모양.
    ========================================================= */
+/* ---------- 디자인 토큰 (2026-10 리디자인) ----------
+   팔레트 이름(--ivory·--ink 등)은 디자인 보드의 색 이름이고, 화면 코드는 예전처럼 역할 이름(--bg·--accent 등)을 쓴다.
+   입장 색(--s1~s4)·주의(--warn)·쪽지(--pad0~5)는 뜻이 있는 색이라 색상 계열은 그대로 두고 옅은 바탕만 보드 색에 맞췄다. */
 :root{
-  --bg:#F2F4F1; --surface:#FFFFFF; --sunk:#E7EBE6; --line:#D2D9D2; --fg:#18201C; --muted:#56635D;
-  --accent:#1D6A4F; --accent-ink:#FFFFFF; --accent-soft:#DCECE4;
-  --board:#1F3A2F; --chalk:#EEF4EF; --chalk-dim:#B9CCC1;
-  --paper:#FFFFFF; --rule:#E3E9E3;
-  --s1:#2C5DB0; --s1-soft:#E2E9F6; --s2:#B0432D; --s2-soft:#F5E3DE; --s3:#2E7D46; --s3-soft:#DDEFE3; --s4:#6A48A6; --s4-soft:#EBE5F4;
-  --warn:#8F5400; --warn-soft:#FAEFD9; --help:#FFF8E1; --help-line:#E9D9A6;
-  --f-display:"Gowun Batang","Nanum Myeongjo","AppleMyungjo",serif;
-  --f-body:"IBM Plex Sans KR","Apple SD Gothic Neo","Malgun Gothic",system-ui,sans-serif;
+  --ivory:#F7F5EF; --ink:#183C43; --side-on:#245B61; --teal:#326C68; --text:#243438; --text-sub:#687571; --border:#E1E3DC; --white:#FFFFFF;
+  --tint-teal:#E2EFEC; --tint-slate:#E8EDF6; --tint-green:#E4EEE7; --tint-ochre:#F3EBD7;
+
+  --bg:var(--ivory); --surface:var(--white); --sunk:#EFEDE6; --line:var(--border); --fg:var(--text); --muted:var(--text-sub);
+  --accent:var(--teal); --accent-ink:#FFFFFF; --accent-soft:var(--tint-teal);
+  --primary:var(--ink); --primary-hover:var(--side-on); --primary-ink:#FFFFFF;
+  --board:var(--ink); --chalk:#EEF4F2; --chalk-dim:#B7CBC8;
+  --paper:#FFFFFF; --rule:#E6E7E1;
+  --s1:#2C5DB0; --s1-soft:var(--tint-slate); --s2:#B0432D; --s2-soft:#F5E3DE; --s3:#2E7D46; --s3-soft:var(--tint-green); --s4:#6A48A6; --s4-soft:#EBE5F4;
+  --warn:#8A5200; --warn-soft:var(--tint-ochre); --help:#FBF6E6; --help-line:#E4D6AE;
+
+  /* 사이드바 */
+  --side-bg:var(--ink); --side-fg:#F1F5F4; --side-muted:#A9C0BD; --side-hover:rgba(255,255,255,.07); --side-active:var(--side-on); --side-line:rgba(255,255,255,.1); --side-w:240px;
+
+  /* 글꼴: Pretendard가 기기에 있으면 쓰고, 없으면 Google Fonts의 Noto Sans KR */
+  --f-body:"Pretendard","Noto Sans KR","Apple SD Gothic Neo","Malgun Gothic",system-ui,sans-serif;
+  --f-display:var(--f-body);
   --f-mono:"IBM Plex Mono",ui-monospace,"SFMono-Regular",Menlo,monospace;
+
+  /* 글자 위계: 페이지 제목 · 섹션 제목 · 본문 · 보조 · 캡션 */
+  --fs-page:clamp(24px,3.2vw,30px); --fs-section:19px; --fs-body:16px; --fs-sub:14px; --fs-cap:12.5px;
+  /* 간격(4의 배수) · 모서리 · 컨트롤 높이 */
+  --sp-1:4px; --sp-2:8px; --sp-3:12px; --sp-4:16px; --sp-5:20px; --sp-6:24px; --sp-8:32px; --sp-10:40px;
+  --r-sm:6px; --r:8px; --r-lg:12px; --r-pill:999px;
+  --h-ctl:44px; --h-ctl-sm:38px;
+  --shadow-pop:0 12px 32px rgba(24,60,67,.16);
 }
 @media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
-  --bg:#0F1412; --surface:#161D1A; --sunk:#0B100E; --line:#2B3631; --fg:#E2E9E5; --muted:#97A59E;
-  --accent:#5BC097; --accent-ink:#06130D; --accent-soft:#183128;
-  --board:#183026; --chalk:#E9F1EC; --chalk-dim:#A6BCB0;
-  --paper:#131A17; --rule:#212B26;
+  --bg:#101716; --surface:#172120; --sunk:#0C1211; --line:#2A3634; --fg:#E3EAE8; --muted:#9DAAA6;
+  --accent:#72B8B1; --accent-ink:#071B19; --accent-soft:#18302E;
+  --primary:#2F6B66; --primary-hover:#3A7C76; --primary-ink:#FFFFFF;
+  --board:#13292C; --chalk:#E9F1EF; --chalk-dim:#A6BDBA;
+  --paper:#141D1C; --rule:#222D2B;
   --s1:#81A7EE; --s1-soft:#1A2437; --s2:#EE8D78; --s2-soft:#38211B; --s3:#7CCB95; --s3-soft:#15291C; --s4:#B89CEA; --s4-soft:#29213D;
-  --warn:#E8AF5E; --warn-soft:#32250F; --help:#2A2414; --help-line:#4A3F1E; color-scheme:dark;
+  --warn:#E8AF5E; --warn-soft:#32250F; --help:#2A2414; --help-line:#4A3F1E;
+  --side-bg:#0D1E21; --side-fg:#E3ECEA; --side-muted:#93ACA8; --side-active:#1E4A4E; --side-line:rgba(255,255,255,.08);
+  --shadow-pop:0 12px 32px rgba(0,0,0,.45); color-scheme:dark;
 }}
 :root[data-theme="dark"]{
-  --bg:#0F1412; --surface:#161D1A; --sunk:#0B100E; --line:#2B3631; --fg:#E2E9E5; --muted:#97A59E;
-  --accent:#5BC097; --accent-ink:#06130D; --accent-soft:#183128;
-  --board:#183026; --chalk:#E9F1EC; --chalk-dim:#A6BCB0;
-  --paper:#131A17; --rule:#212B26;
+  --bg:#101716; --surface:#172120; --sunk:#0C1211; --line:#2A3634; --fg:#E3EAE8; --muted:#9DAAA6;
+  --accent:#72B8B1; --accent-ink:#071B19; --accent-soft:#18302E;
+  --primary:#2F6B66; --primary-hover:#3A7C76; --primary-ink:#FFFFFF;
+  --board:#13292C; --chalk:#E9F1EF; --chalk-dim:#A6BDBA;
+  --paper:#141D1C; --rule:#222D2B;
   --s1:#81A7EE; --s1-soft:#1A2437; --s2:#EE8D78; --s2-soft:#38211B; --s3:#7CCB95; --s3-soft:#15291C; --s4:#B89CEA; --s4-soft:#29213D;
-  --warn:#E8AF5E; --warn-soft:#32250F; --help:#2A2414; --help-line:#4A3F1E; color-scheme:dark;
+  --warn:#E8AF5E; --warn-soft:#32250F; --help:#2A2414; --help-line:#4A3F1E;
+  --side-bg:#0D1E21; --side-fg:#E3ECEA; --side-muted:#93ACA8; --side-active:#1E4A4E; --side-line:rgba(255,255,255,.08);
+  --shadow-pop:0 12px 32px rgba(0,0,0,.45); color-scheme:dark;
 }
 
 /* ---------- 기본 ---------- */
@@ -53,20 +79,42 @@
 body{background:var(--bg);color:var(--fg);font-family:var(--f-body);font-size:16px;line-height:1.65}
 button,input,textarea,select{font:inherit;color:inherit}
 :focus-visible{outline:3px solid var(--accent);outline-offset:2px}
-h1,h2,h3{text-wrap:balance;word-break:keep-all;margin:0}
+h1,h2,h3{text-wrap:balance;word-break:keep-all;overflow-wrap:break-word;margin:0}
 p{margin:0}
-.wrap{max-width:1080px;margin:0 auto;padding-block:20px 72px;padding-inline:16px}
+.wrap{max-width:1120px;margin:0 auto;padding-block:var(--sp-8) 72px;padding-inline:clamp(16px,3vw,40px)}
 .eyebrow{font-size:12.5px;letter-spacing:.06em;color:var(--muted);font-weight:600}
 .muted{color:var(--muted)}
 .small{font-size:14px}
 .mono{font-family:var(--f-mono);font-variant-numeric:tabular-nums}
 
 /* ---------- 상단 ---------- */
-.top{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px;padding-bottom:16px;border-bottom:1px solid var(--line);margin-bottom:24px}
-.brand{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 10px;cursor:pointer;background:none;border:0;padding:0;text-align:left}
-.brand b{font-family:var(--f-display);font-size:26px;font-weight:700}
-.brand span{color:var(--muted);font-size:14px;font-family:var(--f-display)}
-.top-r{display:flex;flex-wrap:wrap;align-items:center;gap:10px}
+/* ---------- 공통 레이아웃: 사이드바 + 본문 ---------- */
+.shell{display:flex;align-items:flex-start;min-height:100vh}
+.shell > .wrap{flex:1 1 auto;min-width:0}
+.side{position:sticky;top:0;flex:0 0 var(--side-w);width:var(--side-w);height:100vh;height:100dvh;display:flex;flex-direction:column;background:var(--side-bg);color:var(--side-fg);padding:var(--sp-6) var(--sp-3) var(--sp-4);z-index:25}
+.side-head{display:flex;align-items:center;justify-content:space-between;gap:var(--sp-2);padding:0 var(--sp-2) var(--sp-6)}
+.brand{display:flex;align-items:center;gap:10px;cursor:pointer;background:none;border:0;padding:0;text-align:left;color:inherit;min-height:44px}
+.brand-mark{flex:none;width:36px;height:36px;border-radius:10px;display:grid;place-items:center;background:rgba(255,255,255,.1);color:var(--side-fg)}
+.brand-t{display:grid;line-height:1.25}
+.brand b{font-size:19px;font-weight:700;letter-spacing:-.01em}
+.brand-t > span{color:var(--side-muted);font-size:var(--fs-cap)}
+.side :focus-visible{outline-color:#9FD3CC}
+.side-tog{display:none}
+.side-menu{flex:1;display:flex;flex-direction:column;gap:var(--sp-4);min-height:0;overflow-y:auto}
+.top-r{display:flex;flex-direction:column;gap:2px}
+.nav-i{display:flex;align-items:center;gap:12px;width:100%;min-height:var(--h-ctl);padding:0 var(--sp-3);border:0;border-radius:var(--r);background:none;color:var(--side-fg);font-size:15px;font-weight:500;text-align:left;cursor:pointer;opacity:.86}
+.nav-i:hover{background:var(--side-hover);opacity:1}
+.nav-i[aria-current="page"]{background:var(--side-active);opacity:1;font-weight:600}
+.nav-i .nav-t{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.side-foot{margin-top:auto;display:grid;gap:var(--sp-2);padding-top:var(--sp-3);border-top:1px solid var(--side-line)}
+.side-me{display:grid;gap:2px}
+.side-me .who{display:flex;flex-wrap:wrap;align-items:center;gap:2px 8px;padding:4px var(--sp-3);color:var(--side-muted);font-size:var(--fs-sub)}
+.side-me .who-n{color:var(--side-fg);font-weight:600}
+.side-me .linkbtn{color:var(--side-muted);font-size:13px;min-height:28px}
+.side-me .linkbtn:hover{color:var(--side-fg)}
+.side .theme{justify-self:start;margin:4px var(--sp-3) 0;background:rgba(255,255,255,.06);border-color:var(--side-line)}
+.side .theme button{color:var(--side-fg)}
+.side .theme button[aria-pressed="true"]{background:var(--side-active);box-shadow:none}
 .seg{display:inline-flex;background:var(--sunk);border-radius:8px;padding:3px}
 .seg button{border:0;background:none;padding:6px 12px;border-radius:6px;font-size:14px;color:var(--muted);cursor:pointer;min-height:36px}
 .seg button[aria-pressed="true"]{background:var(--surface);color:var(--fg);font-weight:600;box-shadow:0 1px 2px rgba(0,0,0,.08)}
@@ -413,7 +461,6 @@ details.adv > div{padding:2px 20px 16px;display:grid;gap:12px}
 @media (max-width:720px){ .smap-cols{grid-template-columns:1fr} }
 
 /* ---------- 화면 밝기 ---------- */
-.top-end{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
 .theme{display:inline-flex;gap:2px;padding:3px;border:1px solid var(--line);border-radius:999px;background:var(--sunk)}
 .theme button{display:inline-grid;place-items:center;color:var(--fg);width:36px;height:34px;border:0;border-radius:999px;background:none;cursor:pointer;font-size:16px;padding:0;opacity:.55;transition:background .15s,opacity .15s}
 .theme button[aria-pressed="true"]{background:var(--surface);opacity:1;box-shadow:0 1px 3px rgba(0,0,0,.15)}
@@ -519,7 +566,7 @@ details.adv > div{padding:2px 20px 16px;display:grid;gap:12px}
 #qrbox{background:#ffffff;padding:14px;border-radius:12px;justify-self:center;min-width:120px;min-height:120px;display:grid;place-items:center;color:#18201C}
 .linkline{font-family:var(--f-mono);font-size:13px;background:var(--sunk);border-radius:8px;padding:8px 10px;overflow-wrap:anywhere;user-select:all}
 /* 수업에서 함께 보기 */
-body.presenting .top,body.presenting .notice{display:none}
+body.presenting .side,body.presenting .notice{display:none}
 .present{display:grid;gap:22px;padding-block:8px 40px}
 .present .pbar{display:flex;flex-wrap:wrap;gap:8px;justify-content:space-between;align-items:center;color:var(--muted);font-size:14px}
 .present h1{font-family:var(--f-display);font-size:clamp(26px,4vw,44px);line-height:1.35;max-width:30ch}
@@ -553,17 +600,6 @@ body.presenting .top,body.presenting .notice{display:none}
   /* 휴대폰: 카드의 주요 버튼을 화면 아래쪽에 붙여 둔다 */
   .card .foot{position:sticky;bottom:0;z-index:2;background:var(--surface);margin:18px -16px -16px;padding:12px 16px calc(12px + env(safe-area-inset-bottom,0px));border-radius:0 0 12px 12px}
   .qcard .qt{font-size:18px}
-  /* 휴대폰 상단: 로고·밝기 한 줄, 버튼은 한 줄로 밀어서 보기 */
-  .top{display:grid;grid-template-columns:1fr auto;gap:10px;padding-bottom:12px;margin-bottom:16px}
-  .top-end{display:contents}
-  .brand{grid-row:1;grid-column:1}
-  .brand b{font-size:22px}
-  .brand span{display:none}
-  #theme{grid-row:1;grid-column:2}
-  .top-r{grid-row:2;grid-column:1/-1;flex-wrap:wrap;gap:6px}
-  .top-r::-webkit-scrollbar{display:none}
-  .top-r > *{flex:0 0 auto;white-space:nowrap}
-  .top-r .btn{min-height:36px;padding:5px 10px;font-size:13.5px}
   .lt,.pc-only{display:none!important}
   .abar{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}.abar .sp{display:none}
   .abar .btn{min-width:0;padding:6px 4px;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;justify-content:center}
@@ -1243,16 +1279,242 @@ button.pc{cursor:pointer}
 .modal .grow input{flex:1}
 @media (max-width:720px){ .asg-row{grid-template-columns:1fr auto;} .asg-row .tm{grid-column:1/-1} }
 .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+
+/* =========================================================
+   공통 컴포넌트 (2026-10 리디자인 2단계)
+   예전 클래스 이름은 그대로 두고 모양만 토큰에 맞춘다. 그림자·떠오르는 효과는 줄이고 얇은 테두리로 구분한다.
+   ========================================================= */
+body{font-size:var(--fs-body);letter-spacing:-.005em}
+h1,h2,h3{letter-spacing:-.015em}
+.home-head h1,.room-head h1,.ahead h1{font-size:var(--fs-page)}
+.home-head p{font-size:15px}
+.eyebrow{font-size:var(--fs-cap);color:var(--accent);letter-spacing:.04em}
+
+/* 버튼: 기본 44px · 작은 버튼 38px · 주 버튼은 잉크 네이비 */
+.btn{min-height:var(--h-ctl);border-radius:var(--r);border-color:var(--line);transition:background .12s,border-color .12s,color .12s}
+.btn:hover{border-color:var(--accent);color:var(--accent)}
+.btn.sm{min-height:var(--h-ctl-sm)}
+.btn.pri{background:var(--primary);border-color:var(--primary);color:var(--primary-ink)}
+.btn.pri:hover{background:var(--primary-hover);border-color:var(--primary-hover);color:var(--primary-ink)}
+.btn.pri:disabled:hover{background:var(--primary);border-color:var(--primary)}
+.btn.danger:hover{color:var(--s2);border-color:var(--s2);background:var(--s2-soft)}
+.btn.inst{border-color:var(--line);color:var(--fg)}
+/* 아이콘만 있는 버튼 (aria-label 필수) */
+.ibtn{display:inline-grid;place-items:center;width:var(--h-ctl);height:var(--h-ctl);border:1px solid var(--line);border-radius:var(--r);background:var(--surface);color:var(--fg);cursor:pointer;padding:0}
+.ibtn:hover{border-color:var(--accent);color:var(--accent)}
+
+/* 입력창 */
+textarea,input[type=text],input[type=number],input[type=password],select{border-color:var(--line);border-radius:var(--r)}
+input[type=text],input[type=number],input[type=password],select{min-height:var(--h-ctl)}
+textarea:focus,input[type=text]:focus,input[type=number]:focus,input[type=password]:focus,select:focus,input[type=datetime-local]:focus{border-color:var(--accent);outline:none;box-shadow:0 0 0 3px var(--accent-soft)}
+textarea:focus-visible,input:focus-visible,select:focus-visible{outline:none}
+input[type=datetime-local]{border-radius:var(--r)}
+
+/* 카드·목록 */
+.card{border-radius:var(--r-lg);padding:var(--sp-5) var(--sp-6)}
+.mcard,.kpi{border-radius:var(--r-lg)}
+.mcard:hover,.dcard:hover,.scard:hover,.tstat:hover{transform:none;box-shadow:0 2px 10px rgba(24,60,67,.06)}
+.empty{border-radius:var(--r-lg)}
+
+/* 탭·단계 표시 */
+.tabs button{font-weight:500}
+.tabs button[aria-selected="true"]{color:var(--fg);border-bottom-color:var(--accent)}
+.phases button{border-width:1px;border-radius:var(--r-lg)}
+.phases [aria-current="step"]{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent);background:var(--accent-soft)}
+.phases [aria-current="step"] .n{border-color:var(--accent);color:var(--accent)}
+.phases .n{border-width:1.5px}
+.phases .done [aria-current="step"] .n{color:var(--accent-ink)}   /* 마친 단계를 다시 보고 있을 때: 체크 표시가 보이게 */
+/* 큰 숫자(요약 타일): 고정폭 글꼴의 점 찍힌 0 대신 본문 글꼴 + 같은 폭 숫자 */
+.tstat b,.sstats b,.kpi b,.big3 b{font-family:var(--f-body);font-variant-numeric:tabular-nums;font-weight:700}
+
+/* 배지·상태 (예전 .chip은 그대로 쓰고, 새 화면은 .badge를 쓴다) */
+.badge{display:inline-flex;align-items:center;gap:4px;min-height:24px;padding:0 10px;border-radius:var(--r-pill);font-size:var(--fs-cap);font-weight:600;background:var(--sunk);color:var(--fg);white-space:nowrap}
+.badge.teal{background:var(--accent-soft);color:var(--accent)}
+.badge.slate{background:var(--s1-soft);color:var(--s1)}
+.badge.green{background:var(--s3-soft);color:var(--s3)}
+.badge.ochre{background:var(--warn-soft);color:var(--warn)}
+
+/* 알림·모달 */
+.notice{border-radius:var(--r);border:1px solid transparent}
+.modal-bg{background:rgba(16,32,36,.48)}
+.modal{border-radius:var(--r-lg);padding:var(--sp-6);box-shadow:var(--shadow-pop);border:1px solid var(--line)}
+.toast{border-radius:var(--r);box-shadow:var(--shadow-pop)}
+#tour .tour-card{border-radius:var(--r-lg)}
+
+/* 구분선·보조 패널 */
+.divider{height:1px;border:0;background:var(--line);margin:var(--sp-6) 0}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-lg);padding:var(--sp-4) var(--sp-5)}
+.panel.sub{background:var(--sunk);border-color:transparent}
+.appfoot{margin-top:var(--sp-10)}
+
+/* ---------- 교사 첫 화면 (3단계) ---------- */
+.thead{gap:var(--sp-5);margin-bottom:var(--sp-8)}
+.thead-hi h1{font-size:var(--fs-page)}
+/* 소개 배너: 글이 먼저, 그림은 옅게 */
+.wbanner{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:var(--sp-6);background:var(--surface);border:1px solid var(--line);border-radius:var(--r-lg);padding:var(--sp-6) var(--sp-8)}
+.wb-eb{font-size:12px;font-weight:700;letter-spacing:.14em;color:var(--accent)}
+.wbanner h2{font-size:clamp(22px,2.6vw,28px);font-weight:700;line-height:1.3;margin-top:6px}
+.wbanner p{color:var(--muted);margin-top:6px;font-size:15px}
+.wb-art{width:220px;height:auto;color:var(--accent);opacity:.75}
+.wb-art .n0{fill:var(--accent-soft)} .wb-art .n1{fill:var(--surface)} .wb-art .n2{fill:var(--warn-soft)}
+/* 주요 기능 바로가기 */
+.qgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:var(--sp-3)}
+.qa{display:grid;grid-template-columns:44px minmax(0,1fr) 16px;align-items:center;gap:14px;min-height:88px;padding:var(--sp-4) var(--sp-5);text-align:left;font:inherit;color:var(--fg);background:var(--surface);border:1px solid var(--line);border-radius:var(--r-lg);cursor:pointer;transition:border-color .12s,background .12s}
+.qa:hover{border-color:var(--accent)}
+.qa-ic{width:44px;height:44px;border-radius:10px;display:grid;place-items:center;background:var(--accent-soft);color:var(--accent)}
+.qa-t{display:grid;gap:2px;min-width:0}
+.qa-t b{font-size:16px;font-weight:700}
+.qa-t span{font-size:var(--fs-sub);color:var(--muted);line-height:1.5}
+.qa-go{color:var(--muted)}
+.qa.pri{background:var(--primary);border-color:var(--primary);color:var(--primary-ink)}
+.qa.pri:hover{background:var(--primary-hover);border-color:var(--primary-hover)}
+.qa.pri .qa-ic{background:rgba(255,255,255,.14);color:var(--primary-ink)}
+.qa.pri .qa-t span,.qa.pri .qa-go{color:rgba(255,255,255,.82)}
+/* 요약 숫자 + 최근 활동 */
+.tsum{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.15fr);gap:var(--sp-4);align-items:start}
+.tsum.solo{grid-template-columns:minmax(0,1fr)}
+.tsum .tstats{grid-template-columns:repeat(2,minmax(0,1fr))}
+.tsum.solo .tstats{grid-template-columns:repeat(4,minmax(0,1fr))}
+.tstat{border-left-width:1px;border-left-color:var(--line);border-radius:var(--r-lg);padding:var(--sp-4);gap:2px 12px}
+.tstat.warn,.tstat.good{border-color:transparent}
+.tstat .ic{width:44px;height:44px;border-radius:10px;display:grid;place-items:center;background:var(--sunk);color:var(--tc,var(--fg));font-size:inherit;align-self:start}
+.tstat b{font-size:28px;color:var(--fg)}
+.tstat.warn b{color:var(--warn)}
+.recent{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-lg);padding:var(--sp-4) var(--sp-4) var(--sp-2)}
+.recent-h{display:flex;align-items:center;justify-content:space-between;gap:var(--sp-2);padding:0 var(--sp-1) var(--sp-2)}
+.recent-h .sec-h{margin:0;font-size:17px}
+.recent ul{list-style:none;margin:0;padding:0}
+.recent li + li{border-top:1px solid var(--line)}
+.rrow{display:grid;grid-template-columns:20px minmax(0,1fr) auto auto 64px;align-items:center;gap:10px;width:100%;min-height:48px;padding:6px var(--sp-1);border:0;background:none;font:inherit;color:var(--fg);text-align:left;cursor:pointer;border-radius:var(--r-sm)}
+.rrow:hover{background:var(--sunk)}
+.rr-ic{color:var(--muted);display:grid}
+.rr-t{font-size:15px;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.rr-k{font-size:12.5px;color:var(--accent);background:var(--accent-soft);border-radius:var(--r-pill);padding:1px 9px;white-space:nowrap}
+.rr-d{font-size:12.5px;color:var(--muted);text-align:right;white-space:nowrap}
+/* 과목·활동 카드: 과목 색 띠는 남기고 가늘게 */
+.dcard{border-left-width:4px;border-radius:var(--r-lg)}
+.chead{border-left-width:4px}
+.mcard{border-top-width:3px}
+.mfilters button[aria-pressed="true"]{border-color:var(--primary);background:var(--primary);color:var(--primary-ink)}
+.mtools input[type=search]{border-radius:var(--r);min-height:var(--h-ctl)}
+.mtools input[type=search]:focus{border-color:var(--accent);outline:none;box-shadow:0 0 0 3px var(--accent-soft)}
+
+/* ---------- 새 활동: 활동 유형 7가지 (3단계) ---------- */
+.gtip{margin:-2px 0 var(--sp-3);color:var(--muted)}
+.gtypes{grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:var(--sp-3)}
+.gcard{grid-template-columns:44px minmax(0,1fr) 22px;align-items:start;gap:14px;min-height:108px;padding:var(--sp-4) var(--sp-4) var(--sp-4) var(--sp-4);border:1px solid var(--line);border-radius:var(--r-lg);transition:border-color .12s,background .12s}
+.gcard:hover{border-color:var(--accent)}
+.gcard .gc-ic{width:44px;height:44px;border-radius:10px;display:grid;place-items:center;background:var(--accent-soft);color:var(--accent);font-size:inherit}
+.gcard .gc-t{display:grid;gap:4px;min-width:0;font-size:inherit;color:var(--fg)}
+.gcard .gc-t b{font-size:16px;font-weight:700;line-height:1.4}
+.gcard .gc-t > span{font-size:var(--fs-sub);color:var(--muted);line-height:1.55;word-break:keep-all}
+.gcard .gc-ck{width:22px;height:22px;border-radius:50%;border:1.5px solid var(--line);background:var(--surface);position:relative}
+.gcard[aria-pressed="true"]{background:var(--accent-soft);border-color:var(--accent);box-shadow:0 0 0 1px var(--accent)}
+.gcard[aria-pressed="true"] .gc-ic{background:var(--surface)}
+.gcard[aria-pressed="true"] .gc-ck{background:var(--accent);border-color:var(--accent)}
+.gcard[aria-pressed="true"] .gc-ck::after{content:"";position:absolute;inset:3px;background:var(--accent-ink);-webkit-mask:var(--ti-check) center/contain no-repeat;mask:var(--ti-check) center/contain no-repeat}
+.gcard .beta{vertical-align:1px}
+
+/* ---------- 활동 만들기·수정 화면 (4단계) — .cform 안에서만 ---------- */
+.cform{max-width:960px}
+.cform > .card{padding:var(--sp-6) var(--sp-8)}
+.cform > .card.ctop{padding-top:var(--sp-5);padding-bottom:var(--sp-5)}
+.cform .card > h3,.cform .pg-head h3{display:flex;flex-wrap:wrap;align-items:center;gap:4px 10px;font-size:18px;font-weight:700;line-height:1.4;margin:0 0 var(--sp-4)}
+.cform .sn{font-size:22px;line-height:1;font-weight:500;color:var(--accent)}
+.cform .card > h3 .opt,.cform .pg-head h3 .opt{font-size:13px;font-weight:400}
+.cform .card > h3 .req{margin-left:-6px}
+.cform .q > label,.cform .q > legend,.cform .qlabel{font-size:15px;font-weight:600}
+.cform .hint{font-size:13.5px;color:var(--muted);margin-top:6px;line-height:1.6}
+.cform textarea{background-image:none;line-height:1.65}
+.cform .form-grid{gap:var(--sp-5) var(--sp-6)}
+/* 활동 방식(2단계 선택)·AI 프롬프트 유형 카드 */
+.cform .tcard:not(.gcard){border-width:1px;border-radius:var(--r-lg);padding:var(--sp-3) var(--sp-4);gap:4px;transition:border-color .12s,background .12s}
+.cform .tcard:not(.gcard):hover{border-color:var(--accent)}
+.cform .tcard:not(.gcard) b{display:flex;align-items:center;gap:8px;font-size:15px}
+.cform .tcard:not(.gcard) b .ti{color:var(--accent)}
+.cform .tcard:not(.gcard) > span{font-size:13.5px;line-height:1.55}
+/* 활동 특성별 묶음 (예: 학습 나눔 사진 제출 설정) */
+.subpanel{display:grid;gap:var(--sp-3);background:var(--sunk);border-radius:var(--r-lg);padding:var(--sp-4) var(--sp-5)}
+.subpanel h4{display:flex;align-items:center;gap:6px;font-size:15px;font-weight:700;margin:0}
+.subpanel > .hint{margin-top:-4px}
+.subpanel .form-grid{gap:var(--sp-4) var(--sp-5);grid-template-columns:repeat(2,minmax(0,1fr))}
+@media (max-width:640px){.subpanel .form-grid{grid-template-columns:minmax(0,1fr)}}
+/* AI 도움 상자 · 깊이 · 단계별 질문 */
+.cform .aisug{border-radius:var(--r-lg);padding:var(--sp-4)}
+.cform .depth{border-width:1px}
+.cform .qstep{border-radius:var(--r-lg);background:var(--surface)}
+.cform .ctxadd{border-width:1px;border-radius:var(--r)}
+/* 가상 인물 대화: 캐릭터 카드는 프로필처럼, AI 프롬프트(학생에게 안 보임)는 옅은 바탕으로 구분 */
+.cform .ccard .cimg{background:var(--sunk);border-radius:var(--r-lg);padding:var(--sp-4) var(--sp-3)}
+.cform .pguide{background:var(--sunk);border-color:transparent}
+.cform .pguide .tcard{background:var(--surface)}
+/* 접는 칸(수업 정보·세부 설정) */
+.cform > details.adv{margin-top:var(--sp-4)}
+/* 저장 버튼 줄: 긴 화면에서도 늘 보이게 아래에 붙인다 */
+.cform > .foot{position:sticky;bottom:0;z-index:6;margin:var(--sp-6) 0 0;padding:var(--sp-3) 0 calc(var(--sp-3) + env(safe-area-inset-bottom,0px));background:var(--bg);border-top:1px solid var(--line)}
+@media (max-width:640px){
+  .cform > .card{padding:var(--sp-4)}
+  .cform .card > h3,.cform .pg-head h3{font-size:17px}
+  .cform .ccard .cimg{padding:var(--sp-3)}
+  .cform > .foot{gap:6px;padding-top:var(--sp-2)}
+  .cform > .foot > .row{width:100%}
+  .cform > .foot > .row:first-child{flex-wrap:nowrap;gap:12px}
+  .cform > .foot > .row:first-child .btn{min-height:36px;padding:4px 10px;font-size:14px}
+  .cform > .foot > .row:first-child .linkbtn{font-size:13px;white-space:nowrap}
+  .cform > .foot > .row:last-child{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.4fr)}
+  .cform > .foot > .row:last-child > label{grid-column:1/-1}
+  .cform > .foot .btn.pri{width:auto}
+}
+
+@media (max-width:1100px){ .tsum{grid-template-columns:minmax(0,1fr)} .tsum .tstats{grid-template-columns:repeat(4,minmax(0,1fr))} }
+@media (max-width:640px){
+  .wbanner{grid-template-columns:minmax(0,1fr);padding:var(--sp-5)}
+  .wb-art{display:none}
+  .tsum .tstats,.tsum.solo .tstats{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .tstat .ic{display:none}
+  .rrow{grid-template-columns:minmax(0,1fr) auto;row-gap:2px}
+  .rr-ic,.rr-k{display:none}
+  .rr-d{grid-column:1;text-align:left}
+  .rrow .chip{grid-row:1;grid-column:2}
+  .gcard{min-height:0}
+}
+
+/* ---------- 반응형: 960px 아래는 위쪽 막대 + 펼치는 메뉴 ---------- */
+@media (max-width:960px){
+  .shell{display:block}
+  .side{position:relative;width:auto;height:auto;padding:var(--sp-2) var(--sp-4);padding-top:calc(var(--sp-2) + env(safe-area-inset-top,0px))}
+  .side-head{padding:0}
+  .brand-mark{width:32px;height:32px}
+  .brand b{font-size:18px}
+  .brand-t > span{display:none}
+  .side-tog{display:inline-grid;place-items:center;width:44px;height:44px;border:0;border-radius:var(--r);background:none;color:var(--side-fg);cursor:pointer}
+  .side-tog:hover{background:var(--side-hover)}
+  .side-menu{display:none;position:absolute;left:0;right:0;top:100%;max-height:calc(100dvh - 60px);overflow-y:auto;background:var(--side-bg);padding:var(--sp-2) var(--sp-4) var(--sp-4);box-shadow:0 12px 24px rgba(0,0,0,.25)}
+  body.side-open .side-menu{display:flex}
+  .wrap{padding-top:var(--sp-5)}
+}
+@media print{.side{display:none}.shell{display:block}}
 </style>
 
-<div class="wrap">
-  <header class="top">
-    <button class="brand" data-a="home" type="button"><b>생각이음</b><span>생각을 잇다, 생각이 자라다</span></button>
-    <div class="top-end"><div class="top-r" id="topr"></div>
-      <div class="theme" id="theme" role="group" aria-label="화면 밝기"><button type="button" data-a="theme-set" data-v="light" title="라이트 모드" aria-label="라이트 모드" data-ti="sun"></button><button type="button" data-a="theme-set" data-v="dark" title="다크 모드" aria-label="다크 모드" data-ti="moon"></button></div></div>
-  </header>
-  <main id="app"><p class="who">불러오는 중…</p></main>
-  <footer class="appfoot"><span>제작 : 이태형T(한백고)</span><span aria-hidden="true">·</span><button type="button" class="linkbtn" data-a="feedback-open">오류·건의하기</button></footer>
+<div class="shell">
+  <!-- 공통 사이드바: 메뉴(#topr)는 renderTop()이 교사·학생에 맞게 채운다. 휴대폰에서는 위쪽 막대 + 펼치는 메뉴 -->
+  <aside class="side" id="side">
+    <div class="side-head">
+      <button class="brand" data-a="home" type="button"><span class="brand-mark" aria-hidden="true" data-ti="bubble"></span><span class="brand-t"><b>생각이음</b><span>생각을 잇다, 생각이 자라다</span></span></button>
+      <button class="side-tog" id="side-tog" type="button" aria-expanded="false" aria-controls="side-menu" aria-label="메뉴 열기" data-ti="menu-2"></button>
+    </div>
+    <div class="side-menu" id="side-menu">
+      <nav class="top-r" id="topr" aria-label="주 메뉴"></nav>
+      <div class="side-foot">
+        <div class="side-me" id="sideme"></div>
+        <div class="theme" id="theme" role="group" aria-label="화면 밝기"><button type="button" data-a="theme-set" data-v="light" title="라이트 모드" aria-label="라이트 모드" data-ti="sun"></button><button type="button" data-a="theme-set" data-v="dark" title="다크 모드" aria-label="다크 모드" data-ti="moon"></button></div>
+      </div>
+    </div>
+  </aside>
+  <div class="wrap">
+    <main id="app"><p class="who">불러오는 중…</p></main>
+    <footer class="appfoot"><span>제작 : 이태형T(한백고)</span><span aria-hidden="true">·</span><button type="button" class="linkbtn" data-a="feedback-open">오류·건의하기</button></footer>
+  </div>
 </div>
 <div id="modal"></div>
 <div id="tour"></div>
@@ -1652,7 +1914,7 @@ const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt
    ic(이름, 크기, 이름표) → <svg>. 크기: "sm" 16px(작은 보조) · "md" 20px(기본) · "lg" 24px(기능 카드 대표). 선 굵기 1.8 하나로
    이름표가 없으면 꾸밈으로 보고 화면 읽기에서 숨긴다(버튼 글자가 뜻을 전한다). 아이콘만 있는 버튼은 버튼에 aria-label을 단다
    TI_PATHS는 dev/icons/build_icons.py가 실제 쓰는 아이콘만 골라 채운다 */
-const TI_PATHS = {/*TI:BEGIN*//* Tabler Icons v3.49.0 outline · 141개 */"abc":'<path d="M3 16v-6a2 2 0 1 1 4 0v6"/><path d="M3 13h4"/><path d="M10 8v6a2 2 0 1 0 4 0v-1a2 2 0 1 0 -4 0v1"/><path d="M20.732 12a2 2 0 0 0 -3.732 1v1a2 2 0 0 0 3.726 1.01"/>',"adjustments":'<path d="M4 10a2 2 0 1 0 4 0a2 2 0 0 0 -4 0"/><path d="M6 4v4"/><path d="M6 12v8"/><path d="M10 16a2 2 0 1 0 4 0a2 2 0 0 0 -4 0"/><path d="M12 4v10"/><path d="M12 18v2"/><path d="M16 7a2 2 0 1 0 4 0a2 2 0 0 0 -4 0"/><path d="M18 4v1"/><path d="M18 9v11"/>',"alarm":'<path d="M5 13a7 7 0 1 0 14 0a7 7 0 1 0 -14 0"/><path d="M12 10l0 3l2 0"/><path d="M7 4l-2.75 2"/><path d="M17 4l2.75 2"/>',"alert-triangle":'<path d="M12 9v4"/><path d="M10.363 3.591l-8.106 13.534a1.914 1.914 0 0 0 1.636 2.871h16.214a1.914 1.914 0 0 0 1.636 -2.87l-8.106 -13.536a1.914 1.914 0 0 0 -3.274 0"/><path d="M12 16h.01"/>',"archive":'<path d="M3 6a2 2 0 0 1 2 -2h14a2 2 0 0 1 2 2a2 2 0 0 1 -2 2h-14a2 2 0 0 1 -2 -2"/><path d="M5 8v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-10"/><path d="M10 12l4 0"/>',"archive-off":'<path d="M8 4h11a2 2 0 1 1 0 4h-7m-4 0h-3a2 2 0 0 1 -.826 -3.822"/><path d="M5 8v10a2 2 0 0 0 2 2h10a2 2 0 0 0 1.824 -1.18m.176 -3.82v-7"/><path d="M10 12h2"/><path d="M3 3l18 18"/>',"arrow-back-up":'<path d="M9 14l-4 -4l4 -4"/><path d="M5 10h11a4 4 0 1 1 0 8h-1"/>',"arrow-down":'<path d="M12 5l0 14"/><path d="M18 13l-6 6"/><path d="M6 13l6 6"/>',"arrow-left":'<path d="M5 12l14 0"/><path d="M5 12l6 6"/><path d="M5 12l6 -6"/>',"arrow-right":'<path d="M5 12l14 0"/><path d="M13 18l6 -6"/><path d="M13 6l6 6"/>',"arrow-up":'<path d="M12 5l0 14"/><path d="M18 11l-6 -6"/><path d="M6 11l6 -6"/>',"arrow-up-right":'<path d="M17 7l-10 10"/><path d="M8 7l9 0l0 9"/>',"arrows-exchange":'<path d="M7 10h14l-4 -4"/><path d="M17 14h-14l4 4"/>',"arrows-left-right":'<path d="M21 17l-18 0"/><path d="M6 10l-3 -3l3 -3"/><path d="M3 7l18 0"/><path d="M18 20l3 -3l-3 -3"/>',"arrows-shuffle":'<path d="M18 4l3 3l-3 3"/><path d="M18 20l3 -3l-3 -3"/><path d="M3 7h3a5 5 0 0 1 5 5a5 5 0 0 0 5 5h5"/><path d="M21 7h-5a4.978 4.978 0 0 0 -3 1m-4 8a4.984 4.984 0 0 1 -3 1h-3"/>',"arrows-sort":'<path d="M3 9l4 -4l4 4m-4 -4v14"/><path d="M21 15l-4 4l-4 -4m4 4v-14"/>',"ball-football":'<path d="M3 12a9 9 0 1 0 18 0a9 9 0 1 0 -18 0"/><path d="M12 7l4.76 3.45l-1.76 5.55h-6l-1.76 -5.55l4.76 -3.45"/><path d="M12 7v-4m3 13l2.5 3m-.74 -8.55l3.74 -1.45m-11.44 7.05l-2.56 2.95m.74 -8.55l-3.74 -1.45"/>',"bell":'<path d="M10 5a2 2 0 1 1 4 0a7 7 0 0 1 4 6v3a4 4 0 0 0 2 3h-16a4 4 0 0 0 2 -3v-3a7 7 0 0 1 4 -6"/><path d="M9 17v1a3 3 0 0 0 6 0v-1"/>',"bell-off":'<path d="M9.346 5.353c.21 -.129 .428 -.246 .654 -.353a2 2 0 1 1 4 0a7 7 0 0 1 4 6v3m-1 3h-13a4 4 0 0 0 2 -3v-3a6.996 6.996 0 0 1 1.273 -3.707"/><path d="M9 17v1a3 3 0 0 0 6 0v-1"/><path d="M3 3l18 18"/>',"bell-ringing":'<path d="M10 5a2 2 0 0 1 4 0a7 7 0 0 1 4 6v3a4 4 0 0 0 2 3h-16a4 4 0 0 0 2 -3v-3a7 7 0 0 1 4 -6"/><path d="M9 17v1a3 3 0 0 0 6 0v-1"/><path d="M21 6.727a11.05 11.05 0 0 0 -2.794 -3.727"/><path d="M3 6.727a11.05 11.05 0 0 1 2.792 -3.727"/>',"book":'<path d="M3 19a9 9 0 0 1 9 0a9 9 0 0 1 9 0"/><path d="M3 6a9 9 0 0 1 9 0a9 9 0 0 1 9 0"/><path d="M3 6l0 13"/><path d="M12 6l0 13"/><path d="M21 6l0 13"/>',"book-2":'<path d="M19 4v16h-12a2 2 0 0 1 -2 -2v-12a2 2 0 0 1 2 -2h12"/><path d="M19 16h-12a2 2 0 0 0 -2 2"/><path d="M9 8h6"/>',"books":'<path d="M5 5a1 1 0 0 1 1 -1h2a1 1 0 0 1 1 1v14a1 1 0 0 1 -1 1h-2a1 1 0 0 1 -1 -1l0 -14"/><path d="M9 5a1 1 0 0 1 1 -1h2a1 1 0 0 1 1 1v14a1 1 0 0 1 -1 1h-2a1 1 0 0 1 -1 -1l0 -14"/><path d="M5 8h4"/><path d="M9 16h4"/><path d="M13.803 4.56l2.184 -.53c.562 -.135 1.133 .19 1.282 .732l3.695 13.418a1.02 1.02 0 0 1 -.634 1.219l-.133 .041l-2.184 .53c-.562 .135 -1.133 -.19 -1.282 -.732l-3.695 -13.418a1.02 1.02 0 0 1 .634 -1.219l.133 -.041"/><path d="M14 9l4 -1"/><path d="M16 16l3.923 -.98"/>',"brush":'<path d="M3 21v-4a4 4 0 1 1 4 4h-4"/><path d="M21 3a16 16 0 0 0 -12.8 10.2"/><path d="M21 3a16 16 0 0 1 -10.2 12.8"/><path d="M10.6 9a9 9 0 0 1 4.4 4.4"/>',"bubble":'<path d="M12.4 3a5.34 5.34 0 0 1 4.906 3.239a5.333 5.333 0 0 1 -1.195 10.6a4.26 4.26 0 0 1 -5.28 1.863l-3.831 2.298v-3.134a2.668 2.668 0 0 1 -1.795 -3.773a4.8 4.8 0 0 1 2.908 -8.933a5.33 5.33 0 0 1 4.287 -2.16"/>',"bug":'<path d="M9 9v-1a3 3 0 0 1 6 0v1"/><path d="M8 9h8a6 6 0 0 1 1 3v3a5 5 0 0 1 -10 0v-3a6 6 0 0 1 1 -3"/><path d="M3 13l4 0"/><path d="M17 13l4 0"/><path d="M12 20l0 -6"/><path d="M4 19l3.35 -2"/><path d="M20 19l-3.35 -2"/><path d="M4 7l3.75 2.4"/><path d="M20 7l-3.75 2.4"/>',"building-bank":'<path d="M3 21l18 0"/><path d="M3 10l18 0"/><path d="M5 6l7 -3l7 3"/><path d="M4 10l0 11"/><path d="M20 10l0 11"/><path d="M8 14l0 3"/><path d="M12 14l0 3"/><path d="M16 14l0 3"/>',"bulb":'<path d="M3 12h1m8 -9v1m8 8h1m-15.4 -6.4l.7 .7m12.1 -.7l-.7 .7"/><path d="M9 16a5 5 0 1 1 6 0a3.5 3.5 0 0 0 -1 3a2 2 0 0 1 -4 0a3.5 3.5 0 0 0 -1 -3"/><path d="M9.7 17l4.6 0"/>',"calendar":'<path d="M4 7a2 2 0 0 1 2 -2h12a2 2 0 0 1 2 2v12a2 2 0 0 1 -2 2h-12a2 2 0 0 1 -2 -2v-12"/><path d="M16 3v4"/><path d="M8 3v4"/><path d="M4 11h16"/><path d="M11 15h1"/><path d="M12 15v3"/>',"camera":'<path d="M5 7h1a2 2 0 0 0 2 -2a1 1 0 0 1 1 -1h6a1 1 0 0 1 1 1a2 2 0 0 0 2 2h1a2 2 0 0 1 2 2v9a2 2 0 0 1 -2 2h-14a2 2 0 0 1 -2 -2v-9a2 2 0 0 1 2 -2"/><path d="M9 13a3 3 0 1 0 6 0a3 3 0 0 0 -6 0"/>',"chalkboard-teacher":'<path d="M8 19h-3a2 2 0 0 1 -2 -2v-10a2 2 0 0 1 2 -2h14a2 2 0 0 1 2 2v11a1 1 0 0 1 -1 1"/><path d="M12 14a2 2 0 1 0 4.001 -.001a2 2 0 0 0 -4.001 .001"/><path d="M17 19a2 2 0 0 0 -2 -2h-2a2 2 0 0 0 -2 2"/>',"chart-bar":'<path d="M3 13a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v6a1 1 0 0 1 -1 1h-4a1 1 0 0 1 -1 -1l0 -6"/><path d="M15 9a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v10a1 1 0 0 1 -1 1h-4a1 1 0 0 1 -1 -1l0 -10"/><path d="M9 5a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v14a1 1 0 0 1 -1 1h-4a1 1 0 0 1 -1 -1l0 -14"/><path d="M4 20h14"/>',"check":'<path d="M5 12l5 5l10 -10"/>',"chevron-down":'<path d="M6 9l6 6l6 -6"/>',"chevron-left":'<path d="M15 6l-6 6l6 6"/>',"chevron-right":'<path d="M9 6l6 6l-6 6"/>',"chevron-up":'<path d="M6 15l6 -6l6 6"/>',"circle":'<path d="M3 12a9 9 0 1 0 18 0a9 9 0 1 0 -18 0"/>',"circle-check":'<path d="M3 12a9 9 0 1 0 18 0a9 9 0 1 0 -18 0"/><path d="M9 12l2 2l4 -4"/>',"circle-dashed":'<path d="M8.56 3.69a9 9 0 0 0 -2.92 1.95"/><path d="M3.69 8.56a9 9 0 0 0 -.69 3.44"/><path d="M3.69 15.44a9 9 0 0 0 1.95 2.92"/><path d="M8.56 20.31a9 9 0 0 0 3.44 .69"/><path d="M15.44 20.31a9 9 0 0 0 2.92 -1.95"/><path d="M20.31 15.44a9 9 0 0 0 .69 -3.44"/><path d="M20.31 8.56a9 9 0 0 0 -1.95 -2.92"/><path d="M15.44 3.69a9 9 0 0 0 -3.44 -.69"/>',"circle-dot":'<path d="M11 12a1 1 0 1 0 2 0a1 1 0 1 0 -2 0"/><path d="M3 12a9 9 0 1 0 18 0a9 9 0 1 0 -18 0"/>',"clipboard":'<path d="M9 5h-2a2 2 0 0 0 -2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-12a2 2 0 0 0 -2 -2h-2"/><path d="M9 5a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2a2 2 0 0 1 -2 2h-2a2 2 0 0 1 -2 -2"/>',"clipboard-list":'<path d="M9 5h-2a2 2 0 0 0 -2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-12a2 2 0 0 0 -2 -2h-2"/><path d="M9 5a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2a2 2 0 0 1 -2 2h-2a2 2 0 0 1 -2 -2"/><path d="M9 12l.01 0"/><path d="M13 12l2 0"/><path d="M9 16l.01 0"/><path d="M13 16l2 0"/>',"clock":'<path d="M3 12a9 9 0 1 0 18 0a9 9 0 0 0 -18 0"/><path d="M12 7v5l3 3"/>',"compass":'<path d="M8 16l2 -6l6 -2l-2 6l-6 2"/><path d="M3 12a9 9 0 1 0 18 0a9 9 0 1 0 -18 0"/><path d="M12 3l0 2"/><path d="M12 19l0 2"/><path d="M3 12l2 0"/><path d="M19 12l2 0"/>',"confetti":'<path d="M4 5h2"/><path d="M5 4v2"/><path d="M11.5 4l-.5 2"/><path d="M18 5h2"/><path d="M19 4v2"/><path d="M15 9l-1 1"/><path d="M18 13l2 -.5"/><path d="M18 19h2"/><path d="M19 18v2"/><path d="M14 16.518l-6.518 -6.518l-4.39 9.58a1 1 0 0 0 1.329 1.329l9.579 -4.39"/>',"copy":'<path d="M7 9.667a2.667 2.667 0 0 1 2.667 -2.667h8.666a2.667 2.667 0 0 1 2.667 2.667v8.666a2.667 2.667 0 0 1 -2.667 2.667h-8.666a2.667 2.667 0 0 1 -2.667 -2.667l0 -8.666"/><path d="M4.012 16.737a2.005 2.005 0 0 1 -1.012 -1.737v-10c0 -1.1 .9 -2 2 -2h10c.75 0 1.158 .385 1.5 1"/>',"crystal-ball":'<path d="M6.73 17.018a8 8 0 1 1 10.54 0"/><path d="M5 19a2 2 0 0 0 2 2h10a2 2 0 1 0 0 -4h-10a2 2 0 0 0 -2 2"/><path d="M11 7a3 3 0 0 0 -3 3"/>',"device-floppy":'<path d="M6 4h10l4 4v10a2 2 0 0 1 -2 2h-12a2 2 0 0 1 -2 -2v-12a2 2 0 0 1 2 -2"/><path d="M10 14a2 2 0 1 0 4 0a2 2 0 1 0 -4 0"/><path d="M14 4l0 4l-6 0l0 -4"/>',"device-laptop":'<path d="M3 19l18 0"/><path d="M5 7a1 1 0 0 1 1 -1h12a1 1 0 0 1 1 1v8a1 1 0 0 1 -1 1h-12a1 1 0 0 1 -1 -1l0 -8"/>',"device-mobile-down":'<path d="M12.5 21h-4.5a2 2 0 0 1 -2 -2v-14a2 2 0 0 1 2 -2h8a2 2 0 0 1 2 2v7"/><path d="M11 4h2"/><path d="M12 17v.01"/><path d="M19 16v6"/><path d="M22 19l-3 3l-3 -3"/>',"diamond":'<path d="M6 5h12l3 5l-8.5 9.5a.7 .7 0 0 1 -1 0l-8.5 -9.5l3 -5"/><path d="M10 12l-2 -2.2l.6 -1"/>',"dots":'<path d="M4 12a1 1 0 1 0 2 0a1 1 0 1 0 -2 0"/><path d="M11 12a1 1 0 1 0 2 0a1 1 0 1 0 -2 0"/><path d="M18 12a1 1 0 1 0 2 0a1 1 0 1 0 -2 0"/>',"dots-vertical":'<path d="M11 12a1 1 0 1 0 2 0a1 1 0 1 0 -2 0"/><path d="M11 19a1 1 0 1 0 2 0a1 1 0 1 0 -2 0"/><path d="M11 5a1 1 0 1 0 2 0a1 1 0 1 0 -2 0"/>',"download":'<path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2 -2v-2"/><path d="M7 11l5 5l5 -5"/><path d="M12 4l0 12"/>',"equal":'<path d="M5 10h14"/><path d="M5 14h14"/>',"eraser":'<path d="M19 20h-10.5l-4.21 -4.3a1 1 0 0 1 0 -1.41l10 -10a1 1 0 0 1 1.41 0l5 5a1 1 0 0 1 0 1.41l-9.2 9.3"/><path d="M18 13.3l-6.3 -6.3"/>',"external-link":'<path d="M12 6h-6a2 2 0 0 0 -2 2v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-6"/><path d="M11 13l9 -9"/><path d="M15 4h5v5"/>',"eye":'<path d="M10 12a2 2 0 1 0 4 0a2 2 0 0 0 -4 0"/><path d="M21 12c-2.4 4 -5.4 6 -9 6c-3.6 0 -6.6 -2 -9 -6c2.4 -4 5.4 -6 9 -6c3.6 0 6.6 2 9 6"/>',"eye-off":'<path d="M10.585 10.587a2 2 0 0 0 2.829 2.828"/><path d="M16.681 16.673a8.717 8.717 0 0 1 -4.681 1.327c-3.6 0 -6.6 -2 -9 -6c1.272 -2.12 2.712 -3.678 4.32 -4.674m2.86 -1.146a9.055 9.055 0 0 1 1.82 -.18c3.6 0 6.6 2 9 6c-.666 1.11 -1.379 2.067 -2.138 2.87"/><path d="M3 3l18 18"/>',"file-pencil":'<path d="M14 3v4a1 1 0 0 0 1 1h4"/><path d="M17 21h-10a2 2 0 0 1 -2 -2v-14a2 2 0 0 1 2 -2h7l5 5v11a2 2 0 0 1 -2 2"/><path d="M10 18l5 -5a1.414 1.414 0 0 0 -2 -2l-5 5v2h2"/>',"file-text":'<path d="M14 3v4a1 1 0 0 0 1 1h4"/><path d="M17 21h-10a2 2 0 0 1 -2 -2v-14a2 2 0 0 1 2 -2h7l5 5v11a2 2 0 0 1 -2 2"/><path d="M9 9l1 0"/><path d="M9 13l6 0"/><path d="M9 17l6 0"/>',"flask":'<path d="M9 3l6 0"/><path d="M10 9l4 0"/><path d="M10 3v6l-4 11a.7 .7 0 0 0 .5 1h11a.7 .7 0 0 0 .5 -1l-4 -11v-6"/>',"folder-open":'<path d="M5 19l2.757 -7.351a1 1 0 0 1 .936 -.649h12.307a1 1 0 0 1 .986 1.164l-.996 5.211a2 2 0 0 1 -1.964 1.625h-14.026a2 2 0 0 1 -2 -2v-11a2 2 0 0 1 2 -2h4l3 3h7a2 2 0 0 1 2 2v2"/>',"folders":'<path d="M9 3h3l2 2h5a2 2 0 0 1 2 2v7a2 2 0 0 1 -2 2h-10a2 2 0 0 1 -2 -2v-9a2 2 0 0 1 2 -2"/><path d="M17 16v2a2 2 0 0 1 -2 2h-10a2 2 0 0 1 -2 -2v-9a2 2 0 0 1 2 -2h2"/>',"grip-vertical":'<path d="M8 5a1 1 0 1 0 2 0a1 1 0 1 0 -2 0"/><path d="M8 12a1 1 0 1 0 2 0a1 1 0 1 0 -2 0"/><path d="M8 19a1 1 0 1 0 2 0a1 1 0 1 0 -2 0"/><path d="M14 5a1 1 0 1 0 2 0a1 1 0 1 0 -2 0"/><path d="M14 12a1 1 0 1 0 2 0a1 1 0 1 0 -2 0"/><path d="M14 19a1 1 0 1 0 2 0a1 1 0 1 0 -2 0"/>',"hand-finger":'<path d="M8 13v-8.5a1.5 1.5 0 0 1 3 0v7.5"/><path d="M11 11.5v-2a1.5 1.5 0 1 1 3 0v2.5"/><path d="M14 10.5a1.5 1.5 0 0 1 3 0v1.5"/><path d="M17 11.5a1.5 1.5 0 0 1 3 0v4.5a6 6 0 0 1 -6 6h-2h.208a6 6 0 0 1 -5.012 -2.7a69.74 69.74 0 0 1 -.196 -.3c-.312 -.479 -1.407 -2.388 -3.286 -5.728a1.5 1.5 0 0 1 .536 -2.022a1.867 1.867 0 0 1 2.28 .28l1.47 1.47"/>',"heart":'<path d="M19.5 12.572l-7.5 7.428l-7.5 -7.428a5 5 0 1 1 7.5 -6.566a5 5 0 1 1 7.5 6.572"/>',"help-circle":'<path d="M3 12a9 9 0 1 0 18 0a9 9 0 0 0 -18 0"/><path d="M12 16v.01"/><path d="M12 13a2 2 0 0 0 .914 -3.782a1.98 1.98 0 0 0 -2.414 .483"/>',"hierarchy-2":'<path d="M10 3h4v4h-4l0 -4"/><path d="M3 17h4v4h-4l0 -4"/><path d="M17 17h4v4h-4l0 -4"/><path d="M7 17l5 -4l5 4"/><path d="M12 7l0 6"/>',"history":'<path d="M12 8l0 4l2 2"/><path d="M3.05 11a9 9 0 1 1 .5 4m-.5 5v-5h5"/>',"hourglass":'<path d="M6.5 7h11"/><path d="M6.5 17h11"/><path d="M6 20v-2a6 6 0 1 1 12 0v2a1 1 0 0 1 -1 1h-10a1 1 0 0 1 -1 -1"/><path d="M6 4v2a6 6 0 1 0 12 0v-2a1 1 0 0 0 -1 -1h-10a1 1 0 0 0 -1 1"/>',"key":'<path d="M16.555 3.843l3.602 3.602a2.877 2.877 0 0 1 0 4.069l-2.643 2.643a2.877 2.877 0 0 1 -4.069 0l-.301 -.301l-6.558 6.558a2 2 0 0 1 -1.239 .578l-.175 .008h-1.172a1 1 0 0 1 -.993 -.883l-.007 -.117v-1.172a2 2 0 0 1 .467 -1.284l.119 -.13l.414 -.414h2v-2h2v-2l2.144 -2.144l-.301 -.301a2.877 2.877 0 0 1 0 -4.069l2.643 -2.643a2.877 2.877 0 0 1 4.069 0"/><path d="M15 9h.01"/>',"language":'<path d="M9 6.371c0 4.418 -2.239 6.629 -5 6.629"/><path d="M4 6.371h7"/><path d="M5 9c0 2.144 2.252 3.908 6 4"/><path d="M12 20l4 -9l4 9"/><path d="M19.1 18h-6.2"/><path d="M6.694 3l.793 .582"/>',"layout-board":'<path d="M4 6a2 2 0 0 1 2 -2h12a2 2 0 0 1 2 2v12a2 2 0 0 1 -2 2h-12a2 2 0 0 1 -2 -2l0 -12"/><path d="M4 9h8"/><path d="M12 15h8"/><path d="M12 4v16"/>',"layout-cards":'<path d="M4 6a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2v12a2 2 0 0 1 -2 2h-2a2 2 0 0 1 -2 -2l0 -12"/><path d="M14 6a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2v6a2 2 0 0 1 -2 2h-2a2 2 0 0 1 -2 -2l0 -6"/>',"layout-dashboard":'<path d="M5 4h4a1 1 0 0 1 1 1v6a1 1 0 0 1 -1 1h-4a1 1 0 0 1 -1 -1v-6a1 1 0 0 1 1 -1"/><path d="M5 16h4a1 1 0 0 1 1 1v2a1 1 0 0 1 -1 1h-4a1 1 0 0 1 -1 -1v-2a1 1 0 0 1 1 -1"/><path d="M15 12h4a1 1 0 0 1 1 1v6a1 1 0 0 1 -1 1h-4a1 1 0 0 1 -1 -1v-6a1 1 0 0 1 1 -1"/><path d="M15 4h4a1 1 0 0 1 1 1v2a1 1 0 0 1 -1 1h-4a1 1 0 0 1 -1 -1v-2a1 1 0 0 1 1 -1"/>',"layout-grid":'<path d="M4 5a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v4a1 1 0 0 1 -1 1h-4a1 1 0 0 1 -1 -1l0 -4"/><path d="M14 5a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v4a1 1 0 0 1 -1 1h-4a1 1 0 0 1 -1 -1l0 -4"/><path d="M4 15a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v4a1 1 0 0 1 -1 1h-4a1 1 0 0 1 -1 -1l0 -4"/><path d="M14 15a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v4a1 1 0 0 1 -1 1h-4a1 1 0 0 1 -1 -1l0 -4"/>',"leaf":'<path d="M5 21c.5 -4.5 2.5 -8 7 -10"/><path d="M9 18c6.218 0 10.5 -3.288 11 -12v-2h-4.014c-9 0 -11.986 4 -12 9c0 1 0 3 2 5h3l.014 0"/>',"link":'<path d="M9 15l6 -6"/><path d="M11 6l.463 -.536a5 5 0 0 1 7.071 7.072l-.534 .464"/><path d="M13 18l-.397 .534a5.068 5.068 0 0 1 -7.127 0a4.972 4.972 0 0 1 0 -7.071l.524 -.463"/>',"list":'<path d="M9 6l11 0"/><path d="M9 12l11 0"/><path d="M9 18l11 0"/><path d="M5 6l0 .01"/><path d="M5 12l0 .01"/><path d="M5 18l0 .01"/>',"list-details":'<path d="M13 5h8"/><path d="M13 9h5"/><path d="M13 15h8"/><path d="M13 19h5"/><path d="M3 5a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v4a1 1 0 0 1 -1 1h-4a1 1 0 0 1 -1 -1l0 -4"/><path d="M3 15a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v4a1 1 0 0 1 -1 1h-4a1 1 0 0 1 -1 -1l0 -4"/>',"lock":'<path d="M5 13a2 2 0 0 1 2 -2h10a2 2 0 0 1 2 2v6a2 2 0 0 1 -2 2h-10a2 2 0 0 1 -2 -2v-6"/><path d="M11 16a1 1 0 1 0 2 0a1 1 0 0 0 -2 0"/><path d="M8 11v-4a4 4 0 1 1 8 0v4"/>',"mail":'<path d="M3 7a2 2 0 0 1 2 -2h14a2 2 0 0 1 2 2v10a2 2 0 0 1 -2 2h-14a2 2 0 0 1 -2 -2v-10"/><path d="M3 7l9 6l9 -6"/>',"mailbox":'<path d="M10 21v-6.5a3.5 3.5 0 0 0 -7 0v6.5h18v-6a4 4 0 0 0 -4 -4h-10.5"/><path d="M12 11v-8h4l2 2l-2 2h-4"/><path d="M6 15h1"/>',"map-pin":'<path d="M9 11a3 3 0 1 0 6 0a3 3 0 0 0 -6 0"/><path d="M17.657 16.657l-4.243 4.243a2 2 0 0 1 -2.827 0l-4.244 -4.243a8 8 0 1 1 11.314 0"/>',"masks-theater":'<path d="M13.192 9h6.616a2 2 0 0 1 1.992 2.183l-.567 6.182a4 4 0 0 1 -3.983 3.635h-1.5a4 4 0 0 1 -3.983 -3.635l-.567 -6.182a2 2 0 0 1 1.992 -2.183"/><path d="M15 13h.01"/><path d="M18 13h.01"/><path d="M15 16.5c1 .667 2 .667 3 0"/><path d="M8.632 15.982a4.037 4.037 0 0 1 -.382 .018h-1.5a4 4 0 0 1 -3.983 -3.635l-.567 -6.182a2 2 0 0 1 1.992 -2.183h6.616a2 2 0 0 1 2 2"/><path d="M6 8h.01"/><path d="M9 8h.01"/><path d="M6 12c.764 -.51 1.528 -.63 2.291 -.36"/>',"math-symbols":'<path d="M3 12l18 0"/><path d="M12 3l0 18"/><path d="M16.5 4.5l3 3"/><path d="M19.5 4.5l-3 3"/><path d="M6 4l0 4"/><path d="M4 6l4 0"/><path d="M18 16l.01 0"/><path d="M18 20l.01 0"/><path d="M4 18l4 0"/>',"message-circle":'<path d="M3 20l1.3 -3.9c-2.324 -3.437 -1.426 -7.872 2.1 -10.374c3.526 -2.501 8.59 -2.296 11.845 .48c3.255 2.777 3.695 7.266 1.029 10.501c-2.666 3.235 -7.615 4.215 -11.574 2.293l-4.7 1"/>',"message-report":'<path d="M18 4a3 3 0 0 1 3 3v8a3 3 0 0 1 -3 3h-5l-5 3v-3h-2a3 3 0 0 1 -3 -3v-8a3 3 0 0 1 3 -3h12"/><path d="M12 8v3"/><path d="M12 14v.01"/>',"messages":'<path d="M21 14l-3 -3h-7a1 1 0 0 1 -1 -1v-6a1 1 0 0 1 1 -1h9a1 1 0 0 1 1 1v10"/><path d="M14 15v2a1 1 0 0 1 -1 1h-7l-3 3v-10a1 1 0 0 1 1 -1h2"/>',"microscope":'<path d="M5 21h14"/><path d="M6 18h2"/><path d="M7 18v3"/><path d="M9 11l3 3l6 -6l-3 -3l-6 6"/><path d="M10.5 12.5l-1.5 1.5"/><path d="M17 3l3 3"/><path d="M12 21a6 6 0 0 0 3.715 -10.712"/>',"minus":'<path d="M5 12l14 0"/>',"moon":'<path d="M12 3c.132 0 .263 0 .393 0a7.5 7.5 0 0 0 7.92 12.446a9 9 0 1 1 -8.313 -12.454l0 .008"/>',"music":'<path d="M3 17a3 3 0 1 0 6 0a3 3 0 0 0 -6 0"/><path d="M13 17a3 3 0 1 0 6 0a3 3 0 0 0 -6 0"/><path d="M9 17v-13h10v13"/><path d="M9 8h10"/>',"notebook":'<path d="M6 4h11a2 2 0 0 1 2 2v12a2 2 0 0 1 -2 2h-11a1 1 0 0 1 -1 -1v-14a1 1 0 0 1 1 -1m3 0v18"/><path d="M13 8l2 0"/><path d="M13 12l2 0"/>',"notes":'<path d="M5 5a2 2 0 0 1 2 -2h10a2 2 0 0 1 2 2v14a2 2 0 0 1 -2 2h-10a2 2 0 0 1 -2 -2l0 -14"/><path d="M9 7l6 0"/><path d="M9 11l6 0"/><path d="M9 15l4 0"/>',"palette":'<path d="M12 21a9 9 0 0 1 0 -18c4.97 0 9 3.582 9 8c0 1.06 -.474 2.078 -1.318 2.828c-.844 .75 -1.989 1.172 -3.182 1.172h-2.5a2 2 0 0 0 -1 3.75a1.3 1.3 0 0 1 -1 2.25"/><path d="M7.5 10.5a1 1 0 1 0 2 0a1 1 0 1 0 -2 0"/><path d="M11.5 7.5a1 1 0 1 0 2 0a1 1 0 1 0 -2 0"/><path d="M15.5 10.5a1 1 0 1 0 2 0a1 1 0 1 0 -2 0"/>',"pencil":'<path d="M4 20h4l10.5 -10.5a2.828 2.828 0 1 0 -4 -4l-10.5 10.5v4"/><path d="M13.5 6.5l4 4"/>',"photo":'<path d="M15 8h.01"/><path d="M3 6a3 3 0 0 1 3 -3h12a3 3 0 0 1 3 3v12a3 3 0 0 1 -3 3h-12a3 3 0 0 1 -3 -3v-12"/><path d="M3 16l5 -5c.928 -.893 2.072 -.893 3 0l5 5"/><path d="M14 14l1 -1c.928 -.893 2.072 -.893 3 0l3 3"/>',"plant-2":'<path d="M2 9a10 10 0 1 0 20 0"/><path d="M12 19a10 10 0 0 1 10 -10"/><path d="M2 9a10 10 0 0 1 10 10"/><path d="M12 4a9.7 9.7 0 0 1 2.99 7.5"/><path d="M9.01 11.5a9.7 9.7 0 0 1 2.99 -7.5"/>',"player-pause":'<path d="M6 6a1 1 0 0 1 1 -1h2a1 1 0 0 1 1 1v12a1 1 0 0 1 -1 1h-2a1 1 0 0 1 -1 -1l0 -12"/><path d="M14 6a1 1 0 0 1 1 -1h2a1 1 0 0 1 1 1v12a1 1 0 0 1 -1 1h-2a1 1 0 0 1 -1 -1l0 -12"/>',"player-play":'<path d="M7 4v16l13 -8l-13 -8"/>',"player-stop":'<path d="M5 7a2 2 0 0 1 2 -2h10a2 2 0 0 1 2 2v10a2 2 0 0 1 -2 2h-10a2 2 0 0 1 -2 -2l0 -10"/>',"plus":'<path d="M12 5l0 14"/><path d="M5 12l14 0"/>',"presentation":'<path d="M3 4l18 0"/><path d="M4 4v10a2 2 0 0 0 2 2h12a2 2 0 0 0 2 -2v-10"/><path d="M12 16l0 4"/><path d="M9 20l6 0"/><path d="M8 12l3 -3l2 2l3 -3"/>',"printer":'<path d="M17 17h2a2 2 0 0 0 2 -2v-4a2 2 0 0 0 -2 -2h-14a2 2 0 0 0 -2 2v4a2 2 0 0 0 2 2h2"/><path d="M17 9v-4a2 2 0 0 0 -2 -2h-6a2 2 0 0 0 -2 2v4"/><path d="M7 15a2 2 0 0 1 2 -2h6a2 2 0 0 1 2 2v4a2 2 0 0 1 -2 2h-6a2 2 0 0 1 -2 -2l0 -4"/>',"progress":'<path d="M10 20.777a8.942 8.942 0 0 1 -2.48 -.969"/><path d="M14 3.223a9.003 9.003 0 0 1 0 17.554"/><path d="M4.579 17.093a8.961 8.961 0 0 1 -1.227 -2.592"/><path d="M3.124 10.5c.16 -.95 .468 -1.85 .9 -2.675l.169 -.305"/><path d="M6.907 4.579a8.954 8.954 0 0 1 3.093 -1.356"/>',"puzzle":'<path d="M4 7h3a1 1 0 0 0 1 -1v-1a2 2 0 0 1 4 0v1a1 1 0 0 0 1 1h3a1 1 0 0 1 1 1v3a1 1 0 0 0 1 1h1a2 2 0 0 1 0 4h-1a1 1 0 0 0 -1 1v3a1 1 0 0 1 -1 1h-3a1 1 0 0 1 -1 -1v-1a2 2 0 0 0 -4 0v1a1 1 0 0 1 -1 1h-3a1 1 0 0 1 -1 -1v-3a1 1 0 0 1 1 -1h1a2 2 0 0 0 0 -4h-1a1 1 0 0 1 -1 -1v-3a1 1 0 0 1 1 -1"/>',"qrcode":'<path d="M4 5a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v4a1 1 0 0 1 -1 1h-4a1 1 0 0 1 -1 -1l0 -4"/><path d="M7 17l0 .01"/><path d="M14 5a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v4a1 1 0 0 1 -1 1h-4a1 1 0 0 1 -1 -1l0 -4"/><path d="M7 7l0 .01"/><path d="M4 15a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v4a1 1 0 0 1 -1 1h-4a1 1 0 0 1 -1 -1l0 -4"/><path d="M17 7l0 .01"/><path d="M14 14l3 0"/><path d="M20 14l0 .01"/><path d="M14 14l0 3"/><path d="M14 20l3 0"/><path d="M17 17l3 0"/><path d="M20 17l0 3"/>',"refresh":'<path d="M20 11a8.1 8.1 0 0 0 -15.5 -2m-.5 -4v4h4"/><path d="M4 13a8.1 8.1 0 0 0 15.5 2m.5 4v-4h-4"/>',"report-analytics":'<path d="M9 5h-2a2 2 0 0 0 -2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-12a2 2 0 0 0 -2 -2h-2"/><path d="M9 5a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2a2 2 0 0 1 -2 2h-2a2 2 0 0 1 -2 -2"/><path d="M9 17v-5"/><path d="M12 17v-1"/><path d="M15 17v-3"/>',"robot":'<path d="M6 6a2 2 0 0 1 2 -2h8a2 2 0 0 1 2 2v4a2 2 0 0 1 -2 2h-8a2 2 0 0 1 -2 -2l0 -4"/><path d="M12 2v2"/><path d="M9 12v9"/><path d="M15 12v9"/><path d="M5 16l4 -2"/><path d="M15 14l4 2"/><path d="M9 18h6"/><path d="M10 8v.01"/><path d="M14 8v.01"/>',"rocket":'<path d="M4 13a8 8 0 0 1 7 7a6 6 0 0 0 3 -5a9 9 0 0 0 6 -8a3 3 0 0 0 -3 -3a9 9 0 0 0 -8 6a6 6 0 0 0 -5 3"/><path d="M7 14a6 6 0 0 0 -3 6a6 6 0 0 0 6 -3"/><path d="M14 9a1 1 0 1 0 2 0a1 1 0 1 0 -2 0"/>',"rotate-clockwise":'<path d="M4.05 11a8 8 0 1 1 .5 4m-.5 5v-5h5"/>',"scale":'<path d="M7 20l10 0"/><path d="M6 6l6 -1l6 1"/><path d="M12 3l0 17"/><path d="M9 12l-3 -6l-3 6a3 3 0 0 0 6 0"/><path d="M21 12l-3 -6l-3 6a3 3 0 0 0 6 0"/>',"search":'<path d="M3 10a7 7 0 1 0 14 0a7 7 0 1 0 -14 0"/><path d="M21 21l-6 -6"/>',"send":'<path d="M10 14l11 -11"/><path d="M21 3l-6.5 18a.55 .55 0 0 1 -1 0l-3.5 -7l-7 -3.5a.55 .55 0 0 1 0 -1l18 -6.5"/>',"settings":'<path d="M10.325 4.317c.426 -1.756 2.924 -1.756 3.35 0a1.724 1.724 0 0 0 2.573 1.066c1.543 -.94 3.31 .826 2.37 2.37a1.724 1.724 0 0 0 1.065 2.572c1.756 .426 1.756 2.924 0 3.35a1.724 1.724 0 0 0 -1.066 2.573c.94 1.543 -.826 3.31 -2.37 2.37a1.724 1.724 0 0 0 -2.572 1.065c-.426 1.756 -2.924 1.756 -3.35 0a1.724 1.724 0 0 0 -2.573 -1.066c-1.543 .94 -3.31 -.826 -2.37 -2.37a1.724 1.724 0 0 0 -1.065 -2.572c-1.756 -.426 -1.756 -2.924 0 -3.35a1.724 1.724 0 0 0 1.066 -2.573c-.94 -1.543 .826 -3.31 2.37 -2.37c1 .608 2.296 .07 2.572 -1.065"/><path d="M9 12a3 3 0 1 0 6 0a3 3 0 0 0 -6 0"/>',"share-2":'<path d="M8 9h-1a2 2 0 0 0 -2 2v8a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-8a2 2 0 0 0 -2 -2h-1"/><path d="M12 14v-11"/><path d="M9 6l3 -3l3 3"/>',"shield-lock":'<path d="M12 3a12 12 0 0 0 8.5 3a12 12 0 0 1 -8.5 15a12 12 0 0 1 -8.5 -15a12 12 0 0 0 8.5 -3"/><path d="M11 11a1 1 0 1 0 2 0a1 1 0 1 0 -2 0"/><path d="M12 12l0 2.5"/>',"sparkles":'<path d="M16 18a2 2 0 0 1 2 2a2 2 0 0 1 2 -2a2 2 0 0 1 -2 -2a2 2 0 0 1 -2 2m0 -12a2 2 0 0 1 2 2a2 2 0 0 1 2 -2a2 2 0 0 1 -2 -2a2 2 0 0 1 -2 2m-7 12a6 6 0 0 1 6 -6a6 6 0 0 1 -6 -6a6 6 0 0 1 -6 6a6 6 0 0 1 6 6"/>',"speakerphone":'<path d="M18 8a3 3 0 0 1 0 6"/><path d="M10 8v11a1 1 0 0 1 -1 1h-1a1 1 0 0 1 -1 -1v-5"/><path d="M12 8l4.524 -3.77a.9 .9 0 0 1 1.476 .692v12.156a.9 .9 0 0 1 -1.476 .692l-4.524 -3.77h-8a1 1 0 0 1 -1 -1v-4a1 1 0 0 1 1 -1h8"/>',"square":'<path d="M3 5a2 2 0 0 1 2 -2h14a2 2 0 0 1 2 2v14a2 2 0 0 1 -2 2h-14a2 2 0 0 1 -2 -2v-14"/>',"square-plus":'<path d="M9 12h6"/><path d="M12 9v6"/><path d="M3 5a2 2 0 0 1 2 -2h14a2 2 0 0 1 2 2v14a2 2 0 0 1 -2 2h-14a2 2 0 0 1 -2 -2v-14"/>',"stairs":'<path d="M22 5h-5v5h-5v5h-5v5h-5"/>',"sun":'<path d="M8 12a4 4 0 1 0 8 0a4 4 0 1 0 -8 0"/><path d="M3 12h1m8 -9v1m8 8h1m-9 8v1m-6.4 -15.4l.7 .7m12.1 -.7l-.7 .7m0 11.4l.7 .7m-12.1 -.7l-.7 .7"/>',"table":'<path d="M3 5a2 2 0 0 1 2 -2h14a2 2 0 0 1 2 2v14a2 2 0 0 1 -2 2h-14a2 2 0 0 1 -2 -2v-14"/><path d="M3 10h18"/><path d="M10 3v18"/>',"tag":'<path d="M6.5 7.5a1 1 0 1 0 2 0a1 1 0 1 0 -2 0"/><path d="M3 6v5.172a2 2 0 0 0 .586 1.414l7.71 7.71a2.41 2.41 0 0 0 3.408 0l5.592 -5.592a2.41 2.41 0 0 0 0 -3.408l-7.71 -7.71a2 2 0 0 0 -1.414 -.586h-5.172a3 3 0 0 0 -3 3"/>',"target":'<path d="M11 12a1 1 0 1 0 2 0a1 1 0 1 0 -2 0"/><path d="M7 12a5 5 0 1 0 10 0a5 5 0 1 0 -10 0"/><path d="M3 12a9 9 0 1 0 18 0a9 9 0 1 0 -18 0"/>',"topology-star":'<path d="M8 18a2 2 0 1 0 -4 0a2 2 0 0 0 4 0"/><path d="M20 6a2 2 0 1 0 -4 0a2 2 0 0 0 4 0"/><path d="M8 6a2 2 0 1 0 -4 0a2 2 0 0 0 4 0"/><path d="M20 18a2 2 0 1 0 -4 0a2 2 0 0 0 4 0"/><path d="M14 12a2 2 0 1 0 -4 0a2 2 0 0 0 4 0"/><path d="M7.5 7.5l3 3"/><path d="M7.5 16.5l3 -3"/><path d="M13.5 13.5l3 3"/><path d="M16.5 7.5l-3 3"/>',"trash":'<path d="M4 7l16 0"/><path d="M10 11l0 6"/><path d="M14 11l0 6"/><path d="M5 7l1 12a2 2 0 0 0 2 2h8a2 2 0 0 0 2 -2l1 -12"/><path d="M9 7v-3a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v3"/>',"trending-up":'<path d="M3 17l6 -6l4 4l8 -8"/><path d="M14 7l7 0l0 7"/>',"triangle":'<path d="M10.363 3.591l-8.106 13.534a1.914 1.914 0 0 0 1.636 2.871h16.214a1.914 1.914 0 0 0 1.636 -2.87l-8.106 -13.536a1.914 1.914 0 0 0 -3.274 0"/>',"user":'<path d="M8 7a4 4 0 1 0 8 0a4 4 0 0 0 -8 0"/><path d="M6 21v-2a4 4 0 0 1 4 -4h4a4 4 0 0 1 4 4v2"/>',"user-cog":'<path d="M8 7a4 4 0 1 0 8 0a4 4 0 0 0 -8 0"/><path d="M6 21v-2a4 4 0 0 1 4 -4h2.5"/><path d="M17.001 19a2 2 0 1 0 4 0a2 2 0 1 0 -4 0"/><path d="M19.001 15.5v1.5"/><path d="M19.001 21v1.5"/><path d="M22.032 17.25l-1.299 .75"/><path d="M17.27 20l-1.3 .75"/><path d="M15.97 17.25l1.3 .75"/><path d="M20.733 20l1.3 .75"/>',"users":'<path d="M5 7a4 4 0 1 0 8 0a4 4 0 1 0 -8 0"/><path d="M3 21v-2a4 4 0 0 1 4 -4h4a4 4 0 0 1 4 4v2"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/><path d="M21 21v-2a4 4 0 0 0 -3 -3.85"/>',"users-group":'<path d="M10 13a2 2 0 1 0 4 0a2 2 0 0 0 -4 0"/><path d="M8 21v-1a2 2 0 0 1 2 -2h4a2 2 0 0 1 2 2v1"/><path d="M15 5a2 2 0 1 0 4 0a2 2 0 0 0 -4 0"/><path d="M17 10h2a2 2 0 0 1 2 2v1"/><path d="M5 5a2 2 0 1 0 4 0a2 2 0 0 0 -4 0"/><path d="M3 13v-1a2 2 0 0 1 2 -2h2"/>',"wand":'<path d="M6 21l15 -15l-3 -3l-15 15l3 3"/><path d="M15 6l3 3"/><path d="M9 3a2 2 0 0 0 2 2a2 2 0 0 0 -2 2a2 2 0 0 0 -2 -2a2 2 0 0 0 2 -2"/><path d="M19 13a2 2 0 0 0 2 2a2 2 0 0 0 -2 2a2 2 0 0 0 -2 -2a2 2 0 0 0 2 -2"/>',"world":'<path d="M3 12a9 9 0 1 0 18 0a9 9 0 0 0 -18 0"/><path d="M3.6 9h16.8"/><path d="M3.6 15h16.8"/><path d="M11.5 3a17 17 0 0 0 0 18"/><path d="M12.5 3a17 17 0 0 1 0 18"/>',"x":'<path d="M18 6l-12 12"/><path d="M6 6l12 12"/>'/*TI:END*/};
+const TI_PATHS = {/*TI:BEGIN*//* Tabler Icons v3.49.0 outline · 144개 */"abc":'<path d="M3 16v-6a2 2 0 1 1 4 0v6"/><path d="M3 13h4"/><path d="M10 8v6a2 2 0 1 0 4 0v-1a2 2 0 1 0 -4 0v1"/><path d="M20.732 12a2 2 0 0 0 -3.732 1v1a2 2 0 0 0 3.726 1.01"/>',"adjustments":'<path d="M4 10a2 2 0 1 0 4 0a2 2 0 0 0 -4 0"/><path d="M6 4v4"/><path d="M6 12v8"/><path d="M10 16a2 2 0 1 0 4 0a2 2 0 0 0 -4 0"/><path d="M12 4v10"/><path d="M12 18v2"/><path d="M16 7a2 2 0 1 0 4 0a2 2 0 0 0 -4 0"/><path d="M18 4v1"/><path d="M18 9v11"/>',"alarm":'<path d="M5 13a7 7 0 1 0 14 0a7 7 0 1 0 -14 0"/><path d="M12 10l0 3l2 0"/><path d="M7 4l-2.75 2"/><path d="M17 4l2.75 2"/>',"alert-triangle":'<path d="M12 9v4"/><path d="M10.363 3.591l-8.106 13.534a1.914 1.914 0 0 0 1.636 2.871h16.214a1.914 1.914 0 0 0 1.636 -2.87l-8.106 -13.536a1.914 1.914 0 0 0 -3.274 0"/><path d="M12 16h.01"/>',"archive":'<path d="M3 6a2 2 0 0 1 2 -2h14a2 2 0 0 1 2 2a2 2 0 0 1 -2 2h-14a2 2 0 0 1 -2 -2"/><path d="M5 8v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-10"/><path d="M10 12l4 0"/>',"archive-off":'<path d="M8 4h11a2 2 0 1 1 0 4h-7m-4 0h-3a2 2 0 0 1 -.826 -3.822"/><path d="M5 8v10a2 2 0 0 0 2 2h10a2 2 0 0 0 1.824 -1.18m.176 -3.82v-7"/><path d="M10 12h2"/><path d="M3 3l18 18"/>',"arrow-back-up":'<path d="M9 14l-4 -4l4 -4"/><path d="M5 10h11a4 4 0 1 1 0 8h-1"/>',"arrow-down":'<path d="M12 5l0 14"/><path d="M18 13l-6 6"/><path d="M6 13l6 6"/>',"arrow-left":'<path d="M5 12l14 0"/><path d="M5 12l6 6"/><path d="M5 12l6 -6"/>',"arrow-right":'<path d="M5 12l14 0"/><path d="M13 18l6 -6"/><path d="M13 6l6 6"/>',"arrow-up":'<path d="M12 5l0 14"/><path d="M18 11l-6 -6"/><path d="M6 11l6 -6"/>',"arrow-up-right":'<path d="M17 7l-10 10"/><path d="M8 7l9 0l0 9"/>',"arrows-exchange":'<path d="M7 10h14l-4 -4"/><path d="M17 14h-14l4 4"/>',"arrows-left-right":'<path d="M21 17l-18 0"/><path d="M6 10l-3 -3l3 -3"/><path d="M3 7l18 0"/><path d="M18 20l3 -3l-3 -3"/>',"arrows-shuffle":'<path d="M18 4l3 3l-3 3"/><path d="M18 20l3 -3l-3 -3"/><path d="M3 7h3a5 5 0 0 1 5 5a5 5 0 0 0 5 5h5"/><path d="M21 7h-5a4.978 4.978 0 0 0 -3 1m-4 8a4.984 4.984 0 0 1 -3 1h-3"/>',"arrows-sort":'<path d="M3 9l4 -4l4 4m-4 -4v14"/><path d="M21 15l-4 4l-4 -4m4 4v-14"/>',"ball-football":'<path d="M3 12a9 9 0 1 0 18 0a9 9 0 1 0 -18 0"/><path d="M12 7l4.76 3.45l-1.76 5.55h-6l-1.76 -5.55l4.76 -3.45"/><path d="M12 7v-4m3 13l2.5 3m-.74 -8.55l3.74 -1.45m-11.44 7.05l-2.56 2.95m.74 -8.55l-3.74 -1.45"/>',"bell":'<path d="M10 5a2 2 0 1 1 4 0a7 7 0 0 1 4 6v3a4 4 0 0 0 2 3h-16a4 4 0 0 0 2 -3v-3a7 7 0 0 1 4 -6"/><path d="M9 17v1a3 3 0 0 0 6 0v-1"/>',"bell-off":'<path d="M9.346 5.353c.21 -.129 .428 -.246 .654 -.353a2 2 0 1 1 4 0a7 7 0 0 1 4 6v3m-1 3h-13a4 4 0 0 0 2 -3v-3a6.996 6.996 0 0 1 1.273 -3.707"/><path d="M9 17v1a3 3 0 0 0 6 0v-1"/><path d="M3 3l18 18"/>',"bell-ringing":'<path d="M10 5a2 2 0 0 1 4 0a7 7 0 0 1 4 6v3a4 4 0 0 0 2 3h-16a4 4 0 0 0 2 -3v-3a7 7 0 0 1 4 -6"/><path d="M9 17v1a3 3 0 0 0 6 0v-1"/><path d="M21 6.727a11.05 11.05 0 0 0 -2.794 -3.727"/><path d="M3 6.727a11.05 11.05 0 0 1 2.792 -3.727"/>',"book":'<path d="M3 19a9 9 0 0 1 9 0a9 9 0 0 1 9 0"/><path d="M3 6a9 9 0 0 1 9 0a9 9 0 0 1 9 0"/><path d="M3 6l0 13"/><path d="M12 6l0 13"/><path d="M21 6l0 13"/>',"book-2":'<path d="M19 4v16h-12a2 2 0 0 1 -2 -2v-12a2 2 0 0 1 2 -2h12"/><path d="M19 16h-12a2 2 0 0 0 -2 2"/><path d="M9 8h6"/>',"books":'<path d="M5 5a1 1 0 0 1 1 -1h2a1 1 0 0 1 1 1v14a1 1 0 0 1 -1 1h-2a1 1 0 0 1 -1 -1l0 -14"/><path d="M9 5a1 1 0 0 1 1 -1h2a1 1 0 0 1 1 1v14a1 1 0 0 1 -1 1h-2a1 1 0 0 1 -1 -1l0 -14"/><path d="M5 8h4"/><path d="M9 16h4"/><path d="M13.803 4.56l2.184 -.53c.562 -.135 1.133 .19 1.282 .732l3.695 13.418a1.02 1.02 0 0 1 -.634 1.219l-.133 .041l-2.184 .53c-.562 .135 -1.133 -.19 -1.282 -.732l-3.695 -13.418a1.02 1.02 0 0 1 .634 -1.219l.133 -.041"/><path d="M14 9l4 -1"/><path d="M16 16l3.923 -.98"/>',"brush":'<path d="M3 21v-4a4 4 0 1 1 4 4h-4"/><path d="M21 3a16 16 0 0 0 -12.8 10.2"/><path d="M21 3a16 16 0 0 1 -10.2 12.8"/><path d="M10.6 9a9 9 0 0 1 4.4 4.4"/>',"bubble":'<path d="M12.4 3a5.34 5.34 0 0 1 4.906 3.239a5.333 5.333 0 0 1 -1.195 10.6a4.26 4.26 0 0 1 -5.28 1.863l-3.831 2.298v-3.134a2.668 2.668 0 0 1 -1.795 -3.773a4.8 4.8 0 0 1 2.908 -8.933a5.33 5.33 0 0 1 4.287 -2.16"/>',"bug":'<path d="M9 9v-1a3 3 0 0 1 6 0v1"/><path d="M8 9h8a6 6 0 0 1 1 3v3a5 5 0 0 1 -10 0v-3a6 6 0 0 1 1 -3"/><path d="M3 13l4 0"/><path d="M17 13l4 0"/><path d="M12 20l0 -6"/><path d="M4 19l3.35 -2"/><path d="M20 19l-3.35 -2"/><path d="M4 7l3.75 2.4"/><path d="M20 7l-3.75 2.4"/>',"building-bank":'<path d="M3 21l18 0"/><path d="M3 10l18 0"/><path d="M5 6l7 -3l7 3"/><path d="M4 10l0 11"/><path d="M20 10l0 11"/><path d="M8 14l0 3"/><path d="M12 14l0 3"/><path d="M16 14l0 3"/>',"bulb":'<path d="M3 12h1m8 -9v1m8 8h1m-15.4 -6.4l.7 .7m12.1 -.7l-.7 .7"/><path d="M9 16a5 5 0 1 1 6 0a3.5 3.5 0 0 0 -1 3a2 2 0 0 1 -4 0a3.5 3.5 0 0 0 -1 -3"/><path d="M9.7 17l4.6 0"/>',"calendar":'<path d="M4 7a2 2 0 0 1 2 -2h12a2 2 0 0 1 2 2v12a2 2 0 0 1 -2 2h-12a2 2 0 0 1 -2 -2v-12"/><path d="M16 3v4"/><path d="M8 3v4"/><path d="M4 11h16"/><path d="M11 15h1"/><path d="M12 15v3"/>',"camera":'<path d="M5 7h1a2 2 0 0 0 2 -2a1 1 0 0 1 1 -1h6a1 1 0 0 1 1 1a2 2 0 0 0 2 2h1a2 2 0 0 1 2 2v9a2 2 0 0 1 -2 2h-14a2 2 0 0 1 -2 -2v-9a2 2 0 0 1 2 -2"/><path d="M9 13a3 3 0 1 0 6 0a3 3 0 0 0 -6 0"/>',"chalkboard-teacher":'<path d="M8 19h-3a2 2 0 0 1 -2 -2v-10a2 2 0 0 1 2 -2h14a2 2 0 0 1 2 2v11a1 1 0 0 1 -1 1"/><path d="M12 14a2 2 0 1 0 4.001 -.001a2 2 0 0 0 -4.001 .001"/><path d="M17 19a2 2 0 0 0 -2 -2h-2a2 2 0 0 0 -2 2"/>',"chart-bar":'<path d="M3 13a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v6a1 1 0 0 1 -1 1h-4a1 1 0 0 1 -1 -1l0 -6"/><path d="M15 9a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v10a1 1 0 0 1 -1 1h-4a1 1 0 0 1 -1 -1l0 -10"/><path d="M9 5a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v14a1 1 0 0 1 -1 1h-4a1 1 0 0 1 -1 -1l0 -14"/><path d="M4 20h14"/>',"check":'<path d="M5 12l5 5l10 -10"/>',"chevron-down":'<path d="M6 9l6 6l6 -6"/>',"chevron-left":'<path d="M15 6l-6 6l6 6"/>',"chevron-right":'<path d="M9 6l6 6l-6 6"/>',"chevron-up":'<path d="M6 15l6 -6l6 6"/>',"circle":'<path d="M3 12a9 9 0 1 0 18 0a9 9 0 1 0 -18 0"/>',"circle-check":'<path d="M3 12a9 9 0 1 0 18 0a9 9 0 1 0 -18 0"/><path d="M9 12l2 2l4 -4"/>',"circle-dashed":'<path d="M8.56 3.69a9 9 0 0 0 -2.92 1.95"/><path d="M3.69 8.56a9 9 0 0 0 -.69 3.44"/><path d="M3.69 15.44a9 9 0 0 0 1.95 2.92"/><path d="M8.56 20.31a9 9 0 0 0 3.44 .69"/><path d="M15.44 20.31a9 9 0 0 0 2.92 -1.95"/><path d="M20.31 15.44a9 9 0 0 0 .69 -3.44"/><path d="M20.31 8.56a9 9 0 0 0 -1.95 -2.92"/><path d="M15.44 3.69a9 9 0 0 0 -3.44 -.69"/>',"circle-dot":'<path d="M11 12a1 1 0 1 0 2 0a1 1 0 1 0 -2 0"/><path d="M3 12a9 9 0 1 0 18 0a9 9 0 1 0 -18 0"/>',"clipboard":'<path d="M9 5h-2a2 2 0 0 0 -2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-12a2 2 0 0 0 -2 -2h-2"/><path d="M9 5a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2a2 2 0 0 1 -2 2h-2a2 2 0 0 1 -2 -2"/>',"clipboard-list":'<path d="M9 5h-2a2 2 0 0 0 -2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-12a2 2 0 0 0 -2 -2h-2"/><path d="M9 5a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2a2 2 0 0 1 -2 2h-2a2 2 0 0 1 -2 -2"/><path d="M9 12l.01 0"/><path d="M13 12l2 0"/><path d="M9 16l.01 0"/><path d="M13 16l2 0"/>',"clock":'<path d="M3 12a9 9 0 1 0 18 0a9 9 0 0 0 -18 0"/><path d="M12 7v5l3 3"/>',"compass":'<path d="M8 16l2 -6l6 -2l-2 6l-6 2"/><path d="M3 12a9 9 0 1 0 18 0a9 9 0 1 0 -18 0"/><path d="M12 3l0 2"/><path d="M12 19l0 2"/><path d="M3 12l2 0"/><path d="M19 12l2 0"/>',"confetti":'<path d="M4 5h2"/><path d="M5 4v2"/><path d="M11.5 4l-.5 2"/><path d="M18 5h2"/><path d="M19 4v2"/><path d="M15 9l-1 1"/><path d="M18 13l2 -.5"/><path d="M18 19h2"/><path d="M19 18v2"/><path d="M14 16.518l-6.518 -6.518l-4.39 9.58a1 1 0 0 0 1.329 1.329l9.579 -4.39"/>',"copy":'<path d="M7 9.667a2.667 2.667 0 0 1 2.667 -2.667h8.666a2.667 2.667 0 0 1 2.667 2.667v8.666a2.667 2.667 0 0 1 -2.667 2.667h-8.666a2.667 2.667 0 0 1 -2.667 -2.667l0 -8.666"/><path d="M4.012 16.737a2.005 2.005 0 0 1 -1.012 -1.737v-10c0 -1.1 .9 -2 2 -2h10c.75 0 1.158 .385 1.5 1"/>',"crystal-ball":'<path d="M6.73 17.018a8 8 0 1 1 10.54 0"/><path d="M5 19a2 2 0 0 0 2 2h10a2 2 0 1 0 0 -4h-10a2 2 0 0 0 -2 2"/><path d="M11 7a3 3 0 0 0 -3 3"/>',"device-floppy":'<path d="M6 4h10l4 4v10a2 2 0 0 1 -2 2h-12a2 2 0 0 1 -2 -2v-12a2 2 0 0 1 2 -2"/><path d="M10 14a2 2 0 1 0 4 0a2 2 0 1 0 -4 0"/><path d="M14 4l0 4l-6 0l0 -4"/>',"device-laptop":'<path d="M3 19l18 0"/><path d="M5 7a1 1 0 0 1 1 -1h12a1 1 0 0 1 1 1v8a1 1 0 0 1 -1 1h-12a1 1 0 0 1 -1 -1l0 -8"/>',"device-mobile-down":'<path d="M12.5 21h-4.5a2 2 0 0 1 -2 -2v-14a2 2 0 0 1 2 -2h8a2 2 0 0 1 2 2v7"/><path d="M11 4h2"/><path d="M12 17v.01"/><path d="M19 16v6"/><path d="M22 19l-3 3l-3 -3"/>',"diamond":'<path d="M6 5h12l3 5l-8.5 9.5a.7 .7 0 0 1 -1 0l-8.5 -9.5l3 -5"/><path d="M10 12l-2 -2.2l.6 -1"/>',"dots":'<path d="M4 12a1 1 0 1 0 2 0a1 1 0 1 0 -2 0"/><path d="M11 12a1 1 0 1 0 2 0a1 1 0 1 0 -2 0"/><path d="M18 12a1 1 0 1 0 2 0a1 1 0 1 0 -2 0"/>',"dots-vertical":'<path d="M11 12a1 1 0 1 0 2 0a1 1 0 1 0 -2 0"/><path d="M11 19a1 1 0 1 0 2 0a1 1 0 1 0 -2 0"/><path d="M11 5a1 1 0 1 0 2 0a1 1 0 1 0 -2 0"/>',"download":'<path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2 -2v-2"/><path d="M7 11l5 5l5 -5"/><path d="M12 4l0 12"/>',"equal":'<path d="M5 10h14"/><path d="M5 14h14"/>',"eraser":'<path d="M19 20h-10.5l-4.21 -4.3a1 1 0 0 1 0 -1.41l10 -10a1 1 0 0 1 1.41 0l5 5a1 1 0 0 1 0 1.41l-9.2 9.3"/><path d="M18 13.3l-6.3 -6.3"/>',"external-link":'<path d="M12 6h-6a2 2 0 0 0 -2 2v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-6"/><path d="M11 13l9 -9"/><path d="M15 4h5v5"/>',"eye":'<path d="M10 12a2 2 0 1 0 4 0a2 2 0 0 0 -4 0"/><path d="M21 12c-2.4 4 -5.4 6 -9 6c-3.6 0 -6.6 -2 -9 -6c2.4 -4 5.4 -6 9 -6c3.6 0 6.6 2 9 6"/>',"eye-off":'<path d="M10.585 10.587a2 2 0 0 0 2.829 2.828"/><path d="M16.681 16.673a8.717 8.717 0 0 1 -4.681 1.327c-3.6 0 -6.6 -2 -9 -6c1.272 -2.12 2.712 -3.678 4.32 -4.674m2.86 -1.146a9.055 9.055 0 0 1 1.82 -.18c3.6 0 6.6 2 9 6c-.666 1.11 -1.379 2.067 -2.138 2.87"/><path d="M3 3l18 18"/>',"file-pencil":'<path d="M14 3v4a1 1 0 0 0 1 1h4"/><path d="M17 21h-10a2 2 0 0 1 -2 -2v-14a2 2 0 0 1 2 -2h7l5 5v11a2 2 0 0 1 -2 2"/><path d="M10 18l5 -5a1.414 1.414 0 0 0 -2 -2l-5 5v2h2"/>',"file-text":'<path d="M14 3v4a1 1 0 0 0 1 1h4"/><path d="M17 21h-10a2 2 0 0 1 -2 -2v-14a2 2 0 0 1 2 -2h7l5 5v11a2 2 0 0 1 -2 2"/><path d="M9 9l1 0"/><path d="M9 13l6 0"/><path d="M9 17l6 0"/>',"flask":'<path d="M9 3l6 0"/><path d="M10 9l4 0"/><path d="M10 3v6l-4 11a.7 .7 0 0 0 .5 1h11a.7 .7 0 0 0 .5 -1l-4 -11v-6"/>',"folder-open":'<path d="M5 19l2.757 -7.351a1 1 0 0 1 .936 -.649h12.307a1 1 0 0 1 .986 1.164l-.996 5.211a2 2 0 0 1 -1.964 1.625h-14.026a2 2 0 0 1 -2 -2v-11a2 2 0 0 1 2 -2h4l3 3h7a2 2 0 0 1 2 2v2"/>',"folders":'<path d="M9 3h3l2 2h5a2 2 0 0 1 2 2v7a2 2 0 0 1 -2 2h-10a2 2 0 0 1 -2 -2v-9a2 2 0 0 1 2 -2"/><path d="M17 16v2a2 2 0 0 1 -2 2h-10a2 2 0 0 1 -2 -2v-9a2 2 0 0 1 2 -2h2"/>',"grip-vertical":'<path d="M8 5a1 1 0 1 0 2 0a1 1 0 1 0 -2 0"/><path d="M8 12a1 1 0 1 0 2 0a1 1 0 1 0 -2 0"/><path d="M8 19a1 1 0 1 0 2 0a1 1 0 1 0 -2 0"/><path d="M14 5a1 1 0 1 0 2 0a1 1 0 1 0 -2 0"/><path d="M14 12a1 1 0 1 0 2 0a1 1 0 1 0 -2 0"/><path d="M14 19a1 1 0 1 0 2 0a1 1 0 1 0 -2 0"/>',"hand-finger":'<path d="M8 13v-8.5a1.5 1.5 0 0 1 3 0v7.5"/><path d="M11 11.5v-2a1.5 1.5 0 1 1 3 0v2.5"/><path d="M14 10.5a1.5 1.5 0 0 1 3 0v1.5"/><path d="M17 11.5a1.5 1.5 0 0 1 3 0v4.5a6 6 0 0 1 -6 6h-2h.208a6 6 0 0 1 -5.012 -2.7a69.74 69.74 0 0 1 -.196 -.3c-.312 -.479 -1.407 -2.388 -3.286 -5.728a1.5 1.5 0 0 1 .536 -2.022a1.867 1.867 0 0 1 2.28 .28l1.47 1.47"/>',"heart":'<path d="M19.5 12.572l-7.5 7.428l-7.5 -7.428a5 5 0 1 1 7.5 -6.566a5 5 0 1 1 7.5 6.572"/>',"help-circle":'<path d="M3 12a9 9 0 1 0 18 0a9 9 0 0 0 -18 0"/><path d="M12 16v.01"/><path d="M12 13a2 2 0 0 0 .914 -3.782a1.98 1.98 0 0 0 -2.414 .483"/>',"hierarchy-2":'<path d="M10 3h4v4h-4l0 -4"/><path d="M3 17h4v4h-4l0 -4"/><path d="M17 17h4v4h-4l0 -4"/><path d="M7 17l5 -4l5 4"/><path d="M12 7l0 6"/>',"history":'<path d="M12 8l0 4l2 2"/><path d="M3.05 11a9 9 0 1 1 .5 4m-.5 5v-5h5"/>',"home":'<path d="M5 12l-2 0l9 -9l9 9l-2 0"/><path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-7"/><path d="M9 21v-6a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2v6"/>',"hourglass":'<path d="M6.5 7h11"/><path d="M6.5 17h11"/><path d="M6 20v-2a6 6 0 1 1 12 0v2a1 1 0 0 1 -1 1h-10a1 1 0 0 1 -1 -1"/><path d="M6 4v2a6 6 0 1 0 12 0v-2a1 1 0 0 0 -1 -1h-10a1 1 0 0 0 -1 1"/>',"key":'<path d="M16.555 3.843l3.602 3.602a2.877 2.877 0 0 1 0 4.069l-2.643 2.643a2.877 2.877 0 0 1 -4.069 0l-.301 -.301l-6.558 6.558a2 2 0 0 1 -1.239 .578l-.175 .008h-1.172a1 1 0 0 1 -.993 -.883l-.007 -.117v-1.172a2 2 0 0 1 .467 -1.284l.119 -.13l.414 -.414h2v-2h2v-2l2.144 -2.144l-.301 -.301a2.877 2.877 0 0 1 0 -4.069l2.643 -2.643a2.877 2.877 0 0 1 4.069 0"/><path d="M15 9h.01"/>',"language":'<path d="M9 6.371c0 4.418 -2.239 6.629 -5 6.629"/><path d="M4 6.371h7"/><path d="M5 9c0 2.144 2.252 3.908 6 4"/><path d="M12 20l4 -9l4 9"/><path d="M19.1 18h-6.2"/><path d="M6.694 3l.793 .582"/>',"layout-board":'<path d="M4 6a2 2 0 0 1 2 -2h12a2 2 0 0 1 2 2v12a2 2 0 0 1 -2 2h-12a2 2 0 0 1 -2 -2l0 -12"/><path d="M4 9h8"/><path d="M12 15h8"/><path d="M12 4v16"/>',"layout-cards":'<path d="M4 6a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2v12a2 2 0 0 1 -2 2h-2a2 2 0 0 1 -2 -2l0 -12"/><path d="M14 6a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2v6a2 2 0 0 1 -2 2h-2a2 2 0 0 1 -2 -2l0 -6"/>',"layout-dashboard":'<path d="M5 4h4a1 1 0 0 1 1 1v6a1 1 0 0 1 -1 1h-4a1 1 0 0 1 -1 -1v-6a1 1 0 0 1 1 -1"/><path d="M5 16h4a1 1 0 0 1 1 1v2a1 1 0 0 1 -1 1h-4a1 1 0 0 1 -1 -1v-2a1 1 0 0 1 1 -1"/><path d="M15 12h4a1 1 0 0 1 1 1v6a1 1 0 0 1 -1 1h-4a1 1 0 0 1 -1 -1v-6a1 1 0 0 1 1 -1"/><path d="M15 4h4a1 1 0 0 1 1 1v2a1 1 0 0 1 -1 1h-4a1 1 0 0 1 -1 -1v-2a1 1 0 0 1 1 -1"/>',"layout-grid":'<path d="M4 5a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v4a1 1 0 0 1 -1 1h-4a1 1 0 0 1 -1 -1l0 -4"/><path d="M14 5a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v4a1 1 0 0 1 -1 1h-4a1 1 0 0 1 -1 -1l0 -4"/><path d="M4 15a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v4a1 1 0 0 1 -1 1h-4a1 1 0 0 1 -1 -1l0 -4"/><path d="M14 15a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v4a1 1 0 0 1 -1 1h-4a1 1 0 0 1 -1 -1l0 -4"/>',"leaf":'<path d="M5 21c.5 -4.5 2.5 -8 7 -10"/><path d="M9 18c6.218 0 10.5 -3.288 11 -12v-2h-4.014c-9 0 -11.986 4 -12 9c0 1 0 3 2 5h3l.014 0"/>',"link":'<path d="M9 15l6 -6"/><path d="M11 6l.463 -.536a5 5 0 0 1 7.071 7.072l-.534 .464"/><path d="M13 18l-.397 .534a5.068 5.068 0 0 1 -7.127 0a4.972 4.972 0 0 1 0 -7.071l.524 -.463"/>',"list":'<path d="M9 6l11 0"/><path d="M9 12l11 0"/><path d="M9 18l11 0"/><path d="M5 6l0 .01"/><path d="M5 12l0 .01"/><path d="M5 18l0 .01"/>',"list-details":'<path d="M13 5h8"/><path d="M13 9h5"/><path d="M13 15h8"/><path d="M13 19h5"/><path d="M3 5a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v4a1 1 0 0 1 -1 1h-4a1 1 0 0 1 -1 -1l0 -4"/><path d="M3 15a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v4a1 1 0 0 1 -1 1h-4a1 1 0 0 1 -1 -1l0 -4"/>',"lock":'<path d="M5 13a2 2 0 0 1 2 -2h10a2 2 0 0 1 2 2v6a2 2 0 0 1 -2 2h-10a2 2 0 0 1 -2 -2v-6"/><path d="M11 16a1 1 0 1 0 2 0a1 1 0 0 0 -2 0"/><path d="M8 11v-4a4 4 0 1 1 8 0v4"/>',"logout":'<path d="M14 8v-2a2 2 0 0 0 -2 -2h-7a2 2 0 0 0 -2 2v12a2 2 0 0 0 2 2h7a2 2 0 0 0 2 -2v-2"/><path d="M9 12h12l-3 -3"/><path d="M18 15l3 -3"/>',"mail":'<path d="M3 7a2 2 0 0 1 2 -2h14a2 2 0 0 1 2 2v10a2 2 0 0 1 -2 2h-14a2 2 0 0 1 -2 -2v-10"/><path d="M3 7l9 6l9 -6"/>',"mailbox":'<path d="M10 21v-6.5a3.5 3.5 0 0 0 -7 0v6.5h18v-6a4 4 0 0 0 -4 -4h-10.5"/><path d="M12 11v-8h4l2 2l-2 2h-4"/><path d="M6 15h1"/>',"map-pin":'<path d="M9 11a3 3 0 1 0 6 0a3 3 0 0 0 -6 0"/><path d="M17.657 16.657l-4.243 4.243a2 2 0 0 1 -2.827 0l-4.244 -4.243a8 8 0 1 1 11.314 0"/>',"masks-theater":'<path d="M13.192 9h6.616a2 2 0 0 1 1.992 2.183l-.567 6.182a4 4 0 0 1 -3.983 3.635h-1.5a4 4 0 0 1 -3.983 -3.635l-.567 -6.182a2 2 0 0 1 1.992 -2.183"/><path d="M15 13h.01"/><path d="M18 13h.01"/><path d="M15 16.5c1 .667 2 .667 3 0"/><path d="M8.632 15.982a4.037 4.037 0 0 1 -.382 .018h-1.5a4 4 0 0 1 -3.983 -3.635l-.567 -6.182a2 2 0 0 1 1.992 -2.183h6.616a2 2 0 0 1 2 2"/><path d="M6 8h.01"/><path d="M9 8h.01"/><path d="M6 12c.764 -.51 1.528 -.63 2.291 -.36"/>',"math-symbols":'<path d="M3 12l18 0"/><path d="M12 3l0 18"/><path d="M16.5 4.5l3 3"/><path d="M19.5 4.5l-3 3"/><path d="M6 4l0 4"/><path d="M4 6l4 0"/><path d="M18 16l.01 0"/><path d="M18 20l.01 0"/><path d="M4 18l4 0"/>',"menu-2":'<path d="M4 6l16 0"/><path d="M4 12l16 0"/><path d="M4 18l16 0"/>',"message-circle":'<path d="M3 20l1.3 -3.9c-2.324 -3.437 -1.426 -7.872 2.1 -10.374c3.526 -2.501 8.59 -2.296 11.845 .48c3.255 2.777 3.695 7.266 1.029 10.501c-2.666 3.235 -7.615 4.215 -11.574 2.293l-4.7 1"/>',"message-report":'<path d="M18 4a3 3 0 0 1 3 3v8a3 3 0 0 1 -3 3h-5l-5 3v-3h-2a3 3 0 0 1 -3 -3v-8a3 3 0 0 1 3 -3h12"/><path d="M12 8v3"/><path d="M12 14v.01"/>',"messages":'<path d="M21 14l-3 -3h-7a1 1 0 0 1 -1 -1v-6a1 1 0 0 1 1 -1h9a1 1 0 0 1 1 1v10"/><path d="M14 15v2a1 1 0 0 1 -1 1h-7l-3 3v-10a1 1 0 0 1 1 -1h2"/>',"microscope":'<path d="M5 21h14"/><path d="M6 18h2"/><path d="M7 18v3"/><path d="M9 11l3 3l6 -6l-3 -3l-6 6"/><path d="M10.5 12.5l-1.5 1.5"/><path d="M17 3l3 3"/><path d="M12 21a6 6 0 0 0 3.715 -10.712"/>',"minus":'<path d="M5 12l14 0"/>',"moon":'<path d="M12 3c.132 0 .263 0 .393 0a7.5 7.5 0 0 0 7.92 12.446a9 9 0 1 1 -8.313 -12.454l0 .008"/>',"music":'<path d="M3 17a3 3 0 1 0 6 0a3 3 0 0 0 -6 0"/><path d="M13 17a3 3 0 1 0 6 0a3 3 0 0 0 -6 0"/><path d="M9 17v-13h10v13"/><path d="M9 8h10"/>',"notebook":'<path d="M6 4h11a2 2 0 0 1 2 2v12a2 2 0 0 1 -2 2h-11a1 1 0 0 1 -1 -1v-14a1 1 0 0 1 1 -1m3 0v18"/><path d="M13 8l2 0"/><path d="M13 12l2 0"/>',"notes":'<path d="M5 5a2 2 0 0 1 2 -2h10a2 2 0 0 1 2 2v14a2 2 0 0 1 -2 2h-10a2 2 0 0 1 -2 -2l0 -14"/><path d="M9 7l6 0"/><path d="M9 11l6 0"/><path d="M9 15l4 0"/>',"palette":'<path d="M12 21a9 9 0 0 1 0 -18c4.97 0 9 3.582 9 8c0 1.06 -.474 2.078 -1.318 2.828c-.844 .75 -1.989 1.172 -3.182 1.172h-2.5a2 2 0 0 0 -1 3.75a1.3 1.3 0 0 1 -1 2.25"/><path d="M7.5 10.5a1 1 0 1 0 2 0a1 1 0 1 0 -2 0"/><path d="M11.5 7.5a1 1 0 1 0 2 0a1 1 0 1 0 -2 0"/><path d="M15.5 10.5a1 1 0 1 0 2 0a1 1 0 1 0 -2 0"/>',"pencil":'<path d="M4 20h4l10.5 -10.5a2.828 2.828 0 1 0 -4 -4l-10.5 10.5v4"/><path d="M13.5 6.5l4 4"/>',"photo":'<path d="M15 8h.01"/><path d="M3 6a3 3 0 0 1 3 -3h12a3 3 0 0 1 3 3v12a3 3 0 0 1 -3 3h-12a3 3 0 0 1 -3 -3v-12"/><path d="M3 16l5 -5c.928 -.893 2.072 -.893 3 0l5 5"/><path d="M14 14l1 -1c.928 -.893 2.072 -.893 3 0l3 3"/>',"plant-2":'<path d="M2 9a10 10 0 1 0 20 0"/><path d="M12 19a10 10 0 0 1 10 -10"/><path d="M2 9a10 10 0 0 1 10 10"/><path d="M12 4a9.7 9.7 0 0 1 2.99 7.5"/><path d="M9.01 11.5a9.7 9.7 0 0 1 2.99 -7.5"/>',"player-pause":'<path d="M6 6a1 1 0 0 1 1 -1h2a1 1 0 0 1 1 1v12a1 1 0 0 1 -1 1h-2a1 1 0 0 1 -1 -1l0 -12"/><path d="M14 6a1 1 0 0 1 1 -1h2a1 1 0 0 1 1 1v12a1 1 0 0 1 -1 1h-2a1 1 0 0 1 -1 -1l0 -12"/>',"player-play":'<path d="M7 4v16l13 -8l-13 -8"/>',"player-stop":'<path d="M5 7a2 2 0 0 1 2 -2h10a2 2 0 0 1 2 2v10a2 2 0 0 1 -2 2h-10a2 2 0 0 1 -2 -2l0 -10"/>',"plus":'<path d="M12 5l0 14"/><path d="M5 12l14 0"/>',"presentation":'<path d="M3 4l18 0"/><path d="M4 4v10a2 2 0 0 0 2 2h12a2 2 0 0 0 2 -2v-10"/><path d="M12 16l0 4"/><path d="M9 20l6 0"/><path d="M8 12l3 -3l2 2l3 -3"/>',"printer":'<path d="M17 17h2a2 2 0 0 0 2 -2v-4a2 2 0 0 0 -2 -2h-14a2 2 0 0 0 -2 2v4a2 2 0 0 0 2 2h2"/><path d="M17 9v-4a2 2 0 0 0 -2 -2h-6a2 2 0 0 0 -2 2v4"/><path d="M7 15a2 2 0 0 1 2 -2h6a2 2 0 0 1 2 2v4a2 2 0 0 1 -2 2h-6a2 2 0 0 1 -2 -2l0 -4"/>',"progress":'<path d="M10 20.777a8.942 8.942 0 0 1 -2.48 -.969"/><path d="M14 3.223a9.003 9.003 0 0 1 0 17.554"/><path d="M4.579 17.093a8.961 8.961 0 0 1 -1.227 -2.592"/><path d="M3.124 10.5c.16 -.95 .468 -1.85 .9 -2.675l.169 -.305"/><path d="M6.907 4.579a8.954 8.954 0 0 1 3.093 -1.356"/>',"puzzle":'<path d="M4 7h3a1 1 0 0 0 1 -1v-1a2 2 0 0 1 4 0v1a1 1 0 0 0 1 1h3a1 1 0 0 1 1 1v3a1 1 0 0 0 1 1h1a2 2 0 0 1 0 4h-1a1 1 0 0 0 -1 1v3a1 1 0 0 1 -1 1h-3a1 1 0 0 1 -1 -1v-1a2 2 0 0 0 -4 0v1a1 1 0 0 1 -1 1h-3a1 1 0 0 1 -1 -1v-3a1 1 0 0 1 1 -1h1a2 2 0 0 0 0 -4h-1a1 1 0 0 1 -1 -1v-3a1 1 0 0 1 1 -1"/>',"qrcode":'<path d="M4 5a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v4a1 1 0 0 1 -1 1h-4a1 1 0 0 1 -1 -1l0 -4"/><path d="M7 17l0 .01"/><path d="M14 5a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v4a1 1 0 0 1 -1 1h-4a1 1 0 0 1 -1 -1l0 -4"/><path d="M7 7l0 .01"/><path d="M4 15a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v4a1 1 0 0 1 -1 1h-4a1 1 0 0 1 -1 -1l0 -4"/><path d="M17 7l0 .01"/><path d="M14 14l3 0"/><path d="M20 14l0 .01"/><path d="M14 14l0 3"/><path d="M14 20l3 0"/><path d="M17 17l3 0"/><path d="M20 17l0 3"/>',"refresh":'<path d="M20 11a8.1 8.1 0 0 0 -15.5 -2m-.5 -4v4h4"/><path d="M4 13a8.1 8.1 0 0 0 15.5 2m.5 4v-4h-4"/>',"report-analytics":'<path d="M9 5h-2a2 2 0 0 0 -2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-12a2 2 0 0 0 -2 -2h-2"/><path d="M9 5a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2a2 2 0 0 1 -2 2h-2a2 2 0 0 1 -2 -2"/><path d="M9 17v-5"/><path d="M12 17v-1"/><path d="M15 17v-3"/>',"robot":'<path d="M6 6a2 2 0 0 1 2 -2h8a2 2 0 0 1 2 2v4a2 2 0 0 1 -2 2h-8a2 2 0 0 1 -2 -2l0 -4"/><path d="M12 2v2"/><path d="M9 12v9"/><path d="M15 12v9"/><path d="M5 16l4 -2"/><path d="M15 14l4 2"/><path d="M9 18h6"/><path d="M10 8v.01"/><path d="M14 8v.01"/>',"rocket":'<path d="M4 13a8 8 0 0 1 7 7a6 6 0 0 0 3 -5a9 9 0 0 0 6 -8a3 3 0 0 0 -3 -3a9 9 0 0 0 -8 6a6 6 0 0 0 -5 3"/><path d="M7 14a6 6 0 0 0 -3 6a6 6 0 0 0 6 -3"/><path d="M14 9a1 1 0 1 0 2 0a1 1 0 1 0 -2 0"/>',"rotate-clockwise":'<path d="M4.05 11a8 8 0 1 1 .5 4m-.5 5v-5h5"/>',"scale":'<path d="M7 20l10 0"/><path d="M6 6l6 -1l6 1"/><path d="M12 3l0 17"/><path d="M9 12l-3 -6l-3 6a3 3 0 0 0 6 0"/><path d="M21 12l-3 -6l-3 6a3 3 0 0 0 6 0"/>',"search":'<path d="M3 10a7 7 0 1 0 14 0a7 7 0 1 0 -14 0"/><path d="M21 21l-6 -6"/>',"send":'<path d="M10 14l11 -11"/><path d="M21 3l-6.5 18a.55 .55 0 0 1 -1 0l-3.5 -7l-7 -3.5a.55 .55 0 0 1 0 -1l18 -6.5"/>',"settings":'<path d="M10.325 4.317c.426 -1.756 2.924 -1.756 3.35 0a1.724 1.724 0 0 0 2.573 1.066c1.543 -.94 3.31 .826 2.37 2.37a1.724 1.724 0 0 0 1.065 2.572c1.756 .426 1.756 2.924 0 3.35a1.724 1.724 0 0 0 -1.066 2.573c.94 1.543 -.826 3.31 -2.37 2.37a1.724 1.724 0 0 0 -2.572 1.065c-.426 1.756 -2.924 1.756 -3.35 0a1.724 1.724 0 0 0 -2.573 -1.066c-1.543 .94 -3.31 -.826 -2.37 -2.37a1.724 1.724 0 0 0 -1.065 -2.572c-1.756 -.426 -1.756 -2.924 0 -3.35a1.724 1.724 0 0 0 1.066 -2.573c-.94 -1.543 .826 -3.31 2.37 -2.37c1 .608 2.296 .07 2.572 -1.065"/><path d="M9 12a3 3 0 1 0 6 0a3 3 0 0 0 -6 0"/>',"share-2":'<path d="M8 9h-1a2 2 0 0 0 -2 2v8a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-8a2 2 0 0 0 -2 -2h-1"/><path d="M12 14v-11"/><path d="M9 6l3 -3l3 3"/>',"shield-lock":'<path d="M12 3a12 12 0 0 0 8.5 3a12 12 0 0 1 -8.5 15a12 12 0 0 1 -8.5 -15a12 12 0 0 0 8.5 -3"/><path d="M11 11a1 1 0 1 0 2 0a1 1 0 1 0 -2 0"/><path d="M12 12l0 2.5"/>',"sparkles":'<path d="M16 18a2 2 0 0 1 2 2a2 2 0 0 1 2 -2a2 2 0 0 1 -2 -2a2 2 0 0 1 -2 2m0 -12a2 2 0 0 1 2 2a2 2 0 0 1 2 -2a2 2 0 0 1 -2 -2a2 2 0 0 1 -2 2m-7 12a6 6 0 0 1 6 -6a6 6 0 0 1 -6 -6a6 6 0 0 1 -6 6a6 6 0 0 1 6 6"/>',"speakerphone":'<path d="M18 8a3 3 0 0 1 0 6"/><path d="M10 8v11a1 1 0 0 1 -1 1h-1a1 1 0 0 1 -1 -1v-5"/><path d="M12 8l4.524 -3.77a.9 .9 0 0 1 1.476 .692v12.156a.9 .9 0 0 1 -1.476 .692l-4.524 -3.77h-8a1 1 0 0 1 -1 -1v-4a1 1 0 0 1 1 -1h8"/>',"square":'<path d="M3 5a2 2 0 0 1 2 -2h14a2 2 0 0 1 2 2v14a2 2 0 0 1 -2 2h-14a2 2 0 0 1 -2 -2v-14"/>',"square-plus":'<path d="M9 12h6"/><path d="M12 9v6"/><path d="M3 5a2 2 0 0 1 2 -2h14a2 2 0 0 1 2 2v14a2 2 0 0 1 -2 2h-14a2 2 0 0 1 -2 -2v-14"/>',"stairs":'<path d="M22 5h-5v5h-5v5h-5v5h-5"/>',"sun":'<path d="M8 12a4 4 0 1 0 8 0a4 4 0 1 0 -8 0"/><path d="M3 12h1m8 -9v1m8 8h1m-9 8v1m-6.4 -15.4l.7 .7m12.1 -.7l-.7 .7m0 11.4l.7 .7m-12.1 -.7l-.7 .7"/>',"table":'<path d="M3 5a2 2 0 0 1 2 -2h14a2 2 0 0 1 2 2v14a2 2 0 0 1 -2 2h-14a2 2 0 0 1 -2 -2v-14"/><path d="M3 10h18"/><path d="M10 3v18"/>',"tag":'<path d="M6.5 7.5a1 1 0 1 0 2 0a1 1 0 1 0 -2 0"/><path d="M3 6v5.172a2 2 0 0 0 .586 1.414l7.71 7.71a2.41 2.41 0 0 0 3.408 0l5.592 -5.592a2.41 2.41 0 0 0 0 -3.408l-7.71 -7.71a2 2 0 0 0 -1.414 -.586h-5.172a3 3 0 0 0 -3 3"/>',"target":'<path d="M11 12a1 1 0 1 0 2 0a1 1 0 1 0 -2 0"/><path d="M7 12a5 5 0 1 0 10 0a5 5 0 1 0 -10 0"/><path d="M3 12a9 9 0 1 0 18 0a9 9 0 1 0 -18 0"/>',"topology-star":'<path d="M8 18a2 2 0 1 0 -4 0a2 2 0 0 0 4 0"/><path d="M20 6a2 2 0 1 0 -4 0a2 2 0 0 0 4 0"/><path d="M8 6a2 2 0 1 0 -4 0a2 2 0 0 0 4 0"/><path d="M20 18a2 2 0 1 0 -4 0a2 2 0 0 0 4 0"/><path d="M14 12a2 2 0 1 0 -4 0a2 2 0 0 0 4 0"/><path d="M7.5 7.5l3 3"/><path d="M7.5 16.5l3 -3"/><path d="M13.5 13.5l3 3"/><path d="M16.5 7.5l-3 3"/>',"trash":'<path d="M4 7l16 0"/><path d="M10 11l0 6"/><path d="M14 11l0 6"/><path d="M5 7l1 12a2 2 0 0 0 2 2h8a2 2 0 0 0 2 -2l1 -12"/><path d="M9 7v-3a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v3"/>',"trending-up":'<path d="M3 17l6 -6l4 4l8 -8"/><path d="M14 7l7 0l0 7"/>',"triangle":'<path d="M10.363 3.591l-8.106 13.534a1.914 1.914 0 0 0 1.636 2.871h16.214a1.914 1.914 0 0 0 1.636 -2.87l-8.106 -13.536a1.914 1.914 0 0 0 -3.274 0"/>',"user":'<path d="M8 7a4 4 0 1 0 8 0a4 4 0 0 0 -8 0"/><path d="M6 21v-2a4 4 0 0 1 4 -4h4a4 4 0 0 1 4 4v2"/>',"user-cog":'<path d="M8 7a4 4 0 1 0 8 0a4 4 0 0 0 -8 0"/><path d="M6 21v-2a4 4 0 0 1 4 -4h2.5"/><path d="M17.001 19a2 2 0 1 0 4 0a2 2 0 1 0 -4 0"/><path d="M19.001 15.5v1.5"/><path d="M19.001 21v1.5"/><path d="M22.032 17.25l-1.299 .75"/><path d="M17.27 20l-1.3 .75"/><path d="M15.97 17.25l1.3 .75"/><path d="M20.733 20l1.3 .75"/>',"users":'<path d="M5 7a4 4 0 1 0 8 0a4 4 0 1 0 -8 0"/><path d="M3 21v-2a4 4 0 0 1 4 -4h4a4 4 0 0 1 4 4v2"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/><path d="M21 21v-2a4 4 0 0 0 -3 -3.85"/>',"users-group":'<path d="M10 13a2 2 0 1 0 4 0a2 2 0 0 0 -4 0"/><path d="M8 21v-1a2 2 0 0 1 2 -2h4a2 2 0 0 1 2 2v1"/><path d="M15 5a2 2 0 1 0 4 0a2 2 0 0 0 -4 0"/><path d="M17 10h2a2 2 0 0 1 2 2v1"/><path d="M5 5a2 2 0 1 0 4 0a2 2 0 0 0 -4 0"/><path d="M3 13v-1a2 2 0 0 1 2 -2h2"/>',"wand":'<path d="M6 21l15 -15l-3 -3l-15 15l3 3"/><path d="M15 6l3 3"/><path d="M9 3a2 2 0 0 0 2 2a2 2 0 0 0 -2 2a2 2 0 0 0 -2 -2a2 2 0 0 0 2 -2"/><path d="M19 13a2 2 0 0 0 2 2a2 2 0 0 0 -2 2a2 2 0 0 0 -2 -2a2 2 0 0 0 2 -2"/>',"world":'<path d="M3 12a9 9 0 1 0 18 0a9 9 0 0 0 -18 0"/><path d="M3.6 9h16.8"/><path d="M3.6 15h16.8"/><path d="M11.5 3a17 17 0 0 0 0 18"/><path d="M12.5 3a17 17 0 0 1 0 18"/>',"x":'<path d="M18 6l-12 12"/><path d="M6 6l12 12"/>'/*TI:END*/};
 const TI_PX = {sm:16, md:20, lg:24};
 function ic(name, size = "md", label = ""){
   const d = TI_PATHS[name];
@@ -2130,7 +2392,7 @@ const curTheme = () => { const v = lsGet("nonjae.theme"); return v === "light" |
 function applyTheme(v){
   document.documentElement.setAttribute("data-theme", v);
   document.querySelectorAll('[data-a="theme-set"]').forEach(x => x.setAttribute("aria-pressed", String(x.dataset.v === v)));   // 라이트(해) · 다크(달) 중 지금 것을 표시
-  document.querySelector('meta[name="theme-color"]')?.setAttribute("content", v === "dark" ? "#0F1412" : "#1D6A4F");
+  document.querySelector('meta[name="theme-color"]')?.setAttribute("content", v === "dark" ? "#0D1E21" : "#183C43");
 }
 function setTheme(v){ lsSet("nonjae.theme", v); applyTheme(v) }
 document.querySelectorAll("[data-ti]").forEach(el => { el.innerHTML = ic(el.dataset.ti) });   // 처음부터 화면에 있는 버튼의 아이콘
@@ -2245,23 +2507,45 @@ function afterRender(){
     }
   }
 }
+/* 사이드바 메뉴: 예전 상단 버튼과 같은 액션(data-a)만 쓴다. 지금 화면에 해당하는 메뉴는 aria-current로 표시 */
 function renderTop(){
-  let h = "";
-  if(S.mode === "supa" && S.wantTeacher && !Auth.teacher){ document.getElementById("topr").innerHTML = ""; return }   // 교사 소개 화면: 학생 버튼은 숨긴다
-  if(S.preview){ document.getElementById("topr").innerHTML = `<button class="btn sm" type="button" data-a="preview-exit">교사 화면으로 돌아가기</button>`; return }
-  if(isTeacher()) h += `<button class="btn sm" type="button" data-a="home">${ic("layout-dashboard")} 내 과목</button>`;
-  if(isTeacher()) h += `<button class="btn sm" type="button" data-a="preview-home" title="학생에게 보이는 화면을 확인해요. 여기서 쓴 내용은 저장되지 않아요.">${ic("eye")} <span class="lt">학생 화면 </span>미리보기</button>`;
-  if(isTeacher() && S.mode === "supa" && S.isAdmin) h += `<button class="btn sm" type="button" data-a="tadmin-open">${ic("user-cog")} 교사 관리</button>`;
-  if(isTeacher() && S.mode === "supa") h += `<button class="btn sm" type="button" data-a="t-logout" title="${esc(S.sbEmail)}">로그아웃</button>`;
-  if(!isTeacher()){
-    if(S.name) h += `<span class="who">${esc(S.name)} · <button class="linkbtn" type="button" data-a="rename">${S.mode === "supa" ? (S.guest ? "다른 이름으로" : "다른 학생으로") : "이름 바꾸기"}</button>${S.mode === "supa" && !S.preview && !S.guest ? ` · <button class="linkbtn" type="button" data-a="join-open" title="다른 선생님의 과목을 함께 들어요">${ic("plus", "sm")} 과목 추가</button>` : ""}</span>`;
-    const rr = S.view === "room" ? room() : null, gcid = rr?._gid ? rr.courseId : (S.view === "home" ? S.course : "");
-    if(gcid && myGroup(gcid) && myGroup(gcid) !== "_none") h += `<span class="who">${esc(groupName(gcid, myGroup(gcid)))}${groupByTeacher(courseOf(gcid)) ? "" : ` · <button class="linkbtn" type="button" data-a="regroup" data-c="${esc(gcid)}">그룹 바꾸기</button>`}</span>`;
-    if(S.name) h += `<button class="btn sm" type="button" data-a="mine">${ic("notebook")} 내 생각 기록</button>`;   // 로그인(코드 확인) 전에는 보이지 않는다
-    if(!isStandalone()) h += `<button class="btn sm inst" type="button" data-a="install-help">${ic("device-mobile-down")} <span class="lt">앱으로 </span>설치</button>`;
-  }else{ h += `<button class="btn sm pri" type="button" data-a="create">${ic("plus")} 새 활동</button>`; if(!isStandalone()) h += `<button class="btn sm inst" type="button" data-a="install-help">${ic("device-mobile-down")} <span class="lt">앱으로 </span>설치</button>` }
-  document.getElementById("topr").innerHTML = h;
+  const nav = document.getElementById("topr"), me = document.getElementById("sideme");
+  const item = (a, icon, label, on = false, attrs = "") => `<button class="nav-i" type="button" data-a="${a}"${on ? ' aria-current="page"' : ""}${attrs}>${ic(icon)}<span class="nav-t">${label}</span></button>`;
+  const sub = h => `<div class="nav-sub">${h}</div>`;
+  const inst = isStandalone() ? "" : item("install-help", "device-mobile-down", "앱으로 설치", false, ' data-inst="1"');
+  const v = S.view;
+  let h = "", m = "";
+  if(S.mode === "supa" && S.wantTeacher && !Auth.teacher){ nav.innerHTML = ""; me.innerHTML = ""; return }   // 교사 소개 화면: 학생 버튼은 숨긴다
+  if(S.preview){ nav.innerHTML = item("preview-exit", "arrow-left", "교사 화면으로 돌아가기"); me.innerHTML = ""; return }
+  if(isTeacher()){
+    h += item("home", "layout-dashboard", "내 과목", v === "home" || v === "room" || v === "present");
+    h += item("create", "plus", "새 활동", v === "create");
+    h += item("preview-home", "eye", "학생 화면 미리보기", false, ' title="학생에게 보이는 화면을 확인해요. 여기서 쓴 내용은 저장되지 않아요."');
+    if(S.mode === "supa" && S.isAdmin) h += item("tadmin-open", "user-cog", "교사 관리");
+    m += inst;
+    if(S.mode === "supa") m += item("t-logout", "logout", "로그아웃", false, ` title="${esc(S.sbEmail)}"`);
+  }else{
+    h += item("home", "home", "홈", v === "home" || v === "room");
+    if(S.name) h += item("mine", "notebook", "내 생각 기록", v === "mine");   // 로그인(코드 확인) 전에는 보이지 않는다
+    if(S.name && S.mode === "supa" && !S.preview && !S.guest) h += item("join-open", "plus", "과목 추가", false, ' title="다른 선생님의 과목을 함께 들어요"');
+    const rr = v === "room" ? room() : null, gcid = rr?._gid ? rr.courseId : (v === "home" ? S.course : "");
+    let who = "";
+    if(S.name) who += `<span class="who"><span class="who-n">${esc(S.name)}</span><button class="linkbtn" type="button" data-a="rename">${S.mode === "supa" ? (S.guest ? "다른 이름으로" : "다른 학생으로") : "이름 바꾸기"}</button></span>`;
+    if(gcid && myGroup(gcid) && myGroup(gcid) !== "_none") who += `<span class="who">${ic("users-group", "sm")} ${esc(groupName(gcid, myGroup(gcid)))}${groupByTeacher(courseOf(gcid)) ? "" : ` <button class="linkbtn" type="button" data-a="regroup" data-c="${esc(gcid)}">그룹 바꾸기</button>`}</span>`;
+    m += who + inst;
+  }
+  nav.innerHTML = h;
+  me.innerHTML = m;
 }
+/* 휴대폰: 메뉴 펼치기/닫기 (화면 상태 S와 무관한 표시용 동작이라 act()를 거치지 않는다) */
+function sideOpen(on){
+  document.body.classList.toggle("side-open", on);
+  const t = document.getElementById("side-tog");
+  if(t){ t.setAttribute("aria-expanded", String(on)); t.setAttribute("aria-label", on ? "메뉴 닫기" : "메뉴 열기") }
+}
+document.getElementById("side-tog")?.addEventListener("click", () => sideOpen(!document.body.classList.contains("side-open")));
+document.getElementById("side")?.addEventListener("click", e => { if(e.target.closest("[data-a]") && !e.target.closest("#theme")) sideOpen(false) });
+addEventListener("keydown", e => { if(e.key === "Escape" && document.body.classList.contains("side-open")) sideOpen(false) });
 function distHTML(r, posts){
   if(!(r.stances||[]).length || !posts.length) return "";
   const n = posts.length;
@@ -4177,7 +4461,7 @@ function teacherCard(r, p, ps, nav){
    ========================================================= */
 /* 🔄 새 버전 알림: 배포 때마다 APP_VERSION과 version.json의 v를 같은 값으로 올린다.
    GitHub Pages는 화면을 10분쯤 기억하므로, 옛 화면이면 아래쪽에 ‘새로고침’ 띠를 띄우고 주소를 바꿔 새로 받는다 */
-const APP_VERSION = "2026-10-19a";
+const APP_VERSION = "2026-10-20a";
 async function checkVersion(){
   if(!/^https?:$/.test(location.protocol)) return;
   try{
@@ -4823,11 +5107,25 @@ function teacherTop(){
   const drafts = live.filter(r => statusOf(r) === "draft").length, today = respToday(live);
   const nm = S.demo ? "체험" : (S.sbName || "").trim();
   const tile = (nm, n, l, sub, cls = "", v = "") => `<button type="button" class="tstat ${cls}" data-a="tstat" data-v="${v}" title="${esc(l)} 보기"><span class="ic" aria-hidden="true">${ic(nm, "lg")}</span><span class="tl">${l}</span><b>${n}</b>${sub ? `<em>${sub}</em>` : "<em>&nbsp;</em>"}</button>`;
+  /* 주요 기능 바로가기: 예전 인사말 옆 버튼(학생 코드·개별 안내·새 활동 만들기)과 과목 목록의 ‘새 과목’을 그대로 쓴다 — 같은 액션, 같은 보이기 조건 */
+  const qa = (a, icon, t, d, cls = "", attrs = "") => `<button type="button" class="qa${cls}" data-a="${a}"${attrs}><span class="qa-ic" aria-hidden="true">${ic(icon)}</span><span class="qa-t"><b>${t}</b><span>${d}</span></span><span class="qa-go" aria-hidden="true">${ic("chevron-right", "sm")}</span></button>`;
+  const quick = qa("create", "plus", "새 활동 만들기", "7가지 활동 중에 골라 만들어요", " pri")
+    + qa("course-new", "square-plus", "새 과목", "과목과 수강 학생을 정해요")
+    + (S.mode === "supa" ? qa("roster-open", "users", "학생 코드", "명단을 넣고 개인 코드를 만들어요") : "")
+    + (S.mode === "supa" || S.demo ? qa("msg-open", "mail", "개별 안내", "고른 학생에게만 안내를 보내요", "", ' title="고른 학생에게만 안내를 보내고, 누가 읽었는지 확인해요"') : "");
+  /* 최근 활동: 이미 불러온 활동을 최근 움직임 순으로 5개 (보관 제외) — 새 데이터·통계 없음 */
+  const recent = S.mcourse ? [] : [...live].sort((a, b) => lastActivity(b) - lastActivity(a)).slice(0, 5);
+  const recentHTML = recent.length ? `<section class="recent" aria-labelledby="recent-h"><div class="recent-h"><h2 id="recent-h" class="sec-h">${ic("clock")} 최근 활동</h2><button class="linkbtn small" type="button" data-a="to-mlist">모든 활동 보기 ${ic("arrow-down", "sm")}</button></div>
+    <ul>${recent.map(r => { const t = TEMPLATES[r.template] || {};
+      return `<li><button type="button" class="rrow" data-a="open" data-id="${esc(r.id)}"><span class="rr-ic" aria-hidden="true">${ic(t.icon || "file-text", "sm")}</span><span class="rr-t">${esc(r.title || "제목 없는 활동")}</span><span class="rr-k">${esc(t.label || "")}</span>${statusChip(r)}<span class="rr-d">${fmtRel(lastActivity(r))}</span></button></li>` }).join("")}</ul></section>` : "";
+  const banner = S.mcourse ? "" : `<section class="wbanner" aria-labelledby="wb-h"><div class="wb-txt"><div class="wb-eb">THINKING WORKSPACE</div><h2 id="wb-h">생각을 연결하는 수업</h2><p>질문을 만들고, 근거를 탐색하고, 나만의 생각을 완성해 보세요.</p></div>
+    <svg class="wb-art" viewBox="0 0 240 120" aria-hidden="true" focusable="false"><g fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M40 78 C70 78 82 40 118 40"/><path d="M118 40 C150 40 160 74 196 74"/><path d="M118 40 L120 96"/><path d="M40 78 C72 96 92 96 120 96"/></g><g stroke="currentColor" stroke-width="1.6"><circle cx="40" cy="78" r="10" class="n1"/><circle cx="118" cy="40" r="15" class="n0"/><circle cx="196" cy="74" r="10" class="n1"/><circle cx="120" cy="96" r="7" class="n2"/></g></svg></section>`;
   return `<section class="thead"><div class="thead-hi"><div><div class="eyebrow">${now.getMonth()+1}월 ${now.getDate()}일 ${"일월화수목금토"[now.getDay()]}요일 · 교사 화면</div>
       <h1>${nm ? `${esc(nm)} 선생님, 안녕하세요` : "선생님, 안녕하세요"}</h1>${S.mode === "supa" && !S.demo ? `<button class="linkbtn small tname-btn" type="button" data-a="tname-open">${ic("pencil", "sm")} 이름 바꾸기</button>` : ""}
-      <p>${open.length ? `지금 <b>${open.length}개</b> 활동이 열려 있어요.${soon.length ? ` 그중 <b>${soon.length}개</b>는 24시간 안에 마감돼요.` : ""}` : "열린 활동이 없어요. ‘+ 새 활동 만들기’로 시작해 보세요."}</p></div>
-    <span class="row">${S.mode === "supa" ? `<button class="btn" type="button" data-a="roster-open">${ic("users")} 학생 코드</button>` : ""}${S.mode === "supa" || S.demo ? `<button class="btn" type="button" data-a="msg-open" title="고른 학생에게만 안내를 보내고, 누가 읽었는지 확인해요">${ic("mail")} 개별 안내</button>` : ""}<button class="btn pri" type="button" data-a="create">${ic("plus")} 새 활동 만들기</button></span></div>
-    <div class="tstats">${tile("books", activeCourses().length, "내 과목", `활동 ${live.length}개`, "t1", "courses")}${tile("player-play", open.length, "진행 중", drafts ? `작성 중 ${drafts}` : "지금 열린 활동", "t2", "open")}${tile("alarm", soon.length, "곧 마감", "24시간 안", soon.length ? "t3 warn" : "t3", "soon")}${tile("pencil", today, "오늘 들어온 응답", "새 글·제출", today ? "t4 good" : "t4", "today")}</div></section>`;
+      <p>${open.length ? `지금 <b>${open.length}개</b> 활동이 열려 있어요.${soon.length ? ` 그중 <b>${soon.length}개</b>는 24시간 안에 마감돼요.` : ""}` : "열린 활동이 없어요. ‘새 활동 만들기’로 시작해 보세요."}</p></div></div>
+    ${banner}
+    <div class="qgrid" role="group" aria-label="주요 기능">${quick}</div>
+    <div class="tsum${recentHTML ? "" : " solo"}"><div class="tstats">${tile("books", activeCourses().length, "내 과목", `활동 ${live.length}개`, "t1", "courses")}${tile("player-play", open.length, "진행 중", drafts ? `작성 중 ${drafts}` : "지금 열린 활동", "t2", "open")}${tile("alarm", soon.length, "곧 마감", "24시간 안", soon.length ? "t3 warn" : "t3", "soon")}${tile("pencil", today, "오늘 들어온 응답", "새 글·제출", today ? "t4 good" : "t4", "today")}</div>${recentHTML}</div></section>`;
 }
 /* 과목이 많을 때: 처음엔 3개만, ‘더 보기’로 전체 · 지난 학기 과목은 보관(archived)하면 목록과 학생 화면에서 빠진다 */
 const COURSE_SHOW = 3;
@@ -5587,7 +5885,7 @@ function viewManage(){
   const local = S.form.create && !S.form.create.editId && ((S.form.create.prompt||"").trim() || (S.form.create.title||"").trim()) ? S.form.create : null;
   let h = teacherTop() + courseHead();
   if(S.mcourse && S.mcourse !== "_none" && courseOf(S.mcourse)) h += coursePortfolio(courseOf(S.mcourse));
-  h += `<h2 class="sec-h" style="margin:18px 0 10px">${ic("list-details")} ${S.mcourse && S.mcourse !== "_none" ? "이 과목의 활동" : S.mcourse === "_none" ? "과목 없는 활동" : "모든 활동"} <span class="muted small">${counts.all}개${counts.archived ? ` · 보관 ${counts.archived}` : ""}</span></h2>`;
+  h += `<h2 class="sec-h" id="mlist-h" style="margin:18px 0 10px">${ic("list-details")} ${S.mcourse && S.mcourse !== "_none" ? "이 과목의 활동" : S.mcourse === "_none" ? "과목 없는 활동" : "모든 활동"} <span class="muted small">${counts.all}개${counts.archived ? ` · 보관 ${counts.archived}` : ""}</span></h2>`;
   if(!shareBase()) h += `<div class="setup"><b>${ic("link")} 학생 링크 설정 (처음 한 번)</b><p class="small">화면 오른쪽 위의 <b>공유</b>에서 이 페이지 링크를 만든 뒤 아래에 붙여 넣으면, 활동마다 학생 링크와 QR 코드를 바로 만들 수 있어요. 학생이 들어올 수 있도록 공유 범위도 확인해 주세요.</p>
     <div class="row"><input type="text" id="share-url" placeholder="https://claude.ai/…" aria-label="공유 링크"><button class="btn sm pri" type="button" data-a="save-share">저장</button></div></div>`;
   h += `<div class="mtools"><input type="search" id="m-q" placeholder="활동 제목·과목·단원·유형으로 찾기" value="${esc(S.mq)}" aria-label="활동 검색">
@@ -6509,12 +6807,13 @@ function viewCreate(){
   if(!editR && S.ttemplates.length) h += `<div class="card"><h3>${ic("folder-open")} 내 템플릿에서 시작하기</h3><div class="mfilters">${S.ttemplates.map(x=>`<button type="button" data-a="use-tpl" data-id="${esc(x.id)}">${esc(x.name)}</button>`).join("")}</div>
     <p class="muted small" style="margin-top:6px">활동 유형·깊이·세부 설정을 불러와요. 논제와 자료는 그대로 남아요.</p></div>`;
 
-  let no = 0; const N = () => CIRC[no++];                                // 단계 번호 (보이는 칸만 차례로)
+  let no = 0; const N = () => `<span class="sn">${CIRC[no++]}</span>`;   // 단계 번호 (보이는 칸만 차례로)
   h += `<div class="card ctop" style="margin-top:16px"><div class="form-grid">
     <div class="q"><label for="c-title">활동 이름 <span class="opt">(선택 · 비워 두면 핵심 질문으로 정해져요)</span></label><input type="text" id="c-title" data-form="create" data-k="title" maxlength="60" placeholder="예: 누구를 위한 근대화였을까" value="${esc(f.title||"")}"></div>
     <div class="q"><label for="c-intro">활동 소개 <span class="opt">(선택 · 학생에게 보여요)</span></label><input type="text" id="c-intro" data-form="create" data-k="intro" maxlength="120" placeholder="예: 친구와 생각을 나누고 내 생각을 다시 돌아봐요." value="${esc(f.intro||"")}"></div></div></div>
   <div class="card" style="margin-top:16px"><h3>${N()} 어떤 활동을 할까요?<span class="req" title="꼭 적어야 해요" aria-label="필수">*</span></h3>${lockWrap(locked, `
-    <div class="types" role="group" aria-label="활동">${GOALS.map(g => `<button type="button" class="tcard" data-a="goal" data-v="${g.k}" aria-pressed="${g.k===goal.k}"><b>${ic(g.icon, "lg")} ${esc(g.l)}${g.beta ? `<span class="beta" title="시험 중인 기능이에요. AI 답이 틀릴 수 있어요.">Beta</span>` : ""}</b><span>${esc(g.d)}</span></button>`).join("")}</div>
+    <p class="hint gtip">활동을 고르면 아래 칸이 그 활동에 맞게 바뀌어요.</p>
+    <div class="types gtypes" role="group" aria-label="활동">${GOALS.map(g => `<button type="button" class="tcard gcard" data-a="goal" data-v="${g.k}" aria-pressed="${g.k===goal.k}"><span class="gc-ic" aria-hidden="true">${ic(g.icon, "lg")}</span><span class="gc-t"><b>${esc(g.l)}${g.beta ? `<span class="beta" title="시험 중인 기능이에요. AI 답이 틀릴 수 있어요.">Beta</span>` : ""}</b><span>${esc(g.d)}</span></span><span class="gc-ck" aria-hidden="true"></span></button>`).join("")}</div>
     ${goal.t.length > 1 && !goal.hideModes ? `<h3 style="font-size:15px;margin:16px 0 8px">${esc(goal.q || "어떤 방식으로 할까요?")}</h3>
       <div class="types" role="group" aria-label="${esc(goal.l)} 방식">${goal.t.map(k => { const v = TEMPLATES[k]; return `<button type="button" class="tcard" data-a="tpl" data-v="${k}" aria-pressed="${k===f.template}"><b>${ic(v.modeIcon, "lg")} ${esc(v.modeLabel || v.mode)}</b>${v.modeWho ? `<span class="mwho">${esc(v.modeWho)}</span>` : ""}<span>${esc(v.modeDesc)}</span></button>` }).join("")}</div>` : ""}`)}</div>
 
@@ -6522,13 +6821,16 @@ function viewCreate(){
   <div class="card" style="margin-top:16px"><h3>${N()} ${isChat ? `무엇에 대해 대화할까요? <span class="opt vis">${ic("eye", "sm")} 대화 주제와 자료 · 학생에게 보여요</span>` : `무엇에 대해 생각할까요? <span class="opt">핵심 질문과 자료</span>`}</h3><div class="form-grid">
     <div class="q wide"><label for="c-prompt">${stepQOn(f) ? `${ic("target", "sm")} 핵심 질문 · ` : ""}${promptLabel}${isNoteT ? "" : `<span class="req" title="꼭 적어야 해요" aria-label="필수">*</span>`}</label>${ta("create","prompt",{rows:2, ph:promptPh, id:"c-prompt"})}</div>
     ${aiSugHTML(f)}
-    ${isNoteT ? `<div class="q"><label for="c-maxp">한 번에 올릴 수 있는 사진 수</label><input type="number" id="c-maxp" data-form="create" data-k="maxPages" min="1" max="12" value="${esc(f.maxPages||"3")}"><p class="hint">1장~12장 (기본 3장)</p></div>
-      <p class="hint wide">학생은 ‘사진 찍기’나 ‘앨범에서 고르기’로 여러 장을 골라, 미리 보고 순서를 바꾸거나 뺀 뒤 제출해요. 활동 이름을 비워 두면 ‘학습 나눔 · 날짜’로 정해져요.</p>
+    ${isNoteT ? `<section class="wide subpanel" aria-labelledby="np-h"><h4 id="np-h">${ic("camera", "sm")} 사진 제출 설정</h4>
+      <p class="hint">학생은 ‘사진 찍기’나 ‘앨범에서 고르기’로 여러 장을 골라, 미리 보고 순서를 바꾸거나 뺀 뒤 제출해요. 활동 이름을 비워 두면 ‘학습 나눔 · 날짜’로 정해져요.</p>
+      <div class="form-grid">
+      <div class="q"><label for="c-maxp">한 번에 올릴 수 있는 사진 수</label><input type="number" id="c-maxp" data-form="create" data-k="maxPages" min="1" max="12" value="${esc(f.maxPages||"3")}"><p class="hint">1장~12장 (기본 3장)</p></div>
+      <div class="q"><label for="c-nshare">올린 사진 보기</label><select id="c-nshare" data-form="create" data-k="reveal"><option value="teacher" ${f.reveal !== "after" ? "selected" : ""}>선생님만 보기 (기본)</option><option value="after" ${f.reveal === "after" ? "selected" : ""}>올린 학생끼리 서로 보기</option></select>
+        <p class="hint">‘서로 보기’면 자기 사진을 올린 학생이 친구들의 사진도 볼 수 있어요. 활동 화면에서 언제든 바꿀 수 있어요.</p>
+        ${f.reveal === "after" ? `<label class="choice" style="min-height:36px"><input type="checkbox" data-form="create" data-k="anonymous" ${f.anonymous ? "checked" : ""}><span>친구에게는 이름 없이 보이기</span></label>` : ""}</div>
       <div class="q wide"><label for="c-memoq">한 줄 메모 질문 <span class="opt">(선택 · 학생이 사진과 함께 한 줄로 답해요)</span></label><input type="text" id="c-memoq" data-form="create" data-k="memoQ" maxlength="120" placeholder="예: 오늘 배운 것 중 가장 중요한 것은 무엇인가요?" value="${esc(f.memoQ || "")}">
         <p class="hint">비워 두면 ‘한 줄 메모’ 칸만 보여요. 답은 선택이라 비워서 낼 수도 있어요.</p></div>
-      <div class="q"><label for="c-nshare">올린 사진 보기</label><select id="c-nshare" data-form="create" data-k="reveal"><option value="teacher" ${f.reveal !== "after" ? "selected" : ""}>선생님만 보기 (기본)</option><option value="after" ${f.reveal === "after" ? "selected" : ""}>올린 학생끼리 서로 보기</option></select>
-        <p class="hint">‘서로 보기’면 자기 사진을 올린 학생이 친구들의 사진도 볼 수 있어요. 활동 화면에서 언제든 바꿀 수 있어요.</p></div>
-      ${f.reveal === "after" ? `<div class="q"><label class="choice" style="min-height:36px"><input type="checkbox" data-form="create" data-k="anonymous" ${f.anonymous ? "checked" : ""}><span>친구에게는 이름 없이 보이기</span></label></div>` : ""}` : ""}
+      </div></section>` : ""}
     ${(f.template==="inquiry" || relay) ? `<div class="wide">${lockWrap(locked, `<fieldset class="q"><legend style="font-size:15px">질문 유형은 무엇인가요? <span class="opt">(선택)</span></legend>${radios("create","qtype",qopts,{label:"질문 유형"})}${qtypeHelp("질문 유형 설명 보기")}</fieldset>`)}</div>` : ""}
     ${t.stances.length ? `<div class="wide">${lockWrap(locked, `<fieldset class="q"><legend style="font-size:15px">입장<span class="req" title="꼭 적어야 해요" aria-label="필수">*</span> <span class="opt">(2개 이상 · 이름을 바꿀 수 있어요)</span></legend>
       <div class="form-grid" style="gap:8px">${Array.from({length:f.nst||t.stances.length}, (_,i) => `<div class="stance-ins"><span aria-hidden="true" style="color:var(--${SC[i%4]})">${stanceIcon(null, i)}</span><input type="text" id="c-st${i}" data-form="create" data-k="st${i}" maxlength="30" aria-label="입장 ${i+1}" value="${esc(f["st"+i]||"")}"></div>`).join("")}</div>
@@ -6607,7 +6909,7 @@ function viewCreate(){
       ${!locked && !S.tplNaming ? `<button class="linkbtn" type="button" data-a="tpl-save-open">${ic("device-floppy", "sm")} 내 템플릿으로 저장</button>` : ""}</div>
     <div class="row">${(!editR || isDraft) && canPush() && courseOf(f.courseId) ? `<label class="choice" style="min-height:36px" title="공개할 때 이 과목(고른 그룹) 학생 앱에 알림을 보내요"><input type="checkbox" data-form="create" data-k="notify" ${f.notify === false ? "" : "checked"}><span>${ic("bell", "sm")} 학생 알림</span></label>` : ""}${!editR || isDraft ? `<button class="btn" type="button" data-a="draft-save">임시 저장</button>` : ""}
       <button class="btn pri" type="button" data-a="${editR && !isDraft ? "create-save" : (isDraft ? "publish-draft" : "create-save")}">${editR ? (isDraft ? "공개하기" : "변경사항 저장") : "활동 만들기"}</button></div></div>`;
-  return h;
+  return `<div class="cform" data-tpl="${esc(f.template)}">${h}</div>`;   // 만들기·수정 화면 전용 모양(.cform) — 안의 칸·동작은 그대로
 }
 function roomMeta(f){
   const m = {grade:f.grade||"", duration:parseInt(f.duration)||0, stage:f.stage||"", intro:(f.intro||"").trim(), dueAt: f.dueAt ? (new Date(f.dueAt).getTime() || null) : null};
@@ -7007,6 +7309,7 @@ async function act(a, b){
     }
     case "fb-skip": { const ok = await savePost(r, {feedbackSkipped:true}); if(ok) goNext(r); break }
     case "theme-set": setTheme(b.dataset.v === "dark" ? "dark" : "light"); return;
+    case "to-mlist": document.getElementById("mlist-h")?.scrollIntoView({block:"start", behavior:"instant"}); return;   // 교사 첫 화면 ‘최근 활동’ → 아래 ‘모든 활동’ 목록으로 (화면 이동만)
     case "to-stage": S.work = S.roomId; S.openPost = null; scrollTo(0,0); break;
     case "rmode": S.work = b.dataset.v === "work" ? S.roomId : null; S.openPost = null; break;
     case "due-clear": { const f = createForm(); f.dueAt = ""; saveFormsSoon(); break }
