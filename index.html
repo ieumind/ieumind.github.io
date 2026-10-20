@@ -94,7 +94,11 @@ p{margin:0}
 .side{position:sticky;top:0;flex:0 0 var(--side-w);width:var(--side-w);height:100vh;height:100dvh;display:flex;flex-direction:column;background:var(--side-bg);color:var(--side-fg);padding:var(--sp-6) var(--sp-3) var(--sp-4);z-index:25}
 .side-head{display:flex;align-items:center;justify-content:space-between;gap:var(--sp-2);padding:0 var(--sp-2) var(--sp-6)}
 .brand{display:flex;align-items:center;gap:10px;cursor:pointer;background:none;border:0;padding:0;text-align:left;color:inherit;min-height:44px}
-.brand-mark{flex:none;width:36px;height:36px;border-radius:10px;display:grid;place-items:center;background:rgba(255,255,255,.1);color:var(--side-fg)}
+.brand{flex-direction:column;align-items:flex-start;gap:10px}
+.brand-logo{display:block;height:104px;width:auto}
+.brand-tag{color:var(--side-muted);font-size:var(--fs-cap);line-height:1.3}
+.side-r{display:flex;align-items:center;gap:2px}
+.topbar-m{display:none}
 .brand-t{display:grid;line-height:1.25}
 .brand b{font-size:19px;font-weight:700;letter-spacing:-.01em}
 .brand-t > span{color:var(--side-muted);font-size:var(--fs-cap)}
@@ -1524,7 +1528,9 @@ input[type=datetime-local]{border-radius:var(--r)}
   .shell{display:block}
   .side{position:relative;width:auto;height:auto;padding:var(--sp-2) var(--sp-4);padding-top:calc(var(--sp-2) + env(safe-area-inset-top,0px))}
   .side-head{padding:0}
-  .brand-mark{width:32px;height:32px}
+  .brand{flex-direction:row;min-height:0}
+  .brand-logo{height:40px}
+  .brand-tag{display:none}
   .brand b{font-size:18px}
   .brand-t > span{display:none}
   .side-tog{display:inline-grid;place-items:center;width:44px;height:44px;border:0;border-radius:var(--r);background:none;color:var(--side-fg);cursor:pointer}
@@ -1533,8 +1539,16 @@ input[type=datetime-local]{border-radius:var(--r)}
   body.side-open .side-menu{display:flex}
   .wrap{padding-top:var(--sp-5)}
   /* 위쪽 막대는 스크롤해도 고정: 앱 이름 막대 + (교사·학생) 알림·계정 줄 */
-  .side{position:sticky;top:0}
-  .topbar{position:sticky;top:var(--hdr-h,60px);z-index:24;background:var(--bg);margin:calc(-1 * var(--sp-5)) calc(-1 * clamp(16px,3vw,40px)) var(--sp-2);padding:6px clamp(16px,3vw,40px)}
+  .side{position:sticky;top:0;padding-top:calc(6px + env(safe-area-inset-top,0px));padding-bottom:6px}
+  /* 알림·계정 버튼은 위쪽 막대 오른쪽(☰ 옆)으로 올린다 */
+  .topbar{display:none}
+  .topbar-m{display:flex;align-items:center;gap:2px;position:relative}
+  .topbar-m .tb-btn{color:var(--side-fg);min-width:40px;height:40px}
+  .topbar-m .tb-btn:hover,.topbar-m .tb-btn[aria-expanded="true"]{background:var(--side-hover);border-color:transparent}
+  .topbar-m [data-a=tb-acct]{padding:0;min-width:40px}
+  .topbar-m [data-a=tb-acct] .tb-nm,.topbar-m [data-a=tb-acct] > svg{display:none}
+  .topbar-m .tb-dot{border-color:var(--side-bg)}
+  .topbar-m .tb-pop{position:fixed;top:calc(var(--hdr-h,56px) + 4px);right:12px;left:auto;color:var(--fg)}
 }
 .qbar{display:none}
 /* 휴대폰: 교사 화면의 빠른 메뉴(새 활동·새 과목·학생 코드·개별 안내)는 아래쪽에 고정 */
@@ -1555,8 +1569,9 @@ input[type=datetime-local]{border-radius:var(--r)}
   <!-- 공통 사이드바: 메뉴(#topr)는 renderTop()이 교사·학생에 맞게 채운다. 휴대폰에서는 위쪽 막대 + 펼치는 메뉴 -->
   <aside class="side" id="side">
     <div class="side-head">
-      <button class="brand" data-a="home" type="button"><span class="brand-mark" aria-hidden="true" data-ti="bubble"></span><span class="brand-t"><b>생각이음</b><span>생각을 잇다, 생각이 자라다</span></span></button>
-      <button class="side-tog" id="side-tog" type="button" aria-expanded="false" aria-controls="side-menu" aria-label="메뉴 열기" data-ti="menu-2"></button>
+      <button class="brand" data-a="home" type="button" aria-label="생각이음 — 처음 화면으로"><img class="brand-logo" src="img/logo.png" width="286" height="358" alt="생각이음"><span class="brand-tag">생각을 잇다, 생각이 자라다</span></button>
+      <div class="side-r"><div class="topbar-m" id="topbar-m"></div>
+      <button class="side-tog" id="side-tog" type="button" aria-expanded="false" aria-controls="side-menu" aria-label="메뉴 열기" data-ti="menu-2"></button></div>
     </div>
     <div class="side-menu" id="side-menu">
       <nav class="top-r" id="topr" aria-label="주 메뉴"></nav>
@@ -2711,10 +2726,10 @@ function stuBell(){
   return {rs, ns, un, tot:rs.length + ns.length + un};
 }
 function renderTopbar(){
-  const tb = document.getElementById("topbar"); if(!tb) return;
+  const tb = document.getElementById("topbar"), tbm = document.getElementById("topbar-m"); if(!tb) return;
   const tch = isTeacher() && S.mode === "supa" && !S.preview && !S.demo;
   const stu = !isTeacher() && !S.preview && !!S.name && !S.guestGate && !S.wantTeacher;
-  if(!tch && !stu){ tb.hidden = true; tb.innerHTML = ""; S.pop = null; return }
+  if(!tch && !stu){ tb.hidden = true; tb.innerHTML = ""; if(tbm) tbm.innerHTML = ""; S.pop = null; return }
   const nm = tch ? (S.sbName || "").trim() : splitAuthor(S.name).name.trim();
   const init = esc((nm || S.sbEmail || "?").slice(0, 1).toUpperCase());
   const av = tch && S.sbPic ? `<img src="${esc(S.sbPic)}" alt="" referrerpolicy="no-referrer">` : init;
@@ -2744,8 +2759,9 @@ function renderTopbar(){
   }
   const pop = S.pop === "bell" ? `<div class="tb-pop" role="menu" aria-label="알림"><h3>알림</h3>${bell}</div>` : S.pop === "acct" ? `<div class="tb-pop" role="menu" aria-label="계정">${acct}</div>` : "";
   tb.hidden = false;
-  tb.innerHTML = `<button class="tb-btn" type="button" data-a="tb-bell" aria-haspopup="menu" aria-expanded="${S.pop === "bell"}" aria-label="알림${tot ? ` (새 소식 ${tot}개)` : ""}">${ic("bell")}${tot ? `<span class="tb-dot" aria-hidden="true"></span>` : ""}</button>
+  const html = `<button class="tb-btn" type="button" data-a="tb-bell" aria-haspopup="menu" aria-expanded="${S.pop === "bell"}" aria-label="알림${tot ? ` (새 소식 ${tot}개)` : ""}">${ic("bell")}${tot ? `<span class="tb-dot" aria-hidden="true"></span>` : ""}</button>
     <button class="tb-btn" type="button" data-a="tb-acct" aria-haspopup="menu" aria-expanded="${S.pop === "acct"}" aria-label="내 계정"><span class="tb-av" aria-hidden="true">${av}</span><span class="tb-nm">${esc(nm || "내 계정")}</span>${ic("chevron-down", "sm")}</button>${pop}`;
+  tb.innerHTML = html; if(tbm) tbm.innerHTML = html;
 }
 function renderQbar(){
   const q = document.getElementById("qbar"); if(!q) return;
@@ -2799,7 +2815,7 @@ function sideOpen(on){
 document.getElementById("side-tog")?.addEventListener("click", () => sideOpen(!document.body.classList.contains("side-open")));
 document.getElementById("side")?.addEventListener("click", e => { if(e.target.closest("[data-a]") && !e.target.closest("#theme")) sideOpen(false) });
 addEventListener("keydown", e => { if(e.key === "Escape" && document.body.classList.contains("side-open")) sideOpen(false); if(e.key === "Escape" && S.pop){ S.pop = null; renderTopbar() } });
-document.addEventListener("click", e => { if(S.pop && !e.target.closest("#topbar")){ S.pop = null; renderTopbar() } });
+document.addEventListener("click", e => { if(S.pop && !e.target.closest("#topbar,#topbar-m")){ S.pop = null; renderTopbar() } });
 function distHTML(r, posts){
   if(!(r.stances||[]).length || !posts.length) return "";
   const n = posts.length;
@@ -3495,19 +3511,26 @@ let INSTALL_EVT = null;                                   // 안드로이드 크
 addEventListener("beforeinstallprompt", e => { e.preventDefault(); INSTALL_EVT = e; if(S.modal?.type === "install") renderModal() });
 addEventListener("appinstalled", () => { INSTALL_EVT = null; renderTop() });
 const isStandalone = () => matchMedia("(display-mode: standalone)").matches || navigator.standalone === true;
-const deviceOS = () => { const u = navigator.userAgent; return /iPhone|iPad|iPod/.test(u) || (/Macintosh/.test(u) && navigator.maxTouchPoints > 1) ? "ios" : /Android/.test(u) ? "android" : "ios" };
+const deviceOS = () => { const u = navigator.userAgent; return /iPhone|iPad|iPod/.test(u) || (/Macintosh/.test(u) && navigator.maxTouchPoints > 1) ? "ios" : /Android/.test(u) ? "android" : "pc" };
 const inAppBrowser = () => /KAKAOTALK|NAVER|Instagram|FBAN|FBAV|Line\/|everytimeApp|band/i.test(navigator.userAgent);
 function installHelpHTML(os){
+  const pc = os === "pc";
   const steps = os === "android"
     ? /*TI:LIST*/[["dots-vertical", "오른쪽 위 <b>점 세 개(⋮)</b> 메뉴 누르기"], ["device-mobile-down", "<b>‘홈 화면에 추가’</b> 또는 <b>‘앱 설치’</b> 누르기"], ["circle-check", "<b>‘설치’</b>(또는 ‘추가’)를 누르면 완료"]]
-    /*TI:LIST*/: [["share-2", "화면 아래 <b>공유 버튼</b> 누르기 <span class='muted'>(네모에 위쪽 화살표 모양)</span>"], ["square-plus", "목록을 올려 <b>‘홈 화면에 추가’</b> 누르기"], ["circle-check", "오른쪽 위 <b>‘추가’</b>를 누르면 완료"]];
-  return `<h3>${ic("device-mobile-down", "lg")} 생각이음을 앱처럼 설치하기</h3>
-    <p class="small">홈 화면에 <b>생각이음</b> 아이콘이 생겨요. 다음부터는 링크나 QR 없이 아이콘만 누르면 바로 들어와요.</p>
-    <div class="seg" role="group" aria-label="휴대폰 종류"><button type="button" data-a="install-os" data-v="ios" aria-pressed="${os !== "android"}">아이폰·아이패드</button><button type="button" data-a="install-os" data-v="android" aria-pressed="${os === "android"}">갤럭시·안드로이드</button></div>
-    ${inAppBrowser() ? `<p class="notice small">${ic("alert-triangle", "sm")} 지금은 카카오톡 같은 앱 안의 브라우저로 열려 있어요. 먼저 <b>${os === "android" ? "Chrome(크롬)" : "Safari(사파리)"}</b>로 열어 주세요. (오른쪽 아래·위의 메뉴 → ‘다른 브라우저로 열기’)</p>` : ""}
-    ${os === "android" && INSTALL_EVT ? `<button class="btn pri" type="button" data-a="install-now">${ic("device-mobile-down")} 지금 바로 설치하기</button><p class="muted small" style="text-align:center">또는 아래 순서로 설치할 수도 있어요.</p>` : ""}
+    /*TI:LIST*/: pc
+    ? [["device-laptop", "주소창 오른쪽 끝의 <b>설치 아이콘</b> 누르기 <span class='muted'>(모니터에 아래 화살표가 있는 모양)</span>"], ["dots-vertical", "아이콘이 안 보이면 오른쪽 위 <b>점 세 개(⋮)</b> 메뉴에서 <b>‘앱으로 설치’</b> 또는 <b>‘생각이음 설치’</b> 찾기 <span class='muted'>(메뉴 이름은 브라우저 버전마다 조금 달라요 · Edge는 ‘앱’ → ‘이 사이트를 앱으로 설치’)</span>"], ["circle-check", "<b>‘설치’</b>를 누르면 새 창으로 생각이음이 열리고 완료"]]
+    : [["share-2", "화면 아래 <b>공유 버튼</b> 누르기 <span class='muted'>(네모에 위쪽 화살표 모양)</span>"], ["square-plus", "목록을 올려 <b>‘홈 화면에 추가’</b> 누르기"], ["circle-check", "오른쪽 위 <b>‘추가’</b>를 누르면 완료"]];
+  return `<h3>${ic(pc ? "device-laptop" : "device-mobile-down", "lg")} 생각이음을 앱처럼 설치하기</h3>
+    <p class="small">${pc ? "컴퓨터에 설치하면 <b>바탕화면·시작 메뉴·Dock</b>에 생각이음 아이콘이 생기고, 주소창 없이 <b>따로 창</b>으로 열려요." : "홈 화면에 <b>생각이음</b> 아이콘이 생겨요. 다음부터는 링크나 QR 없이 아이콘만 누르면 바로 들어와요."}</p>
+    <div class="seg" role="group" aria-label="기기 종류"><button type="button" data-a="install-os" data-v="ios" aria-pressed="${os === "ios"}">아이폰·아이패드</button><button type="button" data-a="install-os" data-v="android" aria-pressed="${os === "android"}">갤럭시·안드로이드</button><button type="button" data-a="install-os" data-v="pc" aria-pressed="${pc}">컴퓨터(PC)</button></div>
+    ${inAppBrowser() ? `<p class="notice small">${ic("alert-triangle", "sm")} 지금은 카카오톡 같은 앱 안의 브라우저로 열려 있어요. 먼저 <b>${os === "ios" ? "Safari(사파리)" : "Chrome(크롬)"}</b>로 열어 주세요. (오른쪽 아래·위의 메뉴 → ‘다른 브라우저로 열기’)</p>` : ""}
+    ${os !== "ios" && INSTALL_EVT ? `<button class="btn pri" type="button" data-a="install-now">${ic(pc ? "device-laptop" : "device-mobile-down")} 지금 바로 설치하기</button><p class="muted small" style="text-align:center">또는 아래 순서로 설치할 수도 있어요.</p>` : ""}
     <ol class="isteps">${steps.map(([nm, t], i) => `<li><span class="in">${i+1}</span><span class="ic" aria-hidden="true">${ic(nm, "lg")}</span><span>${t}</span></li>`).join("")}</ol>
-    <p class="muted small">${os === "android" ? "Chrome(크롬)이나 삼성 인터넷에서 할 수 있어요." : "Safari(사파리)에서 할 수 있어요."} 설치한 앱을 처음 열 때 학번·이름·개인 코드를 한 번 더 넣어야 할 수 있어요.</p>
+    ${pc ? `<div class="notice small" style="display:grid;gap:6px"><b>${ic("help-circle", "sm")} 알아 두면 좋아요</b>
+      <span>• 설치한 생각이음은 <b>진짜 프로그램처럼 등록</b>돼요. 지울 때도 다른 프로그램처럼 지워요: <b>Windows</b> ‘설정 → 앱 → 설치된 앱’에서 생각이음 제거 · <b>Mac</b> Launchpad나 응용 프로그램의 ‘Chrome 앱’ 폴더에서 삭제 · 또는 생각이음 창 오른쪽 위 <b>⋮ → ‘생각이음 제거’</b>.</span>
+      <span>• 지운 뒤 다시 설치하려는데 <b>‘지금 바로 설치하기’ 버튼이 안 보이면</b>: 이 버튼은 브라우저가 “지금 설치할 수 있어요”라고 알려 줄 때만 나타나요. ① 설치된 앱 창이 아니라 <b>일반 브라우저 탭</b>에서 이 주소를 열고 ② <b>Ctrl+F5</b>(Mac은 Command+Shift+R)로 새로고침한 뒤 ③ 주소창 설치 아이콘이나 ⋮ 메뉴의 ‘앱으로 설치’를 써 보세요. ④ 그래도 없으면 주소창에 <b>chrome://apps</b>를 열어 생각이음이 남아 있는지 보고(있으면 오른쪽 클릭 → 삭제), 브라우저를 완전히 끈 뒤 다시 켜 보세요.</span>
+      <span>• Mac의 Safari는 메뉴 ‘파일 → Dock에 추가’로 설치해요.</span></div>` : ""}
+    <p class="muted small">${pc ? "Chrome(크롬)·Edge(엣지)에서 할 수 있어요." : os === "android" ? "Chrome(크롬)이나 삼성 인터넷에서 할 수 있어요." : "Safari(사파리)에서 할 수 있어요."} 설치한 앱을 처음 열 때 학번·이름·개인 코드를 한 번 더 넣어야 할 수 있어요.</p>
     <div class="row end"><button class="btn pri" type="button" data-a="modal-close">알겠어요</button></div>`;
 }
 /* 활동 안의 두 화면: 우리 반 게시판 ↔ 내 활동 */
@@ -4732,7 +4755,7 @@ function teacherCard(r, p, ps, nav){
    ========================================================= */
 /* 🔄 새 버전 알림: 배포 때마다 APP_VERSION과 version.json의 v를 같은 값으로 올린다.
    GitHub Pages는 화면을 10분쯤 기억하므로, 옛 화면이면 아래쪽에 ‘새로고침’ 띠를 띄우고 주소를 바꿔 새로 받는다 */
-const APP_VERSION = "2026-10-20f";
+const APP_VERSION = "2026-10-20g";
 async function checkVersion(){
   if(!/^https?:$/.test(location.protocol)) return;
   try{

@@ -17,7 +17,7 @@ async def main():
     await T.click('[data-a=course-new]'); await W(T); await T.fill('#course-title','1학년 사회'); await T.click('[data-a=mem-all]') if await T.query_selector('[data-a=mem-all]') else None; await T.click('[data-a=course-save]'); await W(T,600)
     print('course teacherName:', await T.evaluate('S.courses[0].teacherName'))
     await T.click('[data-a=home]'); await W(T); await T.evaluate('act("mcourse",{dataset:{v:""}})'); await W(T)
-    await T.click('[data-a=tb-acct]'); await T.click('.tb-pop [data-a=tname-open]'); await W(T); await T.fill('#t-name','이선생'); await T.click('[data-a=tname-save]'); await W(T,700)
+    await T.click('[data-a=tb-acct]:visible'); await T.click('.tb-pop:visible [data-a=tname-open]'); await W(T); await T.fill('#t-name','이선생'); await T.click('[data-a=tname-save]'); await W(T,700)
     print('renamed:', await T.inner_text('.thead h1'), '| course:', await T.evaluate('S.courses[0].teacherName'), '| toast:', await T.evaluate('document.getElementById("toast")?.textContent'))
     # 새 활동 화면 배치
     await T.click('[data-a=create]'); await W(T,400)
