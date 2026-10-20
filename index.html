@@ -1508,6 +1508,10 @@ input[type=datetime-local]{border-radius:var(--r)}
   .cform .card > h3,.cform .pg-head h3{font-size:17px}
   .cform .cset-card .cimg{padding:var(--sp-3)}
   .cform > .foot{gap:6px;padding-top:var(--sp-2)}
+  /* 휴대폰: 아래 막대를 화면 맨 아래에 고정하고, 그 아래쪽(아이폰 Safari 하단 바 뒤)은 배경색으로 덮는다 */
+  .cform{padding-bottom:calc(168px + env(safe-area-inset-bottom,0px))}
+  .cform > .foot{position:fixed;left:0;right:0;bottom:0;z-index:29;margin:0;padding:var(--sp-2) 16px calc(var(--sp-3) + env(safe-area-inset-bottom,0px));box-shadow:0 -4px 16px rgba(0,0,0,.08)}
+  .cform > .foot::after,.qbar:not([hidden])::after{content:"";position:absolute;left:0;right:0;top:100%;height:400px;background:inherit;pointer-events:none}
   .cform > .foot > .row{width:100%}
   .cform > .foot > .row:first-child{flex-wrap:nowrap;gap:12px}
   .cform > .foot > .row:first-child .btn{min-height:36px;padding:4px 10px;font-size:14px}
@@ -4763,7 +4767,7 @@ function teacherCard(r, p, ps, nav){
    ========================================================= */
 /* 🔄 새 버전 알림: 배포 때마다 APP_VERSION과 version.json의 v를 같은 값으로 올린다.
    GitHub Pages는 화면을 10분쯤 기억하므로, 옛 화면이면 아래쪽에 ‘새로고침’ 띠를 띄우고 주소를 바꿔 새로 받는다 */
-const APP_VERSION = "2026-10-20i";
+const APP_VERSION = "2026-10-20j";
 async function checkVersion(){
   if(!/^https?:$/.test(location.protocol)) return;
   try{
