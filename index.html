@@ -1164,11 +1164,6 @@ a.btn{text-decoration:none;color:inherit;display:inline-flex;align-items:center}
 .cchips button[aria-pressed="true"]{border-color:var(--fg);background:var(--fg);color:var(--bg);font-weight:600}
 .cchips .add{border-style:dashed;color:var(--accent)}
 .cgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:10px;margin-bottom:18px}
-.ccard{all:unset;box-sizing:border-box;cursor:pointer;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px 16px;display:grid;gap:4px}
-.ccard:hover{border-color:var(--fg)}
-.ccard:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
-.ccard b{font-size:16.5px}
-.ccard .g{font-size:13.5px;color:var(--muted);overflow-wrap:anywhere}
 .chead{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px 18px;display:grid;grid-template-columns:minmax(0,1fr);gap:8px;margin-bottom:16px}
 .chead > *{min-width:0}
 .csort{display:inline-flex;gap:6px;align-items:center}.csort select{width:auto;min-height:32px;padding:3px 10px;font-size:13.5px;border-radius:999px;line-height:1.4}
@@ -1345,7 +1340,7 @@ input[type=datetime-local]{border-radius:var(--r)}
 /* ---------- 상단 막대: 알림 벨 · 계정 (교사) ---------- */
 .topbar{display:flex;justify-content:flex-end;align-items:center;gap:var(--sp-3);position:relative;margin:-14px 0 0}
 .topbar[hidden]{display:none}
-.tb-btn{position:relative;display:inline-flex;align-items:center;justify-content:center;gap:6px;min-width:40px;height:40px;padding:0 10px;border:1px solid transparent;border-radius:999px;background:transparent;color:var(--ink);cursor:pointer;font:inherit}
+.tb-btn{position:relative;display:inline-flex;align-items:center;justify-content:center;gap:6px;min-width:40px;height:40px;padding:0 10px;border:1px solid transparent;border-radius:999px;background:transparent;color:var(--fg);cursor:pointer;font:inherit}
 .tb-btn:hover{background:var(--sunk)}
 .tb-btn[aria-expanded="true"]{background:var(--sunk);border-color:var(--line)}
 .tb-dot{position:absolute;top:6px;right:8px;min-width:9px;height:9px;border-radius:999px;background:var(--danger,#c0392b);border:2px solid var(--bg)}
@@ -1355,7 +1350,7 @@ input[type=datetime-local]{border-radius:var(--r)}
 .tb-pop{position:absolute;top:46px;right:0;z-index:30;width:min(340px,calc(100vw - 32px));background:var(--surface);border:1px solid var(--line);border-radius:var(--r-lg);box-shadow:var(--shadow-pop);padding:var(--sp-3)}
 .tb-pop h3{font-size:14px;margin:4px 8px 8px}
 .tb-pop .tb-acc{margin:2px 8px 8px;font-size:12px;color:var(--muted);word-break:break-all}
-.tb-it{display:flex;align-items:center;gap:10px;width:100%;text-align:left;padding:10px 12px;border:0;border-radius:var(--r);background:transparent;color:var(--ink);cursor:pointer;font:inherit;font-size:14px}
+.tb-it{display:flex;align-items:center;gap:10px;width:100%;text-align:left;padding:10px 12px;border:0;border-radius:var(--r);background:transparent;color:var(--fg);cursor:pointer;font:inherit;font-size:14px}
 .tb-it:hover{background:var(--sunk)}
 .tb-it.dng{color:var(--danger,#c0392b)}
 .tb-it small{margin-left:auto;color:var(--muted);font-size:12px}
@@ -1369,7 +1364,7 @@ input[type=datetime-local]{border-radius:var(--r)}
 .rte{border:1px solid var(--line);border-radius:var(--r);background:var(--surface);overflow:hidden}
 .rte:focus-within{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
 .rte-bar{display:flex;gap:2px;flex-wrap:wrap;align-items:center;padding:6px 8px;border-bottom:1px solid var(--line);background:var(--sunk)}
-.rte-bar button{min-width:34px;height:34px;padding:0 8px;border:0;border-radius:6px;background:transparent;color:var(--ink);cursor:pointer;font:inherit;font-size:15px;display:inline-flex;align-items:center;justify-content:center;gap:4px}
+.rte-bar button{min-width:34px;height:34px;padding:0 8px;border:0;border-radius:6px;background:transparent;color:var(--fg);cursor:pointer;font:inherit;font-size:15px;display:inline-flex;align-items:center;justify-content:center;gap:4px}
 .rte-bar button:hover{background:var(--surface)}
 .rte-bar button[aria-pressed="true"]{background:var(--accent-soft);color:var(--accent);font-weight:700}
 .rte-sep{width:1px;height:20px;background:var(--line);margin:0 4px}
@@ -1389,11 +1384,12 @@ input[type=datetime-local]{border-radius:var(--r)}
 .thead{gap:var(--sp-5);margin-bottom:var(--sp-8)}
 .thead-hi h1{font-size:var(--fs-page)}
 /* 소개 배너: 글이 먼저, 그림은 옅게 */
-.wbanner{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:var(--sp-6);background:linear-gradient(120deg,var(--accent-soft),var(--surface) 62%);overflow:hidden;border:1px solid var(--line);border-radius:var(--r-lg);padding:var(--sp-6) var(--sp-8)}
-.wb-eb{font-size:12px;font-weight:700;letter-spacing:.14em;color:var(--accent)}
-.wbanner h2{font-size:clamp(22px,2.6vw,28px);font-weight:700;line-height:1.3;margin-top:6px}
-.wbanner p{color:var(--muted);margin-top:6px;font-size:15px}
-.wb-art{width:300px;max-width:100%;height:auto;color:var(--accent)}
+.wbanner{position:relative;display:flex;align-items:center;min-height:250px;overflow:hidden;background:#F5F3EC;color:#183C43;border:1px solid var(--line);border-radius:var(--r-lg);padding:var(--sp-6) var(--sp-8)}
+.wb-txt{position:relative;z-index:1;max-width:min(46%,460px)}
+.wb-eb{font-size:12px;font-weight:700;letter-spacing:.14em;color:#2E6B6B}
+.wbanner h2{font-size:clamp(22px,2.6vw,30px);font-weight:700;line-height:1.3;margin-top:6px;color:#183C43}
+.wbanner p{color:#4A5F61;margin-top:8px;font-size:15px}
+.wb-art{position:absolute;right:0;top:0;height:100%;width:auto;max-width:none;pointer-events:none;-webkit-mask-image:linear-gradient(to right,transparent 0,#000 16%);mask-image:linear-gradient(to right,transparent 0,#000 16%)}
 
 /* 주요 기능 바로가기 */
 .qgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:var(--sp-3)}
@@ -1483,7 +1479,7 @@ input[type=datetime-local]{border-radius:var(--r)}
 .cform .qstep{border-radius:var(--r-lg);background:var(--surface)}
 .cform .ctxadd{border-width:1px;border-radius:var(--r)}
 /* 가상 인물 대화: 캐릭터 카드는 프로필처럼, AI 프롬프트(학생에게 안 보임)는 옅은 바탕으로 구분 */
-.cform .ccard .cimg{background:var(--sunk);border-radius:var(--r-lg);padding:var(--sp-4) var(--sp-3)}
+.cform .cset-card .cimg{background:var(--sunk);border-radius:var(--r-lg);padding:var(--sp-4) var(--sp-3)}
 .cform .pguide{background:var(--sunk);border-color:transparent}
 .cform .pguide .tcard{background:var(--surface)}
 /* 접는 칸(수업 정보·세부 설정) */
@@ -1493,7 +1489,7 @@ input[type=datetime-local]{border-radius:var(--r)}
 @media (max-width:640px){
   .cform > .card{padding:var(--sp-4)}
   .cform .card > h3,.cform .pg-head h3{font-size:17px}
-  .cform .ccard .cimg{padding:var(--sp-3)}
+  .cform .cset-card .cimg{padding:var(--sp-3)}
   .cform > .foot{gap:6px;padding-top:var(--sp-2)}
   .cform > .foot > .row{width:100%}
   .cform > .foot > .row:first-child{flex-wrap:nowrap;gap:12px}
@@ -1506,8 +1502,9 @@ input[type=datetime-local]{border-radius:var(--r)}
 
 @media (max-width:1100px){ .tsum{grid-template-columns:minmax(0,1fr)} .tsum .tstats{grid-template-columns:repeat(4,minmax(0,1fr))} }
 @media (max-width:640px){
-  .wbanner{grid-template-columns:minmax(0,1fr);padding:var(--sp-5)}
-  .wb-art{display:none}
+  .wbanner{flex-direction:column;align-items:flex-start;min-height:0;padding:var(--sp-5) var(--sp-5) 0}
+  .wb-txt{max-width:none}
+  .wb-art{position:static;width:calc(100% + 2 * var(--sp-5));height:auto;margin:var(--sp-3) calc(-1 * var(--sp-5)) 0}
   .tsum .tstats,.tsum.solo .tstats{grid-template-columns:repeat(2,minmax(0,1fr))}
   .tstat .ic{display:none}
   .rrow{grid-template-columns:minmax(0,1fr) auto;row-gap:2px}
@@ -4659,7 +4656,7 @@ function teacherCard(r, p, ps, nav){
    ========================================================= */
 /* 🔄 새 버전 알림: 배포 때마다 APP_VERSION과 version.json의 v를 같은 값으로 올린다.
    GitHub Pages는 화면을 10분쯤 기억하므로, 옛 화면이면 아래쪽에 ‘새로고침’ 띠를 띄우고 주소를 바꿔 새로 받는다 */
-const APP_VERSION = "2026-10-20c";
+const APP_VERSION = "2026-10-20d";
 async function checkVersion(){
   if(!/^https?:$/.test(location.protocol)) return;
   try{
@@ -5334,21 +5331,9 @@ function teacherTop(){
     <ul>${recent.map(r => { const t = TEMPLATES[r.template] || {};
       return `<li><button type="button" class="rrow" data-a="open" data-id="${esc(r.id)}"><span class="rr-ic" aria-hidden="true">${ic(t.icon || "file-text", "sm")}</span><span class="rr-t">${esc(r.title || "제목 없는 활동")}</span><span class="rr-k">${esc(t.label || "")}</span>${statusChip(r)}<span class="rr-d">${fmtRel(lastActivity(r))}</span></button></li>` }).join("")}</ul></section>` : "";
   const banner = S.mcourse ? "" : `<section class="wbanner" aria-labelledby="wb-h"><div class="wb-txt"><div class="wb-eb">THINKING WORKSPACE</div><h2 id="wb-h">생각을 연결하는 수업</h2><p>질문을 만들고, 근거를 탐색하고, 나만의 생각을 완성해 보세요.</p></div>
-    <svg class="wb-art" viewBox="0 0 320 170" aria-hidden="true" focusable="false">
-      <g fill="none" stroke="currentColor" stroke-width="1" opacity=".2"><path d="M4 44 Q56 22 108 46 T204 40"/><path d="M0 86 Q66 64 128 90 T236 82"/><path d="M10 128 Q74 108 138 130"/><path d="M52 8V160M112 8V160M172 8V160"/></g>
-      <g fill="none" stroke="currentColor" stroke-width="1.4" stroke-dasharray="3 4" opacity=".55"><path d="M40 112 C70 76 96 100 126 62"/></g>
-      <g fill="currentColor" opacity=".8"><circle cx="40" cy="112" r="4"/><circle cx="126" cy="62" r="4"/></g>
-      <path d="M270 30 A66 66 0 0 1 252 128" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" opacity=".7"/>
-      <circle cx="212" cy="72" r="52" fill="currentColor"/>
-      <g fill="var(--surface)" opacity=".85"><path d="M184 54c8-12 22-12 30-6 5 5 0 12-6 15-8 4-9 14-17 12-8-3-13-12-7-21z"/><path d="M222 76c8-4 18 0 20 8 2 9-6 18-12 24-6 5-10-2-11-8-1-7-5-9-3-15 1-5 3-7 6-9z"/><path d="M236 46c6-2 12 2 11 7-1 5-8 6-11 3-3-3-3-8 0-10z"/></g>
-      <g fill="none" stroke="var(--surface)" stroke-width="1.2" opacity=".4"><ellipse cx="212" cy="72" rx="22" ry="52"/><path d="M160 72H264M166 50H258M166 94H258"/></g>
-      <rect x="198" y="122" width="28" height="5" rx="2" fill="currentColor" opacity=".85"/>
-      <rect x="168" y="126" width="116" height="16" rx="3" fill="var(--accent-soft)" stroke="currentColor" stroke-width="1.6"/>
-      <path d="M180 126v16M272 126v16" stroke="currentColor" stroke-width="1.2" opacity=".5"/>
-      <rect x="146" y="142" width="160" height="18" rx="3" fill="currentColor"/>
-      <path d="M160 142v18" stroke="var(--surface)" stroke-width="1.2" opacity=".5"/><path d="M168 151h120" stroke="var(--surface)" stroke-width="1.2" opacity=".35"/>
-    </svg></section>`;
+    <img class="wb-art" src="img/banner.webp" width="2048" height="768" alt="" aria-hidden="true" decoding="async"></section>`;
   return `<section class="thead"><div class="thead-hi"><div>
+      <div class="eyebrow">오늘은 ${now.getMonth()+1}월 ${now.getDate()}일 ${"일월화수목금토"[now.getDay()]}요일</div>
       <h1>${nm ? `${esc(nm)} 선생님, 안녕하세요` : "선생님, 안녕하세요"}</h1></div></div>
     ${banner}
     <div class="qgrid" role="group" aria-label="주요 기능">${quick}</div>
@@ -6902,7 +6887,7 @@ function charAvatar(img, name, cls = ""){
 }
 function chatCharHTML(f, N){
   const req = `<span class="req" title="꼭 적어야 해요" aria-label="필수">*</span>`, img = f.personaImg || "";
-  return `<div class="card ccard" style="margin-top:16px"><h3>${N()} 캐릭터 설정 <span class="opt vis">${ic("eye", "sm")} 학생에게 보여요</span></h3>
+  return `<div class="card cset-card" style="margin-top:16px"><h3>${N()} 캐릭터 설정 <span class="opt vis">${ic("eye", "sm")} 학생에게 보여요</span></h3>
     <div class="cset">
       <div class="cimg">${charAvatar(img, f.personaName, "xl")}
         <label class="btn sm">${ic("photo", "sm")} ${img ? "사진 바꾸기" : "사진 올리기"}<input type="file" accept="image/*" data-avatar-file hidden></label>
