@@ -492,6 +492,12 @@
 
 ## 4. 미완료 작업 / 앞으로 할 일
 
+**최근 변경 (2026-10-20b): 상단 막대(알림 벨·계정 메뉴·탈퇴) + 홈 배너 그래픽**
+- 교사 화면 위쪽 `#topbar`(`renderTopbar`): 알림 벨(활동별 ‘새 글’ 수, 기준 시각은 이 기기 `nonjae.bell.<uid>`, ‘모두 읽음’으로 갱신) · 계정 동그라미(구글 사진/첫 글자) 메뉴 = 이름 바꾸기(`tname-open`) · 로그아웃 · 탈퇴하기.
+- 탈퇴: 확인 칸에 ‘탈퇴’ 입력 → `teacher_delete_me(p_dry:=true)`로 가능 여부(관리자는 불가) 확인 → Storage의 `notes/<roomId>/…`·`materials/<uid>/…`를 API로 삭제(`purgeMyFiles`) → `teacher_delete_me()`가 내 docs·학생·안내·구독·AI 키·teachers 행·auth.users를 삭제 → 로그아웃.
+- **DB 변경**: `supabase/setup.sql` 맨 아래에 `teacher_delete_me` 추가(멱등, `create or replace`). Supabase SQL Editor에서 setup.sql(또는 그 블록)을 한 번 실행해야 탈퇴가 동작한다. 아직 없으면 앱이 ‘탈퇴 기능이 아직 서버에 설치되지 않았어요’라고 알린다.
+- 홈 배너(`.wb-art`)를 지구본·책·지도 선 SVG로 교체. 테스트: `dev/tests/t65.py`(mock.js에 `teacher_delete_me`·Storage `list` 추가).
+
 **최근 변경 (2026-10-19a): 교사 도구 — 학생 코드 과목·그룹 보기 · 학습 나눔 보강 · 미제출 알림**
 - `index.html`만 바뀜(DB·서버 함수 변경 없음 — 새 필드는 기존 활동 문서 안의 `noteCfg.memoQ`뿐이고, 알림은 기존 `msg_send`·`notify`를 쓴다).
 - 👥 학생 코드: 학생 명단 창에 ‘전체 학생 / 과목별 / 그룹별’ 선택칸(`#roster-view`, `S.rosterView`). 수강 학생을 정하지 않은 과목은 모든 학생이 보인다. ‘코드 쪽지 인쇄’는 지금 고른 과목·그룹 학생만 인쇄한다(`rosterPrintList`).
