@@ -4,8 +4,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>생각이음</title>
 <link rel="manifest" href="manifest.webmanifest">
-<link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png?v=2">
-<link rel="apple-touch-icon" sizes="180x180" href="icons/touch-180.png">
+<link rel="icon" type="image/png" sizes="192x192" href="icons/app-192.png">
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
 <link rel="apple-touch-icon" sizes="167x167" href="icons/touch-167.png">
 <link rel="apple-touch-icon" sizes="152x152" href="icons/touch-152.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -568,6 +568,12 @@ details.adv > div{padding:2px 20px 16px;display:grid;gap:12px}
 .modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:40;display:grid;place-items:center;padding:16px}
 .modal{background:var(--surface);color:var(--fg);border-radius:14px;padding:20px;max-width:520px;width:100%;display:grid;gap:12px;max-height:90vh;overflow:auto;box-shadow:0 20px 50px rgba(0,0,0,.3)}
 .modal h3{font-size:18px}
+.sheet-back{display:none}
+@media (max-width:700px){
+  .modal-bg.sheet{display:block;padding:0;background:var(--bg);overflow:auto;overscroll-behavior:contain}
+  .modal-bg.sheet .modal{max-width:none;width:auto;min-height:100%;max-height:none;overflow:visible;border-radius:0;box-shadow:none;background:var(--bg);padding:0 16px calc(24px + env(safe-area-inset-bottom,0px));align-content:start}
+  .sheet-back{display:flex;align-items:center;gap:6px;position:sticky;top:0;z-index:3;margin:0 -16px 4px;padding:calc(12px + env(safe-area-inset-top,0px)) 16px 12px;border:0;border-bottom:1px solid var(--line);background:var(--bg);color:var(--fg);font:inherit;font-weight:700;cursor:pointer;text-align:left}
+}
 .modal textarea{min-height:160px;font-family:var(--f-mono);font-size:13px;background-image:none}
 #qrbox{background:#ffffff;padding:14px;border-radius:12px;justify-self:center;min-width:120px;min-height:120px;display:grid;place-items:center;color:#18201C}
 .linkline{font-family:var(--f-mono);font-size:13px;background:var(--sunk);border-radius:8px;padding:8px 10px;overflow-wrap:anywhere;user-select:all}
@@ -1496,7 +1502,7 @@ input[type=datetime-local]{border-radius:var(--r)}
 /* 접는 칸(수업 정보·세부 설정) */
 .cform > details.adv{margin-top:var(--sp-4)}
 /* 저장 버튼 줄: 긴 화면에서도 늘 보이게 아래에 붙인다 */
-.cform > .foot{position:sticky;bottom:0;z-index:6;margin:var(--sp-6) 0 0;padding:var(--sp-3) 0 calc(var(--sp-3) + env(safe-area-inset-bottom,0px));background:var(--bg);border-top:1px solid var(--line)}
+.cform > .foot{position:sticky;bottom:0;z-index:6;box-shadow:0 160px 0 60px var(--bg);margin:var(--sp-6) 0 0;padding:var(--sp-3) 0 calc(var(--sp-3) + env(safe-area-inset-bottom,0px));background:var(--bg);border-top:1px solid var(--line)}
 @media (max-width:640px){
   .cform > .card{padding:var(--sp-4)}
   .cform .card > h3,.cform .pg-head h3{font-size:17px}
@@ -1555,7 +1561,7 @@ input[type=datetime-local]{border-radius:var(--r)}
 .qbar{display:none}
 /* 휴대폰: 교사 화면의 빠른 메뉴(새 활동·새 과목·학생 코드·개별 안내)는 아래쪽에 고정 */
 @media (max-width:700px){
-  .qbar:not([hidden]){display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:4px;position:fixed;left:0;right:0;bottom:0;z-index:28;background:var(--surface);border-top:1px solid var(--line);padding:6px 6px calc(6px + env(safe-area-inset-bottom,0px));box-shadow:0 -4px 16px rgba(0,0,0,.08)}
+  .qbar:not([hidden]){display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:4px;position:fixed;left:0;right:0;bottom:0;z-index:28;background:var(--surface);border-top:1px solid var(--line);padding:6px 6px calc(6px + env(safe-area-inset-bottom,0px));box-shadow:0 -4px 16px rgba(0,0,0,.08),0 160px 0 60px var(--surface)}
   .qbar button{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;min-height:54px;padding:6px 2px;border:0;border-radius:var(--r);background:none;color:var(--fg);font:inherit;font-size:12px;font-weight:600;cursor:pointer;line-height:1.2;text-align:center;letter-spacing:-.02em}
   .qbar button:active{background:var(--sunk)}
   .qbar button.pri{background:var(--primary);color:var(--primary-ink)}
@@ -4757,7 +4763,7 @@ function teacherCard(r, p, ps, nav){
    ========================================================= */
 /* 🔄 새 버전 알림: 배포 때마다 APP_VERSION과 version.json의 v를 같은 값으로 올린다.
    GitHub Pages는 화면을 10분쯤 기억하므로, 옛 화면이면 아래쪽에 ‘새로고침’ 띠를 띄우고 주소를 바꿔 새로 받는다 */
-const APP_VERSION = "2026-10-20h";
+const APP_VERSION = "2026-10-20i";
 async function checkVersion(){
   if(!/^https?:$/.test(location.protocol)) return;
   try{
@@ -6345,7 +6351,8 @@ function renderModal(){
       <input type="text" id="share-url" placeholder="https://claude.ai/…" aria-label="공유 링크">
       <div class="row end"><button class="btn" type="button" data-a="modal-close">취소</button><button class="btn pri" type="button" data-a="save-share">저장</button></div>`;
   }
-  el.innerHTML = `<div class="modal-bg" data-a="modal-bg"><div class="modal${m.type === "note" ? " lb" : m.type === "msg" ? " wide" : ""}" role="dialog" aria-modal="true">${h}</div></div>`;
+  const sheet = ["course", "roster", "msg"].includes(m.type);      // 휴대폰에서는 팝업 대신 따로 한 화면으로 열린다
+  el.innerHTML = `<div class="modal-bg${sheet ? " sheet" : ""}" data-a="modal-bg"><div class="modal${m.type === "note" ? " lb" : m.type === "msg" ? " wide" : ""}" role="dialog" aria-modal="true">${sheet ? `<button type="button" class="sheet-back" data-a="modal-close">${ic("arrow-left")} 돌아가기</button>` : ""}${h}</div></div>`;
   if(m.type === "qr"){
     const link = linkFor(m.kind || "room", m.id, m.g);
     loadQR().then(ok => { const box = document.getElementById("qrbox"); if(!box) return; box.innerHTML = "";
