@@ -1374,6 +1374,11 @@ input[type=datetime-local]{border-radius:var(--r)}
 .rte-ft{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:4px 10px 6px 14px;font-size:12.5px;color:var(--muted);border-top:1px solid var(--line)}
 .rte-ft .linkbtn{font-size:12.5px}
 
+/* 학생 화면: 교사 화면과 같은 지표 칸 */
+.tstats.s3{grid-template-columns:repeat(3,minmax(0,1fr))}
+.tstat.static{cursor:default}.tstat.static:hover{transform:none;box-shadow:none}
+@media(max-width:560px){.tstats.s3 .ic{display:none}.tstats.s3 .tstat{padding:var(--sp-3)}.tstats.s3 .tstat em{display:none}.tstats.s3 .tl{font-size:13px}}
+
 /* 구분선·보조 패널 */
 .divider{height:1px;border:0;background:var(--line);margin:var(--sp-6) 0}
 .panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-lg);padding:var(--sp-4) var(--sp-5)}
@@ -1549,7 +1554,7 @@ input[type=datetime-local]{border-radius:var(--r)}
   <div class="wrap">
     <div class="topbar" id="topbar" hidden></div>
     <main id="app"><p class="who">불러오는 중…</p></main>
-    <footer class="appfoot"><span>제작 : 이태형T(한백고)</span><span aria-hidden="true">·</span><button type="button" class="linkbtn" data-a="feedback-open">오류·건의하기</button></footer>
+    <footer class="appfoot"><span>제작 : 이태형T(한백고)</span></footer>
   </div>
 </div>
 <div id="modal"></div>
@@ -1993,7 +1998,7 @@ const Auth = (() => { let t = null; return Object.freeze({ set(v){ if(t === null
 Object.defineProperty(S, "canTeach", {get: () => Auth.teacher, set(){} });        // 예전 코드 호환: 읽기만
 const isTeacher = () => Auth.teacher && S.role === "teacher";                       // 교사 권한 + 교사 화면(학생 화면 미리보기 중이면 false)
 /* 교사만 쓰는 동작: 학생 권한으로는 버튼이 없을 뿐 아니라 호출해도 실행되지 않는다 */
-const TEACHER_ACTS = new Set(["pg-facts","avatar-del","pg-mode","pg-type","pg-gen","pg-copy","pg-apply","msg-kind","sc-iadd","sc-idel","sc-paste","sc-ins","sc-tpl-reset","sc-export","msg-open","msg-tab","msg-all","msg-none","msg-cls","msg-send","msg-del","msg-withdraw","msg-repush","note-share","c-course","tname-open","tname-later","tname-save","q-custom","q-add","q-del","q-move","course-archive","courses-more","courses-arch","port-student","port-open","tmr-start","tmr-add","tmr-pause","tmr-resume","tmr-stop","ctx-img-del","qfb","qfb-close","fb-chip","pick-tool","mem-open","mem-cls","mem-all","mem-none","course-gsplit","ai-setup","ai-key-save","ai-key-del","ai-suggest","ai-pick","tadmin-open","tadmin-block","tadmin-tab","fbadmin-done","notice-add","notice-del","note-filter","note-req","note-req-send","note-req-cancel","nudge-open","nudge-all","nudge-clear","tb-bell","tb-acct","tb-bell-read","acct-del-open","acct-del-yes","create","edit-room","dup","dup-list","del","del-yes","del-ask","del-room","status","toggle","save-feedback","class-fb","pin","pin-move","pin-clear",
+const TEACHER_ACTS = new Set(["pg-facts","avatar-del","pg-mode","pg-type","pg-gen","pg-copy","pg-apply","msg-kind","sc-iadd","sc-idel","sc-paste","sc-ins","sc-tpl-reset","sc-export","msg-open","msg-tab","msg-all","msg-none","msg-cls","msg-send","msg-del","msg-withdraw","msg-repush","note-share","c-course","tname-open","tname-later","tname-save","q-custom","q-add","q-del","q-move","course-archive","courses-more","courses-arch","port-student","port-open","tmr-start","tmr-add","tmr-pause","tmr-resume","tmr-stop","ctx-img-del","qfb","qfb-close","fb-chip","pick-tool","mem-open","mem-cls","mem-all","mem-none","course-gsplit","ai-setup","ai-key-save","ai-key-del","ai-suggest","ai-pick","tadmin-open","tadmin-block","tadmin-tab","fbadmin-done","notice-add","notice-del","note-filter","note-req","note-req-send","note-req-cancel","nudge-open","nudge-all","nudge-clear","acct-del-open","acct-del-yes","create","edit-room","dup","dup-list","del","del-yes","del-ask","del-room","status","toggle","save-feedback","class-fb","pin","pin-move","pin-clear",
   "present","present-exit","pmode","pnav","pq","pper","pnames","prand","fullscreen","export","export-go","save-tset","tpl-save-open","tpl-save","tpl-cancel","use-tpl","create-save","draft-save","publish-draft","discard-form",
   "preview","preview-form","preview-home","qr","copy-link","save-share","mcourse","course-new","course-edit","course-gadd","course-gdel","course-save","course-del","course-del-yes",
   "roster-open","roster-add","roster-reissue","roster-del","roster-print","gsel","asg-add-open","asg-add-cancel","asg-add","asg-st","racts","mview","sview","sfilter","sgo","snav","ttab","mfilter","open-student","goal","tpl","st-add","st-del","depth"]);
@@ -2683,22 +2688,47 @@ function bellItems(){
     return {id:r.id, t:r.title || "(제목 없음)", n:ps.length, at:Math.max(0, ...ps.map(p => p.createdAt || 0))};
   }).filter(x => x.n).sort((a, b) => b.at - a.at).slice(0, 8);
 }
+function stuBell(){
+  const all = [...S.rooms].filter(visibleToStudents).map(forMe).filter(r => !r._ready && !r._notAssigned && statusOf(r) !== "archived" && !courseOf(r.courseId)?.archived);
+  const rs = all.filter(isNewRoom), ns = S.courses.filter(c => !c.archived).flatMap(c => noticesOf(c).filter(isNewNotice).map(n => ({n, c})));
+  const un = S.mode === "supa" ? inboxOf().filter(msgPending).length : 0;
+  return {rs, ns, un, tot:rs.length + ns.length + un};
+}
 function renderTopbar(){
   const tb = document.getElementById("topbar"); if(!tb) return;
-  if(!(isTeacher() && S.mode === "supa" && !S.preview && !S.demo)){ tb.hidden = true; tb.innerHTML = ""; S.pop = null; return }
-  const items = bellItems(), tot = items.reduce((a, x) => a + x.n, 0), nm = (S.sbName || "").trim(), init = esc((nm || S.sbEmail || "T").slice(0, 1).toUpperCase());
-  const av = S.sbPic ? `<img src="${esc(S.sbPic)}" alt="" referrerpolicy="no-referrer">` : init;
-  let pop = "";
-  if(S.pop === "bell") pop = `<div class="tb-pop" role="menu" aria-label="알림"><h3>알림</h3>${items.length
+  const tch = isTeacher() && S.mode === "supa" && !S.preview && !S.demo;
+  const stu = !isTeacher() && !S.preview && !!S.name && !S.guestGate && !S.wantTeacher;
+  if(!tch && !stu){ tb.hidden = true; tb.innerHTML = ""; S.pop = null; return }
+  const nm = tch ? (S.sbName || "").trim() : splitAuthor(S.name).name.trim();
+  const init = esc((nm || S.sbEmail || "?").slice(0, 1).toUpperCase());
+  const av = tch && S.sbPic ? `<img src="${esc(S.sbPic)}" alt="" referrerpolicy="no-referrer">` : init;
+  let tot = 0, bell = "", acct = "";
+  if(tch){
+    const items = bellItems(); tot = items.reduce((a, x) => a + x.n, 0);
+    bell = items.length
       ? items.map(x => `<button class="tb-it" type="button" role="menuitem" data-a="open" data-id="${esc(x.id)}">${ic("bubble", "sm")}<span>${esc(x.t)}</span><span class="tb-n">새 글 ${x.n}</span></button>`).join("") + `<div class="tb-sep"></div><button class="tb-it" type="button" role="menuitem" data-a="tb-bell-read">${ic("check", "sm")} 모두 읽음으로 표시</button>`
-      : `<div class="tb-empty">새 알림이 없어요. 학생이 글을 올리면 여기에 모여요.</div>`}</div>`;
-  if(S.pop === "acct") pop = `<div class="tb-pop" role="menu" aria-label="계정"><h3>${esc(nm ? nm + " 선생님" : "내 계정")}</h3><p class="tb-acc">${esc(S.sbEmail)}</p>
+      : `<div class="tb-empty">새 알림이 없어요. 학생이 글을 올리면 여기에 모여요.</div>`;
+    acct = `<h3>${esc(nm ? nm + " 선생님" : "내 계정")}</h3><p class="tb-acc">${esc(S.sbEmail)}</p>
       <button class="tb-it" type="button" role="menuitem" data-a="tname-open">${ic("pencil", "sm")} 선생님 이름 바꾸기</button>
       <button class="tb-it" type="button" role="menuitem" data-a="t-logout">${ic("logout", "sm")} 로그아웃</button>
       <div class="tb-sep"></div>
-      <button class="tb-it dng" type="button" role="menuitem" data-a="acct-del-open">${ic("trash", "sm")} 탈퇴하기</button></div>`;
+      <button class="tb-it dng" type="button" role="menuitem" data-a="acct-del-open">${ic("trash", "sm")} 탈퇴하기</button>`;
+  }else{
+    const b = stuBell(); tot = b.tot;
+    const rows = [...b.rs.map(r => `<button class="tb-it" type="button" role="menuitem" data-a="open" data-id="${esc(r.id)}">${ic("sparkles", "sm")}<span>${esc(r.title)}</span><span class="tb-n">새 활동</span></button>`),
+      ...b.ns.map(({n, c}) => `<button class="tb-it" type="button" role="menuitem" data-a="dash" data-v="${esc("c:" + c.id)}">${ic("speakerphone", "sm")}<span>${esc(rtPlain(n.text).slice(0, 40))}</span><span class="tb-n">새 공지</span></button>`),
+      b.un ? `<button class="tb-it" type="button" role="menuitem" data-a="inbox-open">${ic("mail", "sm")}<span>선생님 안내</span><span class="tb-n">${b.un}개</span></button>` : ""].filter(Boolean);
+    bell = rows.length ? rows.join("") + (b.rs.length + b.ns.length ? `<div class="tb-sep"></div><button class="tb-it" type="button" role="menuitem" data-a="tb-bell-read">${ic("check", "sm")} 모두 읽음으로 표시</button>` : "")
+      : `<div class="tb-empty">새 활동이나 공지가 없어요.</div>`;
+    acct = `<h3>${esc(S.name)}</h3>
+      <button class="tb-it" type="button" role="menuitem" data-a="mine">${ic("notebook", "sm")} 내 생각 기록</button>
+      ${S.mode === "supa" && !S.guest ? `<button class="tb-it" type="button" role="menuitem" data-a="join-open">${ic("plus", "sm")} 과목 추가</button>` : ""}
+      <div class="tb-sep"></div>
+      <button class="tb-it" type="button" role="menuitem" data-a="rename">${ic("refresh", "sm")} ${S.mode === "supa" ? (S.guest ? "다른 이름으로" : "다른 학생으로") : "이름 바꾸기"}</button>`;
+  }
+  const pop = S.pop === "bell" ? `<div class="tb-pop" role="menu" aria-label="알림"><h3>알림</h3>${bell}</div>` : S.pop === "acct" ? `<div class="tb-pop" role="menu" aria-label="계정">${acct}</div>` : "";
   tb.hidden = false;
-  tb.innerHTML = `<button class="tb-btn" type="button" data-a="tb-bell" aria-haspopup="menu" aria-expanded="${S.pop === "bell"}" aria-label="알림${tot ? ` (새 글 ${tot}개)` : ""}">${ic("bell")}${tot ? `<span class="tb-dot" aria-hidden="true"></span>` : ""}</button>
+  tb.innerHTML = `<button class="tb-btn" type="button" data-a="tb-bell" aria-haspopup="menu" aria-expanded="${S.pop === "bell"}" aria-label="알림${tot ? ` (새 소식 ${tot}개)` : ""}">${ic("bell")}${tot ? `<span class="tb-dot" aria-hidden="true"></span>` : ""}</button>
     <button class="tb-btn" type="button" data-a="tb-acct" aria-haspopup="menu" aria-expanded="${S.pop === "acct"}" aria-label="내 계정"><span class="tb-av" aria-hidden="true">${av}</span><span class="tb-nm">${esc(nm || "내 계정")}</span>${ic("chevron-down", "sm")}</button>${pop}`;
 }
 function renderTop(){
@@ -2706,6 +2736,7 @@ function renderTop(){
   const nav = document.getElementById("topr"), me = document.getElementById("sideme");
   const item = (a, icon, label, on = false, attrs = "") => `<button class="nav-i" type="button" data-a="${a}"${on ? ' aria-current="page"' : ""}${attrs}>${ic(icon)}<span class="nav-t">${label}</span></button>`;
   const sub = h => `<div class="nav-sub">${h}</div>`;
+  const fbItem = item("feedback-open", "message-report", "오류·건의하기");
   const inst = isStandalone() ? "" : item("install-help", "device-mobile-down", "앱으로 설치", false, ' data-inst="1"');
   const v = S.view;
   let h = "", m = "";
@@ -2716,7 +2747,7 @@ function renderTop(){
     h += item("create", "plus", "새 활동", v === "create");
     h += item("preview-home", "eye", "학생 화면 미리보기", false, ' title="학생에게 보이는 화면을 확인해요. 여기서 쓴 내용은 저장되지 않아요."');
     if(S.mode === "supa" && S.isAdmin) h += item("tadmin-open", "user-cog", "교사 관리");
-    m += inst;
+    m += inst + fbItem;
     if(S.mode === "supa") m += item("t-logout", "logout", "로그아웃", false, ` title="${esc(S.sbEmail)}"`);
   }else{
     h += item("home", "home", "홈", v === "home" || v === "room");
@@ -2726,7 +2757,7 @@ function renderTop(){
     let who = "";
     if(S.name) who += `<span class="who"><span class="who-n">${esc(S.name)}</span><button class="linkbtn" type="button" data-a="rename">${S.mode === "supa" ? (S.guest ? "다른 이름으로" : "다른 학생으로") : "이름 바꾸기"}</button></span>`;
     if(gcid && myGroup(gcid) && myGroup(gcid) !== "_none") who += `<span class="who">${ic("users-group", "sm")} ${esc(groupName(gcid, myGroup(gcid)))}${groupByTeacher(courseOf(gcid)) ? "" : ` <button class="linkbtn" type="button" data-a="regroup" data-c="${esc(gcid)}">그룹 바꾸기</button>`}</span>`;
-    m += who + inst;
+    m += who + inst + fbItem;
   }
   nav.innerHTML = h;
   me.innerHTML = m;
@@ -2830,6 +2861,15 @@ function checkNews(){
   if(nn.length) toast(`${nn[0].c.title} 새 공지: ${nn[0].text.slice(0, 40)}${nn[0].text.length > 40 ? "…" : ""}`);
   else if(nr.length) toast(`새 활동이 올라왔어요 · ${nr[0].title}${nr.length > 1 ? ` 외 ${nr.length - 1}개` : ""}`);
 }
+/* 홈 배너: 교사·학생 공용 (글은 왼쪽, 그림은 오른쪽) */
+const wbanner = sub => `<section class="wbanner" aria-labelledby="wb-h"><div class="wb-txt"><div class="wb-eb">THINKING WORKSPACE</div><h2 id="wb-h">생각을 연결하는 수업</h2><p>${esc(sub)}</p></div>
+    <img class="wb-art" src="img/banner.webp" width="2048" height="768" alt="" aria-hidden="true" decoding="async"></section>`;
+/* 학생 화면 지표 3칸 (교사 화면의 지표 칸과 같은 모양) */
+const stuTiles = c => `<div class="tstats s3" role="group" aria-label="내 활동 현황">${[
+  ["pencil", "해야 할 활동", c.todo, c.todo ? "t3 warn" : "t3", c.todo ? "먼저 해 보세요" : "할 일이 없어요"],
+  ["player-play", "하는 중", c.doing, "t2", "이어서 해 봐요"],
+  ["circle-check", "다 했어요", c.done, c.done ? "t4 good" : "t4", "마친 활동"]].map(([i, l, n, cls, sub]) =>
+  `<div class="tstat static ${cls}"><span class="ic" aria-hidden="true">${ic(i, "lg")}</span><span class="tl">${l}</span><b>${n}</b><em>${sub}</em></div>`).join("")}</div>`;
 function viewHomeStudent(all){
   seenInit();
   if(S.course && courseOf(S.course)) S.sdash = "c:" + S.course;
@@ -2854,14 +2894,21 @@ function pushBarHTML(){
 function viewDashList(groups, all){
   const nm = splitAuthor(S.name).name.trim(), now = new Date();
   const items = all.map(r => ({r, st:homeState(r)})), cnt = k => items.filter(x => x.st.k === k).length;
+  const nextTodo = items.filter(x => x.st.o < 2).sort((a, b) => a.st.o - b.st.o || (a.r.dueAt||9e15) - (b.r.dueAt||9e15) || (b.r.createdAt||0) - (a.r.createdAt||0));
   let h = `<section class="shome">
-    <div class="shome-hi"><div><div class="eyebrow">${now.getMonth()+1}월 ${now.getDate()}일 ${"일월화수목금토"[now.getDay()]}요일</div>
-      <h1>${nm ? `${esc(nm)}님, 안녕하세요` : "안녕하세요"}</h1><p>과목을 골라 들어가면 공지와 활동을 볼 수 있어요.</p></div>
-      <div class="sstats"><div class="todo"><b>${cnt("todo")}</b><span>해야 할 활동</span></div><div><b>${cnt("doing")}</b><span>하는 중</span></div><div><b>${cnt("done")}</b><span>다 했어요</span></div></div></div>`;
+    <div class="shome-hi"><div><div class="eyebrow">오늘은 ${now.getMonth()+1}월 ${now.getDate()}일 ${"일월화수목금토"[now.getDay()]}요일</div>
+      <h1>${nm ? `${esc(nm)}님, 안녕하세요` : "안녕하세요"}</h1></div></div>
+    ${wbanner("내 생각을 쓰고, 친구의 생각을 만나고, 다시 생각해 보세요.")}`;
   h += pushBarHTML() + inboxBarHTML();
   const live = [...groups.values()].flat().filter(r => { const t = tmrOf(r); return t && t.st !== "end" });   // ⏱ 선생님이 타이머를 켠 활동 = 지금 수업 중
   h += live.map(r => `<button class="livebar" type="button" data-a="open" data-id="${esc(r.id)}" data-tmr="${esc(r.id)}"><span>${ic("clock")} <b>지금 수업 중</b> · ${esc(r.title)}</span><b class="tmr-t">${mmss(tmrOf(r).left)}</b>${ic("arrow-right")}</button>`).join("");
   if(!groups.size) return h + `<div class="empty">아직 열린 활동이 없어요. 선생님이 활동을 올리면 여기에 나타나요.</div></section>`;
+  const qa = (a, icon, t, d, cls = "", attrs = "") => `<button type="button" class="qa${cls}" data-a="${a}"${attrs}><span class="qa-ic" aria-hidden="true">${ic(icon)}</span><span class="qa-t"><b>${t}</b><span>${d}</span></span><span class="qa-go" aria-hidden="true">${ic("chevron-right", "sm")}</span></button>`;
+  const nx = nextTodo[0]?.r;
+  h += `<div class="qgrid" role="group" aria-label="바로가기">${nx ? qa("open", "player-play", "이어서 하기", esc(nx.title), " pri", ` data-id="${esc(nx.id)}"`) : qa("mine", "circle-check", "해야 할 활동을 다 했어요", "내 생각 기록에서 지난 글을 볼 수 있어요", " pri")}
+    ${qa("mine", "notebook", "내 생각 기록", "지금까지 쓴 글과 생각 흐름을 모아 봐요")}
+    ${S.mode === "supa" && !S.preview && !S.guest ? qa("join-open", "plus", "과목 추가", "다른 선생님의 과목을 함께 들어요") : ""}</div>`;
+  h += stuTiles({todo:cnt("todo"), doing:cnt("doing"), done:cnt("done")});
   const so = stuOrder(), born = d => d.info.c?.createdAt || Math.min(...d.rs.map(r => r.createdAt || 0), 9e15);
   const dashes = orderCourses([...groups.entries()].map(([k, rs]) => ({info:dashInfo(k, rs), rs})), born, d => { const i = so.indexOf(d.info.k); return i < 0 ? null : i });
   const ed = !!S.corderEdit && csortOf() === "custom";
@@ -2876,7 +2923,7 @@ function viewDashList(groups, all){
       <span class="dw">${info.teacher ? `${esc(info.teacher)} 선생님 · ` : ""}활동 ${rs.length}개</span>
       ${n ? `<span class="dn">${ic("speakerphone", "sm")} ${isNewNotice(n) ? "<b>새 공지</b> · " : ""}${esc(n.text)}</span>` : ""}
       <span class="ds">${todo ? `<span class="todo">할 일 ${todo}</span>` : `<span>${ic("check", "sm")} 할 일 없음</span>`}${nNew ? `<span class="new">${ic("sparkles", "sm")} 새 활동 ${nNew}</span>` : ""}</span>${ed ? mvBtns(info.k) + `</div>` : `</button>`}`}).join("")}</div>${ed ? "" : moreBtn(dashes.length - dshown.length, S.allDash && dashes.length > COURSE_SHOW, "dash-more")}`;
-  const todo = items.filter(x => x.st.o < 2).sort((a, b) => a.st.o - b.st.o || (a.r.dueAt||9e15) - (b.r.dueAt||9e15) || (b.r.createdAt||0) - (a.r.createdAt||0)).slice(0, 8);
+  const todo = nextTodo.slice(0, 8);
   if(todo.length) h += `<h2 class="sec-h">${ic("pencil")} 해야 할 활동</h2><div class="todolist">${todo.map(({r, st}) => `<button type="button" data-a="open" data-id="${esc(r.id)}">
       <span class="tl"><b>${esc(r.title)}${isNewRoom(r) ? `<span class="newdot">NEW</span>` : ""}</b><span>${esc(dashInfo(dashKey(r), [r]).title)}${r.dueAt ? ` · ${ic("alarm", "sm")} ${esc(fmtDue(r.dueAt))}까지` : ""}</span></span>
       <span class="sst">${ic(st.i, "sm")} ${esc(st.l)}</span></button>`).join("")}</div>`;
@@ -2896,6 +2943,7 @@ function viewDash(info, rooms){
     <div class="dhead" style="--c:var(--${info.tone})">${info.teacher ? `<div class="eyebrow">${esc(info.teacher)} 선생님</div>` : ""}
       <h1 class="mqh"><span aria-hidden="true">${info.icon}</span>${mq(info.title)}</h1>
       <p class="muted">${crs && myGroup(crs.id) ? `${esc(groupName(crs.id, myGroup(crs.id)))} · ` : ""}활동 ${rooms.length}개 · 해야 할 활동 ${cnt("todo")}개${crs?.description ? ` · ${esc(crs.description)}` : ""}</p></div>`;
+  if(rooms.length) h += stuTiles({todo:cnt("todo"), doing:cnt("doing"), done:cnt("done")});
   if(ns.length) h += `<div class="notices" aria-label="공지사항">${ns.map(n => `<div class="notice-item ${fresh.has(n.id) ? "fresh" : ""}"><b>${ic("speakerphone", "sm")} 공지${fresh.has(n.id) ? " · 새 소식" : ""}</b><p>${lnk(n.text)}</p><span class="nm">${esc(fmt(n.at))}</span></div>`).join("")}</div>`;
   if(!rooms.length) return h + `<div class="empty">아직 이 과목에 열린 활동이 없어요. 선생님이 활동을 올리면 여기에 나타나요.</div></section>`;
   h += `<div class="sbar"><span class="muted small">활동 ${list.length}개</span>
@@ -4656,7 +4704,7 @@ function teacherCard(r, p, ps, nav){
    ========================================================= */
 /* 🔄 새 버전 알림: 배포 때마다 APP_VERSION과 version.json의 v를 같은 값으로 올린다.
    GitHub Pages는 화면을 10분쯤 기억하므로, 옛 화면이면 아래쪽에 ‘새로고침’ 띠를 띄우고 주소를 바꿔 새로 받는다 */
-const APP_VERSION = "2026-10-20d";
+const APP_VERSION = "2026-10-20e";
 async function checkVersion(){
   if(!/^https?:$/.test(location.protocol)) return;
   try{
@@ -5330,8 +5378,7 @@ function teacherTop(){
   const recentHTML = recent.length ? `<section class="recent" aria-labelledby="recent-h"><div class="recent-h"><h2 id="recent-h" class="sec-h">${ic("clock")} 최근 활동</h2><button class="linkbtn small" type="button" data-a="to-mlist">모든 활동 보기 ${ic("arrow-down", "sm")}</button></div>
     <ul>${recent.map(r => { const t = TEMPLATES[r.template] || {};
       return `<li><button type="button" class="rrow" data-a="open" data-id="${esc(r.id)}"><span class="rr-ic" aria-hidden="true">${ic(t.icon || "file-text", "sm")}</span><span class="rr-t">${esc(r.title || "제목 없는 활동")}</span><span class="rr-k">${esc(t.label || "")}</span>${statusChip(r)}<span class="rr-d">${fmtRel(lastActivity(r))}</span></button></li>` }).join("")}</ul></section>` : "";
-  const banner = S.mcourse ? "" : `<section class="wbanner" aria-labelledby="wb-h"><div class="wb-txt"><div class="wb-eb">THINKING WORKSPACE</div><h2 id="wb-h">생각을 연결하는 수업</h2><p>질문을 만들고, 근거를 탐색하고, 나만의 생각을 완성해 보세요.</p></div>
-    <img class="wb-art" src="img/banner.webp" width="2048" height="768" alt="" aria-hidden="true" decoding="async"></section>`;
+  const banner = S.mcourse ? "" : wbanner("질문을 만들고, 근거를 탐색하고, 나만의 생각을 완성해 보세요.");
   return `<section class="thead"><div class="thead-hi"><div>
       <div class="eyebrow">오늘은 ${now.getMonth()+1}월 ${now.getDate()}일 ${"일월화수목금토"[now.getDay()]}요일</div>
       <h1>${nm ? `${esc(nm)} 선생님, 안녕하세요` : "선생님, 안녕하세요"}</h1></div></div>
@@ -7290,7 +7337,7 @@ async function act(a, b){
     case "rte-save": flushForms(); rteMarkSaved(true); toast(S.preview || S.demo ? "미리보기에서는 저장되지 않아요." : "임시저장했어요. 이 기기에서 다시 열면 이어서 쓸 수 있어요."); return;
     case "tb-bell": S.pop = S.pop === "bell" ? null : "bell"; break;
     case "tb-acct": S.pop = S.pop === "acct" ? null : "acct"; break;
-    case "tb-bell-read": lsSet(bellKey(), String(Date.now())); S.pop = null; break;
+    case "tb-bell-read": if(isTeacher()) lsSet(bellKey(), String(Date.now())); else { const b2 = stuBell(); markSeen("r", b2.rs.map(x => x.id)); markSeen("n", b2.ns.map(x => x.n.id)) } S.pop = null; break;
     case "acct-del-open": S.modal = {type:"acctdel"}; break;
     case "acct-del-yes": {
       if(S.mode !== "supa" || S.demo || !SB) return;
