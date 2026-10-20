@@ -4,8 +4,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>생각이음</title>
 <link rel="manifest" href="manifest.webmanifest">
-<link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
-<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png?v=2">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png?v=2">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="생각이음">
@@ -1532,8 +1532,23 @@ input[type=datetime-local]{border-radius:var(--r)}
   .side-menu{display:none;position:absolute;left:0;right:0;top:100%;max-height:calc(100dvh - 60px);overflow-y:auto;background:var(--side-bg);padding:var(--sp-2) var(--sp-4) var(--sp-4);box-shadow:0 12px 24px rgba(0,0,0,.25)}
   body.side-open .side-menu{display:flex}
   .wrap{padding-top:var(--sp-5)}
+  /* 위쪽 막대는 스크롤해도 고정: 앱 이름 막대 + (교사·학생) 알림·계정 줄 */
+  .side{position:sticky;top:0}
+  .topbar{position:sticky;top:var(--hdr-h,60px);z-index:24;background:var(--bg);margin:calc(-1 * var(--sp-5)) calc(-1 * clamp(16px,3vw,40px)) var(--sp-2);padding:6px clamp(16px,3vw,40px)}
 }
-@media print{.side{display:none}.shell{display:block}}
+.qbar{display:none}
+/* 휴대폰: 교사 화면의 빠른 메뉴(새 활동·새 과목·학생 코드·개별 안내)는 아래쪽에 고정 */
+@media (max-width:700px){
+  .qbar:not([hidden]){display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:4px;position:fixed;left:0;right:0;bottom:0;z-index:28;background:var(--surface);border-top:1px solid var(--line);padding:6px 6px calc(6px + env(safe-area-inset-bottom,0px));box-shadow:0 -4px 16px rgba(0,0,0,.08)}
+  .qbar button{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;min-height:54px;padding:6px 2px;border:0;border-radius:var(--r);background:none;color:var(--fg);font:inherit;font-size:12px;font-weight:600;cursor:pointer;line-height:1.2;text-align:center;letter-spacing:-.02em}
+  .qbar button:active{background:var(--sunk)}
+  .qbar button.pri{background:var(--primary);color:var(--primary-ink)}
+  body.has-qbar .wrap{padding-bottom:calc(92px + env(safe-area-inset-bottom,0px))}
+  body.has-qbar .toast{bottom:calc(84px + env(safe-area-inset-bottom,0px))}
+  body.has-qbar .updbar{bottom:calc(84px + env(safe-area-inset-bottom,0px))}
+  body.has-qbar .qgrid{display:none}
+}
+@media print{.side{display:none}.shell{display:block}.qbar{display:none!important}}
 </style>
 
 <div class="shell">
@@ -1557,6 +1572,7 @@ input[type=datetime-local]{border-radius:var(--r)}
     <footer class="appfoot"><span>제작 : 이태형T(한백고)</span></footer>
   </div>
 </div>
+<nav class="qbar" id="qbar" aria-label="빠른 메뉴" hidden></nav>
 <div id="modal"></div>
 <div id="tour"></div>
 <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
@@ -2731,8 +2747,20 @@ function renderTopbar(){
   tb.innerHTML = `<button class="tb-btn" type="button" data-a="tb-bell" aria-haspopup="menu" aria-expanded="${S.pop === "bell"}" aria-label="알림${tot ? ` (새 소식 ${tot}개)` : ""}">${ic("bell")}${tot ? `<span class="tb-dot" aria-hidden="true"></span>` : ""}</button>
     <button class="tb-btn" type="button" data-a="tb-acct" aria-haspopup="menu" aria-expanded="${S.pop === "acct"}" aria-label="내 계정"><span class="tb-av" aria-hidden="true">${av}</span><span class="tb-nm">${esc(nm || "내 계정")}</span>${ic("chevron-down", "sm")}</button>${pop}`;
 }
+function renderQbar(){
+  const q = document.getElementById("qbar"); if(!q) return;
+  const on = isTeacher() && !S.preview && (S.view === "home" || S.view === "room");
+  document.body.classList.toggle("has-qbar", on);
+  if(!on){ q.hidden = true; q.innerHTML = ""; return }
+  const b = (a, icon, t, cls = "") => `<button type="button" class="${cls}" data-a="${a}">${ic(icon)}<span>${t}</span></button>`;
+  q.hidden = false;
+  q.innerHTML = b("create", "plus", "새 활동 만들기", "pri") + b("course-new", "square-plus", "새 과목")
+    + (S.mode === "supa" ? b("roster-open", "users", "학생 코드") : "") + (S.mode === "supa" || S.demo ? b("msg-open", "mail", "개별 안내") : "");
+}
+function syncHdr(){ const h = document.getElementById("side")?.offsetHeight; if(h) document.documentElement.style.setProperty("--hdr-h", h + "px") }
+addEventListener("resize", syncHdr);
 function renderTop(){
-  renderTopbar();
+  renderTopbar(); renderQbar(); syncHdr();
   const nav = document.getElementById("topr"), me = document.getElementById("sideme");
   const item = (a, icon, label, on = false, attrs = "") => `<button class="nav-i" type="button" data-a="${a}"${on ? ' aria-current="page"' : ""}${attrs}>${ic(icon)}<span class="nav-t">${label}</span></button>`;
   const sub = h => `<div class="nav-sub">${h}</div>`;
@@ -4704,7 +4732,7 @@ function teacherCard(r, p, ps, nav){
    ========================================================= */
 /* 🔄 새 버전 알림: 배포 때마다 APP_VERSION과 version.json의 v를 같은 값으로 올린다.
    GitHub Pages는 화면을 10분쯤 기억하므로, 옛 화면이면 아래쪽에 ‘새로고침’ 띠를 띄우고 주소를 바꿔 새로 받는다 */
-const APP_VERSION = "2026-10-20e";
+const APP_VERSION = "2026-10-20f";
 async function checkVersion(){
   if(!/^https?:$/.test(location.protocol)) return;
   try{

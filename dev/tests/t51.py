@@ -45,7 +45,7 @@ async def main():
     print('student sees:', await T.eval_on_selector_all('#stage legend, #stage label, #stage .fq','e=>e.map(x=>x.innerText.trim().split("\\n")[0]).filter(t=>t.length>3).slice(0,8)'))
     await T.screenshot(path='/tmp/claude-0/smoke/mob/stepq_student.png', full_page=True)
     M=await ctx.new_page(); await M.set_viewport_size({'width':390,'height':844}); M.on('pageerror',lambda e:errs.append('M:'+str(e)))
-    await M.goto(U+'?who=teacher'); await W(M,800); await M.click('.thead [data-a=create]'); await W(M,400); await M.click('[data-a=q-custom]'); await W(M)
+    await M.goto(U+'?who=teacher'); await W(M,800); await M.click('#qbar [data-a=create]'); await W(M,400); await M.click('[data-a=q-custom]'); await W(M)
     print('m overflow:', await M.evaluate('document.documentElement.scrollWidth')); y=await M.evaluate('document.querySelector(".stepq-card").getBoundingClientRect().top+scrollY-10'); await M.screenshot(path='/tmp/claude-0/smoke/mob/stepq_m.png', clip={'x':0,'y':y,'width':390,'height':600}, full_page=True)
     print('errors', errs); await b.close()
 asyncio.run(main())
