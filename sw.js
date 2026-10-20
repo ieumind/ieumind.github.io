@@ -6,7 +6,7 @@ self.addEventListener("push", e => {
   try { d = e.data ? e.data.json() : {}; } catch (_) { d = { body: e.data ? e.data.text() : "" }; }
   const scope = self.registration.scope;
   e.waitUntil(self.registration.showNotification(d.title || "생각이음", {
-    body: d.body || "", icon: scope + "icons/icon-192.png?v=2", badge: scope + "icons/icon-192.png?v=2",
+    body: d.body || "", icon: scope + "icons/app-192.png", badge: scope + "icons/app-192.png",
     tag: d.tag || undefined, renotify: !!d.tag, data: { url: scope + (d.url || "") }
   }));
 });
