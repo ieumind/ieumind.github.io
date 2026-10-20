@@ -41,21 +41,21 @@ async def main():
     ok('학생: 지표 칸 3개(해야 할 1)', tiles==['해야 할 활동:1','하는 중:0','다 했어요:0'], str(tiles))
     ok('학생 왼쪽 막대에 오류·건의하기, 푸터에는 없음', await S.is_visible('#sideme [data-a=feedback-open]') and await S.evaluate('!document.querySelector(".appfoot [data-a=feedback-open]")'))
     # 벨: 새 활동은 처음 쓰는 기기에서는 ‘본 것’이므로 비어 있다 → 교사가 새 활동을 올리면 보인다
-    await S.click('[data-a=tb-bell]'); await W(S)
+    await S.click('[data-a=tb-bell]:visible'); await W(S)
     ok('벨: 새 소식 없으면 안내', '없어요' in await S.inner_text('.tb-pop')); await S.keyboard.press('Escape'); await W(S)
     await T.click('#topr [data-a=create]'); await W(T); await T.click('[data-a=goal][data-v=look]'); await W(T)
     await T.fill('#c-title','새로 올린 활동') if await T.query_selector('#c-title') else None
     await T.fill('#c-prompt','새 질문입니다'); await T.click('[data-a=create-save]'); await W(T,900)
     await S.reload(); await W(S,1500)
     ok('새 활동이 오면 벨에 점', await S.evaluate('!!document.querySelector("#topbar .tb-dot")'))
-    await S.click('[data-a=tb-bell]'); await W(S)
+    await S.click('[data-a=tb-bell]:visible'); await W(S)
     ok('벨 목록에 새 활동', '새로 올린 활동' in await S.inner_text('.tb-pop') and '새 활동' in await S.inner_text('.tb-pop'))
-    await S.click('.tb-pop [data-a=tb-bell-read]'); await W(S)
+    await S.click('.tb-pop:visible [data-a=tb-bell-read]'); await W(S)
     ok('모두 읽음 → 점 사라짐', not await S.evaluate('!!document.querySelector("#topbar .tb-dot")'))
     # 계정 메뉴
-    await S.click('[data-a=tb-acct]'); t=await S.inner_text('.tb-pop')
+    await S.click('[data-a=tb-acct]:visible'); t=await S.inner_text('.tb-pop')
     ok('계정 메뉴: 내 생각 기록·과목 추가·다른 학생으로', all(x in t for x in ['내 생각 기록','과목 추가','다른 학생으로']), t.replace('\n',' | '))
-    await S.click('.tb-pop [data-a=mine]'); await W(S); ok('내 생각 기록으로 이동', await S.evaluate('S.view')=='mine' and not await S.evaluate('!!document.querySelector(".tb-pop")'))
+    await S.click('.tb-pop:visible [data-a=mine]'); await W(S); ok('내 생각 기록으로 이동', await S.evaluate('S.view')=='mine' and not await S.evaluate('!!document.querySelector(".tb-pop")'))
     # 과목 화면에도 지표 칸
     await S.evaluate('act("home",{dataset:{}})'); await W(S); await S.click('[data-a=dash]'); await W(S,500)
     ok('과목 화면에도 지표 칸', await S.evaluate('!!document.querySelector(".dhead") && !!document.querySelector(".tstats.s3")'))
