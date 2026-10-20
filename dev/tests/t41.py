@@ -39,7 +39,7 @@ async def main():
     await K.screenshot(path='/tmp/claude-0/smoke/mob/pads.png', full_page=True)
     await K.set_viewport_size({'width':390,'height':844}); await W(K,300); await K.screenshot(path='/tmp/claude-0/smoke/mob/pads_m.png', full_page=True)
     # feedback modal survives re-render
-    await K.click('[data-a=feedback-open]'); await W(K); await K.fill('#fb-body','게시판이 좋아요'); await K.evaluate('render()'); await W(K)
+    await K.click('#side-tog'); await W(K); await K.click('[data-a=feedback-open]'); await W(K); await K.fill('#fb-body','게시판이 좋아요'); await K.evaluate('render()'); await W(K)
     print('fb kept after render:', await K.input_value('#fb-body')); await K.click('[data-a=fb-send]'); await W(K,500)
     print('fb stored:', [x['body'] for x in await K.evaluate('JSON.parse(localStorage.getItem("__fb")||"[]")')])
     # teacher students tab
