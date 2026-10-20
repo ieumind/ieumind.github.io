@@ -14,7 +14,8 @@ async def main():
     await T.goto(U+'?who=teacher'); await T.evaluate('localStorage.clear()'); await T.reload(); await W(T,800)
     # 교사 첫 화면
     h=await T.inner_text('#app')
-    ok('첫 화면: 날짜·교사 화면 문구 없음', '교사 화면' not in h.split('생각을 연결하는 수업')[0] and '화요일' not in h and '요일 ·' not in h)
+    import datetime as _d; _n=_d.date.today(); _w='월화수목금토일'[_n.weekday()]
+    ok('첫 화면: ‘오늘은 N월 N일 X요일’ 작은 글씨, ‘교사 화면’ 문구 없음', f'오늘은 {_n.month}월 {_n.day}일 {_w}요일' in h and '교사 화면' not in h.split('생각을 연결하는 수업')[0])
     ok('첫 화면: 이름 바꾸기 버튼 없음(본문)', await T.evaluate('!document.querySelector("#app [data-a=tname-open]")'))
     ok('첫 화면: ‘활동이 열려 있어요’ 문구 없음', '열려 있어요' not in h and '열린 활동이 없어요' not in h)
     ok('이름 바꾸기는 계정 메뉴에 남아 있음', True)

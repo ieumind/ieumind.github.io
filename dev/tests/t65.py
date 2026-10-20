@@ -14,7 +14,7 @@ async def main():
     await T.goto(U+'?who=teacher'); await T.evaluate('localStorage.clear()'); await T.reload(); await W(T,800)
     ok('상단 막대가 보인다', await T.is_visible('#topbar [data-a=tb-bell]') and await T.is_visible('#topbar [data-a=tb-acct]'))
     ok('계정 칸에 선생님 이름', '이태형' in await T.inner_text('#topbar [data-a=tb-acct]'))
-    ok('배너 그래픽(지구본)', await T.evaluate('!!document.querySelector(".wb-art circle")') and await T.is_visible('.wb-art'))
+    ok('배너 그림(이미지 파일)', await T.evaluate('(()=>{const i=document.querySelector("img.wb-art"); return !!i && i.naturalWidth>0 && !document.querySelector("svg.wb-art")})()') and await T.is_visible('.wb-art'))
     await T.screenshot(path='/tmp/claude-0/smoke/t65_home.png')
     # 알림
     await T.click('[data-a=tb-bell]'); await W(T)

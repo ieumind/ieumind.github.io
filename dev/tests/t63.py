@@ -108,7 +108,7 @@ async def main():
     # 휴대폰
     M=await c.new_page(); await M.set_viewport_size({'width':390,'height':844}); M.on('pageerror',lambda e:errs.append('M:'+str(e)))
     await M.goto(U+'?who=teacher'); await W(M,700); await M.evaluate(f'act("edit-room",{{dataset:{{id:"{rid}"}}}})'); await W(M,600)
-    r1=await M.evaluate(WIDE); await M.evaluate('document.querySelector(".ccard").scrollIntoView()'); await M.screenshot(path='/tmp/claude-0/smoke/mob/chat_char.png')
+    r1=await M.evaluate(WIDE); await M.evaluate('document.querySelector(".cset-card").scrollIntoView()'); await M.screenshot(path='/tmp/claude-0/smoke/mob/chat_char.png')
     await M.evaluate('document.getElementById("pguide").scrollIntoView()'); await M.screenshot(path='/tmp/claude-0/smoke/mob/chat_prompt.png')
     await G.set_viewport_size({'width':390,'height':844}); await W(G,400); r2=await G.evaluate(WIDE); await G.screenshot(path='/tmp/claude-0/smoke/mob/chat_student.png')
     ok('휴대폰 390: 넘침 없음(만들기·학생)', r1[0]<=390 and r2[0]<=390, str(r1)+str(r2))
