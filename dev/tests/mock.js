@@ -88,6 +88,7 @@
       if(fn==="room_view"){ const sid=sidFor(tidOf(D.docs["rooms/"+p.p_room])); if(isT||!sid) return {data:null,error:null}; const v=JSON.parse(localStorage.getItem("__views")||"{}"); const r=v[p.p_room]=v[p.p_room]||{}; const now=new Date().toISOString(); r[sid]=r[sid]?{...r[sid],last_at:now,n:r[sid].n+1}:{first_at:now,last_at:now,n:1}; localStorage.setItem("__views",JSON.stringify(v)); return {data:null,error:null} }
       if(fn==="room_viewers"){ if(!isT) return {data:[],error:null}; const v=JSON.parse(localStorage.getItem("__views")||"{}")[p.p_room]||{}; return {data:Object.entries(v).map(([student_id,x])=>({student_id,...x})),error:null} }
       if(fn==="push_schedule"){ window.__sbLog.push("sched:"+p.p_room+"/"+p.p_group+"@"+(p.p_at?"set":"clear")); return {data:{ok:isT,scheduled:!!p.p_at},error:null} }
+      if(fn==="teacher_delete_me"){ if(!isT) return {data:{ok:false,reason:"denied"}}; if(localStorage.getItem("__admin")) return {data:{ok:false,reason:"admin"}}; if(p&&p.p_dry) return {data:{ok:true,dry:true}}; window.__sbLog.push("deleteMe"); localStorage.setItem("__deleted","1"); return {data:{ok:true}} }
       if(fn==="teacher_set_name"){ if(!isT) return {data:{ok:false,reason:"denied"}}; const v=(p.p_name||"").trim(); if(!v) return {data:{ok:false,reason:"empty"}}; window.__sbLog.push("tname:"+v); return {data:{ok:true,name:v},error:null} }
       { const M=JSON.parse(localStorage.getItem("__msgs")||"[]"), saveM=()=>localStorage.setItem("__msgs",JSON.stringify(M));
         if(fn==="msg_send"){ if(!isT) return {data:{ok:false,reason:"denied"}}; const body=(p.p_body||"").trim(); if(!body) return {data:{ok:false,reason:"empty"}};
@@ -127,6 +128,7 @@
       return {data:{text:"(AI가 연기하는 가상 인물) 질문 고마워요. '"+last.slice(0,20)+"'에 대해 말하자면…", remaining:3}, error:null} } },
     from: qb,
     storage:{ from:(bucket)=> bucket==="materials" ? ({
+      list: async () => ({data:[],error:null}), remove: async (paths) => { window.__sbLog.push("rmM:"+paths.length); return {data:null,error:null} },
       upload: async (path, blob) => { if(!isT) return {error:{message:"denied"}}; const d = await new Promise(ok=>{const fr=new FileReader(); fr.onload=()=>ok(fr.result); fr.readAsDataURL(blob)}); const st=JSON.parse(localStorage.getItem("__sbstore")||"{}"); st["m/"+path]=d; localStorage.setItem("__sbstore",JSON.stringify(st)); window.__sbLog.push("mupload:"+path); return {data:{path},error:null} },
       getPublicUrl: (path) => ({data:{publicUrl: JSON.parse(localStorage.getItem("__sbstore")||"{}")["m/"+path]}}) }) : ({
       upload: async (path, blob, o) => { const sid=path.split("/")[1]; if(isT || !(mySids().includes(sid) || (sid===uid && gIn(path.split("/")[0])))) return {error:{message:"new row violates row-level security policy"}};
@@ -134,6 +136,7 @@
         const st=JSON.parse(localStorage.getItem("__sbstore")||"{}"); if(st[path]) return {error:{message:"exists"}}; st[path]=d; localStorage.setItem("__sbstore",JSON.stringify(st)); window.__sbLog.push("upload:"+path); return {data:{path},error:null} },
       createSignedUrls: async (paths) => { const st=JSON.parse(localStorage.getItem("__sbstore")||"{}"); window.__sbLog.push("sign:"+paths.length);
         return {data: paths.map(p => { const sid=p.split("/")[1], rm = D.docs["rooms/"+p.split("/")[0]], ok = isT || mySids().includes(sid) || (!!rm && (rm.data.reveal||"teacher") !== "teacher" && !!sidFor(tidOf(rm))); return {path:p, signedUrl: ok && st[p] ? st[p] : null, error: ok ? null : "denied"} })} },
+      list: async (prefix) => { const st=JSON.parse(localStorage.getItem("__sbstore")||"{}"), seen=new Map(); Object.keys(st).filter(k=>k.startsWith(prefix+"/")).forEach(k=>{ const rest=k.slice(prefix.length+1).split("/"); seen.set(rest[0], rest.length>1 ? null : "f") }); return {data:[...seen].map(([name,id])=>({name,id})),error:null} },
       remove: async (paths) => { const st=JSON.parse(localStorage.getItem("__sbstore")||"{}"); paths.forEach(p=>{ const sid=p.split("/")[1]; if(isT || mySids().includes(sid)) delete st[p] }); localStorage.setItem("__sbstore",JSON.stringify(st)); window.__sbLog.push("remove:"+paths.length); return {error:null} }
     })},
     channel(){ const subs=[]; const c={ on(type,f,cb){ subs.push([f,cb]); return c }, subscribe(){ ch.push((ev,row)=>{ for(const [f,cb] of subs){ if(f.event!==ev) continue; if(f.filter && f.filter!=="col=eq."+row.col) continue; if(!canRead(row) && ev!=="DELETE") continue; cb(ev==="DELETE"?{old:row}:{new:{id:row.id,data:row.data,col:row.col}}) } }); return c } }; return c }

@@ -1307,3 +1307,32 @@ end $$;
 -- 다른 선생님은 등록하지 않아도 구글로 로그인하면 바로 교사가 돼요
 -- insert into public.teachers (email, admin) values ('me@example.com', true) on conflict (email) do update set admin = true;
 -- =====================================================================
+
+-- ---------------------------------------------------------------------
+-- 🚪 교사 탈퇴: 내 과목·활동·학생 명단·안내·알림 구독·AI 키와 계정을 지운다 (되돌릴 수 없다)
+--   · 올린 사진 파일은 앱이 저장소(Storage) API로 먼저 지운다 (여기서는 데이터베이스만)
+--   · p_dry = true 이면 아무것도 지우지 않고 ‘탈퇴할 수 있는 계정인지’만 알려 준다
+--   · 관리자 계정은 탈퇴할 수 없다 (먼저 다른 관리자에게 넘긴다)
+-- ---------------------------------------------------------------------
+create or replace function public.teacher_delete_me(p_dry boolean default false) returns json
+language plpgsql volatile security definer set search_path = public as $$
+declare v uuid := auth.uid(); em text := lower(coalesce(auth.jwt() ->> 'email', ''));
+begin
+  if v is null or not public.is_teacher() then return json_build_object('ok', false, 'reason', 'denied'); end if;
+  if public.is_admin() then return json_build_object('ok', false, 'reason', 'admin'); end if;
+  if p_dry then return json_build_object('ok', true, 'dry', true); end if;
+  delete from public.docs          where tid = v;
+  delete from public.room_views    where tid = v;
+  delete from public.push_jobs     where tid = v;
+  delete from public.notify_log    where tid = v;
+  delete from public.guest_sessions where tid = v;
+  delete from public.student_msgs  where tid = v;
+  delete from public.students      where tid = v;
+  delete from public.teacher_ai    where uid = v;
+  delete from public.push_subs     where uid = v;
+  delete from public.teachers      where uid = v or lower(email) = em;
+  delete from auth.users           where id = v;
+  return json_build_object('ok', true);
+end $$;
+revoke execute on function public.teacher_delete_me(boolean) from public, anon;
+grant  execute on function public.teacher_delete_me(boolean) to authenticated;
