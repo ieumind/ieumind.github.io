@@ -33,6 +33,7 @@ async def main():
     await S.goto(U+'?who=anon'); await W(S,900)
     ok('코드 입력 화면에는 상단 막대 없음', not await S.is_visible('#topbar'))
     await S.fill('#f-num','10301'); await S.fill('#f-name','김가온'); await S.fill('#f-code',code); await S.click('[data-a=setname]'); await W(S,1500)
+    ok('처음 코드로 들어온 학생에게 환영 창', '김가온님, 환영해요' in await S.inner_text('.welcome')); await S.click('.welcome [data-a=modal-close]'); await W(S,300)
     ok('학생 상단 막대(벨·계정)', await S.is_visible('#topbar [data-a=tb-bell]') and '김가온' in await S.inner_text('#topbar [data-a=tb-acct]'))
     ok('학생: 오늘 날짜 작은 글씨 + 인사말', '오늘은' in await S.inner_text('.shome-hi .eyebrow') and '김가온님, 안녕하세요' in await S.inner_text('.shome-hi h1'))
     ok('학생: 배너 이미지', await S.evaluate('(()=>{const i=document.querySelector(".wbanner img.wb-art"); return !!i && i.naturalWidth>0})()'))
