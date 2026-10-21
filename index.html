@@ -570,6 +570,11 @@ details.adv > div{padding:2px 20px 16px;display:grid;gap:12px}
 .modal{background:var(--surface);color:var(--fg);border-radius:14px;padding:20px;max-width:520px;width:100%;display:grid;gap:12px;max-height:90vh;overflow:auto;box-shadow:0 20px 50px rgba(0,0,0,.3)}
 .modal h3{font-size:18px}
 .sheet-back{display:none}
+.welcome{display:grid;gap:12px;justify-items:center;text-align:center;padding:8px 0 0}
+.welcome .wl-ic{width:64px;height:64px;border-radius:50%;display:grid;place-items:center;background:var(--accent-soft,#e3efed);color:var(--accent,#2F7F7A)}
+.welcome .wl-ic svg{width:32px;height:32px}
+.welcome h3{font-size:22px}.welcome p{color:var(--muted);max-width:34ch}
+.welcome .row{justify-self:stretch}
 @media (max-width:700px){
   .modal-bg.sheet{display:block;padding:0;background:var(--bg);overflow:auto;overscroll-behavior:contain}
   .modal-bg.sheet .modal{max-width:none;width:auto;min-height:100%;max-height:none;overflow:visible;border-radius:0;box-shadow:none;background:var(--bg);padding:0 16px calc(24px + env(safe-area-inset-bottom,0px));align-content:start}
@@ -4775,7 +4780,7 @@ function teacherCard(r, p, ps, nav){
    ========================================================= */
 /* 🔄 새 버전 알림: 배포 때마다 APP_VERSION과 version.json의 v를 같은 값으로 올린다.
    GitHub Pages는 화면을 10분쯤 기억하므로, 옛 화면이면 아래쪽에 ‘새로고침’ 띠를 띄우고 주소를 바꿔 새로 받는다 */
-const APP_VERSION = "2026-10-21b";
+const APP_VERSION = "2026-10-21c";
 async function checkVersion(){
   if(!/^https?:$/.test(location.protocol)) return;
   try{
@@ -4837,7 +4842,8 @@ async function initSupa(){
     const meta = session?.user?.user_metadata || {};
     S.sbPic = who.teacher ? (meta.avatar_url || meta.picture || "") : "";
     S.sbName = who.teacher ? (meta.display_name || meta.full_name || meta.name || "") : "";   // 선생님이 정한 이름이 먼저 (없으면 구글 이름)
-    if(who.teacher && !meta.display_name && !lsGet("nonjae.tname.later")) S.modal = {type:"tname", first:true};   // 처음 로그인: 학생에게 보일 이름 정하기
+    if(who.teacher && !meta.display_name && !lsGet("nonjae.tname.later")){ S.modal = {type:"tname", first:true}; lsSet("nonjae.welcome", "teacher") }   // 처음 로그인: 학생에게 보일 이름 정하기
+    if(!who.teacher && lsGet("nonjae.welcome") === "student" && S.name){ S.modal = {type:"welcome", kind:"student", name:S.name}; lsSet("nonjae.welcome", "") }   // 코드로 처음 들어온 학생
     if(!who.teacher){
       let gname = who.guest_name || "";                              // 🙋 과목 없는 활동: 코드 없이 이름·닉네임만으로 참여
       S.guestProbed = new Set(ref ? [ref] : []);
@@ -6243,6 +6249,37 @@ function loadQR(){
   });
   return qrLoading;
 }
+/* 🎉 첫 환영: 처음 가입한 선생님·처음 코드로 들어온 학생에게 한 번만 */
+function welcomeMaybe(){
+  if(lsGet("nonjae.welcome") !== "teacher") return;
+  lsSet("nonjae.welcome", "");
+  if(S.courses.length || S.rooms.length) return;                  // 이미 쓰던 계정이면 환영하지 않는다
+  S.modal = {type:"welcome", kind:"teacher", name:S.sbName};
+}
+function welcomeHTML(m){
+  const t = m.kind === "teacher";
+  return `<div class="welcome"><div class="wl-ic" aria-hidden="true">${ic("confetti", "lg")}</div>
+    <h3>${t ? `${esc(m.name || S.sbName || "")} 선생님, 환영해요!` : `${esc(m.name || S.name || "")}님, 환영해요!`}</h3>
+    <p>${t ? "생각이음에 오신 걸 반가워해요. 먼저 <b>새 과목</b>을 만들고 <b>학생 코드</b>를 나눠 주면, 학생들과 바로 생각을 잇는 수업을 시작할 수 있어요."
+           : "이제 선생님이 낸 활동에서 내 생각을 쓰고, 친구들의 생각과 이어 볼 수 있어요. 천천히 둘러보세요!"}</p>
+    <div class="row end"><button class="btn pri" type="button" data-a="modal-close">${t ? "시작하기" : "들어가기"}</button></div></div>`;
+}
+function confetti(){
+  if(matchMedia("(prefers-reduced-motion: reduce)").matches || document.getElementById("confetti")) return;
+  const cv = document.createElement("canvas"); cv.id = "confetti"; cv.setAttribute("aria-hidden", "true");
+  cv.style.cssText = "position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:60";
+  const dpr = Math.min(2, devicePixelRatio || 1), W = innerWidth, H = innerHeight; cv.width = W * dpr; cv.height = H * dpr;
+  document.body.appendChild(cv); const g = cv.getContext("2d"); g.scale(dpr, dpr);
+  const cols = ["#183C43", "#2F7F7A", "#F2C14E", "#E8735A", "#7FB7D6", "#B8A1D9"];
+  const ps = Array.from({length:110}, (_, i) => { const left = i % 2, a = (left ? 55 : 125) * Math.PI / 180 + (Math.random() - .5) * .8, v = 11 + Math.random() * 9;
+    return {x:left ? 0 : W, y:H * .85, vx:Math.cos(a) * v * (left ? 1 : 1), vy:-Math.sin(a) * v - 4, w:6 + Math.random() * 6, h:3 + Math.random() * 5, r:Math.random() * 6, vr:(Math.random() - .5) * .4, c:cols[i % cols.length]} });
+  const t0 = performance.now();
+  (function f(t){
+    const dt = t - t0; g.clearRect(0, 0, W, H);
+    for(const p of ps){ p.vy += .32; p.vx *= .992; p.x += p.vx; p.y += p.vy; p.r += p.vr; g.save(); g.globalAlpha = Math.max(0, 1 - dt / 3200); g.translate(p.x, p.y); g.rotate(p.r); g.fillStyle = p.c; g.fillRect(-p.w / 2, -p.h / 2, p.w, p.h); g.restore() }
+    if(dt < 3200) requestAnimationFrame(f); else cv.remove();
+  })(t0);
+}
 function renderModal(){
   const m = S.modal, el = document.getElementById("modal");
   if(m?.type === "feedback"){ const t = document.getElementById("fb-body"); if(t) m.body = t.value }   // 다시 그려도 쓰던 내용이 남게
@@ -6264,6 +6301,7 @@ function renderModal(){
     <div class="q" style="margin-top:10px"><label for="t-name">이름</label><input type="text" id="t-name" maxlength="30" autocomplete="off" value="${esc(S.sbName || "")}" placeholder="예: 이태형"></div>
     <p class="hint">이름만 적어 주세요. 학생의 과목 카드에 ‘${esc(S.sbName || "○○○")} 선생님’처럼 ‘선생님’이 저절로 붙어요. 바꾸면 지금까지 만든 과목·활동에도 함께 바뀌어요. 언제든 인사말 옆 ‘이름 바꾸기’로 다시 바꿀 수 있어요.</p>
     <div class="row end"><button class="btn" type="button" data-a="${m.first ? "tname-later" : "modal-close"}">${m.first ? "나중에" : "취소"}</button><button class="btn pri" type="button" data-a="tname-save">저장</button></div>` }
+  else if(m.type === "welcome"){ h = welcomeHTML(m) }
   else if(m.type === "join"){ h = joinHTML(m) }
   else if(m.type === "gswitch"){ h = `<h3>${ic("user")} 다른 이름으로 시작할까요?</h3>
     <p class="small">이 기기에서 쓰던 이름 <b>${esc(S.name)}</b>을(를) 지우고 처음부터 새로 시작해요.</p>
@@ -6363,7 +6401,8 @@ function renderModal(){
       <input type="text" id="share-url" placeholder="https://claude.ai/…" aria-label="공유 링크">
       <div class="row end"><button class="btn" type="button" data-a="modal-close">취소</button><button class="btn pri" type="button" data-a="save-share">저장</button></div>`;
   }
-  const sheet = ["course", "roster", "msg"].includes(m.type);      // 휴대폰에서는 팝업 대신 따로 한 화면으로 열린다
+  const sheet = ["course", "roster", "msg"].includes(m.type);
+  if(m.type === "welcome" && !m.fired){ m.fired = true; setTimeout(confetti, 250) }      // 휴대폰에서는 팝업 대신 따로 한 화면으로 열린다
   el.innerHTML = `<div class="modal-bg${sheet ? " sheet" : ""}" data-a="modal-bg"><div class="modal${m.type === "note" ? " lb" : m.type === "msg" ? " wide" : ""}" role="dialog" aria-modal="true">${sheet ? `<button type="button" class="sheet-back" data-a="modal-close">${ic("arrow-left")} 돌아가기</button>` : ""}${h}</div></div>`;
   if(m.type === "qr"){
     const link = linkFor(m.kind || "room", m.id, m.g);
@@ -7549,7 +7588,7 @@ async function act(a, b){
       const ok = await write(db => db.doc("rooms/" + r.id).update({reveal:v, updatedAt:Date.now()}), () => { r.reveal = v });
       if(ok) toast(v === "after" ? "이제 사진을 올린 학생끼리 서로 볼 수 있어요." : "이제 선생님만 볼 수 있어요."); break }
     case "tname-open": S.modal = {type:"tname"}; setTimeout(() => document.getElementById("t-name")?.select(), 0); break;
-    case "tname-later": lsSet("nonjae.tname.later", "1"); S.modal = null; break;
+    case "tname-later": lsSet("nonjae.tname.later", "1"); S.modal = null; welcomeMaybe(); break;
     case "tname-save": {
       const v = (document.getElementById("t-name")?.value || "").trim().replace(/\s+/g, " ").replace(/\s*(선생님|선생|쌤|T)$/, "").trim().slice(0, 30);   // ‘선생님’은 화면에서 저절로 붙는다
       if(!v){ toast("이름을 적어 주세요."); return }
@@ -7557,7 +7596,7 @@ async function act(a, b){
       const res = await rpcSafe("teacher_set_name", {p_name:v});
       if(!res?.data?.ok){ if(b) b.disabled = false; toast("이름을 저장하지 못했어요. 잠시 뒤 다시 해 보세요."); return }
       try{ await SB.auth.updateUser({data:{display_name:v}}) }catch(e){}      // 다른 기기에서도 이 이름으로
-      S.sbName = v; S.modal = null; lsSet("nonjae.tname.later", "");
+      S.sbName = v; S.modal = null; lsSet("nonjae.tname.later", ""); welcomeMaybe();
       const cs = S.courses.filter(c => c.teacherName !== v), rs = S.rooms.filter(r => r.teacherName && r.teacherName !== v);   // 학생에게 보이는 선생님 이름도 바꾼다
       await Promise.all([...cs.map(c => write(db => db.doc("courses/" + c.id).update({teacherName:v}), () => { c.teacherName = v })),
                          ...rs.map(r => write(db => db.doc("rooms/" + r.id).update({teacherName:v}), () => { r.teacherName = v }))]);
@@ -7583,7 +7622,7 @@ async function act(a, b){
         if(b) b.disabled = true;
         const res = await SB.rpc("claim_student", {p_number:num, p_name:nm, p_code:code});
         if(res.error || !res.data){ if(b) b.disabled = false; toast("학번·이름·코드가 맞지 않아요. 다시 확인해 주세요."); return }
-        lsSet("nonjae.name", res.data.name); location.reload(); return;   // 그 선생님 반의 활동을 새로 불러온다
+        lsSet("nonjae.name", res.data.name); lsSet("nonjae.welcome", "student"); location.reload(); return;   // 그 선생님 반의 활동을 새로 불러온다
       }
       const v = (document.getElementById("f-name")?.value || "").trim();
       if(!v){ toast("번호와 이름을 써 주세요."); return }
