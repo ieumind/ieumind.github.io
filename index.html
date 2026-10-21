@@ -570,11 +570,11 @@ details.adv > div{padding:2px 20px 16px;display:grid;gap:12px}
 .modal{background:var(--surface);color:var(--fg);border-radius:14px;padding:20px;max-width:520px;width:100%;display:grid;gap:12px;max-height:90vh;overflow:auto;box-shadow:0 20px 50px rgba(0,0,0,.3)}
 .modal h3{font-size:18px}
 .sheet-back{display:none}
-.welcome{display:grid;gap:12px;justify-items:center;text-align:center;padding:8px 0 0}
-.welcome .wl-ic{width:64px;height:64px;border-radius:50%;display:grid;place-items:center;background:var(--accent-soft,#e3efed);color:var(--accent,#2F7F7A)}
-.welcome .wl-ic svg{width:32px;height:32px}
-.welcome h3{font-size:22px}.welcome p{color:var(--muted);max-width:34ch}
-.welcome .row{justify-self:stretch}
+.hello{display:grid;gap:12px;justify-items:center;text-align:center;padding:8px 0 0}
+.hello .hello-ic{width:64px;height:64px;border-radius:50%;display:grid;place-items:center;background:var(--accent-soft,#e3efed);color:var(--accent,#2F7F7A)}
+.hello .hello-ic svg{width:32px;height:32px}
+.hello h3{font-size:22px}.hello p{color:var(--muted);max-width:34ch}
+.hello .row{justify-self:stretch}
 @media (max-width:700px){
   .modal-bg.sheet{display:block;padding:0;background:var(--bg);overflow:auto;overscroll-behavior:contain}
   .modal-bg.sheet .modal{max-width:none;width:auto;min-height:100%;max-height:none;overflow:visible;border-radius:0;box-shadow:none;background:var(--bg);padding:0 16px calc(24px + env(safe-area-inset-bottom,0px));align-content:start}
@@ -4780,7 +4780,7 @@ function teacherCard(r, p, ps, nav){
    ========================================================= */
 /* 🔄 새 버전 알림: 배포 때마다 APP_VERSION과 version.json의 v를 같은 값으로 올린다.
    GitHub Pages는 화면을 10분쯤 기억하므로, 옛 화면이면 아래쪽에 ‘새로고침’ 띠를 띄우고 주소를 바꿔 새로 받는다 */
-const APP_VERSION = "2026-10-21c";
+const APP_VERSION = "2026-10-21d";
 async function checkVersion(){
   if(!/^https?:$/.test(location.protocol)) return;
   try{
@@ -6250,6 +6250,7 @@ function loadQR(){
   return qrLoading;
 }
 /* 🎉 첫 환영: 처음 가입한 선생님·처음 코드로 들어온 학생에게 한 번만 */
+const ACCT_BYE = "안녕히 계세요 여러분. 전 생각이음의 모든 굴레와 속박을 벗어던지고 제 행복을 찾아 떠납니다.";      // 탈퇴 확인 문장
 function welcomeMaybe(){
   if(lsGet("nonjae.welcome") !== "teacher") return;
   lsSet("nonjae.welcome", "");
@@ -6258,10 +6259,10 @@ function welcomeMaybe(){
 }
 function welcomeHTML(m){
   const t = m.kind === "teacher";
-  return `<div class="welcome"><div class="wl-ic" aria-hidden="true">${ic("confetti", "lg")}</div>
-    <h3>${t ? `${esc(m.name || S.sbName || "")} 선생님, 환영해요!` : `${esc(m.name || S.name || "")}님, 환영해요!`}</h3>
-    <p>${t ? "생각이음에 오신 걸 반가워해요. 먼저 <b>새 과목</b>을 만들고 <b>학생 코드</b>를 나눠 주면, 학생들과 바로 생각을 잇는 수업을 시작할 수 있어요."
-           : "이제 선생님이 낸 활동에서 내 생각을 쓰고, 친구들의 생각과 이어 볼 수 있어요. 천천히 둘러보세요!"}</p>
+  return `<div class="hello"><div class="hello-ic" aria-hidden="true">${ic("confetti", "lg")}</div>
+    <h3>${t ? `${esc(m.name || S.sbName || "")} 선생님, 생각이음에 오신 것을 환영해요!` : `${esc(m.name || S.name || "")}님, 환영해요!`}</h3>
+    <p>${t ? "함께하게 되어 기뻐요. 먼저 <b>새 과목</b>을 만들고 <b>학생 코드</b>를 나눠 주세요. 그러면 학생들과 생각을 이어 가는 수업을 바로 시작할 수 있어요."
+           : "이제 선생님이 내 준 활동에 내 생각을 쓰고, 친구들의 생각과 이어 볼 수 있어요. 천천히 둘러보세요."}</p>
     <div class="row end"><button class="btn pri" type="button" data-a="modal-close">${t ? "시작하기" : "들어가기"}</button></div></div>`;
 }
 function confetti(){
@@ -6294,7 +6295,9 @@ function renderModal(){
     <p style="margin-top:8px"><b>${esc(S.sbEmail)}</b> 계정을 탈퇴하면 아래 내용이 <b>모두 지워지고 되돌릴 수 없어요.</b></p>
     <ul class="small" style="margin:8px 0 0 18px;line-height:1.7"><li>만든 과목·활동·공지·학생 글과 답글</li><li>학생 명단과 개인 코드, 보낸 개별 안내</li><li>학생이 올린 사진과 내가 올린 자료</li></ul>
     <p class="hint" style="margin-top:8px">같은 구글 계정으로 다시 로그인하면 새 계정으로 처음부터 시작해요.</p>
-    <div class="q" style="margin-top:10px"><label for="acct-conf">확인을 위해 <b>탈퇴</b>라고 적어 주세요</label><input type="text" id="acct-conf" autocomplete="off" placeholder="탈퇴"></div>
+    <div class="q" style="margin-top:10px"><label for="acct-conf">확인을 위해 아래 문장을 <b>그대로</b> 적어 주세요</label>
+      <p class="linkline" style="user-select:none;-webkit-user-select:none">${esc(ACCT_BYE)}</p>
+      <textarea id="acct-conf" rows="3" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="위 문장을 그대로 따라 적어 주세요" style="min-height:0;font-family:inherit;font-size:16px"></textarea></div>
     <div class="row end"><button class="btn" type="button" data-a="modal-close" ${m.busy ? "disabled" : ""}>취소</button><button class="btn pri" type="button" data-a="acct-del-yes" style="background:var(--danger,#c0392b);border-color:var(--danger,#c0392b)" ${m.busy ? "disabled" : ""}>${m.busy ? "지우는 중…" : "탈퇴하기"}</button></div>` }
   else if(m.type === "tname"){ h = `<h3>${ic("user")} 선생님 이름</h3>
     <p class="small">${m.first ? "처음 오셨네요! 학생에게 보일 이름을 정해 주세요. 지금은 구글 계정 이름이 들어 있어요." : "학생 화면에 보일 이름을 바꿔요."}</p>
@@ -7452,7 +7455,7 @@ async function act(a, b){
     case "acct-del-open": S.modal = {type:"acctdel"}; break;
     case "acct-del-yes": {
       if(S.mode !== "supa" || S.demo || !SB) return;
-      if((document.getElementById("acct-conf")?.value || "").trim() !== "탈퇴"){ toast("확인 칸에 ‘탈퇴’라고 적어 주세요."); return }
+      if((document.getElementById("acct-conf")?.value || "").normalize("NFC").trim() !== ACCT_BYE){ toast("확인 칸에 위 문장을 띄어쓰기와 마침표까지 그대로 적어 주세요."); return }
       if(S.modal) S.modal.busy = true; if(b) b.disabled = true; render();
       const fail = msg => { if(S.modal) S.modal.busy = false; render(); toast(msg) };
       const chk = await rpcSafe("teacher_delete_me", {p_dry:true});      // 먼저 탈퇴할 수 있는 계정인지 확인(아직 아무것도 지우지 않는다)

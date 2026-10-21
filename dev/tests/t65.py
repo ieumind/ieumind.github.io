@@ -44,7 +44,7 @@ async def main():
     ok('탈퇴 확인 창', await T.is_visible('#acct-conf') and '되돌릴 수 없어요' in await T.inner_text('.modal'))
     await T.click('[data-a=acct-del-yes]'); await W(T)
     log=await T.evaluate('window.__sbLog'); ok('확인 글자 없이는 지우지 않음', 'deleteMe' not in log and await T.is_visible('#acct-conf'))
-    await T.fill('#acct-conf','탈퇴')
+    await T.fill('#acct-conf','탈퇴'); await T.click('[data-a=acct-del-yes]'); await W(T,300); ok('‘탈퇴’만 적으면 지우지 않음', 'deleteMe' not in await T.evaluate('window.__sbLog')); await T.fill('#acct-conf','안녕히 계세요 여러분. 전 생각이음의 모든 굴레와 속박을 벗어던지고 제 행복을 찾아 떠납니다.')
     async with T.expect_navigation(timeout=8000) if False else asyncio.timeout(8):
       await T.click('[data-a=acct-del-yes]'); await W(T,1500)
     st=await T.evaluate('JSON.parse(localStorage.getItem("__sbstore")||"{}")')
@@ -53,7 +53,7 @@ async def main():
     # 관리자는 탈퇴 불가
     A=await ctx.new_page(); A.on('pageerror',lambda e:errs.append(str(e)))
     await A.goto(U+'?who=teacher'); await A.evaluate('localStorage.clear(); localStorage.setItem("__admin","1")'); await A.reload(); await W(A,800)
-    await A.click('[data-a=tb-acct]:visible'); await A.click('.tb-pop:visible [data-a=acct-del-open]'); await W(A); await A.fill('#acct-conf','탈퇴'); await A.click('[data-a=acct-del-yes]'); await W(A,600)
+    await A.click('[data-a=tb-acct]:visible'); await A.click('.tb-pop:visible [data-a=acct-del-open]'); await W(A); await A.fill('#acct-conf','안녕히 계세요 여러분. 전 생각이음의 모든 굴레와 속박을 벗어던지고 제 행복을 찾아 떠납니다.'); await A.click('[data-a=acct-del-yes]'); await W(A,600)
     tt=await A.evaluate('document.getElementById("toast")?.textContent||""')
     ok('관리자 계정은 막힘', '관리자' in tt and await A.evaluate('localStorage.getItem("__deleted")')!='1', tt)
     # 학생 화면에는 없음
