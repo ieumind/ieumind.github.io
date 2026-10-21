@@ -612,6 +612,10 @@ body.presenting .side,body.presenting .notice{display:none}
   .phases li + li::before{flex-basis:8px;margin:0 2px}
   /* 휴대폰: 카드의 주요 버튼을 화면 아래쪽에 붙여 둔다 */
   .card .foot{position:sticky;bottom:0;z-index:2;background:var(--surface);margin:18px -16px -16px;padding:12px 16px calc(12px + env(safe-area-inset-bottom,0px));border-radius:0 0 12px 12px}
+  /* 학생 코드 입력 화면: ‘시작하기’ 막대를 화면 맨 아래에 고정하고, 그 아래(아이폰 Safari 하단 바 뒤)는 같은 색으로 덮는다 */
+  .card .foot.fixb{position:fixed;left:0;right:0;bottom:0;z-index:29;margin:0;border-radius:0;border-top:1px solid var(--line);box-shadow:0 -4px 16px rgba(0,0,0,.08)}
+  .card .foot.fixb::after{content:"";position:absolute;left:0;right:0;top:100%;height:400px;background:inherit;pointer-events:none}
+  .card:has(> .foot.fixb){margin-bottom:96px}
   .qcard .qt{font-size:18px}
   .lt,.pc-only{display:none!important}
   .abar{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}.abar .sp{display:none}
@@ -2840,7 +2844,7 @@ function nameForm(){
   if(S.mode === "supa") return codeForm();
   return `<div class="card"><div class="q"><label for="f-name">먼저 번호와 이름을 적어 주세요</label><p class="hint">선생님이 누구 글인지 알아볼 수 있게 써 주세요. 예: 2반 14번 김지우</p>
     <input type="text" id="f-name" maxlength="30" autocomplete="off"></div>
-    <div class="foot"><span></span><button class="btn pri" type="button" data-a="setname">시작하기</button></div></div>`;
+    <div class="foot fixb"><span></span><button class="btn pri" type="button" data-a="setname">시작하기</button></div></div>`;
 }
 function closedNote(){ return `<div class="empty">마감된 활동이라 더 쓸 수 없어요. 지금까지 쓴 내용은 ‘나의 생각 흐름’에서 볼 수 있어요.</div>` }
 function readonlyNote(){ return `<div class="empty">보기 전용 계정이라 글을 쓸 수 없어요.</div>` }
@@ -3445,7 +3449,7 @@ function tourPlace(){
   if(!box) return;
   if(S.tour == null || !S.demo || S.preview){ box.innerHTML = ""; return }
   const st = TOUR[S.tour]; let el = st.sel ? [...document.querySelectorAll(st.sel)].find(x => x.offsetParent !== null) : null;
-  if(el && st.fit && el.getBoundingClientRect().height > innerHeight * .7 && el.firstElementChild) el = el.firstElementChild;      // 너무 길면 첫 카드만 비춘다
+  if(el && st.fit && el.getBoundingClientRect().height > innerHeight * .7 && el.firstElementChild) el = el.querySelector(".tcard") || el.firstElementChild;      // 너무 길면 ‘미참여’가 아닌 첫 결과물 카드만 비춘다
   if(el && S.tourScrolled !== S.tour){ S.tourScrolled = S.tour; el.scrollIntoView({block:"center", behavior:"instant"}) }
   const r = el?.getBoundingClientRect(), pad = 6, vw = innerWidth, vh = innerHeight;
   const hole = r ? `<div class="tour-hole" style="left:${r.left - pad}px;top:${r.top - pad}px;width:${r.width + pad*2}px;height:${r.height + pad*2}px"></div>` : `<div class="tour-dim"></div>`;
@@ -4771,7 +4775,7 @@ function teacherCard(r, p, ps, nav){
    ========================================================= */
 /* 🔄 새 버전 알림: 배포 때마다 APP_VERSION과 version.json의 v를 같은 값으로 올린다.
    GitHub Pages는 화면을 10분쯤 기억하므로, 옛 화면이면 아래쪽에 ‘새로고침’ 띠를 띄우고 주소를 바꿔 새로 받는다 */
-const APP_VERSION = "2026-10-21a";
+const APP_VERSION = "2026-10-21b";
 async function checkVersion(){
   if(!/^https?:$/.test(location.protocol)) return;
   try{
@@ -5093,7 +5097,7 @@ function codeForm(){
       <div class="q"><label for="f-name">이름</label><input type="text" id="f-name" maxlength="20" autocomplete="off" placeholder="예: 김지우"></div>
       <div class="q"><label for="f-code">개인 코드</label><input type="text" id="f-code" maxlength="12" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="예: K7P2QM"></div></div>
     <p class="hint">이 기기가 기억해서 다음부터는 묻지 않아요. 코드를 잃어버렸으면 선생님께 말해 주세요.</p>
-    <div class="foot"><span></span><button class="btn pri" type="button" data-a="setname">시작하기</button></div></div>`;
+    <div class="foot fixb"><span></span><button class="btn pri" type="button" data-a="setname">시작하기</button></div></div>`;
 }
 /* 교사: 학생 명단과 개인 코드 */
 const CODE_ABC = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
