@@ -570,6 +570,27 @@ details.adv > div{padding:2px 20px 16px;display:grid;gap:12px}
 .modal{background:var(--surface);color:var(--fg);border-radius:14px;padding:20px;max-width:520px;width:100%;display:grid;gap:12px;max-height:90vh;overflow:auto;box-shadow:0 20px 50px rgba(0,0,0,.3)}
 .modal h3{font-size:18px}
 .sheet-back{display:none}
+.rp-sheet{border:1px solid var(--line);border-radius:10px;background:#fff;color:#111;padding:10px;overflow:auto;max-height:56vh}
+.rp-g{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr))}
+.rp-s{border:1px dashed #999;padding:10px 12px;min-height:38mm;break-inside:avoid;background:#fff}
+.rp-t{font-size:11px;color:#555}.rp-n{font-size:16px;font-weight:700;margin:6px 0}.rp-c{font-family:var(--f-mono,monospace);font-size:24px;letter-spacing:3px;font-weight:700}.rp-u{font-size:10px;color:#555;word-break:break-all;margin-top:6px}
+@media print{
+  body:has(.rp-sheet) > *:not(#modal){display:none!important}
+  body:has(.rp-sheet) #modal .modal-bg{position:static;display:block;padding:0;background:none;overflow:visible}
+  body:has(.rp-sheet) #modal .modal{max-width:none;max-height:none;overflow:visible;box-shadow:none;padding:0;background:none;display:block}
+  body:has(.rp-sheet) #modal .modal > :not(.rp-sheet){display:none!important}
+  body:has(.rp-sheet) .rp-sheet{max-height:none;overflow:visible;border:0;padding:0}
+  body:has(.rp-sheet) .rp-g{grid-template-columns:repeat(3,1fr)}
+  @page{margin:12mm}
+}
+.yt{display:block;margin-top:8px;max-width:420px}
+.yt-play{position:relative;display:block;width:100%;aspect-ratio:16/9;padding:0;border:0;border-radius:12px;overflow:hidden;background:#000;cursor:pointer}
+.yt-play img{width:100%;height:100%;object-fit:cover;display:block;opacity:.92}
+.yt-btn{position:absolute;left:50%;top:50%;width:64px;height:44px;margin:-22px 0 0 -32px;border-radius:12px;background:rgba(220,30,30,.92)}
+.yt-btn::after{content:"";position:absolute;left:25px;top:12px;border-style:solid;border-width:10px 0 10px 16px;border-color:transparent transparent transparent #fff}
+.yt-play:hover .yt-btn,.yt-play:focus-visible .yt-btn{background:#e00}
+.ytf{position:relative;aspect-ratio:16/9;background:#000;border-radius:10px;overflow:hidden}
+.ytf iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
 .hello{display:grid;gap:12px;justify-items:center;text-align:center;padding:8px 0 0}
 .hello .hello-ic{width:64px;height:64px;border-radius:50%;display:grid;place-items:center;background:var(--accent-soft,#e3efed);color:var(--accent,#2F7F7A)}
 .hello .hello-ic svg{width:32px;height:32px}
@@ -2017,8 +2038,16 @@ function ic(name, size = "md", label = ""){
   return `<svg class="ti ti-${TI_PX[size] ? size : "md"}" width="${px}" height="${px}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" ${label ? `role="img" aria-label="${esc(label)}"` : `aria-hidden="true" focusable="false"`}>${d}</svg>`;
 }
 /* 글 속 인터넷 주소(http·https)를 누를 수 있는 링크로 (먼저 esc 한 뒤에 쓴다) */
-const lnk = t => rtHas(t) ? esc(t) : esc(t).replace(/https?:\/\/[^\s<]+/g, u => { const m = u.match(/[.,)\]!?。]+$/), url = m ? u.slice(0, -m[0].length) : u;
-  return `<a href="${url}" target="_blank" rel="noopener noreferrer" class="autolink">${url}</a>${m ? m[0] : ""}` });
+/* 유튜브 주소가 들어 있으면 글 아래에 영상 그림(누르면 재생)을 붙인다. 그림은 유튜브 서버에서 오고, 영상은 누를 때만 불러온다 */
+const YT_RE = /https?:\/\/(?:www\.|m\.|music\.)?(?:youtube\.com\/(?:watch\?[^\s<]*?v=|shorts\/|embed\/|live\/)|youtu\.be\/)([\w-]{11})([^\s<]*)/g;
+const ytStart = q => { const m = /[?&#](?:t|start)=(?:(\d+)h)?(?:(\d+)m)?(\d+)?s?/.exec(q || ""); return m ? (+m[1] || 0) * 3600 + (+m[2] || 0) * 60 + (+m[3] || 0) : 0 };
+function ytCards(text){
+  const seen = new Set(), out = [];
+  String(text || "").replace(YT_RE, (u, id, rest) => { if(!seen.has(id) && seen.size < 3){ seen.add(id); out.push(`<span class="yt"><button type="button" class="yt-play" data-a="yt-play" data-v="${id}" data-s="${ytStart(rest)}" aria-label="유튜브 영상 재생"><img src="https://i.ytimg.com/vi/${id}/hqdefault.jpg" alt="" loading="lazy" referrerpolicy="no-referrer"><span class="yt-btn" aria-hidden="true"></span></button></span>`) } return u });
+  return out.join("");
+}
+const lnk = t => (rtHas(t) ? esc(t) : esc(t).replace(/https?:\/\/[^\s<]+/g, u => { const m = u.match(/[.,)\]!?。]+$/), url = m ? u.slice(0, -m[0].length) : u;
+  return `<a href="${url}" target="_blank" rel="noopener noreferrer" class="autolink">${url}</a>${m ? m[0] : ""}` })) + ytCards(rtHas(t) ? rtPlain(t) : t);
 function hash(s){ let h=2166136261; for(const c of s){ h^=c.codePointAt(0); h=Math.imul(h,16777619) } return (h>>>0).toString(36) }
 function fmt(ts){
   if(!ts) return "";
@@ -2054,7 +2083,7 @@ const isTeacher = () => Auth.teacher && S.role === "teacher";                   
 const TEACHER_ACTS = new Set(["pg-facts","avatar-del","pg-mode","pg-type","pg-gen","pg-copy","pg-apply","msg-kind","sc-iadd","sc-idel","sc-paste","sc-ins","sc-tpl-reset","sc-export","msg-open","msg-tab","msg-all","msg-none","msg-cls","msg-send","msg-del","msg-withdraw","msg-repush","note-share","c-course","tname-open","tname-later","tname-save","q-custom","q-add","q-del","q-move","course-archive","courses-more","courses-arch","port-student","port-open","tmr-start","tmr-add","tmr-pause","tmr-resume","tmr-stop","ctx-img-del","qfb","qfb-close","fb-chip","pick-tool","mem-open","mem-cls","mem-all","mem-none","course-gsplit","ai-setup","ai-key-save","ai-key-del","ai-suggest","ai-pick","tadmin-open","tadmin-block","tadmin-tab","fbadmin-done","notice-add","notice-del","note-filter","note-req","note-req-send","note-req-cancel","nudge-open","nudge-all","nudge-clear","acct-del-open","acct-del-yes","create","edit-room","dup","dup-list","del","del-yes","del-ask","del-room","status","toggle","save-feedback","class-fb","pin","pin-move","pin-clear",
   "present","present-exit","pmode","pnav","pq","pper","pnames","prand","fullscreen","export","export-go","save-tset","tpl-save-open","tpl-save","tpl-cancel","use-tpl","create-save","draft-save","publish-draft","discard-form",
   "preview","preview-form","preview-home","qr","copy-link","save-share","mcourse","course-new","course-edit","course-gadd","course-gdel","course-save","course-del","course-del-yes",
-  "roster-open","roster-add","roster-reissue","roster-del","roster-print","gsel","asg-add-open","asg-add-cancel","asg-add","asg-st","racts","mview","sview","sfilter","sgo","snav","ttab","mfilter","open-student","goal","tpl","st-add","st-del","depth"]);
+  "roster-open","roster-add","roster-reissue","roster-del","roster-print","rprint-back","rprint-go","gsel","asg-add-open","asg-add-cancel","asg-add","asg-st","racts","mview","sview","sfilter","sgo","snav","ttab","mfilter","open-student","goal","tpl","st-add","st-del","depth"]);
 // TODO: 실제 배포 시 교사 인증 및 권한 검증 필요
 //   지금은 화면(S.role)과 저장소 규칙(rooms·tnotes·ttemplates·config는 편집자만 쓰기)으로 나눠 두었다.
 //   학생 응답(posts·replies)은 참여자 누구나 쓸 수 있으므로, 실제 서비스에서는 서버에서 작성자·교사 권한을 확인해야 한다.
@@ -4780,7 +4809,7 @@ function teacherCard(r, p, ps, nav){
    ========================================================= */
 /* 🔄 새 버전 알림: 배포 때마다 APP_VERSION과 version.json의 v를 같은 값으로 올린다.
    GitHub Pages는 화면을 10분쯤 기억하므로, 옛 화면이면 아래쪽에 ‘새로고침’ 띠를 띄우고 주소를 바꿔 새로 받는다 */
-const APP_VERSION = "2026-10-21d";
+const APP_VERSION = "2026-10-25a";
 async function checkVersion(){
   if(!/^https?:$/.test(location.protocol)) return;
   try{
@@ -5172,16 +5201,13 @@ function rosterModalHTML(){
     </tbody></table></div>`}
     <div class="row end"><button class="btn" type="button" data-a="modal-close">닫기</button></div>`;
 }
-function printRoster(){
-  const w = window.open("", "_blank");
-  if(!w){ toast("팝업이 막혀 있어요. 브라우저에서 팝업을 허용해 주세요."); return }
-  const url = shareBase();
-  w.document.write(`<!doctype html><meta charset="utf-8"><title>생각이음 학생 코드</title>
-    <style>body{font-family:system-ui,sans-serif;margin:12mm}.g{display:grid;grid-template-columns:repeat(3,1fr);gap:0}.s{border:1px dashed #999;padding:10px 12px;min-height:38mm;box-sizing:border-box;break-inside:avoid}
-    .t{font-size:11px;color:#555}.n{font-size:16px;font-weight:700;margin:6px 0}.c{font-family:monospace;font-size:24px;letter-spacing:3px;font-weight:700}.u{font-size:10px;color:#555;word-break:break-all;margin-top:6px}</style>
-    <div class="g">${rosterPrintList().map(x => `<div class="s"><div class="t">생각이음 · 개인 코드 (다른 사람에게 보여 주지 마세요)</div><div class="n">${esc(rosterLabel(x))}</div><div class="c">${esc(x.code)}</div><div class="u">${esc(url)}</div></div>`).join("")}</div>
-    <script>setTimeout(()=>print(),300)<\/script>`);
-  w.document.close();
+/* 코드 쪽지 인쇄: 새 창(앱에서는 돌아올 수 없다) 대신 같은 화면에 미리보기를 열고 거기서 인쇄한다 */
+function rprintHTML(){
+  const list = rosterPrintList();
+  return `<h3>${ic("printer")} 코드 쪽지 인쇄</h3>
+    <p class="small muted rp-note">${list.length}명 · 아래 모양 그대로 인쇄돼요. 오려서 나눠 주세요. 휴대폰에서는 ‘인쇄하기’ 뒤 PDF로 저장해도 돼요.</p>
+    <div class="row rp-bar"><button class="btn pri" type="button" data-a="rprint-go">${ic("printer")} 인쇄하기</button></div>
+    <div class="rp-sheet"><div class="rp-g">${list.map(x => `<div class="rp-s"><div class="rp-t">생각이음 · 개인 코드 (다른 사람에게 보여 주지 마세요)</div><div class="rp-n">${esc(rosterLabel(x))}</div><div class="rp-c">${esc(x.code)}</div><div class="rp-u">${esc(shareBase())}</div></div>`).join("")}</div></div>`;
 }
 /* =========================================================
    가상 인물 대화 (AI) — 학생은 자기 Claude 계정의 사용량으로 대화한다(sample 기능).
@@ -6284,7 +6310,8 @@ function confetti(){
 function renderModal(){
   const m = S.modal, el = document.getElementById("modal");
   if(m?.type === "feedback"){ const t = document.getElementById("fb-body"); if(t) m.body = t.value }   // 다시 그려도 쓰던 내용이 남게
-  if(!m){ el.innerHTML = ""; return }
+  if(!m){ el.innerHTML = ""; delete el.dataset.yt; return }
+  if(m.type !== "yt") delete el.dataset.yt;
   let h = "";
   if(m.type === "port"){ h = portStudentHTML(m) }
   else if(m.type === "msg"){ h = msgModalHTML(m) }
@@ -6305,6 +6332,11 @@ function renderModal(){
     <p class="hint">이름만 적어 주세요. 학생의 과목 카드에 ‘${esc(S.sbName || "○○○")} 선생님’처럼 ‘선생님’이 저절로 붙어요. 바꾸면 지금까지 만든 과목·활동에도 함께 바뀌어요. 언제든 인사말 옆 ‘이름 바꾸기’로 다시 바꿀 수 있어요.</p>
     <div class="row end"><button class="btn" type="button" data-a="${m.first ? "tname-later" : "modal-close"}">${m.first ? "나중에" : "취소"}</button><button class="btn pri" type="button" data-a="tname-save">저장</button></div>` }
   else if(m.type === "welcome"){ h = welcomeHTML(m) }
+  else if(m.type === "yt"){
+    if(el.dataset.yt === m.id + ":" + m.start && el.firstChild) return;                  // 다시 그려도 재생 중인 영상은 끊지 않는다
+    el.dataset.yt = m.id + ":" + m.start;
+    h = `<div class="ytf"><iframe src="https://www.youtube-nocookie.com/embed/${m.id}?autoplay=1&rel=0&playsinline=1${m.start ? "&start=" + m.start : ""}" title="유튜브 영상" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe></div>
+      <div class="row" style="justify-content:space-between"><a class="small" href="https://youtu.be/${m.id}${m.start ? "?t=" + m.start : ""}" target="_blank" rel="noopener noreferrer">유튜브에서 열기</a><button class="btn" type="button" data-a="modal-close">닫기</button></div>` }
   else if(m.type === "join"){ h = joinHTML(m) }
   else if(m.type === "gswitch"){ h = `<h3>${ic("user")} 다른 이름으로 시작할까요?</h3>
     <p class="small">이 기기에서 쓰던 이름 <b>${esc(S.name)}</b>을(를) 지우고 처음부터 새로 시작해요.</p>
@@ -6361,6 +6393,8 @@ function renderModal(){
       <div class="row end"><button class="btn" type="button" data-a="modal-close">취소</button><button class="btn pri" type="button" data-a="fb-send">보내기</button></div>`;
   }else if(m.type === "install"){
     h = installHelpHTML(m.os);
+  }else if(m.type === "rprint"){
+    h = rprintHTML();
   }else if(m.type === "roster"){
     h = rosterModalHTML();
   }else if(m.type === "note"){
@@ -6404,9 +6438,9 @@ function renderModal(){
       <input type="text" id="share-url" placeholder="https://claude.ai/…" aria-label="공유 링크">
       <div class="row end"><button class="btn" type="button" data-a="modal-close">취소</button><button class="btn pri" type="button" data-a="save-share">저장</button></div>`;
   }
-  const sheet = ["course", "roster", "msg"].includes(m.type);
+  const sheet = ["course", "roster", "msg", "rprint"].includes(m.type);
   if(m.type === "welcome" && !m.fired){ m.fired = true; setTimeout(confetti, 250) }      // 휴대폰에서는 팝업 대신 따로 한 화면으로 열린다
-  el.innerHTML = `<div class="modal-bg${sheet ? " sheet" : ""}" data-a="modal-bg"><div class="modal${m.type === "note" ? " lb" : m.type === "msg" ? " wide" : ""}" role="dialog" aria-modal="true">${sheet ? `<button type="button" class="sheet-back" data-a="modal-close">${ic("arrow-left")} 돌아가기</button>` : ""}${h}</div></div>`;
+  el.innerHTML = `<div class="modal-bg${sheet ? " sheet" : ""}" data-a="modal-bg"><div class="modal${m.type === "note" ? " lb" : m.type === "msg" || m.type === "yt" ? " wide" : ""}" role="dialog" aria-modal="true">${sheet ? `<button type="button" class="sheet-back" data-a="${m.type === "rprint" ? "rprint-back" : "modal-close"}">${ic("arrow-left")} 돌아가기</button>` : ""}${h}</div></div>`;
   if(m.type === "qr"){
     const link = linkFor(m.kind || "room", m.id, m.g);
     loadQR().then(ok => { const box = document.getElementById("qrbox"); if(!box) return; box.innerHTML = "";
@@ -7497,7 +7531,10 @@ async function act(a, b){
       const r2 = await SB.from("students").delete().eq("id", b.dataset.id); if(r2.error){ toast("빼지 못했어요."); return }
       toast("명단에서 뺐어요. 이 학생이 쓴 글은 그대로 남아요."); await loadRoster(); break;
     }
-    case "roster-print": printRoster(); return;
+    case "roster-print": S.modal = {type:"rprint"}; break;
+    case "rprint-back": S.modal = {type:"roster"}; break;
+    case "rprint-go": window.print(); return;
+    case "yt-play": S.modal = {type:"yt", id:String(b.dataset.v || "").replace(/[^\w-]/g, "").slice(0, 11), start:Math.max(0, parseInt(b.dataset.s, 10) || 0)}; break;
     /* ---- 가상 인물 대화 ---- */
     case "chat-starter": { const el = document.getElementById(`chat:${r.id}-msg`); if(el){ el.value = b.dataset.text; el.dispatchEvent(new Event("input", {bubbles:true})); el.focus() } return }
     case "chat-stop": { CHAT[r.id]?.ctl?.abort(); return }
