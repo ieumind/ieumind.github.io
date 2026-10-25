@@ -492,6 +492,9 @@
 
 ## 4. 미완료 작업 / 앞으로 할 일
 
+**최근 변경 (2026-10-25b): 브라우저 탭 이름**
+- `<title>`을 ‘생각이음 | 생각을 잇다, 생각이 자라다’로. 홈 화면 아이콘 이름은 `apple-mobile-web-app-title`·manifest의 ‘생각이음’ 그대로(짧게 유지).
+
 **최근 변경 (2026-10-25a): 유튜브 영상 그림 · 코드 쪽지 인쇄(같은 화면)**
 - 유튜브: `lnk()`가 글 속 유튜브 주소(watch·youtu.be·shorts·embed·live, 시작 시각 `t=`·`start=`)를 알아보고 글 아래에 영상 그림(`.yt-play`, 최대 3개)을 붙임. 서식 글도 같음(`rtPlain`으로 주소를 찾음). 그림 이미지는 `i.ytimg.com`(유튜브 서버)에서 오므로 **그림이 보이는 순간 유튜브에 접속은 일어남**; 영상 자체(iframe)는 누를 때만 `youtube-nocookie.com`으로 불러옴. 누르면 팝업(`S.modal = {type:"yt"}`)이 열리고, 다시 그려도 재생이 끊기지 않게 `#modal`의 `dataset.yt`로 보호. 학교 망에서 유튜브가 막히면 영상은 안 나옴(링크는 그대로).
 - 코드 인쇄(`roster-print`): `window.open` 새 창은 설치한 앱(PWA)·휴대폰에서 돌아올 수 없었음 → 같은 화면의 미리보기(`rprint` 모달, 휴대폰은 전체 화면 + 돌아가기)에서 `window.print()`. 인쇄할 때는 CSS(`@media print`, `body:has(.rp-sheet)`)로 쪽지 외에는 숨김.
