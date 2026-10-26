@@ -492,6 +492,11 @@
 
 ## 4. 미완료 작업 / 앞으로 할 일
 
+**최근 변경 (2026-10-26b): 링크 미리보기(카카오톡 등) 이미지**
+- `<head>`에 `og:*`, `twitter:*`, `description` 메타 태그 추가. 이미지는 `img/og.jpg`(1200×630, 약 50KB; 로고+배너 합성).
+- 이미지 URL은 반드시 절대 주소(https://ieumind.github.io/img/og.jpg). 카카오톡은 미리보기를 캐시하므로 이미 보낸 링크는 developers.kakao.com/tool/clear/og 에서 초기화해야 바뀜.
+- 테스트: `dev/tests/t76.py`.
+
 **최근 변경 (2026-10-26a): 휴대폰 새로고침 버튼 · 단계별 질문 여러 줄 상자**
 - `#side-refresh`(`data-a="app-refresh"`): ≤960px 위쪽 막대에서 알림·계정·☰ 앞에 놓임(로그인 전 화면에서도 보임). 누르면 입력 중인 글을 저장(`flushForms`)하고 `location.reload()`. PC에서는 숨김.
 - 단계별 질문(`stepQHTML`): 한 줄 `input` → 여러 줄 `textarea`(질문 2줄·도움말 1줄에서 시작, 글이 길어지면 `field-sizing:content`로 늘어남, 안 되는 브라우저는 `growTa`). 엔터로 줄을 나누지 않음(한 문단, 붙여 넣은 줄바꿈은 띄어쓰기로).
