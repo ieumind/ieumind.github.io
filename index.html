@@ -848,6 +848,35 @@ a.autolink{color:var(--accent);text-decoration:underline;text-underline-offset:2
 .sctbl.scres tr.obj td{background:var(--warn-soft)}.yn.y{color:var(--accent)}.yn.n{color:var(--muted)}.scres .yn{font-size:14px}
 .scb>summary{cursor:pointer}.scb p{white-space:pre-wrap;max-width:320px}
 .scprev{background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:10px 12px}.scprev p{white-space:pre-wrap;overflow-wrap:anywhere;margin-top:4px}
+.mkind{flex-wrap:wrap;max-width:100%}
+/* 📋 출석부 */
+.modal.xwide{max-width:min(1040px,100%)}
+#att-table,#att-notes,.attbar,.attnotes{min-width:0;max-width:100%}
+.attbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:8px 0}.attbar select,.attbar input{min-height:var(--h-ctl-sm);padding:4px 8px;max-width:100%;width:auto}
+.att-wrap{overflow:auto;max-height:min(58vh,540px);border:1px solid var(--line);border-radius:10px;background:var(--surface);overscroll-behavior:contain}
+.att{border-collapse:separate;border-spacing:0;font-size:13px;min-width:100%}
+.att th,.att td{border-bottom:1px solid var(--line);padding:3px 2px;text-align:center;white-space:nowrap;background:var(--surface)}
+.att .dg{border-left:2px solid var(--line)}
+.att thead th{position:sticky;top:0;z-index:2;background:var(--sunk);font-weight:600}
+.att thead tr:first-child th{height:34px}.att thead tr:nth-child(2) th{top:34px;font-size:11px;color:var(--muted);padding:1px 0}
+.att .att-nm{position:sticky;left:0;z-index:1;text-align:left;min-width:104px;max-width:150px;padding:4px 8px;border-right:1px solid var(--line);overflow:hidden;text-overflow:ellipsis}
+.att thead .att-nm{z-index:4;background:var(--sunk)}
+.att .att-nm b{display:block;font-size:14px}.att .att-nm small{display:block;color:var(--muted);font-size:11.5px;font-weight:400}
+.att-d span{margin-right:6px}.att-hb{border:1px solid var(--line);background:var(--surface);border-radius:6px;font-size:11px;padding:1px 6px;margin-left:2px;cursor:pointer;color:var(--fg);min-height:24px}
+.att-hb .ti{width:12px;height:12px;vertical-align:-2px}
+.ac{width:30px;height:30px;border:1px solid var(--line);border-radius:6px;background:var(--surface);color:var(--fg);font-size:15px;line-height:1;cursor:pointer;padding:0}
+.ac[data-m="-"]{color:var(--muted);background:var(--sunk)}.ac[data-m="○"]{color:var(--accent);font-weight:700}
+.ac[data-m="△"]{background:var(--warn-soft);color:var(--warn);font-weight:700;border-color:var(--warn)}
+.ac[data-m="×"]{background:var(--s2-soft);color:var(--s2);font-weight:700;border-color:var(--s2)}
+.att .att-sum{min-width:96px;font-size:12px;border-left:2px solid var(--line)}.att .att-sum small{display:block;font-weight:400;color:var(--muted)}
+.att .att-sum i{font-style:normal;margin:0 3px;white-space:nowrap}.att .att-sum i.a{color:var(--warn)}.att .att-sum i.x{color:var(--s2)}.att .att-sum i.o{color:var(--accent)}
+.att thead .att-sum{z-index:3}
+.att-h4{margin:14px 0 6px;font-size:15px}.attnotes{display:grid;gap:6px}
+.attnote{display:grid;grid-template-columns:minmax(150px,220px) minmax(0,1fr);gap:8px;align-items:center}.attnote input{width:100%}
+@media (max-width:700px){
+  .ac{width:34px;height:34px}.attnote{grid-template-columns:1fr;gap:2px}.attnote input{min-height:40px}
+  .mkind button{padding:6px 8px;font-size:13px}
+}
 .modal .grow .in{min-width:22px;height:22px;border-radius:99px;display:inline-grid;place-items:center;background:var(--accent-soft);color:var(--accent);font-size:12px;font-weight:700}
 .askbox{display:grid;gap:10px;justify-self:stretch;text-align:left}.askq p{font-weight:600;margin-bottom:6px}
 .seg.yn{display:grid;grid-template-columns:1fr 1fr}.seg.yn button[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink)}.seg.yn button{padding:10px;font-size:16px}
@@ -2014,7 +2043,7 @@ function demoData(){
   S.demoNames = names; S.demoInbox = [];
   S.demoMsgs = [{batch:"dm0", title:"수행평가 보충 안내", body:"지난 시간에 결석해서 ‘학습 나눔 · 3·1 운동’을 아직 못 했어요. 이번 주 금요일까지 올려 주세요.", at:new Date(now - 90 * m).toISOString(),
     rcpt:[{sid:"d:" + names[2], read_at:new Date(now - 70 * m).toISOString()}, {sid:"d:" + names[5], read_at:null}]}];
-  S.loaded = {rooms:1, posts:1, replies:1, courses:1, treplies:1, config:1, tnotes:1, ttemplates:1};
+  S.loaded = {rooms:1, posts:1, replies:1, courses:1, treplies:1, config:1, tnotes:1, ttemplates:1, attend:1};
 }
 
 /* =========================================================
@@ -2033,7 +2062,7 @@ const S = {
   take:null,          // 질문이음: 이어받은 질문 {pid, qid}
   confirmDel:false, pending:false, anim:false,
   seenTeacher:null,
-  tnotes:[], ttemplates:[], config:[],   // 교사 전용 메모·명단 / 내 템플릿 / 앱 설정(학생 공유 링크)
+  tnotes:[], ttemplates:[], config:[], attend:[],   // 교사 전용 메모·명단 / 내 템플릿 / 앱 설정(학생 공유 링크)
   ttab:"overview", mq:"", mf:"all", msub:"", mgrade:"",
   modal:null, preview:null, hashRoom:(location.hash||"").slice(1),
   hsub: lsGet("nonjae.hsub") || "", hlabel: lsGet("nonjae.hlabel") || "posted", hsort: lsGet("nonjae.hsort") || "todo",   // 학생 첫 화면: 과목 칸·정렬
@@ -2101,7 +2130,7 @@ const Auth = (() => { let t = null; return Object.freeze({ set(v){ if(t === null
 Object.defineProperty(S, "canTeach", {get: () => Auth.teacher, set(){} });        // 예전 코드 호환: 읽기만
 const isTeacher = () => Auth.teacher && S.role === "teacher";                       // 교사 권한 + 교사 화면(학생 화면 미리보기 중이면 false)
 /* 교사만 쓰는 동작: 학생 권한으로는 버튼이 없을 뿐 아니라 호출해도 실행되지 않는다 */
-const TEACHER_ACTS = new Set(["pg-facts","avatar-del","pg-mode","pg-type","pg-gen","pg-copy","pg-apply","msg-kind","sc-iadd","sc-idel","sc-paste","sc-ins","sc-tpl-reset","sc-export","msg-open","msg-tab","msg-all","msg-none","msg-cls","msg-send","msg-del","msg-withdraw","msg-repush","note-share","c-course","tname-open","tname-later","tname-save","q-custom","q-add","q-del","q-move","course-archive","courses-more","courses-arch","port-student","port-open","tmr-start","tmr-add","tmr-pause","tmr-resume","tmr-stop","ctx-img-del","qfb","qfb-close","fb-chip","pick-tool","mem-open","mem-cls","mem-all","mem-none","course-gsplit","ai-setup","ai-key-save","ai-key-del","ai-suggest","ai-pick","tadmin-open","tadmin-block","tadmin-tab","fbadmin-done","notice-add","notice-del","note-filter","note-req","note-req-send","note-req-cancel","nudge-open","nudge-all","nudge-clear","acct-del-open","acct-del-yes","create","edit-room","dup","dup-list","del","del-yes","del-ask","del-room","status","toggle","save-feedback","class-fb","pin","pin-move","pin-clear",
+const TEACHER_ACTS = new Set(["att-open","att-close","att-cell","att-fill","att-deldate","att-adddate","att-month-days","att-csv","att-send","pg-facts","avatar-del","pg-mode","pg-type","pg-gen","pg-copy","pg-apply","msg-kind","sc-iadd","sc-idel","sc-paste","sc-ins","sc-tpl-reset","sc-export","msg-open","msg-tab","msg-all","msg-none","msg-cls","msg-send","msg-del","msg-withdraw","msg-repush","note-share","c-course","tname-open","tname-later","tname-save","q-custom","q-add","q-del","q-move","course-archive","courses-more","courses-arch","port-student","port-open","tmr-start","tmr-add","tmr-pause","tmr-resume","tmr-stop","ctx-img-del","qfb","qfb-close","fb-chip","pick-tool","mem-open","mem-cls","mem-all","mem-none","course-gsplit","ai-setup","ai-key-save","ai-key-del","ai-suggest","ai-pick","tadmin-open","tadmin-block","tadmin-tab","fbadmin-done","notice-add","notice-del","note-filter","note-req","note-req-send","note-req-cancel","nudge-open","nudge-all","nudge-clear","acct-del-open","acct-del-yes","create","edit-room","dup","dup-list","del","del-yes","del-ask","del-room","status","toggle","save-feedback","class-fb","pin","pin-move","pin-clear",
   "present","present-exit","pmode","pnav","pq","pper","pnames","prand","fullscreen","export","export-go","save-tset","tpl-save-open","tpl-save","tpl-cancel","use-tpl","create-save","draft-save","publish-draft","discard-form",
   "preview","preview-form","preview-home","qr","copy-link","save-share","mcourse","course-new","course-edit","course-gadd","course-gdel","course-save","course-del","course-del-yes",
   "roster-open","roster-add","roster-reissue","roster-del","roster-print","rprint-back","rprint-go","gsel","asg-add-open","asg-add-cancel","asg-add","asg-st","racts","mview","sview","sfilter","sgo","snav","ttab","mfilter","open-student","goal","tpl","st-add","st-del","depth"]);
@@ -2609,6 +2638,10 @@ function sub(col){
       if(opened) S.db.reload("posts");
     }
     S[name] = rows;
+    if(name === "attend" && (S.modal?.type === "attend" || S.modal?.type === "msg")){      // 출석부를 고치는 동안은 다시 그리지 않는다 (스크롤·입력 중인 칸이 그대로)
+      const first = !S.loaded.attend; S.loaded.attend = true; const a = document.activeElement;
+      if(first || (S.modal.type === "msg" && !(a && /^(TEXTAREA|INPUT|SELECT)$/.test(a.tagName)))) renderModal();
+      return }
     if(name === "replies") checkNewFeedback();
     S.loaded[name] = true;
     if(name === "config" && S._rep) S.replies = mergedReplies();     // fbMigrated가 바뀌면 다시 거른다
@@ -2686,7 +2719,7 @@ async function init(){
     const cw = user ? await user.can("data.write") : null;
     S.canWrite = cw !== false;
     ["rooms","posts","replies","treplies","config","courses"].forEach(sub);
-    if(S.canTeach) ["tnotes","ttemplates"].forEach(sub);
+    if(S.canTeach) ["tnotes","ttemplates","attend"].forEach(sub);
   }else if(SUPABASE_URL && SUPABASE_ANON_KEY && await initSupa()){
     /* Supabase 연결 완료 (GitHub 등) */
   }else{
@@ -4831,7 +4864,7 @@ function teacherCard(r, p, ps, nav){
    ========================================================= */
 /* 🔄 새 버전 알림: 배포 때마다 APP_VERSION과 version.json의 v를 같은 값으로 올린다.
    GitHub Pages는 화면을 10분쯤 기억하므로, 옛 화면이면 아래쪽에 ‘새로고침’ 띠를 띄우고 주소를 바꿔 새로 받는다 */
-const APP_VERSION = "2026-10-26b";
+const APP_VERSION = "2026-10-27a";
 async function checkVersion(){
   if(!/^https?:$/.test(location.protocol)) return;
   try{
@@ -4917,7 +4950,7 @@ async function initSupa(){
     S.canWrite = !!who.teacher || !!S.name;
     S.db = supaDB(SB);
     ["rooms","posts","replies","treplies","config","courses"].forEach(sub);
-    if(Auth.teacher) ["tnotes","ttemplates"].forEach(sub);
+    if(Auth.teacher) ["tnotes","ttemplates","attend"].forEach(sub);
     return true;
   }catch(e){
     S.supaError = (e && e.message) || "연결 실패";
@@ -5497,7 +5530,7 @@ function teacherTop(){
   const quick = qa("create", "plus", "새 활동 만들기", "7가지 활동 중에 골라 만들어요", " pri")
     + qa("course-new", "square-plus", "새 과목", "과목과 수강 학생을 정해요")
     + (S.mode === "supa" ? qa("roster-open", "users", "학생 코드", "명단을 넣고 개인 코드를 만들어요") : "")
-    + (S.mode === "supa" || S.demo ? qa("msg-open", "mail", "개별 안내", "고른 학생에게만 안내를 보내요", "", ' title="고른 학생에게만 안내를 보내고, 누가 읽었는지 확인해요"') : "");
+    + (S.mode === "supa" || S.demo ? qa("msg-open", "mail", "개별 안내", "고른 학생에게만 안내를 보내요", "", ' title="고른 학생에게만 안내를 보내고, 누가 읽었는지 확인해요"') + qa("att-open", "clipboard-list", "출석부", esc(attPendingHint()), "", ' title="수업 날짜마다 출석을 적고, 매달 학생에게 출석 현황을 안내해요"') : "");
   /* 최근 활동: 이미 불러온 활동을 최근 움직임 순으로 5개 (보관 제외) — 새 데이터·통계 없음 */
   const recent = S.mcourse ? [] : [...live].sort((a, b) => lastActivity(b) - lastActivity(a)).slice(0, 5);
   const recentHTML = recent.length ? `<section class="recent" aria-labelledby="recent-h"><div class="recent-h"><h2 id="recent-h" class="sec-h">${ic("clock")} 최근 활동</h2><button class="linkbtn small" type="button" data-a="to-mlist">모든 활동 보기 ${ic("arrow-down", "sm")}</button></div>
@@ -5711,6 +5744,7 @@ function msgRefresh(full){                                      // full: 검색�
       if(h) h.innerHTML = `${ic(n === xs.length ? "check" : "plus", "sm")} ${esc(h.dataset.v)} <small class="muted">${n}/${xs.length}</small>` }) }
   if(ct) ct.textContent = `${f.sel.length}명`;
   if(f.kind === "score"){ scoreRefresh(); const sb = document.querySelector("#modal [data-a=msg-send]"); if(sb && !S.msgBusy) sb.textContent = `점수 안내 보내기${f.sel.length ? ` (${f.sel.length}명)` : ""}` }
+  else if(f.kind === "attend") attRefresh();
 }
 async function loadMsgSent(){
   if(S.demo){ S.msgSent = S.demoMsgs || []; return }
@@ -5802,13 +5836,14 @@ function msgPickerHTML(f){
       <div id="msg-list" class="mem-list msg-list">${msgListHTML(f)}</div>`}</div>`;
 }
 function msgModalHTML(m){
-  const f = MSGF(), sent = S.msgSent || [], tab = m.tab === "sent" ? "sent" : "new", score = f.kind === "score";
+  const f = MSGF(), sent = S.msgSent || [], tab = m.tab === "sent" ? "sent" : "new", score = f.kind === "score", att = f.kind === "attend";
   let h = `<h3>${ic("mail")} 학생에게 개별 안내</h3>
     <div class="seg" role="tablist"><button type="button" data-a="msg-tab" data-v="new" aria-pressed="${tab === "new"}">${ic("pencil", "sm")} 새 안내</button><button type="button" data-a="msg-tab" data-v="sent" aria-pressed="${tab === "sent"}">${ic("mailbox", "sm")} 보낸 안내${sent.length ? ` ${sent.length}` : ""}</button></div>`;
   if(tab === "new"){
-    const push = S.demo ? "" : `<label class="tgl"><input type="checkbox" id="msg-push" ${f.push ? "checked" : ""}><span>${ic("bell", "sm")} 알림을 켠 학생은 휴대폰 알림도 받기${score ? " (알림에는 점수가 보이지 않아요)" : ""}</span></label>`;
-    h += `<div class="seg mkind" role="group" aria-label="안내 종류"><button type="button" data-a="msg-kind" data-v="note" aria-pressed="${!score}">${ic("message-circle", "sm")} 일반 안내</button><button type="button" data-a="msg-kind" data-v="score" aria-pressed="${score}">${ic("report-analytics", "sm")} 수행평가 점수 안내</button></div>`;
-    if(!score){
+    const push = S.demo ? "" : `<label class="tgl"><input type="checkbox" id="msg-push" ${f.push ? "checked" : ""}><span>${ic("bell", "sm")} 알림을 켠 학생은 휴대폰 알림도 받기${score ? " (알림에는 점수가 보이지 않아요)" : att ? " (알림에는 출석 기록이 보이지 않아요)" : ""}</span></label>`;
+    h += `<div class="seg mkind" role="group" aria-label="안내 종류"><button type="button" data-a="msg-kind" data-v="note" aria-pressed="${!score && !att}">${ic("message-circle", "sm")} 일반 안내</button><button type="button" data-a="msg-kind" data-v="score" aria-pressed="${score}">${ic("report-analytics", "sm")} 수행평가 점수 안내</button><button type="button" data-a="msg-kind" data-v="attend" aria-pressed="${att}">${ic("clipboard-list", "sm")} 출석 현황 안내</button></div>`;
+    if(att){ h += attMsgHTML(f) }
+    else if(!score){
       h += `<p class="small muted">고른 학생에게만 보여요. 학생이 다음에 생각이음을 열면 <b>화면 가운데에 크게</b> 뜨고, ‘확인했어요’를 누르면 <b>읽음</b>으로 표시돼요.</p>
       ${msgPickerHTML(f)}
       <div class="q"><label for="msg-title">제목 <span class="opt">(선택)</span></label><input type="text" id="msg-title" maxlength="60" value="${esc(f.title)}" placeholder="예: 수행평가 보충 안내"></div>
@@ -5830,7 +5865,7 @@ function msgModalHTML(m){
       <div class="q"><label>학생에게 물을 질문 <span class="opt">예/아니오로 답해요</span></label>
         ${sc.ask.map((q, i) => `<div class="grow"><span class="in">${i + 1}</span><input type="text" data-ask="${i}" maxlength="100" value="${esc(q)}" aria-label="${i + 1}번 질문"></div>`).join("")}</div>`;
     }
-    h += `${push}<div class="row end"><button class="btn" type="button" data-a="modal-close">닫기</button><button class="btn pri" type="button" data-a="msg-send" ${S.msgBusy ? "disabled" : ""}>${S.msgBusy ? "보내는 중…" : score ? `점수 안내 보내기${f.sel.length ? ` (${f.sel.length}명)` : ""}` : "보내기"}</button></div>`;
+    h += `${push}<div class="row end"><button class="btn" type="button" data-a="modal-close">닫기</button><button class="btn pri" type="button" data-a="msg-send" ${S.msgBusy ? "disabled" : ""}>${S.msgBusy ? "보내는 중…" : score ? `점수 안내 보내기${f.sel.length ? ` (${f.sel.length}명)` : ""}` : att ? `출석 현황 보내기${attRows(f).length ? ` (${attRows(f).length}명)` : ""}` : "보내기"}</button></div>`;
   }else{
     h += !sent.length ? `<p class="muted small">${S.msgSent === undefined ? "불러오는 중…" : "아직 보낸 안내가 없어요."}</p>` : `<div class="msent">${sent.map(b => {
       const rc = Array.isArray(b.rcpt) ? b.rcpt : [], rd = rc.filter(x => x.read_at), un = rc.filter(x => !x.read_at), at = Date.parse(b.at) || b.at, isSc = b.kind === "score";
@@ -5850,10 +5885,18 @@ function msgModalHTML(m){
   return h;
 }
 async function msgSend(){
-  const f = MSGF(), score = f.kind === "score";
+  const f = MSGF(), att = f.kind === "attend", score = f.kind === "score" || att;     // 출석 현황도 점수 안내와 같은 길(학생마다 다른 글 + 예/아니오)로 보낸다
   if(!f.sel.length){ toast("받는 학생을 골라 주세요."); return }
   let title, body = "", items = null, ask = null;
-  if(score){
+  if(att){
+    const at = attF(), rows = attRows(f);
+    if(!rows.length){ toast(`${+at.ym.slice(5)}월 출석 기록이 있는 학생을 골라 주세요. 먼저 출석부에 적어 주세요.`); return }
+    if(!(at.intro || "").trim()){ toast("안내 멘트를 적어 주세요."); return }
+    ask = at.ask.map(q => q.trim()).filter(Boolean);
+    if(!ask.length){ toast("질문을 하나 이상 적어 주세요."); return }
+    title = `${+at.ym.slice(5)}월 출석 현황`; items = rows.map(x => ({sid:x.id, body:attBody(f.crs, at.ym, x, at.intro)}));
+    lsSet("nonjae.attintro", at.intro);
+  }else if(score){
     const sc = scoreF(), rows = scoreRows(f), empty = rows.filter(x => sc.items.some((_, i) => !String(sc.v[x.id]?.[i] ?? "").trim()));
     if(empty.length){ toast(`점수가 비어 있는 학생이 있어요: ${empty.slice(0, 3).map(x => x.name).join(", ")}${empty.length > 3 ? ` 외 ${empty.length - 3}명` : ""}`); return }
     if(!(sc.tpl || "").trim()){ toast("안내 멘트를 적어 주세요."); return }
@@ -5869,7 +5912,8 @@ async function msgSend(){
   if(S.demo){
     const at = new Date().toISOString(), batch = "dm" + Date.now().toString(36);
     S.demoMsgs = [{batch, title, body:score ? items[0].body : body, at, kind:score ? "score" : "note", ask, rcpt:(score ? items : f.sel.map(sid => ({sid}))).map(x => ({sid:x.sid || x, read_at:null, body:score ? x.body : null}))}, ...(S.demoMsgs || [])];
-    S.demoInbox = [{id:batch, title, body:score ? scoreBody(scoreF(), {id:items[0].sid, name:"미리보기 학생"}) : body, at, read_at:null, teacher:"체험", kind:score ? "score" : "note", ask}, ...(S.demoInbox || [])];
+    S.demoInbox = [{id:batch, title, body:att ? items[0].body : score ? scoreBody(scoreF(), {id:items[0].sid, name:"미리보기 학생"}) : body, at, read_at:null, teacher:"체험", kind:score ? "score" : "note", ask}, ...(S.demoInbox || [])];
+    if(att) attMarkSent(items.length);
     reset(); S.msgSent = S.demoMsgs; S.msgTab = S.modal.tab = "sent";
     toast("체험이라 실제로 보내지는 않아요. ‘학생 화면 미리보기’를 열면 학생에게 어떻게 뜨는지 볼 수 있어요."); return;
   }
@@ -5877,12 +5921,184 @@ async function msgSend(){
   const r = score ? await rpcSafe("msg_send_each", {p_title:title, p_items:items, p_ask:ask}) : await rpcSafe("msg_send", {p_students:f.sel, p_title:title, p_body:body}), d = r?.data || {};
   S.msgBusy = false;
   if(!d.ok){ toast(d.reason === "limit" ? "1시간에 30번까지 보낼 수 있어요. 잠시 뒤 다시 보내 주세요." : "보내지 못했어요. 잠시 뒤 다시 해 보세요."); renderModal(); return }
-  const ids = f.sel.slice(), push = f.push, url = f.url || "";
+  const ids = score && items ? items.map(x => x.sid) : f.sel.slice(), push = f.push, url = f.url || "";
+  if(att) attMarkSent(d.n);
   reset(); f.url = ""; S.msgTab = "sent"; if(S.modal?.type === "msg") S.modal.tab = "sent";
   loadMsgSent(); renderModal();
-  const pd = push ? await notifyStudents(score ? {title:title, body:"수행평가 점수 안내가 왔어요. 생각이음에서 확인하고 답해 주세요.", url:"", tag:"msg-" + d.batch, students:ids}
+  const pd = push ? await notifyStudents(score ? {title:title, body:att ? "출석 현황 안내가 왔어요. 생각이음에서 확인하고 답해 주세요." : "수행평가 점수 안내가 왔어요. 생각이음에서 확인하고 답해 주세요.", url:"", tag:"msg-" + d.batch, students:ids}
     : {title:title || "선생님 안내", body:body.slice(0, 120), url, tag:"msg-" + d.batch, students:ids}) : null;
-  toast(`학생 ${d.n}명에게 ${score ? "점수 안내를" : "안내를"} 보냈어요.` + (push ? pushNote(pd) : ""));
+  toast(`학생 ${d.n}명에게 ${att ? "출석 현황을" : score ? "점수 안내를" : "안내를"} 보냈어요.` + (push ? pushNote(pd) : ""));
+}
+/* 📋 출석부: 수업 날짜마다 교시별로 ○(출석) △(인정) ×(결석)을 적고, 매달 학생마다 출석 현황을 개별 안내로 보낸다.
+   저장: 교사만 읽는 attend 모음 · 문서 하나 = 과목 + 달 (id: 과목id_YYYY-MM) · 학생은 읽을 수 없고, 안내로 보낸 글만 본다
+   문서 모양: {courseId, ym, per(하루 교시 수), dates:["2026-10-12"], marks:{학생id:{날짜:"○○△"}}, notes:{학생id:{날짜:"사유"}}, sent:{at, n}} */
+const ATT_NAME = {"○":"출석", "△":"인정", "×":"결석"};
+const ATT_NEXT = {"-":"○", "○":"△", "△":"×", "×":"-"};
+const ATT_ASK = ["이번 달 출석 현황을 확인하셨습니까?", "출결 기록에 이의를 제기합니다."];
+const ATT_INTRO = "안녕하세요. 온라인 공동교육과정 담당 교사입니다. {학생명} 학생의 {월}월 출석 현황입니다.";
+const ATT_WD = [[1, "월"], [2, "화"], [3, "수"], [4, "목"], [5, "금"], [6, "토"], [0, "일"]];
+const attP2 = n => String(n).padStart(2, "0");
+const attYmNow = () => { const d = new Date(); return `${d.getFullYear()}-${attP2(d.getMonth() + 1)}` };
+const attMD = ds => { const [y, m, d] = String(ds).split("-").map(Number); return `${m}/${d}(${"일월화수목금토"[new Date(y, m - 1, d).getDay()]})` };
+const attId = (cid, ym) => (cid || "all") + "_" + ym;
+const attBlank = (cid, ym) => ({courseId:cid || "", ym, per:3, dates:[], marks:{}, notes:{}});
+const attCells = (s, per) => String(s || "").slice(0, per).padEnd(per, "-");           // 교시 수에 맞춘 하루치 칸
+const attS = () => (S.att = S.att || {});
+function attGet(cid, ym){ const id = attId(cid, ym); return (S.attDraft || {})[id] || S.attend.find(x => x.id === id) || attBlank(cid, ym) }
+function attEdit(cid, ym){                                                              // 고치는 사본 (저장이 끝날 때까지 화면은 이 사본을 본다)
+  const id = attId(cid, ym); S.attDraft = S.attDraft || {};
+  if(!S.attDraft[id]){ const cur = S.attend.find(x => x.id === id), {id:_, ...rest} = cur || {}; S.attDraft[id] = JSON.parse(JSON.stringify(cur ? rest : attBlank(cid, ym))) }
+  const d = S.attDraft[id]; d.per = d.per || 3; d.dates = d.dates || []; d.marks = d.marks || {}; d.notes = d.notes || {}; return d;
+}
+function attRoster(cid){                                                                // 과목의 수강 학생 (정하지 않은 과목은 모두) · 학교, 학번 순
+  const c = cid ? courseOf(cid) : null, mem = c && Array.isArray(c.members) ? new Set(c.members) : null;
+  return msgRoster().filter(x => !mem || mem.has(x.id)).sort((a, b) => koCmp(a.school || "", b.school || "") || String(a.number).localeCompare(String(b.number), "ko", {numeric:true}) || koCmp(a.name, b.name));
+}
+const attHas = (d, sid) => (d.dates || []).some(dt => /[○△×]/.test(d.marks?.[sid]?.[dt] || ""));
+function attCount(d, sid){ let o = 0, a = 0, x = 0; (d.dates || []).forEach(dt => [...attCells(d.marks?.[sid]?.[dt], d.per || 3)].forEach(c => { if(c === "○") o++; else if(c === "△") a++; else if(c === "×") x++ })); return {o, a, x} }
+const attPeriods = s => [...s].map((c, i) => c === "△" ? i + 1 : 0).filter(Boolean);
+function attBody(cid, ym, x, intro){                                                     // 학생 한 명에게 갈 안내 글
+  const d = attGet(cid, ym), per = d.per || 3, m = +ym.slice(5), n = attCount(d, x.id), lines = [], notes = [];
+  [...(d.dates || [])].sort().forEach(dt => {
+    const s = attCells(d.marks?.[x.id]?.[dt], per); if(/^-+$/.test(s)) return;
+    lines.push(`${attMD(dt)}  ${s.replace(/-/g, "·")}${new Set(s).size === 1 ? " " + ATT_NAME[s[0]] : ""}`);
+    const nt = String(d.notes?.[x.id]?.[dt] || "").trim(), ps = attPeriods(s);
+    if(nt && ps.length) notes.push(`${attMD(dt)} ${ps.join(",")}교시 인정: ${nt}`);
+  });
+  const head = (intro || ATT_INTRO).split("{학생명}").join(x.name || "").split("{월}").join(String(m));
+  return [head, "", "※ ○ 출석 · △ 인정 · × 결석", ...lines, "", `${m}월 합계: 출석 ${n.o}교시 · 인정 ${n.a}교시 · 결석 ${n.x}교시`, ...(notes.length ? ["", "[출결 특이사항]", ...notes] : [])].join("\n");
+}
+/* 저장: 칸을 누를 때마다 바로 보내지 않고 잠깐 모아서 한 번에 */
+const ATT_T = {};
+function attStatPaint(){ const el = document.getElementById("att-state"); if(el) el.textContent = attStatText() }
+const attStatText = () => S.demo ? "체험: 저장 안 됨" : S.attStat === "saving" ? "저장 중…" : S.attStat === "err" ? "저장 못 함" : S.attStat === "saved" ? "저장됨" : "자동 저장";
+function attSaveSoon(cid, ym){ const id = attId(cid, ym); clearTimeout(ATT_T[id]); S.attStat = "saving"; attStatPaint(); ATT_T[id] = setTimeout(() => attSave(cid, ym), 700) }
+async function attSave(cid, ym){
+  const id = attId(cid, ym), d = S.attDraft?.[id]; if(!d) return;
+  const snap = JSON.stringify(d);
+  const ok = await write(db => db.doc("attend/" + id).set(JSON.parse(snap)), () => { S.attend = S.attend.filter(x => x.id !== id).concat({id, ...JSON.parse(snap)}) });
+  if(ok && JSON.stringify(S.attDraft?.[id]) === snap) delete S.attDraft[id];
+  if(!ok) S.attStat = "err"; else if(!S.attDraft?.[id]) S.attStat = "saved";
+  attStatPaint();
+}
+function attMarkSent(n){ const f = MSGF(), ym = attF().ym, d = attEdit(f.crs, ym); d.sent = {at:Date.now(), n}; attSaveSoon(f.crs, ym) }
+function attKeep(){ const w = document.getElementById("att-wrap"); if(!w) return null;
+  return {l:w.scrollLeft, t:w.scrollTop, bg:document.querySelector("#modal .modal-bg")?.scrollTop || 0, md:document.querySelector("#modal .modal")?.scrollTop || 0} }
+function attRestore(k){ if(!k) return; const w = document.getElementById("att-wrap"), bg = document.querySelector("#modal .modal-bg"), md = document.querySelector("#modal .modal");
+  if(w){ w.scrollLeft = k.l; w.scrollTop = k.t } if(bg) bg.scrollTop = k.bg; if(md) md.scrollTop = k.md }
+const attCourses = () => activeCourses().filter(c => Array.isArray(c.members));
+function attInit(opt){
+  const A = attS(), cs = attCourses(); let cid = opt && opt.cid !== undefined ? opt.cid : (A.cid !== undefined ? A.cid : lsGet("nonjae.att.cid"));
+  if(cid === null || cid === undefined) cid = cs[0]?.id || "";
+  A.cid = cs.some(c => c.id === cid) ? cid : ""; A.ym = (opt && opt.ym) || A.ym || attYmNow(); if(A.wd === undefined) A.wd = 1;
+  return A;
+}
+function attOpen(opt){
+  attInit(opt); S.attBack = opt?.back || null; S.attStat = ""; S.attDelDate = null;
+  if(!S.demo && S.roster === undefined && !S.rosterLoading){ S.rosterLoading = true; loadRoster().then(() => { S.rosterLoading = false; if(S.modal?.type === "attend") renderModal() }) }
+  S.modal = {type:"attend"};
+}
+function attDayCells(d, x, dt, per){
+  const s = attCells(d.marks?.[x.id]?.[dt], per);
+  return [...s].map((c, i) => `<td${i === 0 ? ' class="dg"' : ""}><button type="button" class="ac" data-a="att-cell" data-sid="${esc(x.id)}" data-d="${dt}" data-i="${i}" data-m="${c}" aria-label="${esc(x.name)} ${attMD(dt)} ${i + 1}교시 ${ATT_NAME[c] || "비어 있음"}">${c === "-" ? "·" : c}</button></td>`).join("");
+}
+function attSumHTML(d, sid){ const n = attCount(d, sid); return `<i class="o" title="출석">○${n.o}</i><i class="a" title="인정">△${n.a}</i><i class="x" title="결석">×${n.x}</i>` }
+function attTableHTML(d, ros, dates, per){
+  if(!ros.length) return `<p class="muted small" style="padding:10px">${msgRoster().length ? "이 과목에 수강 학생이 없어요." : "아직 학생 명단이 없어요. 먼저 ‘학생 코드’에서 학생을 넣어 주세요."}</p>`;
+  if(!dates.length) return `<p class="muted small" style="padding:10px">먼저 수업 날짜를 넣어 주세요. 위에서 요일을 고르고 ‘이 달 모두 넣기’를 누르면 그 요일 날짜가 한 번에 들어가요.</p>`;
+  return `<div class="att-wrap" id="att-wrap"><table class="att"><thead><tr><th class="att-nm" rowspan="2" scope="col">학생</th>${dates.map(dt =>
+      `<th colspan="${per}" class="att-d dg" scope="colgroup"><span>${attMD(dt)}</span><button type="button" class="att-hb" data-a="att-fill" data-v="${dt}" title="이 날 빈칸을 모두 ○로">빈칸 ○</button><button type="button" class="att-hb" data-a="att-deldate" data-v="${dt}" aria-label="${attMD(dt)} 날짜 지우기" title="이 날짜 지우기">${S.attDelDate === dt ? "지울까요?" : ic("x", "sm")}</button></th>`).join("")}<th class="att-sum" rowspan="2" scope="col">이 달 합계<small>(교시)</small></th></tr>
+    <tr>${dates.map(() => Array.from({length:per}, (_, i) => `<th class="att-p${i === 0 ? " dg" : ""}" scope="col">${i + 1}</th>`).join("")).join("")}</tr></thead>
+    <tbody>${ros.map(x => `<tr data-sid="${esc(x.id)}"><th class="att-nm" scope="row"><b>${esc(x.name)}</b><small>${esc((x.school ? x.school + " " : "") + x.number)}</small></th>${dates.map(dt => attDayCells(d, x, dt, per)).join("")}<td class="att-sum" data-sum>${attSumHTML(d, x.id)}</td></tr>`).join("")}</tbody></table></div>`;
+}
+function attNotesHTML(d, ros, dates){
+  const rows = []; ros.forEach(x => dates.forEach(dt => { const ps = attPeriods(attCells(d.marks?.[x.id]?.[dt], d.per || 3)); if(ps.length) rows.push({x, dt, ps}) }));
+  if(!rows.length) return `<p class="hint">△(인정)을 고른 날은 여기에 사유를 적을 칸이 생겨요. 예) 1차 정기시험 : ○○고등학교-13802(2026.9.15.)</p>`;
+  return `<div class="attnotes">${rows.map(({x, dt, ps}) => `<div class="attnote"><span><b>${esc(x.name)}</b> <small class="muted">${attMD(dt)} ${ps.join(",")}교시</small></span><input type="text" maxlength="120" data-att-note="${esc(x.id)}@${dt}" value="${esc(d.notes?.[x.id]?.[dt] || "")}" placeholder="인정 사유 (공문 번호 등)" aria-label="${esc(x.name)} ${attMD(dt)} 인정 사유"></div>`).join("")}</div>`;
+}
+function attModalHTML(){
+  const A = attS(), d = attGet(A.cid, A.ym), per = d.per || 3, dates = [...(d.dates || [])].sort(), ros = attRoster(A.cid), cs = attCourses();
+  const [y, mo] = A.ym.split("-").map(Number), last = new Date(y, mo, 0).getDate();
+  const wait = !S.demo && (S.roster === undefined || (S.mode === "supa" && !S.loaded.attend));
+  const sent = d.sent ? `<p class="small muted">${ic("check", "sm")} ${fmt(d.sent.at)}에 ${d.sent.n}명에게 이 달 출석 안내를 보냈어요. (고친 뒤 다시 보내도 돼요)</p>` : "";
+  return `<h3>${ic("clipboard-list")} 출석부</h3>
+    <p class="small muted">수업 날짜를 넣고 칸을 누르면 <b>○ 출석 → △ 인정 → × 결석 → 비움</b> 순서로 바뀌어요. 적는 대로 저절로 저장돼요.</p>
+    <div class="attbar">${cs.length ? `<select id="att-crs" aria-label="과목"><option value="">전체 학생</option>${cs.map(c => `<option value="${esc(c.id)}" ${A.cid === c.id ? "selected" : ""}>${esc(c.title)}</option>`).join("")}</select>` : ""}
+      <input type="month" id="att-ym" value="${esc(A.ym)}" aria-label="달">
+      <select id="att-per" aria-label="하루 교시 수">${[1, 2, 3, 4, 5, 6, 7].map(n => `<option value="${n}" ${n === per ? "selected" : ""}>하루 ${n}교시</option>`).join("")}</select>
+      <span class="pill" id="att-state" role="status">${attStatText()}</span></div>
+    <div class="attbar"><span class="small">매주</span><select id="att-wd" aria-label="수업 요일">${ATT_WD.map(([v, l]) => `<option value="${v}" ${A.wd === v ? "selected" : ""}>${l}요일</option>`).join("")}</select>
+      <button class="btn sm" type="button" data-a="att-month-days">${ic("calendar", "sm")} 이 달 모두 넣기</button>
+      <input type="date" id="att-date" min="${A.ym}-01" max="${A.ym}-${attP2(last)}" aria-label="추가할 날짜"><button class="btn sm" type="button" data-a="att-adddate">날짜 추가</button></div>
+    ${wait ? `<p class="muted small" style="padding:10px">불러오는 중…</p>` : `<div id="att-table">${attTableHTML(d, ros, dates, per)}</div>
+    <h4 class="att-h4">출결 특이사항 <small class="muted">인정(△)의 사유를 적어 주세요</small></h4><div id="att-notes">${attNotesHTML(d, ros, dates)}</div>`}
+    ${sent}
+    <div class="row end" style="flex-wrap:wrap"><button class="btn" type="button" data-a="att-close">닫기</button><button class="btn" type="button" data-a="att-csv" ${dates.length && ros.length ? "" : "disabled"}>${ic("download")} 엑셀로 받기</button>
+      <button class="btn pri" type="button" data-a="att-send" ${dates.length && ros.length ? "" : "disabled"}>${ic("mail")} 이 달 출석 현황 안내 보내기</button></div>`;
+}
+function attPaintRow(sid){                                                               // 칸 하나를 눌렀을 때 그 줄만 고친다 (스크롤·초점이 그대로)
+  const A = attS(), d = attGet(A.cid, A.ym), per = d.per || 3, tr = [...document.querySelectorAll("#att-wrap tbody tr")].find(t => t.dataset.sid === sid); if(!tr) return;
+  tr.querySelectorAll(".ac").forEach(bt => { const s = attCells(d.marks?.[sid]?.[bt.dataset.d], per), c = s[+bt.dataset.i];
+    bt.dataset.m = c; bt.textContent = c === "-" ? "·" : c; bt.setAttribute("aria-label", bt.getAttribute("aria-label").replace(/ (출석|인정|결석|비어 있음)$/, " " + (ATT_NAME[c] || "비어 있음"))) });
+  const sm = tr.querySelector("[data-sum]"); if(sm) sm.innerHTML = attSumHTML(d, sid);
+  const nb = document.getElementById("att-notes"); if(nb && !nb.contains(document.activeElement)) nb.innerHTML = attNotesHTML(d, attRoster(A.cid), [...d.dates].sort());
+}
+function attSetPer(n){
+  const A = attS(), d = attEdit(A.cid, A.ym); n = Math.max(1, Math.min(7, n || 3));
+  Object.values(d.marks).forEach(m => Object.keys(m).forEach(dt => { m[dt] = attCells(m[dt], n) })); d.per = n;
+  attSaveSoon(A.cid, A.ym); renderModal();
+}
+function attAddDates(list){
+  const A = attS(), d = attEdit(A.cid, A.ym), have = new Set(d.dates), add = list.filter(x => !have.has(x));
+  if(!add.length){ toast("이미 들어 있는 날짜예요."); return }
+  d.dates = [...d.dates, ...add].sort(); attSaveSoon(A.cid, A.ym); renderModal();
+}
+function attNoteSet(key, v){
+  const A = attS(), sid = key.slice(0, -11), dt = key.slice(-10), d = attEdit(A.cid, A.ym);
+  d.notes[sid] = d.notes[sid] || {}; if(v.trim()) d.notes[sid][dt] = v; else delete d.notes[sid][dt];
+  attSaveSoon(A.cid, A.ym);
+}
+async function attCsv(){
+  const A = attS(), d = attGet(A.cid, A.ym), per = d.per || 3, dates = [...d.dates].sort(), ros = attRoster(A.cid), c = A.cid ? courseOf(A.cid) : null;
+  const rows = [["소속학교", "학번", "이름", ...dates.flatMap(dt => Array.from({length:per}, (_, i) => `${attMD(dt)} ${i + 1}교시`)), "출석", "인정", "결석"]];
+  ros.forEach(x => { const n = attCount(d, x.id); rows.push([x.school || "", x.number || "", x.name || "", ...dates.flatMap(dt => [...attCells(d.marks?.[x.id]?.[dt], per)].map(ch => ch === "-" ? "" : ch)), n.o, n.a, n.x]) });
+  const sp = []; ros.forEach(x => dates.forEach(dt => { const ps = attPeriods(attCells(d.marks?.[x.id]?.[dt], per)), nt = String(d.notes?.[x.id]?.[dt] || "").trim(); if(ps.length && nt) sp.push([x.name, attMD(dt), ps.join(",") + "교시", nt]) }));
+  if(sp.length) rows.push([], ["출결 특이사항"], ["이름", "날짜", "교시", "사유"], ...sp);
+  const ok = await saveFile(`생각이음_출석부_${(c?.title || "전체").replace(/[\\/:*?"<>|]/g, " ").slice(0, 20)}_${A.ym}.csv`, csvOf(rows));
+  if(ok === true) toast("출석부 파일(엑셀에서 열림)을 저장했어요.");
+  else if(ok !== "declined"){ S.modal = {type:"text", title:"출석부 (CSV)", note:"이 화면에서는 파일로 바로 저장할 수 없어요. 아래 내용을 복사해 엑셀에 붙여 넣어 주세요.", text:csvOf(rows).slice(1)}; render() }
+}
+const attPendingHint = () => {                                                           // 지난달 출석 안내를 아직 안 보냈으면 홈 버튼에 알려 준다
+  const now = attYmNow(), p = (S.attend || []).filter(x => x.ym && x.ym < now && !x.sent && Object.keys(x.marks || {}).length).sort((a, b) => a.ym < b.ym ? 1 : -1)[0];
+  return p ? `${+p.ym.slice(5)}월 출석 안내를 아직 안 보냈어요` : "출석을 적고 매달 학생에게 현황을 안내해요";
+};
+/* 개별 안내 ‘출석 현황’ 쪽 */
+function attF(){ const f = MSGF(); if(!f.at) f.at = {ym:attS().ym || attYmNow(), intro:lsGet("nonjae.attintro") || ATT_INTRO, ask:ATT_ASK.slice()}; return f.at }
+function attRows(f){ const at = attF(), d = attGet(f.crs, at.ym), sel = new Set(f.sel); return attRoster(f.crs).filter(x => sel.has(x.id) && attHas(d, x.id)) }
+function attAutoSel(f){ const at = attF(), d = attGet(f.crs, at.ym); f.sel = attRoster(f.crs).filter(x => attHas(d, x.id)).map(x => x.id) }   // 그 달 기록이 있는 학생을 미리 고른다
+function attHint(f){
+  const at = attF(), d = attGet(f.crs, at.ym), n = attRows(f).length, skip = f.sel.length - n, any = attRoster(f.crs).some(x => attHas(d, x.id));
+  if(!any) return `${+at.ym.slice(5)}월 출석 기록이 없어요. ‘출석부에서 입력·확인’을 눌러 먼저 적어 주세요.`;
+  return `${+at.ym.slice(5)}월 기록이 있는 ${n}명에게 보내요.${skip > 0 ? ` 고른 학생 중 기록이 없는 ${skip}명은 빼고 보내요.` : ""}`;
+}
+function attRefresh(){
+  const f = MSGF(); if(f.kind !== "attend") return;
+  const at = attF(), rows = attRows(f), h = document.getElementById("at-hint"), pv = document.getElementById("at-prev"), sb = document.querySelector("#modal [data-a=msg-send]");
+  if(h) h.textContent = attHint(f);
+  if(pv) pv.textContent = rows.length ? attBody(f.crs, at.ym, rows[0], at.intro) : "기록이 있는 학생을 고르면 첫 학생에게 갈 안내가 여기에 보여요.";
+  if(sb && !S.msgBusy) sb.textContent = `출석 현황 보내기${rows.length ? ` (${rows.length}명)` : ""}`;
+}
+function attMsgHTML(f){
+  const at = attF();
+  return `<p class="small muted">학생마다 <b>자기 출석 기록만</b> 담긴 안내가 가요. 출석부에 적은 그 달 기록으로 만들고, 학생은 안내를 본 뒤 아래 질문에 <b>예/아니오</b>로 답해요. 응답은 ‘보낸 안내’에서 엑셀로 받을 수 있어요.</p>
+    ${msgPickerHTML(f)}
+    <div class="q"><label for="at-ym">보낼 달 <span class="req">*</span></label>
+      <div class="row" style="gap:8px;flex-wrap:wrap"><input type="month" id="at-ym" value="${esc(at.ym)}" style="max-width:190px"><button class="btn sm" type="button" data-a="att-open" data-v="msg">${ic("clipboard-list", "sm")} 출석부에서 입력·확인</button></div>
+      <p class="hint" id="at-hint">${esc(attHint(f))}</p></div>
+    <div class="q"><label for="at-intro">안내 멘트 <span class="opt">{학생명}·{월} 자리에 채워져요</span></label><textarea id="at-intro" class="msg-ta" rows="2" maxlength="300">${esc(at.intro)}</textarea></div>
+    <div class="scprev"><div class="small muted">미리보기 (첫 학생)</div><p id="at-prev">${esc(attRows(f)[0] ? attBody(f.crs, at.ym, attRows(f)[0], at.intro) : "기록이 있는 학생을 고르면 첫 학생에게 갈 안내가 여기에 보여요.")}</p></div>
+    <div class="q"><label>학생에게 물을 질문 <span class="opt">예/아니오로 답해요</span></label>
+      ${at.ask.map((q, i) => `<div class="grow"><span class="in">${i + 1}</span><input type="text" data-at-ask="${i}" maxlength="100" value="${esc(q)}" aria-label="${i + 1}번 질문"></div>`).join("")}</div>`;
 }
 /* 학생: 받은 안내 */
 const inboxOf = () => S.demo ? (S.preview ? (S.demoInbox || []) : []) : (S.preview ? [] : (S.inbox || []));
@@ -6337,6 +6553,7 @@ function renderModal(){
   let h = "";
   if(m.type === "port"){ h = portStudentHTML(m) }
   else if(m.type === "msg"){ h = msgModalHTML(m) }
+  else if(m.type === "attend"){ h = attModalHTML() }
   else if(m.type === "inbox"){ h = inboxListHTML() }
   else if(m.type === "inbox-pop"){ h = inboxPopHTML(); if(!h){ S.modal = null; el.innerHTML = ""; return }
     el.innerHTML = `<div class="modal-bg bigbg"><div class="modal bigm" role="alertdialog" aria-modal="true" aria-label="선생님 안내">${h}</div></div>`; el.querySelector(".bm-ok")?.focus(); return }
@@ -6460,9 +6677,10 @@ function renderModal(){
       <input type="text" id="share-url" placeholder="https://claude.ai/…" aria-label="공유 링크">
       <div class="row end"><button class="btn" type="button" data-a="modal-close">취소</button><button class="btn pri" type="button" data-a="save-share">저장</button></div>`;
   }
-  const sheet = ["course", "roster", "msg", "rprint"].includes(m.type);
+  const sheet = ["course", "roster", "msg", "rprint", "attend"].includes(m.type), keep = m.type === "attend" ? attKeep() : null;     // 출석부는 다시 그려도 보던 자리 그대로
   if(m.type === "welcome" && !m.fired){ m.fired = true; setTimeout(confetti, 250) }      // 휴대폰에서는 팝업 대신 따로 한 화면으로 열린다
-  el.innerHTML = `<div class="modal-bg${sheet ? " sheet" : ""}" data-a="modal-bg"><div class="modal${m.type === "note" ? " lb" : m.type === "msg" || m.type === "yt" ? " wide" : ""}" role="dialog" aria-modal="true">${sheet ? `<button type="button" class="sheet-back" data-a="${m.type === "rprint" ? "rprint-back" : "modal-close"}">${ic("arrow-left")} 돌아가기</button>` : ""}${h}</div></div>`;
+  el.innerHTML = `<div class="modal-bg${sheet ? " sheet" : ""}" data-a="modal-bg"><div class="modal${m.type === "note" ? " lb" : m.type === "msg" || m.type === "yt" ? " wide" : m.type === "attend" ? " xwide" : ""}" role="dialog" aria-modal="true">${sheet ? `<button type="button" class="sheet-back" data-a="${m.type === "rprint" ? "rprint-back" : m.type === "attend" ? "att-close" : "modal-close"}">${ic("arrow-left")} 돌아가기</button>` : ""}${h}</div></div>`;
+  attRestore(keep);
   if(m.type === "qr"){
     const link = linkFor(m.kind || "room", m.id, m.g);
     loadQR().then(ok => { const box = document.getElementById("qrbox"); if(!box) return; box.innerHTML = "";
@@ -7372,6 +7590,9 @@ document.addEventListener("input", e => {
   if(el.id === "roster-q"){ S.rosterQ = el.value; const box = el.closest(".modal"); if(box){ const at = el.selectionStart; render(); const n = document.getElementById("roster-q"); if(n){ n.focus(); n.setSelectionRange(at, at) } } return }
   if(el.id === "n-q"){ S.nq = el.value; const at = el.selectionStart; render(); const n = document.getElementById("n-q"); if(n){ n.focus(); n.setSelectionRange(at, at) } return }
   if(el.id === "msg-q"){ MSGF().q = el.value; msgRefresh(true); return }
+  if(el.id === "at-intro"){ attF().intro = el.value; attRefresh(); return }
+  if(el.dataset.atAsk !== undefined){ attF().ask[+el.dataset.atAsk] = el.value; return }
+  if(el.dataset.attNote !== undefined){ attNoteSet(el.dataset.attNote, el.value); return }
   if(el.dataset.sc){ const sc = scoreF(); sc.v[el.dataset.sc] = sc.v[el.dataset.sc] || []; sc.v[el.dataset.sc][+el.dataset.i] = el.value; const pv = document.getElementById("sc-prev"); if(pv) pv.textContent = scorePreview(MSGF()); return }
   if(el.dataset.an !== undefined){ scoreF().items[+el.dataset.an] = el.value; const pv = document.getElementById("sc-prev"); if(pv) pv.textContent = scorePreview(MSGF()); return }
   if(el.dataset.ask !== undefined){ scoreF().ask[+el.dataset.ask] = el.value; return }
@@ -7403,7 +7624,12 @@ document.addEventListener("toggle", e => { const d = e.target; if(d?.dataset?.ke
 document.addEventListener("change", e => {
   const el = e.target;
   if(el.dataset.msgsel){ const f = MSGF(), sel = new Set(f.sel); el.checked ? sel.add(el.dataset.msgsel) : sel.delete(el.dataset.msgsel); f.sel = [...sel]; msgRefresh(); return }
-  if(el.id === "msg-crs"){ MSGF().crs = el.value; msgRefresh(true); return }
+  if(el.id === "msg-crs"){ const f = MSGF(); f.crs = el.value; if(f.kind === "attend") attAutoSel(f); msgRefresh(true); return }
+  if(el.id === "at-ym"){ if(el.value){ const f = MSGF(); attF().ym = el.value; attAutoSel(f); msgRefresh(true) } return }
+  if(el.id === "att-crs"){ const A = attS(); A.cid = el.value; lsSet("nonjae.att.cid", A.cid); S.attDelDate = null; renderModal(); return }
+  if(el.id === "att-ym"){ if(el.value){ attS().ym = el.value; S.attDelDate = null; renderModal() } return }
+  if(el.id === "att-per"){ attSetPer(+el.value); return }
+  if(el.id === "att-wd"){ attS().wd = +el.value; return }
   if(el.id === "msg-push"){ MSGF().push = el.checked; return }
   if(el.dataset.mem && S.form.course){ const f = S.form.course, sel = new Set(f.sel || []); el.checked ? sel.add(el.dataset.mem) : sel.delete(el.dataset.mem); f.sel = [...sel]; memRefresh(); return }
   if(el.dataset.memg && S.form.course){ const f = S.form.course; f.gm = f.gm || {}; if(el.value) f.gm[el.dataset.memg] = el.value; else delete f.gm[el.dataset.memg]; memRefresh(); return }
@@ -8268,7 +8494,28 @@ async function act(a, b){
     }
     case "modal-close": case "modal-bg": S.modal = null; break;
     case "msg-open": msgOpen(b.dataset.v || ""); break;
-    case "msg-kind": MSGF().kind = b.dataset.v === "score" ? "score" : "note"; if(MSGF().kind === "score") scoreF(); break;
+    case "msg-kind": { const f = MSGF(), v = b.dataset.v; f.kind = v === "score" || v === "attend" ? v : "note"; if(f.kind === "score") scoreF(); if(f.kind === "attend"){ attF(); attAutoSel(f) } break }
+    /* ---- 📋 출석부 ---- */
+    case "att-open": attOpen(b.dataset.v === "msg" ? {cid:MSGF().crs || "", ym:attF().ym, back:"msg"} : undefined); break;
+    case "att-close": { const back = S.attBack; S.attBack = null; S.modal = null; if(back === "msg"){ msgOpen(""); const f = MSGF(); f.kind = "attend"; f.crs = attS().cid || ""; attF().ym = attS().ym; attAutoSel(f); S.msgTab = S.modal.tab = "new" } break }
+    case "att-cell": { const A = attS(), d = attEdit(A.cid, A.ym), sid = b.dataset.sid, dt = b.dataset.d, i = +b.dataset.i, c = attCells(d.marks[sid]?.[dt], d.per || 3).split("");
+      c[i] = ATT_NEXT[c[i]] || "○"; (d.marks[sid] = d.marks[sid] || {})[dt] = c.join(""); attPaintRow(sid); attSaveSoon(A.cid, A.ym); return }
+    case "att-fill": { const A = attS(), d = attEdit(A.cid, A.ym), dt = b.dataset.v;
+      attRoster(A.cid).forEach(x => { const c = attCells(d.marks[x.id]?.[dt], d.per || 3).replace(/-/g, "○"); (d.marks[x.id] = d.marks[x.id] || {})[dt] = c });
+      attSaveSoon(A.cid, A.ym); renderModal(); return }
+    case "att-deldate": { const A = attS(), dt = b.dataset.v;
+      if(S.attDelDate !== dt){ S.attDelDate = dt; setTimeout(() => { if(S.attDelDate === dt){ S.attDelDate = null; if(S.modal?.type === "attend") renderModal() } }, 3000); renderModal(); return }
+      const d = attEdit(A.cid, A.ym); d.dates = d.dates.filter(x => x !== dt); Object.values(d.marks).forEach(m => delete m[dt]); Object.values(d.notes).forEach(m => delete m[dt]);
+      S.attDelDate = null; attSaveSoon(A.cid, A.ym); renderModal(); return }
+    case "att-adddate": { const A = attS(), v = document.getElementById("att-date")?.value || "";
+      if(!v){ toast("추가할 날짜를 골라 주세요."); return }
+      if(!v.startsWith(A.ym + "-")){ toast(`${+A.ym.slice(5)}월 날짜만 넣을 수 있어요.`); return }
+      attAddDates([v]); return }
+    case "att-month-days": { const A = attS(), [y, m] = A.ym.split("-").map(Number), n = new Date(y, m, 0).getDate(), list = [];
+      for(let day = 1; day <= n; day++) if(new Date(y, m - 1, day).getDay() === A.wd) list.push(`${A.ym}-${attP2(day)}`);
+      attAddDates(list); return }
+    case "att-csv": await attCsv(); return;
+    case "att-send": { const A = attS(), back = S.attBack; S.attBack = null; S.modal = null; msgOpen(""); const f = MSGF(); f.kind = "attend"; f.crs = A.cid || ""; attF().ym = A.ym; attAutoSel(f); S.msgTab = S.modal.tab = "new"; break }
     case "sc-iadd": { const sc = scoreF(); if(sc.items.length < 8) sc.items.push("수행평가 " + String.fromCharCode(65 + sc.items.length)); break }
     case "sc-idel": { const sc = scoreF(), i = +b.dataset.v; if(sc.items.length > 1){ sc.items.splice(i, 1); Object.values(sc.v).forEach(a => Array.isArray(a) && a.splice(i, 1)) } break }
     case "sc-paste": scorePaste(); return;
