@@ -1,4 +1,4 @@
-# 둘러보기 10·11·12번(새 활동 / 학생 화면 미리보기 / 오류·건의하기): PC·휴대폰 모두 화면의 실제 버튼을 비춘다
+# 둘러보기 10~13번(새 활동 / 학생 화면 미리보기 / 학생 관리 메뉴 / 오류·건의하기): PC·휴대폰 모두 화면의 실제 버튼을 비춘다
 import asyncio, re
 from playwright.async_api import async_playwright
 U='file:///tmp/claude-0/smoke/pdemo.html?demo=1'
@@ -12,7 +12,7 @@ async def main():
     for name,w,h in [('PC',1280,900),('휴대폰',390,780)]:
       c=await b.new_context(viewport={'width':w,'height':h}); await c.route(re.compile(r'https://.*'),lambda r:r.abort()); P=await c.new_page(); P.on('pageerror',lambda e:errs.append(str(e)))
       await P.goto(U); await P.evaluate('localStorage.clear()'); await P.reload(); await P.wait_for_timeout(800)
-      for i,key in [(9,'새 활동'),(10,'학생 화면 미리보기'),(11,'오류·건의하기')]:
+      for i,key in [(9,'새 활동'),(10,'학생 화면 미리보기'),(11,'개별 안내'),(12,'오류·건의하기')]:
         await P.evaluate(f'tourGo({i})'); await P.wait_for_timeout(500)
         r=await P.evaluate('''(()=>{const h=document.querySelector(".tour-hole");if(!h)return null;const a=h.getBoundingClientRect(),c=document.querySelector(".tour-card").getBoundingClientRect();
           const mid=[a.left+a.width/2,a.top+a.height/2];const t=document.elementsFromPoint(mid[0],mid[1]).find(e=>!e.closest("#tour"));

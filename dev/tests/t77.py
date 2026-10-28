@@ -22,8 +22,8 @@ async def main():
       st=(await T.evaluate('JSON.parse(localStorage.getItem("__sbmock"))'))['students']; code={x['name']:x['code'] for x in st}
       # 출석부 열기
       if vw>700:
-        ok(f'{vw} 홈에 출석부 카드', await T.is_visible('.qgrid [data-a=att-open]'))
-        await T.click('.qgrid [data-a=att-open]')
+        ok(f'{vw} 좌측 메뉴에 출석부', await T.is_visible('#side [data-a=att-open]'))
+        await T.click('#side [data-a=att-open]')
       else:
         await T.click('#qbar [data-a=msg-open]'); await W(T); await T.click('[data-a=msg-kind][data-v=attend]'); await W(T)
         ok(f'{vw} 개별 안내에 ‘출석 현황 안내’ 종류', await T.evaluate('MSGF().kind')=='attend')
