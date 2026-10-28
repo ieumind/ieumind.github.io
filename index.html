@@ -864,9 +864,11 @@ a.autolink{color:var(--accent);text-decoration:underline;text-underline-offset:2
 .att .att-nm b{display:block;font-size:14px}.att .att-nm small{display:block;color:var(--muted);font-size:11.5px;font-weight:400}
 .att-d span{margin-right:6px}.att-hb{border:1px solid var(--line);background:var(--surface);border-radius:6px;font-size:11px;padding:1px 6px;margin-left:2px;cursor:pointer;color:var(--fg);min-height:24px}
 .att-hb .ti{width:12px;height:12px;vertical-align:-2px}
+.ad{font-size:13px;border-style:dashed}.ad[data-m="~"]{font-size:10px;letter-spacing:-.5px}.att .adc{padding-left:4px}.atthelp{margin:4px 0}.atthelp summary{cursor:pointer;font-size:13px;color:var(--muted)}
 .ac{width:30px;height:30px;border:1px solid var(--line);border-radius:6px;background:var(--surface);color:var(--fg);font-size:15px;line-height:1;cursor:pointer;padding:0}
 .ac[data-m="-"]{color:var(--muted);background:var(--sunk)}.ac[data-m="○"]{color:var(--accent);font-weight:700}
 .ac[data-m="△"]{background:var(--warn-soft);color:var(--warn);font-weight:700;border-color:var(--warn)}
+.ac[data-m="~"]{background:var(--sunk);color:var(--fg)}
 .ac[data-m="×"]{background:var(--s2-soft);color:var(--s2);font-weight:700;border-color:var(--s2)}
 .att .att-sum{min-width:96px;font-size:12px;border-left:2px solid var(--line)}.att .att-sum small{display:block;font-weight:400;color:var(--muted)}
 .att .att-sum i{font-style:normal;margin:0 3px;white-space:nowrap}.att .att-sum i.a{color:var(--warn)}.att .att-sum i.x{color:var(--s2)}.att .att-sum i.o{color:var(--accent)}
@@ -2130,7 +2132,7 @@ const Auth = (() => { let t = null; return Object.freeze({ set(v){ if(t === null
 Object.defineProperty(S, "canTeach", {get: () => Auth.teacher, set(){} });        // 예전 코드 호환: 읽기만
 const isTeacher = () => Auth.teacher && S.role === "teacher";                       // 교사 권한 + 교사 화면(학생 화면 미리보기 중이면 false)
 /* 교사만 쓰는 동작: 학생 권한으로는 버튼이 없을 뿐 아니라 호출해도 실행되지 않는다 */
-const TEACHER_ACTS = new Set(["att-open","att-close","att-cell","att-fill","att-deldate","att-adddate","att-month-days","att-csv","att-send","pg-facts","avatar-del","pg-mode","pg-type","pg-gen","pg-copy","pg-apply","msg-kind","sc-iadd","sc-idel","sc-paste","sc-ins","sc-tpl-reset","sc-export","msg-open","msg-tab","msg-all","msg-none","msg-cls","msg-send","msg-del","msg-withdraw","msg-repush","note-share","c-course","tname-open","tname-later","tname-save","q-custom","q-add","q-del","q-move","course-archive","courses-more","courses-arch","port-student","port-open","tmr-start","tmr-add","tmr-pause","tmr-resume","tmr-stop","ctx-img-del","qfb","qfb-close","fb-chip","pick-tool","mem-open","mem-cls","mem-all","mem-none","course-gsplit","ai-setup","ai-key-save","ai-key-del","ai-suggest","ai-pick","tadmin-open","tadmin-block","tadmin-tab","fbadmin-done","notice-add","notice-del","note-filter","note-req","note-req-send","note-req-cancel","nudge-open","nudge-all","nudge-clear","acct-del-open","acct-del-yes","create","edit-room","dup","dup-list","del","del-yes","del-ask","del-room","status","toggle","save-feedback","class-fb","pin","pin-move","pin-clear",
+const TEACHER_ACTS = new Set(["att-open","att-close","att-cell","att-day","att-fill","att-deldate","att-adddate","att-month-days","att-csv","att-send","pg-facts","avatar-del","pg-mode","pg-type","pg-gen","pg-copy","pg-apply","msg-kind","sc-iadd","sc-idel","sc-paste","sc-ins","sc-tpl-reset","sc-export","msg-open","msg-tab","msg-all","msg-none","msg-cls","msg-send","msg-del","msg-withdraw","msg-repush","note-share","c-course","tname-open","tname-later","tname-save","q-custom","q-add","q-del","q-move","course-archive","courses-more","courses-arch","port-student","port-open","tmr-start","tmr-add","tmr-pause","tmr-resume","tmr-stop","ctx-img-del","qfb","qfb-close","fb-chip","pick-tool","mem-open","mem-cls","mem-all","mem-none","course-gsplit","ai-setup","ai-key-save","ai-key-del","ai-suggest","ai-pick","tadmin-open","tadmin-block","tadmin-tab","fbadmin-done","notice-add","notice-del","note-filter","note-req","note-req-send","note-req-cancel","nudge-open","nudge-all","nudge-clear","acct-del-open","acct-del-yes","create","edit-room","dup","dup-list","del","del-yes","del-ask","del-room","status","toggle","save-feedback","class-fb","pin","pin-move","pin-clear",
   "present","present-exit","pmode","pnav","pq","pper","pnames","prand","fullscreen","export","export-go","save-tset","tpl-save-open","tpl-save","tpl-cancel","use-tpl","create-save","draft-save","publish-draft","discard-form",
   "preview","preview-form","preview-home","qr","copy-link","save-share","mcourse","course-new","course-edit","course-gadd","course-gdel","course-save","course-del","course-del-yes",
   "roster-open","roster-add","roster-reissue","roster-del","roster-print","rprint-back","rprint-go","gsel","asg-add-open","asg-add-cancel","asg-add","asg-st","racts","mview","sview","sfilter","sgo","snav","ttab","mfilter","open-student","goal","tpl","st-add","st-del","depth"]);
@@ -4864,7 +4866,7 @@ function teacherCard(r, p, ps, nav){
    ========================================================= */
 /* 🔄 새 버전 알림: 배포 때마다 APP_VERSION과 version.json의 v를 같은 값으로 올린다.
    GitHub Pages는 화면을 10분쯤 기억하므로, 옛 화면이면 아래쪽에 ‘새로고침’ 띠를 띄우고 주소를 바꿔 새로 받는다 */
-const APP_VERSION = "2026-10-27a";
+const APP_VERSION = "2026-10-28a";
 async function checkVersion(){
   if(!/^https?:$/.test(location.protocol)) return;
   try{
@@ -5998,18 +6000,22 @@ function attOpen(opt){
   if(!S.demo && S.roster === undefined && !S.rosterLoading){ S.rosterLoading = true; loadRoster().then(() => { S.rosterLoading = false; if(S.modal?.type === "attend") renderModal() }) }
   S.modal = {type:"attend"};
 }
+const attDayMark = s => new Set(s).size === 1 ? s[0] : "~";                               // 하루 칸: 모두 같으면 그 기호, 섞여 있으면 ~
+const attDayShow = m => m === "-" ? "·" : m === "~" ? "섞임" : m;
 function attDayCells(d, x, dt, per){
-  const s = attCells(d.marks?.[x.id]?.[dt], per);
-  return [...s].map((c, i) => `<td${i === 0 ? ' class="dg"' : ""}><button type="button" class="ac" data-a="att-cell" data-sid="${esc(x.id)}" data-d="${dt}" data-i="${i}" data-m="${c}" aria-label="${esc(x.name)} ${attMD(dt)} ${i + 1}교시 ${ATT_NAME[c] || "비어 있음"}">${c === "-" ? "·" : c}</button></td>`).join("");
+  const s = attCells(d.marks?.[x.id]?.[dt], per), dm = attDayMark(s);
+  return [...s].map((c, i) => `<td${i === 0 ? ' class="dg"' : ""}><button type="button" class="ac" tabindex="-1" data-a="att-cell" data-sid="${esc(x.id)}" data-d="${dt}" data-i="${i}" data-m="${c}" aria-label="${esc(x.name)} ${attMD(dt)} ${i + 1}교시 ${ATT_NAME[c] || "비어 있음"}">${c === "-" ? "·" : c}</button></td>`).join("")
+    + `<td class="adc"><button type="button" class="ac ad" tabindex="-1" data-a="att-day" data-sid="${esc(x.id)}" data-d="${dt}" data-m="${dm}" aria-label="${esc(x.name)} ${attMD(dt)} 하루 전체" title="하루 전체를 한 번에 바꿔요">${attDayShow(dm)}</button></td>`;
 }
 function attSumHTML(d, sid){ const n = attCount(d, sid); return `<i class="o" title="출석">○${n.o}</i><i class="a" title="인정">△${n.a}</i><i class="x" title="결석">×${n.x}</i>` }
 function attTableHTML(d, ros, dates, per){
   if(!ros.length) return `<p class="muted small" style="padding:10px">${msgRoster().length ? "이 과목에 수강 학생이 없어요." : "아직 학생 명단이 없어요. 먼저 ‘학생 코드’에서 학생을 넣어 주세요."}</p>`;
   if(!dates.length) return `<p class="muted small" style="padding:10px">먼저 수업 날짜를 넣어 주세요. 위에서 요일을 고르고 ‘이 달 모두 넣기’를 누르면 그 요일 날짜가 한 번에 들어가요.</p>`;
-  return `<div class="att-wrap" id="att-wrap"><table class="att"><thead><tr><th class="att-nm" rowspan="2" scope="col">학생</th>${dates.map(dt =>
-      `<th colspan="${per}" class="att-d dg" scope="colgroup"><span>${attMD(dt)}</span><button type="button" class="att-hb" data-a="att-fill" data-v="${dt}" title="이 날 빈칸을 모두 ○로">빈칸 ○</button><button type="button" class="att-hb" data-a="att-deldate" data-v="${dt}" aria-label="${attMD(dt)} 날짜 지우기" title="이 날짜 지우기">${S.attDelDate === dt ? "지울까요?" : ic("x", "sm")}</button></th>`).join("")}<th class="att-sum" rowspan="2" scope="col">이 달 합계<small>(교시)</small></th></tr>
-    <tr>${dates.map(() => Array.from({length:per}, (_, i) => `<th class="att-p${i === 0 ? " dg" : ""}" scope="col">${i + 1}</th>`).join("")).join("")}</tr></thead>
-    <tbody>${ros.map(x => `<tr data-sid="${esc(x.id)}"><th class="att-nm" scope="row"><b>${esc(x.name)}</b><small>${esc((x.school ? x.school + " " : "") + x.number)}</small></th>${dates.map(dt => attDayCells(d, x, dt, per)).join("")}<td class="att-sum" data-sum>${attSumHTML(d, x.id)}</td></tr>`).join("")}</tbody></table></div>`;
+  const first = (h => h.replace('class="ac" tabindex="-1"', 'class="ac" tabindex="0"'));      // Tab으로 표에 들어올 첫 칸
+  return first(`<div class="att-wrap" id="att-wrap"><table class="att"><thead><tr><th class="att-nm" rowspan="2" scope="col">학생</th>${dates.map(dt =>
+      `<th colspan="${per + 1}" class="att-d dg" scope="colgroup"><span>${attMD(dt)}</span><button type="button" class="att-hb" data-a="att-fill" data-v="${dt}" title="이 날 빈칸을 모두 ○로">빈칸 ○</button><button type="button" class="att-hb" data-a="att-deldate" data-v="${dt}" aria-label="${attMD(dt)} 날짜 지우기" title="이 날짜 지우기">${S.attDelDate === dt ? "지울까요?" : ic("x", "sm")}</button></th>`).join("")}<th class="att-sum" rowspan="2" scope="col">이 달 합계<small>(교시)</small></th></tr>
+    <tr>${dates.map(() => Array.from({length:per}, (_, i) => `<th class="att-p${i === 0 ? " dg" : ""}" scope="col">${i + 1}</th>`).join("") + `<th class="att-p" scope="col">하루</th>`).join("")}</tr></thead>
+    <tbody>${ros.map(x => `<tr data-sid="${esc(x.id)}"><th class="att-nm" scope="row"><b>${esc(x.name)}</b><small>${esc((x.school ? x.school + " " : "") + x.number)}</small></th>${dates.map(dt => attDayCells(d, x, dt, per)).join("")}<td class="att-sum" data-sum>${attSumHTML(d, x.id)}</td></tr>`).join("")}</tbody></table></div>`);
 }
 function attNotesHTML(d, ros, dates){
   const rows = []; ros.forEach(x => dates.forEach(dt => { const ps = attPeriods(attCells(d.marks?.[x.id]?.[dt], d.per || 3)); if(ps.length) rows.push({x, dt, ps}) }));
@@ -6022,7 +6028,8 @@ function attModalHTML(){
   const wait = !S.demo && (S.roster === undefined || (S.mode === "supa" && !S.loaded.attend));
   const sent = d.sent ? `<p class="small muted">${ic("check", "sm")} ${fmt(d.sent.at)}에 ${d.sent.n}명에게 이 달 출석 안내를 보냈어요. (고친 뒤 다시 보내도 돼요)</p>` : "";
   return `<h3>${ic("clipboard-list")} 출석부</h3>
-    <p class="small muted">수업 날짜를 넣고 칸을 누르면 <b>○ 출석 → △ 인정 → × 결석 → 비움</b> 순서로 바뀌어요. 적는 대로 저절로 저장돼요.</p>
+    <p class="small muted">수업 날짜를 넣고 칸을 누르면 <b>○ 출석 → △ 인정 → × 결석 → 비움</b> 순서로 바뀌어요. 적는 대로 저절로 저장돼요. <b>‘하루’ 칸</b>을 누르면 그날 교시가 한꺼번에 바뀌어요.</p>
+    <details class="atthelp"><summary>${ic("help-circle", "sm")} 키보드로 빠르게 입력하기</summary><p class="small">칸을 하나 고른 뒤 <b>방향키</b>로 옮기고, <b>1</b> ○ 출석 · <b>2</b> △ 인정 · <b>3</b> × 결석 · <b>0</b>(또는 Backspace) 비움을 누르세요. <b>하루</b> 칸에서 누르면 그날 전체가 바뀌고 아래 학생으로 내려가요. 교시 칸에서 누르면 오른쪽 교시로 넘어가요. Tab은 표 안으로 한 번만 들어가요.</p></details>
     <div class="attbar">${cs.length ? `<select id="att-crs" aria-label="과목"><option value="">전체 학생</option>${cs.map(c => `<option value="${esc(c.id)}" ${A.cid === c.id ? "selected" : ""}>${esc(c.title)}</option>`).join("")}</select>` : ""}
       <input type="month" id="att-ym" value="${esc(A.ym)}" aria-label="달">
       <select id="att-per" aria-label="하루 교시 수">${[1, 2, 3, 4, 5, 6, 7].map(n => `<option value="${n}" ${n === per ? "selected" : ""}>하루 ${n}교시</option>`).join("")}</select>
@@ -6038,11 +6045,37 @@ function attModalHTML(){
 }
 function attPaintRow(sid){                                                               // 칸 하나를 눌렀을 때 그 줄만 고친다 (스크롤·초점이 그대로)
   const A = attS(), d = attGet(A.cid, A.ym), per = d.per || 3, tr = [...document.querySelectorAll("#att-wrap tbody tr")].find(t => t.dataset.sid === sid); if(!tr) return;
-  tr.querySelectorAll(".ac").forEach(bt => { const s = attCells(d.marks?.[sid]?.[bt.dataset.d], per), c = s[+bt.dataset.i];
+  tr.querySelectorAll(".ac:not(.ad)").forEach(bt => { const s = attCells(d.marks?.[sid]?.[bt.dataset.d], per), c = s[+bt.dataset.i];
     bt.dataset.m = c; bt.textContent = c === "-" ? "·" : c; bt.setAttribute("aria-label", bt.getAttribute("aria-label").replace(/ (출석|인정|결석|비어 있음)$/, " " + (ATT_NAME[c] || "비어 있음"))) });
+  tr.querySelectorAll(".ad").forEach(bt => { const m = attDayMark(attCells(d.marks?.[sid]?.[bt.dataset.d], per)); bt.dataset.m = m; bt.textContent = attDayShow(m) });
   const sm = tr.querySelector("[data-sum]"); if(sm) sm.innerHTML = attSumHTML(d, sid);
   const nb = document.getElementById("att-notes"); if(nb && !nb.contains(document.activeElement)) nb.innerHTML = attNotesHTML(d, attRoster(A.cid), [...d.dates].sort());
 }
+function attSet(sid, dt, i, ch){                                                         // i가 null이면 그날 모든 교시를 ch로
+  const A = attS(), d = attEdit(A.cid, A.ym), c = attCells(d.marks[sid]?.[dt], d.per || 3).split("");
+  if(i === null) c.fill(ch); else c[i] = ch;
+  (d.marks[sid] = d.marks[sid] || {})[dt] = c.join(""); attPaintRow(sid); attSaveSoon(A.cid, A.ym);
+}
+const ATT_KEY = {"1":"○", "2":"△", "3":"×", "0":"-", "Backspace":"-", "Delete":"-"};
+function attGrid(){ return [...document.querySelectorAll("#att-wrap tbody tr")].map(tr => [...tr.querySelectorAll(".ac")]) }
+function attMove(bt, dr, dc){                                                           // 방향키: 같은 줄 옆 칸 · 같은 자리 위아래 줄
+  const g = attGrid(), r = g.findIndex(row => row.includes(bt)); if(r < 0) return null;
+  const c = g[r].indexOf(bt), nr = Math.max(0, Math.min(g.length - 1, r + dr)), nc = Math.max(0, Math.min(g[nr].length - 1, c + dc));
+  const t = g[nr][nc]; if(t) t.focus(); return t;
+}
+document.addEventListener("focusin", e => { const bt = e.target.closest?.("#att-wrap .ac"); if(!bt) return;
+  document.querySelectorAll('#att-wrap .ac[tabindex="0"]').forEach(x => { x.tabIndex = -1 }); bt.tabIndex = 0 });
+document.addEventListener("keydown", e => {
+  const bt = e.target.closest?.("#att-wrap .ac"); if(!bt || e.ctrlKey || e.metaKey || e.altKey) return;
+  const k = e.key, dir = {ArrowLeft:[0, -1], ArrowRight:[0, 1], ArrowUp:[-1, 0], ArrowDown:[1, 0]}[k];
+  if(dir){ e.preventDefault(); attMove(bt, dir[0], dir[1]); return }
+  if(k === "Home" || k === "End"){ e.preventDefault(); const row = attGrid().find(r => r.includes(bt)); (k === "Home" ? row[0] : row[row.length - 1]).focus(); return }
+  const ch = ATT_KEY[k] ?? ATT_KEY[{o:"1", O:"1", a:"2", A:"2", x:"3", X:"3"}[k]]; if(!ch) return;
+  e.preventDefault();
+  const isDay = bt.classList.contains("ad"); attSet(bt.dataset.sid, bt.dataset.d, isDay ? null : +bt.dataset.i, ch);
+  if(isDay) attMove(bt, 1, 0);                                                          // 하루 칸: 입력하면 다음 학생으로 (한 줄씩 쭉)
+  else { const t = attMove(bt, 0, 1); if(t?.classList.contains("ad")) attMove(t, 0, 1) }   // 교시 칸: 다음 교시로 (하루 칸은 건너뜀)
+});
 function attSetPer(n){
   const A = attS(), d = attEdit(A.cid, A.ym); n = Math.max(1, Math.min(7, n || 3));
   Object.values(d.marks).forEach(m => Object.keys(m).forEach(dt => { m[dt] = attCells(m[dt], n) })); d.per = n;
@@ -8498,8 +8531,10 @@ async function act(a, b){
     /* ---- 📋 출석부 ---- */
     case "att-open": attOpen(b.dataset.v === "msg" ? {cid:MSGF().crs || "", ym:attF().ym, back:"msg"} : undefined); break;
     case "att-close": { const back = S.attBack; S.attBack = null; S.modal = null; if(back === "msg"){ msgOpen(""); const f = MSGF(); f.kind = "attend"; f.crs = attS().cid || ""; attF().ym = attS().ym; attAutoSel(f); S.msgTab = S.modal.tab = "new" } break }
-    case "att-cell": { const A = attS(), d = attEdit(A.cid, A.ym), sid = b.dataset.sid, dt = b.dataset.d, i = +b.dataset.i, c = attCells(d.marks[sid]?.[dt], d.per || 3).split("");
-      c[i] = ATT_NEXT[c[i]] || "○"; (d.marks[sid] = d.marks[sid] || {})[dt] = c.join(""); attPaintRow(sid); attSaveSoon(A.cid, A.ym); return }
+    case "att-cell": { const A = attS(), d = attGet(A.cid, A.ym), i = +b.dataset.i, cur = attCells(d.marks?.[b.dataset.sid]?.[b.dataset.d], d.per || 3)[i];
+      attSet(b.dataset.sid, b.dataset.d, i, ATT_NEXT[cur] || "○"); return }
+    case "att-day": { const A = attS(), d = attGet(A.cid, A.ym), m = attDayMark(attCells(d.marks?.[b.dataset.sid]?.[b.dataset.d], d.per || 3));   // 같은 기호면 다음 기호로, 섞여 있으면 ○로
+      attSet(b.dataset.sid, b.dataset.d, null, m === "~" ? "○" : ATT_NEXT[m] || "○"); return }
     case "att-fill": { const A = attS(), d = attEdit(A.cid, A.ym), dt = b.dataset.v;
       attRoster(A.cid).forEach(x => { const c = attCells(d.marks[x.id]?.[dt], d.per || 3).replace(/-/g, "○"); (d.marks[x.id] = d.marks[x.id] || {})[dt] = c });
       attSaveSoon(A.cid, A.ym); renderModal(); return }
