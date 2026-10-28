@@ -381,6 +381,34 @@ input[type=number]{max-width:140px}
 .pcard summary .t{font-family:var(--f-display);font-weight:700;font-size:18px}
 .pcard[open] summary{border-bottom:1px solid var(--line)}
 .pbody{padding:16px 18px;display:grid;gap:14px}
+/* 🗺 내 생각 기록 지도 */
+.mmapbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 12px}.mmapbar select{min-height:var(--h-ctl-sm);padding:4px 10px;max-width:100%;width:auto}.mmap-fs{margin-left:auto}
+.mmap-grid{display:grid;grid-template-columns:minmax(0,1fr);gap:16px}
+@media (min-width:961px){.mmap-grid{grid-template-columns:minmax(0,1fr) 320px;align-items:start}}
+.mmap-scroll{overflow-x:auto;border:1px solid var(--line);border-radius:12px;background:var(--surface)}
+.mmap-stage{position:relative;min-width:600px;aspect-ratio:1.3;min-height:470px}
+.mmap-svg{position:absolute;inset:0;width:100%;height:100%}
+.mmap-e{stroke:var(--line);stroke-width:2;opacity:.65;vector-effect:non-scaling-stroke}.mmap-e.t-moved{stroke:var(--s2)}.mmap-e.t-deep{stroke:var(--s1)}.mmap-e.t-keep{stroke:var(--s3)}.mmap-e.t-wip{stroke:var(--muted)}.mmap-e.sel{opacity:1;stroke-width:3.5}
+.mmap-c{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);display:grid;gap:2px;text-align:center;max-width:32%;padding:14px 24px;border-radius:999px;background:var(--primary);color:var(--primary-ink);box-shadow:0 6px 18px rgba(0,0,0,.16)}
+.mmap-c b{font-size:clamp(15px,1.5vw,19px);line-height:1.3;overflow-wrap:anywhere}.mmap-c span{font-size:12px;opacity:.8}
+.mmap-n{position:absolute;transform:translate(-50%,-50%);width:clamp(140px,21%,186px);display:grid;gap:3px;padding:9px 12px;border-radius:16px;border:3px solid var(--rc1);background:var(--surface);color:var(--fg);font:inherit;text-align:left;cursor:pointer;box-shadow:0 2px 6px rgba(0,0,0,.06)}
+.mmap-n.two{box-shadow:inset 0 0 0 3px var(--surface),inset 0 0 0 5px var(--rc2),0 2px 6px rgba(0,0,0,.06)}
+.mmap-n:hover{background:var(--accent-soft)}
+.mmap-n[aria-pressed="true"]{background:var(--accent-soft);box-shadow:0 0 0 4px var(--accent-soft),0 6px 16px rgba(0,0,0,.16);z-index:2}.mmap-n.two[aria-pressed="true"]{box-shadow:inset 0 0 0 3px var(--accent-soft),inset 0 0 0 5px var(--rc2),0 0 0 4px var(--accent-soft),0 6px 16px rgba(0,0,0,.16)}
+.mn-t{display:flex;gap:6px;align-items:flex-start}.mn-t b{font-size:13.5px;line-height:1.3;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}.mn-ic{flex:none;margin-top:1px}
+.mn-s{display:flex;gap:4px;align-items:center;font-size:12px;color:var(--muted);line-height:1.35;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}.mn-sh{display:inline-flex;gap:1px;align-items:center;flex:none}.mn-sh .ti{width:13px;height:13px}
+.mmap-pg{display:flex;gap:10px;align-items:center;justify-content:center;margin:10px 0}
+.mmap-lg{display:flex;flex-wrap:wrap;gap:6px 14px;align-items:center;padding:10px 2px;font-size:13px}.lg-c{background:var(--primary);color:var(--primary-ink);border-radius:999px;padding:2px 12px;font-size:12px}
+.lg-i{display:inline-flex;align-items:center;gap:4px}.lg-i.t-moved{color:var(--s2)}.lg-i.t-deep{color:var(--s1)}.lg-i.t-keep{color:var(--s3)}.lg-i.t-wip{color:var(--muted)}
+.mmap-hint{display:none}
+.mmap-box{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px;margin-bottom:12px}.mmap-box h2{font-size:15px;display:flex;gap:6px;align-items:center;margin-bottom:8px}.mmap-box details.source{margin-top:0;border-left-width:3px;padding:8px 12px 12px}
+.mmap-ul{list-style:none;margin:0;padding:0;max-height:300px;overflow:auto;display:grid;gap:2px}
+.mmap-li{display:grid;grid-template-columns:20px minmax(0,1fr) auto;gap:8px;align-items:center;width:100%;border:1px solid transparent;border-radius:8px;background:none;padding:8px;cursor:pointer;font:inherit;color:var(--fg);text-align:left}
+.mmap-li:hover{background:var(--sunk)}.mmap-li[aria-current="true"]{background:var(--accent-soft);border-color:var(--accent)}.li-t{font-size:14px;line-height:1.35;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.li-d{font-size:12px;color:var(--muted)}
+.mmap-li.t-moved .li-ic{color:var(--s2)}.mmap-li.t-deep .li-ic{color:var(--s1)}.mmap-li.t-keep .li-ic{color:var(--s3)}.mmap-li.t-wip .li-ic{color:var(--muted)}
+.mmap-detail{margin-top:14px;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:16px 18px;display:grid;gap:12px}.mmap-dt{font-size:19px}.mmap-detail .pbody{padding:0}
+.mmapwrap.fs{position:fixed;inset:0;z-index:95;background:var(--bg);overflow:auto;padding:16px clamp(12px,3vw,32px)}.mmapwrap.fs .mmap-stage{min-height:min(68vh,700px)}
+@media (max-width:700px){.mmap-fs{margin-left:0}.mmap-hint{display:block}.mmap-stage{min-width:720px}}
 .compare{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px}
 .compare > div{background:var(--sunk);border-radius:10px;padding:12px 14px;min-width:0}
 .compare .lbl{font-size:13px;font-weight:600;color:var(--muted)}
@@ -2933,7 +2961,7 @@ function sideOpen(on){
 }
 document.getElementById("side-tog")?.addEventListener("click", () => sideOpen(!document.body.classList.contains("side-open")));
 document.getElementById("side")?.addEventListener("click", e => { if(e.target.closest("[data-a]") && !e.target.closest("#theme")) sideOpen(false) });
-addEventListener("keydown", e => { if(e.key === "Escape" && document.body.classList.contains("side-open")) sideOpen(false); if(e.key === "Escape" && S.pop){ S.pop = null; renderTopbar() } });
+addEventListener("keydown", e => { if(e.key === "Escape" && S.mine?.fs && !S.modal){ S.mine.fs = false; render(); return } if(e.key === "Escape" && document.body.classList.contains("side-open")) sideOpen(false); if(e.key === "Escape" && S.pop){ S.pop = null; renderTopbar() } });
 document.addEventListener("click", e => { if(S.pop && !e.target.closest("#topbar,#topbar-m")){ S.pop = null; renderTopbar() } });
 function distHTML(r, posts){
   if(!(r.stances||[]).length || !posts.length) return "";
@@ -4878,7 +4906,7 @@ function teacherCard(r, p, ps, nav){
    ========================================================= */
 /* 🔄 새 버전 알림: 배포 때마다 APP_VERSION과 version.json의 v를 같은 값으로 올린다.
    GitHub Pages는 화면을 10분쯤 기억하므로, 옛 화면이면 아래쪽에 ‘새로고침’ 띠를 띄우고 주소를 바꿔 새로 받는다 */
-const APP_VERSION = "2026-10-28c";
+const APP_VERSION = "2026-10-28d";
 async function checkVersion(){
   if(!/^https?:$/.test(location.protocol)) return;
   try{
@@ -6901,41 +6929,114 @@ function finalThought(r, p){
   if(p.revisit) return {label:"수업 후의 생각", text:p.revisit};
   return {label:"내가 낸 생각", text: p.body?.claim || firstText(p.body)};
 }
+/* 내 생각 기록: 한 활동의 펼친 내용 (목록 보기·지도 보기가 같이 쓴다) */
+function mineBody(r, p){
+  const reps = repliesOf(p.id), ps = postsOf(r.id), first = firstThought(r, p), fin = finalThought(r, p), ci = changeInfo(r, p);
+  const diff = p.meet?.diffPostId ? ps.find(x => x.id === p.meet.diffPostId) : null;
+  const meetHTML = diff ? `<p class="txt small">“${esc(previewText(r, diff).slice(0,90))}”</p><p class="muted small">${esc(displayName(r, diff.author, ps))}의 생각을 골라 읽었어요</p>`
+    : p.readAt ? `<p class="txt small">우리 반 친구들의 생각을 둘러봤어요.</p>` : `<p class="muted small">아직 친구 생각을 만나기 전이에요.</p>`;
+  const showMeet = !isRelay(r) && stepsOf(r).includes("read");
+  const got = reps.filter(x => x.kind === "rebuttal" || x.kind === "comment"), fb = reps.filter(x => x.kind === "teacher");
+  return `<div class="compare"><div><div class="lbl">① ${first.label}</div>${first.html}</div>${showMeet ? `<div><div class="lbl">② 친구 생각을 만남</div>${meetHTML}</div>` : ""}<div><div class="lbl">${showMeet ? "③ " : ""}${esc(fin.label)}</div><p class="txt">${esc(fin.text)}</p>${ci ? `<p style="margin-top:8px">${changeChip(ci)}</p>` : ""}</div></div>
+        ${ci && ci.k === "keep" ? `<p class="muted small">생각을 유지한 것도 친구 생각과 견주어 다시 생각해 본 결과예요. 바뀌지 않았다고 생각하지 않은 것은 아니에요.</p>` : ""}
+        ${p.change?.biggest ? `<div><div class="eyebrow">그렇게 생각하게 된 이유</div><p class="txt">${esc(p.change.biggest)}</p></div>` : ""}
+        ${p.body?.reason ? `<div><div class="eyebrow">내가 든 이유</div><p class="txt">${p.evidenceType ? `<span class="chip">${esc(p.evidenceType)}</span> ` : ""}${esc(p.body.reason)}</p></div>` : ""}
+        <div><div class="eyebrow">친구들이 남긴 답</div>${got.length ? `<div class="replies">${got.map(x => replyHTML(r, x, ps)).join("")}</div>` : `<p class="muted">없음</p>`}</div>
+        <div><div class="eyebrow">선생님 피드백</div>${fb.length ? `<div class="replies">${fb.map(x => replyHTML(r, x, ps)).join("")}</div>` : `<p class="muted">없음</p>`}</div>
+        <div class="row end"><button class="btn sm" type="button" data-a="open-record" data-id="${esc(r.id)}">나의 생각 흐름 보기 ${ic("arrow-right")}</button></div>`;
+}
+/* 🗺 지도로 보기: 가운데 = 과목, 둘레 = 그 과목에서 내가 쓴 활동(한 화면에 8개). 새로 저장하는 것 없이 있는 기록만 보여 준다 */
+const MMAP_PER = 8;
+const MMAP_TONE = {moved:{c:"s2", ic:"arrows-exchange", l:"입장이 바뀜"}, deep:{c:"s1", ic:"trending-up", l:"생각이 달라지거나 깊어짐"}, keep:{c:"s3", ic:"equal", l:"생각을 유지함"}, wip:{c:"", ic:"pencil", l:"아직 정리 중"}};
+const mmapTone = ci => !ci ? "wip" : ci.k === "moved" ? "moved" : ci.k === "keep" ? "keep" : "deep";
+const mmapS = () => (S.mine = S.mine || {});
+const mineView = () => { const v = mmapS().view || lsGet("nonjae.minev"); return v === "list" || v === "map" ? v : (innerWidth <= 700 ? "list" : "map") };
+function semKey(ts){ const d = new Date(ts || 0), m = d.getMonth() + 1, y = d.getFullYear(); return m <= 2 ? `${y - 1}-2` : m <= 8 ? `${y}-1` : `${y}-2` }   // 학기: 3~8월 1학기, 9~2월 2학기
+function mineItems(){
+  return S.posts.filter(p => isMe(p.author)).map(p => ({p, r:S.rooms.find(x => x.id === p.roomId)})).filter(x => x.r)
+    .sort((a, b) => (b.p.createdAt || 0) - (a.p.createdAt || 0)).map(x => ({...x, ci:changeInfo(x.r, x.p)}));
+}
+function mineGroups(items){
+  const m = new Map();
+  items.forEach(x => { const k = x.r.courseId || ""; if(!m.has(k)) m.set(k, {id:k, title:k ? (courseOf(k)?.title || "과목") : "과목 없는 활동", items:[]}); m.get(k).items.push(x) });
+  return [...m.values()];
+}
+function mineFilter(items){
+  const f = mmapS().f || "all";
+  return items.filter(x => f === "changed" ? (x.ci && x.ci.score >= 2) : f === "kept" ? (x.ci && x.ci.k === "keep") : f === "term" ? semKey(x.p.createdAt) === semKey(Date.now()) : true);
+}
+function mineSeg(){
+  const v = mineView();
+  return `<div class="seg" role="group" aria-label="보기 방식"><button type="button" data-a="mine-view" data-v="map" aria-pressed="${v === "map"}">${ic("topology-star", "sm")} 지도로 보기</button><button type="button" data-a="mine-view" data-v="list" aria-pressed="${v === "list"}">${ic("list", "sm")} 목록으로 보기</button></div>`;
+}
+function mmapNode(x, i, n, sel){
+  const {r, p, ci} = x, tone = mmapTone(ci), t = MMAP_TONE[tone], hasSt = (r.stances || []).length > 0;
+  const a = hasSt ? (p.initial?.stance && stanceIdx(r, p.initial.stance) >= 0 ? p.initial.stance : p.stance) : "", b = hasSt ? (p.change?.nowStance || p.stance) : "";
+  const ia = a ? stanceIdx(r, a) : -1, ib = b ? stanceIdx(r, b) : -1, two = ia >= 0 && ib >= 0;
+  const ang = (n === 1 ? -35 : -90 + 360 * (i + 0.5) / n) * Math.PI / 180, px = 50 + 36 * Math.cos(ang), py = 50 + 34 * Math.sin(ang);
+  const tc = t.c ? `var(--${t.c})` : "var(--muted)", ring = two ? `--rc1:var(--${SC[ia % 4]});--rc2:var(--${SC[ib % 4]})` : `--rc1:${tc};--rc2:${tc}`;
+  const sum = String(finalThought(r, p).text || "").replace(/\s+/g, " ").trim().slice(0, 40);
+  const mx = 50 + (px - 50) * 0.5 + (py - 50) * 0.14, my = 50 + (py - 50) * 0.5 - (px - 50) * 0.14;
+  return {
+    edge:`<path class="mmap-e t-${tone}${sel ? " sel" : ""}" d="M50 50 Q ${mx.toFixed(1)} ${my.toFixed(1)} ${px.toFixed(1)} ${py.toFixed(1)}" fill="none"/>`,
+    node:`<button type="button" class="mmap-n t-${tone}${two ? " two" : ""}" style="left:${px.toFixed(1)}%;top:${py.toFixed(1)}%;${ring}" data-a="mine-pick" data-id="${esc(p.id)}" aria-pressed="${sel}" aria-label="${esc(r.title)} — ${esc(ci ? ci.l : t.l)}">
+      <span class="mn-t"><span class="mn-ic" aria-hidden="true" style="color:${tc}">${ic(ci?.ic || t.ic, "sm")}</span><b>${esc(r.title)}</b></span>
+      <span class="mn-s">${two ? `<span class="mn-sh" aria-hidden="true"><span style="color:var(--${SC[ia % 4]})">${stanceIcon(r, ia)}</span><span>→</span><span style="color:var(--${SC[ib % 4]})">${stanceIcon(r, ib)}</span></span>` : ""}${esc(sum)}</span></button>`
+  };
+}
+function mineMapHTML(all){
+  const M = mmapS(), groups = mineGroups(all);
+  if(!groups.some(g => g.id === M.crs)) M.crs = groups[0].id;
+  const g = groups.find(x => x.id === M.crs), items = mineFilter(g.items), pages = Math.max(1, Math.ceil(items.length / MMAP_PER));
+  if(!items.some(x => x.p.id === M.sel)) M.sel = items[0]?.p.id || null;
+  const si = items.findIndex(x => x.p.id === M.sel);
+  if(M.jump && si >= 0){ M.page = Math.floor(si / MMAP_PER) } M.jump = false;
+  M.page = Math.max(0, Math.min(pages - 1, M.page || 0));
+  const cur = items.find(x => x.p.id === M.sel), pageItems = items.slice(M.page * MMAP_PER, M.page * MMAP_PER + MMAP_PER);
+  const nodes = pageItems.map((x, i) => mmapNode(x, i, pageItems.length, x.p.id === M.sel));
+  const bar = `<div class="mmapbar">${mineSeg()}
+      <label class="sr" for="mine-crs">과목</label><select id="mine-crs">${groups.map(x => `<option value="${esc(x.id)}" ${x.id === M.crs ? "selected" : ""}>${esc(x.title)} (${x.items.length})</option>`).join("")}</select>
+      <label class="sr" for="mine-f">보기</label><select id="mine-f">${[["all", "전체 보기"], ["changed", "생각이 달라진 것만"], ["kept", "생각을 유지한 것만"], ["term", "이번 학기만"]].map(([v, l]) => `<option value="${v}" ${(M.f || "all") === v ? "selected" : ""}>${l}</option>`).join("")}</select>
+      <button class="btn sm mmap-fs" type="button" data-a="mine-fs" aria-pressed="${!!M.fs}">${ic("arrows-left-right", "sm")} ${M.fs ? "전체화면 닫기" : "전체화면"}</button></div>`;
+  const tones = [...new Set(items.map(x => mmapTone(x.ci)))], twoAny = items.some(x => (x.r.stances || []).length && x.p.change);
+  const stage = !items.length ? `<div class="empty">이 조건에 맞는 활동이 없어요. <button class="linkbtn" type="button" data-a="mine-reset">전체 보기로 돌아가기</button></div>`
+    : `<div class="mmap-scroll"><div class="mmap-stage" role="group" aria-label="${esc(g.title)}에서 쓴 활동 지도">
+        <svg class="mmap-svg" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">${nodes.map(n => n.edge).join("")}</svg>
+        <div class="mmap-c"><b>${esc(g.title)}</b><span>활동 ${items.length}${items.length !== g.items.length ? `/${g.items.length}` : ""}개</span></div>${nodes.map(n => n.node).join("")}</div></div>
+      ${pages > 1 ? `<div class="mmap-pg"><button class="btn sm" type="button" data-a="mine-page" data-d="-1" ${M.page === 0 ? "disabled" : ""}>${ic("chevron-left", "sm")} 더 최근</button><span class="small muted">${M.page + 1} / ${pages}쪽 · 한 화면에 ${MMAP_PER}개씩</span><button class="btn sm" type="button" data-a="mine-page" data-d="1" ${M.page >= pages - 1 ? "disabled" : ""}>더 이전 ${ic("chevron-right", "sm")}</button></div>` : ""}
+      <div class="mmap-lg" aria-label="범례"><span class="lg-c">과목</span>${Object.entries(MMAP_TONE).map(([k, t]) => `<span class="lg-i t-${k}">${ic(t.ic, "sm")} ${t.l}</span>`).join("")}${twoAny ? `<span class="small muted">테두리 두 겹: 바깥은 처음 입장, 안쪽은 지금 입장</span>` : ""}</div>
+      <p class="small muted mmap-hint">활동을 누르면 아래에 내용이 나와요. 옆으로 밀어서 볼 수 있어요.</p>`;
+  const side = items.length ? `<aside class="mmap-side"><section class="mmap-box"><h2>${ic("list-details", "sm")} 이 과목의 활동 <span class="muted">${items.length}</span></h2>
+      <ul class="mmap-ul">${items.map(x => { const tone = mmapTone(x.ci), t = MMAP_TONE[tone];
+        return `<li><button type="button" class="mmap-li t-${tone}" data-a="mine-pick" data-id="${esc(x.p.id)}" data-j="1" ${x.p.id === M.sel ? 'aria-current="true"' : ""}><span class="li-ic" aria-hidden="true">${ic(x.ci?.ic || t.ic, "sm")}</span><span class="li-t">${esc(x.r.title)}</span><span class="li-d">${fmtDate(x.p.createdAt)}</span></button></li>` }).join("")}</ul></section>
+      <section class="mmap-box"><h2>${ic("books", "sm")} 관련 자료</h2>${cur ? (srcBox(cur.r, "mm-src") || `<p class="muted small">이 활동에는 선생님이 올린 자료가 없어요.</p>`) : ""}</section></aside>` : "";
+  const detail = cur ? `<section class="mmap-detail" id="mmap-detail" aria-live="polite"><div class="rmeta" style="margin:0"><span class="year">${esc(cur.r.year || "")}</span>${cur.r.subject ? `<span>${esc(cur.r.subject)}</span>` : ""}<span>${fmtDate(cur.p.createdAt)}</span>${submitted(cur.p) ? "" : `<span class="chip">쓰는 중</span>`}${cur.ci ? changeChip(cur.ci) : ""}</div>
+      <h3 class="mmap-dt">${esc(cur.r.title)}</h3><div class="pbody">${mineBody(cur.r, cur.p)}</div></section>` : "";
+  return `<div class="mmapwrap${M.fs ? " fs" : ""}">${bar}<div class="mmap-grid"><div class="mmap-main">${stage}${detail}</div>${side}</div></div>`;
+}
 function viewMine(){
   let h = `<button class="linkbtn back" type="button" data-a="home">${ic("arrow-left", "sm")} 활동 목록</button>
     <div class="home-head"><div><div class="eyebrow">내 생각 기록</div><h1>나의 생각 흐름 모음</h1>
     <p>논제마다 처음 생각과 지금의 생각, 내가 든 이유와 친구·선생님이 남긴 말을 모아 봐요. 학기 말에 내 생각이 어떻게 자랐는지 돌아볼 수 있어요.</p></div></div>`;
   if(!S.name) return h + nameForm();
-  const mine = S.posts.filter(p => isMe(p.author) && S.rooms.some(r=>r.id===p.roomId)).sort((a,b)=>(b.createdAt||0)-(a.createdAt||0));
+  const all = mineItems(), mine = all.map(x => x.p);
   if(!mine.length) return h + `<div class="empty">아직 기록이 없어요. 활동에서 첫 생각을 남겨 보세요.</div>`;
 
   const changed = mine.filter(p => p.change && ["much","some"].includes(p.change.degree)).length;
   const fbAll = S.replies.filter(x => x.kind==="teacher" && mine.some(p=>p.id===x.postId)).length;
-  h += `<p class="muted" style="margin-bottom:14px">참여한 논제 <b class="mono">${mine.length}</b> · 생각이 달라진 논제 <b class="mono">${changed}</b> · 받은 선생님 피드백 <b class="mono">${fbAll}</b></p><div class="list">`;
+  h += `<p class="muted" style="margin-bottom:14px">참여한 논제 <b class="mono">${mine.length}</b> · 생각이 달라진 논제 <b class="mono">${changed}</b> · 받은 선생님 피드백 <b class="mono">${fbAll}</b></p>`;
+  if(mineView() === "map") return h + mineMapHTML(all);
+  h += `<div class="mmapbar">${mineSeg()}</div><div class="list">`;
 
-  for(const p of mine){
-    const r = S.rooms.find(x=>x.id===p.roomId), reps = repliesOf(p.id), ps = postsOf(r.id);
-    const first = firstThought(r, p), fin = finalThought(r, p);
-    const d = p.change ? DEGREES.find(x=>x.k===p.change.degree) : null, ci = changeInfo(r, p);
-    const diff = p.meet?.diffPostId ? ps.find(x => x.id === p.meet.diffPostId) : null;
-    const meetHTML = diff ? `<p class="txt small">“${esc(previewText(r, diff).slice(0,90))}”</p><p class="muted small">${esc(displayName(r, diff.author, ps))}의 생각을 골라 읽었어요</p>`
-      : p.readAt ? `<p class="txt small">우리 반 친구들의 생각을 둘러봤어요.</p>` : `<p class="muted small">아직 친구 생각을 만나기 전이에요.</p>`;
-    const showMeet = !isRelay(r) && stepsOf(r).includes("read");
+  for(const {p, r, ci} of all){
+    const reps = repliesOf(p.id), d = p.change ? DEGREES.find(x=>x.k===p.change.degree) : null;
     const got = reps.filter(x=>x.kind==="rebuttal"||x.kind==="comment"), fb = reps.filter(x=>x.kind==="teacher");
     h += `<details class="pcard"><summary>
         <span class="rmeta" style="margin:0"><span class="year">${esc(r.year||"")}</span>${r.subject?`<span>${esc(r.subject)}</span>`:""}<span>${fmtDate(p.createdAt)}</span>
           ${submitted(p) ? "" : `<span class="chip">쓰는 중</span>`}${ci ? changeChip(ci) : d ? `<span class="chip tpl">${esc(d.l)}</span>` : ""}</span>
         <span class="t">${esc(r.title)}</span>
         <span class="muted small">친구의 답 ${got.length} · 선생님 피드백 ${fb.length} · 눌러서 펼치기</span></summary>
-      <div class="pbody">
-        <div class="compare"><div><div class="lbl">① ${first.label}</div>${first.html}</div>${showMeet ? `<div><div class="lbl">② 친구 생각을 만남</div>${meetHTML}</div>` : ""}<div><div class="lbl">${showMeet ? "③ " : ""}${esc(fin.label)}</div><p class="txt">${esc(fin.text)}</p>${ci ? `<p style="margin-top:8px">${changeChip(ci)}</p>` : ""}</div></div>
-        ${ci && ci.k === "keep" ? `<p class="muted small">생각을 유지한 것도 친구 생각과 견주어 다시 생각해 본 결과예요. 바뀌지 않았다고 생각하지 않은 것은 아니에요.</p>` : ""}
-        ${p.change?.biggest ? `<div><div class="eyebrow">그렇게 생각하게 된 이유</div><p class="txt">${esc(p.change.biggest)}</p></div>` : ""}
-        ${p.body?.reason ? `<div><div class="eyebrow">내가 든 이유</div><p class="txt">${p.evidenceType?`<span class="chip">${esc(p.evidenceType)}</span> `:""}${esc(p.body.reason)}</p></div>` : ""}
-        <div><div class="eyebrow">친구들이 남긴 답</div>${got.length ? `<div class="replies">${got.map(x=>replyHTML(r,x,ps)).join("")}</div>` : `<p class="muted">없음</p>`}</div>
-        <div><div class="eyebrow">선생님 피드백</div>${fb.length ? `<div class="replies">${fb.map(x=>replyHTML(r,x,ps)).join("")}</div>` : `<p class="muted">없음</p>`}</div>
-        <div class="row end"><button class="btn sm" type="button" data-a="open-record" data-id="${esc(r.id)}">나의 생각 흐름 보기 ${ic("arrow-right")}</button></div>
-      </div></details>`;
+      <div class="pbody">${mineBody(r, p)}</div></details>`;
   }
   return h + `</div>`;
 }
@@ -7668,6 +7769,8 @@ document.addEventListener("toggle", e => { const d = e.target; if(d?.dataset?.ke
 document.addEventListener("change", e => {
   const el = e.target;
   if(el.dataset.msgsel){ const f = MSGF(), sel = new Set(f.sel); el.checked ? sel.add(el.dataset.msgsel) : sel.delete(el.dataset.msgsel); f.sel = [...sel]; msgRefresh(); return }
+  if(el.id === "mine-crs"){ const M = mmapS(); M.crs = el.value; M.sel = null; M.page = 0; render(); return }
+  if(el.id === "mine-f"){ const M = mmapS(); M.f = el.value; M.page = 0; M.jump = true; render(); return }
   if(el.id === "msg-crs"){ const f = MSGF(); f.crs = el.value; if(f.kind === "attend") attAutoSel(f); msgRefresh(true); return }
   if(el.id === "at-ym"){ if(el.value){ const f = MSGF(); attF().ym = el.value; attAutoSel(f); msgRefresh(true) } return }
   if(el.id === "att-crs"){ const A = attS(); A.cid = el.value; lsSet("nonjae.att.cid", A.cid); S.attDelDate = null; renderModal(); return }
@@ -8538,6 +8641,12 @@ async function act(a, b){
     }
     case "modal-close": case "modal-bg": S.modal = null; break;
     case "msg-open": msgOpen(b.dataset.v || ""); break;
+    /* ---- 🗺 내 생각 기록 지도 ---- */
+    case "mine-view": { const M = mmapS(); M.view = b.dataset.v === "list" ? "list" : "map"; lsSet("nonjae.minev", M.view); M.fs = false; break }
+    case "mine-pick": { const M = mmapS(); M.sel = b.dataset.id; if(b.dataset.j) M.jump = true; render(); if(innerWidth <= 960) document.getElementById("mmap-detail")?.scrollIntoView({block:"start", behavior:"smooth"}); return }
+    case "mine-page": { const M = mmapS(); M.page = (M.page || 0) + (+b.dataset.d || 0); break }
+    case "mine-fs": { const M = mmapS(); M.fs = !M.fs; break }
+    case "mine-reset": mmapS().f = "all"; break;
     case "msg-kind": { const f = MSGF(), v = b.dataset.v; f.kind = v === "score" || v === "attend" ? v : "note"; if(f.kind === "score") scoreF(); if(f.kind === "attend"){ attF(); attAutoSel(f) } break }
     /* ---- 📋 출석부 ---- */
     case "att-open": attOpen(b.dataset.v === "msg" ? {cid:MSGF().crs || "", ym:attF().ym, back:"msg"} : undefined); break;
