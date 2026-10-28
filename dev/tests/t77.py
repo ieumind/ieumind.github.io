@@ -34,23 +34,23 @@ async def main():
       await T.select_option('#att-wd','1'); await T.click('[data-a=att-month-days]'); await W(T,300)
       ok(f'{vw} 10월 월요일 4개', await T.evaluate('attGet("", "2026-10").dates.join()')=='2026-10-05,2026-10-12,2026-10-19,2026-10-26', await T.evaluate('attGet("", "2026-10").dates.join()'))
       ok(f'{vw} 학교·학번 순서', await T.eval_on_selector_all('.att tbody th b','e=>e.map(x=>x.textContent).join()')=='박하늘,유효정,안소은,김연아', await T.eval_on_selector_all('.att tbody th b','e=>e.map(x=>x.textContent).join()'))
-      ok(f'{vw} 셀 12개씩(3교시×4일)', await T.evaluate('document.querySelectorAll(".att tbody tr:first-child .ac").length')==12)
+      ok(f'{vw} 셀 12개씩(3교시×4일)', await T.evaluate('document.querySelectorAll(".att tbody tr:first-child .ac:not(.ad)").length')==12)
       await T.click('.att-hb[data-a=att-fill][data-v="2026-10-12"]'); await W(T,200)
-      ok(f'{vw} 빈칸 ○', await T.evaluate('document.querySelectorAll(".att tbody .ac[data-d=\\"2026-10-12\\"][data-m=\\"○\\"]").length')==12)
+      ok(f'{vw} 빈칸 ○', await T.evaluate('document.querySelectorAll(".att tbody .ac:not(.ad)[data-d=\\"2026-10-12\\"][data-m=\\"○\\"]").length')==12)
       # 안소은(둘째 줄) 10/12 1·2·3교시 → △
       row='.att tbody tr:has(th b:text-is("안소은"))'
       for i in range(3):
         await T.click(f'{row} .ac[data-d="2026-10-12"][data-i="{i}"]'); await W(T,60)
-      ok(f'{vw} 한 번 누르면 △', await T.eval_on_selector_all(f'{row} .ac[data-d="2026-10-12"]','e=>e.map(x=>x.dataset.m).join("")')=='△△△')
+      ok(f'{vw} 한 번 누르면 △', await T.eval_on_selector_all(f'{row} .ac:not(.ad)[data-d="2026-10-12"]','e=>e.map(x=>x.dataset.m).join("")')=='△△△')
       ok(f'{vw} △ 사유 칸이 생김', await T.evaluate('document.querySelectorAll("#att-notes input").length')==1)
       await T.fill('#att-notes input','1차 정기시험 : 한백고등학교-13992(2026.9.18.)'); await W(T,200)
       # 연아 10/19 3교시 ×, 10/26 모두 ○ 후 2번 눌러 ×
       await T.click('.att-hb[data-a=att-fill][data-v="2026-10-19"]'); await T.click('.att-hb[data-a=att-fill][data-v="2026-10-26"]')
       r3='.att tbody tr:has(th b:text-is("김연아"))'
       for k in range(2): await T.click(f'{r3} .ac[data-d="2026-10-19"][data-i="2"]')
-      ok(f'{vw} 두 번 누르면 ×', await T.eval_on_selector_all(f'{r3} .ac[data-d="2026-10-19"]','e=>e.map(x=>x.dataset.m).join("")')=='○○×')
+      ok(f'{vw} 두 번 누르면 ×', await T.eval_on_selector_all(f'{r3} .ac:not(.ad)[data-d="2026-10-19"]','e=>e.map(x=>x.dataset.m).join("")')=='○○×')
       for k in range(4): await T.click(f'{r3} .ac[data-d="2026-10-26"][data-i="0"]')
-      ok(f'{vw} 네 번 누르면 도로 ○', await T.eval_on_selector_all(f'{r3} .ac[data-d="2026-10-26"]','e=>e.map(x=>x.dataset.m).join("")')=='○○○')
+      ok(f'{vw} 네 번 누르면 도로 ○', await T.eval_on_selector_all(f'{r3} .ac:not(.ad)[data-d="2026-10-26"]','e=>e.map(x=>x.dataset.m).join("")')=='○○○')
       # 3번(연아) 마지막 줄 합계
       ok(f'{vw} 합계 칸', (await T.inner_text(f'{r3} [data-sum]')).replace('\n','')=='○8△0×1', await T.inner_text(f'{r3} [data-sum]'))
       # 날짜 지우기는 두 번 눌러야
