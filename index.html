@@ -124,6 +124,8 @@ p{margin:0}
 .side-menu{flex:1;display:flex;flex-direction:column;gap:var(--sp-4);min-height:0;overflow-y:auto}
 .top-r{display:flex;flex-direction:column;gap:2px}
 .nav-i{display:flex;align-items:center;gap:12px;width:100%;min-height:var(--h-ctl);padding:0 var(--sp-3);border:0;border-radius:var(--r);background:none;color:var(--side-fg);font-size:15px;font-weight:500;text-align:left;cursor:pointer;opacity:.86}
+.nav-grp{margin:14px 12px 4px;font-size:12px;font-weight:600;letter-spacing:.04em;color:var(--side-muted)}
+.nav-dot{display:inline-block;width:8px;height:8px;margin-left:8px;border-radius:50%;background:#F2B24C;vertical-align:middle}
 .nav-i:hover{background:var(--side-hover);opacity:1}
 .nav-i[aria-current="page"]{background:var(--side-active);opacity:1;font-weight:600}
 .nav-i .nav-t{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
@@ -1489,6 +1491,10 @@ input[type=datetime-local]{border-radius:var(--r)}
 /* 주요 기능 바로가기 */
 .qgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:var(--sp-3)}
 .qa{display:grid;grid-template-columns:44px minmax(0,1fr) 16px;align-items:center;gap:14px;min-height:88px;padding:var(--sp-4) var(--sp-5);text-align:left;font:inherit;color:var(--fg);background:var(--surface);border:1px solid var(--line);border-radius:var(--r-lg);cursor:pointer;transition:border-color .12s,background .12s}
+.qgrid.solo{grid-template-columns:1fr}.qgrid.solo .qa{min-height:72px}
+.qhint{margin-top:10px;font-size:13.5px;color:var(--muted);display:flex;flex-wrap:wrap;gap:4px 8px;align-items:center}.qhint .ti{vertical-align:-3px}.qhint .h-m{display:none}
+.qhint-b{border:1px solid var(--warn);background:var(--warn-soft);color:var(--warn);border-radius:999px;padding:2px 10px;font-size:13px;font-weight:600;cursor:pointer}
+@media (max-width:700px){.qhint .h-pc{display:none}.qhint .h-m{display:inline}}
 .qa:hover{border-color:var(--accent)}
 .qa-ic{width:44px;height:44px;border-radius:10px;display:grid;place-items:center;background:var(--accent-soft);color:var(--accent)}
 .qa-t{display:grid;gap:2px;min-width:0}
@@ -2896,9 +2902,14 @@ function renderTop(){
   if(S.preview){ nav.innerHTML = item("preview-exit", "arrow-left", "교사 화면으로 돌아가기"); me.innerHTML = ""; return }
   if(isTeacher()){
     h += item("home", "layout-dashboard", "내 과목", v === "home" || v === "room" || v === "present");
+    h += item("course-new", "square-plus", "새 과목", false, ' title="과목과 수강 학생을 정해요"');
     h += item("create", "plus", "새 활동", v === "create");
     h += item("preview-home", "eye", "학생 화면 미리보기", false, ' title="학생에게 보이는 화면을 확인해요. 여기서 쓴 내용은 저장되지 않아요."');
     if(S.mode === "supa" && S.isAdmin) h += item("tadmin-open", "user-cog", "교사 관리");
+    const pend = attPendingMsg(), tools = (S.mode === "supa" ? item("roster-open", "users", "학생 코드", false, ' title="명단을 넣고 개인 코드를 만들어요"') : "")
+      + (S.mode === "supa" || S.demo ? item("msg-open", "mail", "개별 안내", false, ' title="고른 학생에게만 안내를 보내고, 누가 읽었는지 확인해요"')
+        + item("att-open", "clipboard-list", `출석부${pend ? '<i class="nav-dot" aria-hidden="true"></i>' : ""}`, S.modal?.type === "attend", ` title="${esc(pend || "수업 날짜마다 출석을 적고, 매달 학생에게 출석 현황을 안내해요")}"`) : "");
+    if(tools) h += `<div class="nav-grp">학생 관리</div>` + tools;
     m += inst + fbItem;
     if(S.mode === "supa") m += item("t-logout", "logout", "로그아웃", false, ` title="${esc(S.sbEmail)}"`);
   }else{
@@ -3523,6 +3534,7 @@ const TOUR = [
   {sel:".scards", fit:true, ti:"photo", t:"학생의 결과물을 확인할 수 있어요", d:"학생이 그린 그림과 설명이 카드로 모여요. 하트·댓글 반응을 보고, ‘바로 피드백’으로 한마디를 남기거나 ‘사고 과정’으로 자세히 볼 수 있어요.", prep:() => { S.view = "room"; S.roomId = "demo-draw"; S.ttab = "students"; S.openPost = null }},
   {sel:".thead [data-a=create], #qbar [data-a=create]", prep:() => { S.view = "home"; S.mcourse = "" }, ti:"plus", t:"새 활동 만들기", d:"토론·질문 활동·논술·생각 스케치·학습 나눔·AI 가상 인물 대화 중에 고르고 주제만 적으면 단계가 자동으로 짜여요. 키워드로 AI에게 논제·질문을 추천받을 수도 있어요."},
   {sel:'#side [data-a="preview-home"]', menu:true, ti:"eye", t:"학생 화면 미리보기", d:"학생에게 어떻게 보이는지 바로 확인해요. 과목 카드 → 게시판 → 내 생각 쓰기 순서로 학생이 활동해요. 미리보기에서 쓴 내용은 저장되지 않아요. (휴대폰은 위쪽 ☰ 메뉴 안에 있어요.)", prep:() => { S.view = "home"; S.mcourse = "" }},
+  {sel:'#side [data-a="msg-open"]', menu:true, ti:"users", t:"학생 관리 메뉴", d:"학생 코드(명단·개인 코드), 개별 안내(고른 학생에게만 안내, 읽음 확인), 출석부(날짜·교시별 출석과 매달 현황 안내)는 왼쪽 메뉴의 ‘학생 관리’에 모여 있어요. 어느 화면에서든 열 수 있어요."},
   {sel:'#side [data-a="feedback-open"]', menu:true, ti:"message-report", t:"오류·건의하기", d:"쓰다가 불편한 점이나 바라는 기능이 있으면 메뉴 아래쪽의 이 버튼으로 알려 주세요. 만든 선생님에게 바로 전달돼요. (휴대폰은 위쪽 ☰ 메뉴 안에 있어요.)", prep:() => { S.view = "home"; S.mcourse = "" }},
   {sel:null, ti:"confetti", t:"준비 끝!", d:"이제 활동 카드를 눌러 결과 화면을 보거나, ‘+ 새 활동’으로 직접 만들어 보세요. 실제로 쓰려면 구글 계정으로 시작하면 돼요.", last:true}
 ];
@@ -4866,7 +4878,7 @@ function teacherCard(r, p, ps, nav){
    ========================================================= */
 /* 🔄 새 버전 알림: 배포 때마다 APP_VERSION과 version.json의 v를 같은 값으로 올린다.
    GitHub Pages는 화면을 10분쯤 기억하므로, 옛 화면이면 아래쪽에 ‘새로고침’ 띠를 띄우고 주소를 바꿔 새로 받는다 */
-const APP_VERSION = "2026-10-28b";
+const APP_VERSION = "2026-10-28c";
 async function checkVersion(){
   if(!/^https?:$/.test(location.protocol)) return;
   try{
@@ -5529,12 +5541,11 @@ function teacherTop(){
   const tile = (nm, n, l, sub, cls = "", v = "") => `<button type="button" class="tstat ${cls}" data-a="tstat" data-v="${v}" title="${esc(l)} 보기"><span class="ic" aria-hidden="true">${ic(nm, "lg")}</span><span class="tl">${l}</span><b>${n}</b>${sub ? `<em>${sub}</em>` : "<em>&nbsp;</em>"}</button>`;
   /* 주요 기능 바로가기: 예전 인사말 옆 버튼(학생 코드·개별 안내·새 활동 만들기)과 과목 목록의 ‘새 과목’을 그대로 쓴다 — 같은 액션, 같은 보이기 조건 */
   const qa = (a, icon, t, d, cls = "", attrs = "") => `<button type="button" class="qa${cls}" data-a="${a}"${attrs}><span class="qa-ic" aria-hidden="true">${ic(icon)}</span><span class="qa-t"><b>${t}</b><span>${d}</span></span><span class="qa-go" aria-hidden="true">${ic("chevron-right", "sm")}</span></button>`;
-  const quick = qa("create", "plus", "새 활동 만들기", "7가지 활동 중에 골라 만들어요", " pri")
-    + qa("course-new", "square-plus", "새 과목", "과목과 수강 학생을 정해요")
-    + (S.mode === "supa" ? qa("roster-open", "users", "학생 코드", "명단을 넣고 개인 코드를 만들어요") : "")
-    + (S.mode === "supa" || S.demo ? qa("msg-open", "mail", "개별 안내", "고른 학생에게만 안내를 보내요", "", ' title="고른 학생에게만 안내를 보내고, 누가 읽었는지 확인해요"') + qa("att-open", "clipboard-list", "출석부", esc(attPendingHint()), "", ' title="수업 날짜마다 출석을 적고, 매달 학생에게 출석 현황을 안내해요"') : "");
-  /* 최근 활동: 이미 불러온 활동을 최근 움직임 순으로 5개 (보관 제외) — 새 데이터·통계 없음 */
-  const recent = S.mcourse ? [] : [...live].sort((a, b) => lastActivity(b) - lastActivity(a)).slice(0, 5);
+  const quick = qa("create", "plus", "새 활동 만들기", "7가지 활동 중에 골라 만들어요", " pri");      // 나머지 도구(새 과목·학생 코드·개별 안내·출석부)는 왼쪽 메뉴로 옮겼다
+  const tl = [S.mode === "supa" ? "학생 코드" : "", S.mode === "supa" || S.demo ? "개별 안내" : "", S.mode === "supa" || S.demo ? "출석부" : ""].filter(Boolean), pendMsg = attPendingMsg();
+  const qhint = tl.length ? `<p class="qhint">${ic("menu-2", "sm")} <span class="h-pc">${tl.join(" · ")}는 <b>왼쪽 메뉴</b>에 있어요.</span><span class="h-m">${tl.includes("출석부") ? "출석부는 위쪽 <b>☰ 메뉴</b>에 있어요." : ""}</span>${pendMsg ? ` <button type="button" class="qhint-b" data-a="att-open">${ic("clipboard-list", "sm")} ${esc(pendMsg)}</button>` : ""}</p>` : "";
+  /* 최근 활동: 이미 불러온 활동을 최근 움직임 순으로 4개 (보관 제외) — 새 데이터·통계 없음 */
+  const recent = S.mcourse ? [] : [...live].sort((a, b) => lastActivity(b) - lastActivity(a)).slice(0, 4);
   const recentHTML = recent.length ? `<section class="recent" aria-labelledby="recent-h"><div class="recent-h"><h2 id="recent-h" class="sec-h">${ic("clock")} 최근 활동</h2><button class="linkbtn small" type="button" data-a="to-mlist">모든 활동 보기 ${ic("arrow-down", "sm")}</button></div>
     <ul>${recent.map(r => { const t = TEMPLATES[r.template] || {};
       return `<li><button type="button" class="rrow" data-a="open" data-id="${esc(r.id)}"><span class="rr-ic" aria-hidden="true">${ic(t.icon || "file-text", "sm")}</span><span class="rr-t">${esc(r.title || "제목 없는 활동")}</span><span class="rr-k">${esc(t.label || "")}</span>${statusChip(r)}<span class="rr-d">${fmtRel(lastActivity(r))}</span></button></li>` }).join("")}</ul></section>` : "";
@@ -5543,7 +5554,7 @@ function teacherTop(){
       <div class="eyebrow">오늘은 ${now.getMonth()+1}월 ${now.getDate()}일 ${"일월화수목금토"[now.getDay()]}요일</div>
       <h1>${nm ? `${esc(nm)} 선생님, 안녕하세요` : "선생님, 안녕하세요"}</h1></div></div>
     ${banner}
-    <div class="qgrid" role="group" aria-label="주요 기능">${quick}</div>
+    <div class="qgrid solo" role="group" aria-label="주요 기능">${quick}</div>${qhint}
     <div class="tsum${recentHTML ? "" : " solo"}"><div class="tstats">${tile("books", activeCourses().length, "내 과목", `활동 ${live.length}개`, "t1", "courses")}${tile("player-play", open.length, "진행 중", drafts ? `작성 중 ${drafts}` : "지금 열린 활동", "t2", "open")}${tile("alarm", soon.length, "곧 마감", "24시간 안", soon.length ? "t3 warn" : "t3", "soon")}${tile("pencil", today, "오늘 들어온 응답", "새 글·제출", today ? "t4 good" : "t4", "today")}</div>${recentHTML}</div></section>`;
 }
 /* 과목이 많을 때: 처음엔 3개만, ‘더 보기’로 전체 · 지난 학기 과목은 보관(archived)하면 목록과 학생 화면에서 빠진다 */
@@ -6101,9 +6112,9 @@ async function attCsv(){
   if(ok === true) toast("출석부 파일(엑셀에서 열림)을 저장했어요.");
   else if(ok !== "declined"){ S.modal = {type:"text", title:"출석부 (CSV)", note:"이 화면에서는 파일로 바로 저장할 수 없어요. 아래 내용을 복사해 엑셀에 붙여 넣어 주세요.", text:csvOf(rows).slice(1)}; render() }
 }
-const attPendingHint = () => {                                                           // 지난달 출석 안내를 아직 안 보냈으면 홈 버튼에 알려 준다
+const attPendingMsg = () => {                                                            // 지난달 출석 안내를 아직 안 보냈으면 알려 준다 (없으면 빈 글)
   const now = attYmNow(), p = (S.attend || []).filter(x => x.ym && x.ym < now && !x.sent && Object.keys(x.marks || {}).length).sort((a, b) => a.ym < b.ym ? 1 : -1)[0];
-  return p ? `${+p.ym.slice(5)}월 출석 안내를 아직 안 보냈어요` : "출석을 적고 매달 학생에게 현황을 안내해요";
+  return p ? `${+p.ym.slice(5)}월 출석 안내를 아직 안 보냈어요` : "";
 };
 /* 개별 안내 ‘출석 현황’ 쪽 */
 function attF(){ const f = MSGF(); if(!f.at) f.at = {ym:attS().ym || attYmNow(), intro:lsGet("nonjae.attintro") || ATT_INTRO, ask:ATT_ASK.slice()}; return f.at }
