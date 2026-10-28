@@ -213,6 +213,7 @@ details.source p{margin-top:6px;font-size:16.5px;line-height:1.8;white-space:pre
 .tmrbar{position:sticky;top:calc(env(safe-area-inset-top,0px) + 6px);z-index:30;display:flex;align-items:center;gap:12px;overflow:hidden;margin:-4px 0 14px;padding:10px 16px;border-radius:12px;background:var(--accent);color:var(--accent-ink);box-shadow:0 4px 14px rgba(0,0,0,.12)}
 .tmrbar .tmr-l{font-weight:600;font-size:15px}.tmrbar .tmr-t{margin-left:auto;font-size:26px;font-variant-numeric:tabular-nums;letter-spacing:.02em}
 .tmrbar .tmr-p,.tmrpanel .tmr-p{position:absolute;left:0;bottom:0;height:4px;background:rgba(255,255,255,.55);transition:width 1s linear}
+.tmr-snd{font-size:12px;white-space:nowrap}.tmrbar .tmr-snd{color:inherit;opacity:.85;text-decoration:none;border:1px solid rgba(255,255,255,.45);border-radius:999px;padding:3px 9px}.tmrbar .tmr-t+.tmr-snd{margin-left:0}
 .tmrbar.warn{background:#c0392b;color:#fff}.tmrbar.paused{background:#6b7280;color:#fff}.tmrbar.end{background:#b45309;color:#fff}.tmrbar.end .tmr-l{font-size:16px}
 .tmrpanel{position:relative;overflow:hidden;display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;margin:12px 0;padding:10px 14px;border:1px solid var(--line);border-radius:12px;background:var(--surface)}
 .tmrpanel .tmr-h{font-size:14px}.tmrpanel .tmr-chips{display:flex;flex-wrap:wrap;gap:6px;align-items:center}.tmrpanel .tmr-tip{flex-basis:100%}
@@ -3228,7 +3229,7 @@ function tmrCls(t){ return t.st === "end" ? "end" : t.st === "paused" ? "paused"
 function tmrBarStudent(r){
   const t = tmrOf(r); if(!t || (t.st === "end" && t.ago > 10 * 60000)) return "";
   const msg = t.st === "end" ? `${ic("alarm")} 시간이 다 됐어요! 쓰던 생각을 마무리해 주세요.` : t.st === "paused" ? `${ic("player-pause")} 선생님이 타이머를 잠시 멈췄어요` : `${ic("clock")} 남은 시간`;
-  return `<div class="tmrbar ${tmrCls(t)}" data-tmr="${esc(r.id)}" role="timer" aria-live="off"><span class="tmr-l">${msg}</span>${t.st === "end" ? "" : `<b class="tmr-t">${mmss(t.left)}</b>`}<i class="tmr-p" style="width:${Math.round(t.left / t.dur * 100)}%"></i></div>`;
+  return `<div class="tmrbar ${tmrCls(t)}" data-tmr="${esc(r.id)}" role="timer" aria-live="off"><span class="tmr-l">${msg}</span>${t.st === "end" ? "" : `<b class="tmr-t">${mmss(t.left)}</b>`}<i class="tmr-p" style="width:${Math.round(t.left / t.dur * 100)}%"></i>${t.st === "end" ? "" : tmrSndBtn()}</div>`;
 }
 /* 선생님 활동 화면: 시작·멈춤·더하기·끝내기 */
 function tmrPanel(r){
@@ -3240,17 +3241,37 @@ function tmrPanel(r){
   return `<section class="tmrpanel on ${tmrCls(t)}" data-tmr="${id}"><span class="tmr-h">${ic("clock")} ${t.st === "paused" ? "멈춤" : "남은 시간"}</span><b class="tmr-t">${mmss(t.left)}</b>
     <span class="tmr-chips"><button class="btn sm" type="button" data-a="tmr-add" data-id="${id}" data-v="30">+30초</button><button class="btn sm" type="button" data-a="tmr-add" data-id="${id}" data-v="60">+1분</button>
     ${t.st === "paused" ? `<button class="btn sm pri" type="button" data-a="tmr-resume" data-id="${id}">${ic("player-play")} 이어서</button>` : `<button class="btn sm" type="button" data-a="tmr-pause" data-id="${id}">${ic("player-pause")} 잠시 멈춤</button>`}
-    <button class="btn sm" type="button" data-a="tmr-stop" data-id="${id}">${ic("player-stop")} 끝내기</button></span><i class="tmr-p" style="width:${Math.round(t.left / t.dur * 100)}%"></i></section>`;
+    <button class="btn sm" type="button" data-a="tmr-stop" data-id="${id}">${ic("player-stop")} 끝내기</button>${tmrSndBtn()}</span><i class="tmr-p" style="width:${Math.round(t.left / t.dur * 100)}%"></i></section>`;
 }
 async function setTimer(r, timer){
   const patch = {timer, updatedAt:Date.now()};
   return write(db => db.doc("rooms/"+r.id).update(patch), () => Object.assign(r, patch));
 }
 /* 1초마다 숫자만 바꾸고, 진행→끝처럼 상태가 바뀔 때만 다시 그린다 */
-const TMR_SEEN = {};
+const TMR_SEEN = {}, TMR_RANG = {};
+/* 🔔 끝나면 소리: 브라우저는 화면을 한 번 건드려야 소리를 허락하므로 첫 터치·키 입력 때 미리 깨워 둔다 */
+let TMR_AC = null;
+const tmrSndOn = () => { try{ return localStorage.getItem("nonjae.tmrsnd") !== "off" }catch(e){ return true } };
+function tmrWake(){ try{ TMR_AC = TMR_AC || new (window.AudioContext || window.webkitAudioContext)(); if(TMR_AC.state === "suspended") TMR_AC.resume() }catch(e){} }
+["pointerdown", "keydown"].forEach(ev => addEventListener(ev, tmrWake, {passive:true}));
+function tmrRing(){
+  if(!tmrSndOn()) return;
+  try{ navigator.vibrate?.([300, 150, 300, 150, 300]) }catch(e){}
+  try{
+    tmrWake(); const ac = TMR_AC; if(!ac) return;
+    [0, .55, 1.1].forEach(d => [880, 1175].forEach((f, k) => {           // 띵-동 x3
+      const o = ac.createOscillator(), g = ac.createGain(), t0 = ac.currentTime + d + k * .22;
+      o.type = "sine"; o.frequency.value = f; o.connect(g); g.connect(ac.destination);
+      g.gain.setValueAtTime(0, t0); g.gain.linearRampToValueAtTime(.35, t0 + .02); g.gain.exponentialRampToValueAtTime(.001, t0 + .5);
+      o.start(t0); o.stop(t0 + .55);
+    }));
+  }catch(e){}
+}
+function tmrSndBtn(){ const on = tmrSndOn(); return `<button class="linkbtn tmr-snd" type="button" data-a="tmr-snd" aria-pressed="${on}" title="시간이 끝나면 소리 내기">${ic(on ? "bell" : "bell-off")} 소리 ${on ? "켜짐" : "꺼짐"}</button>` }
 setInterval(() => {
   document.querySelectorAll("[data-tmr]").forEach(el => {
     const r = S.rooms.find(x => x.id === el.dataset.tmr), t = tmrOf(r), key = t ? t.st + tmrCls(t) : "";
+    if(t && t.st === "end" && t.ago < 6000){ const rk = el.dataset.tmr + ":" + r.timer.endsAt; if(!TMR_RANG[rk]){ TMR_RANG[rk] = 1; tmrRing() } }   // 방금 끝났을 때만 한 번
     if(TMR_SEEN[el.dataset.tmr] !== undefined && TMR_SEEN[el.dataset.tmr] !== key){ TMR_SEEN[el.dataset.tmr] = key; render(); return }
     TMR_SEEN[el.dataset.tmr] = key;
     if(!t) return;
@@ -4906,7 +4927,7 @@ function teacherCard(r, p, ps, nav){
    ========================================================= */
 /* 🔄 새 버전 알림: 배포 때마다 APP_VERSION과 version.json의 v를 같은 값으로 올린다.
    GitHub Pages는 화면을 10분쯤 기억하므로, 옛 화면이면 아래쪽에 ‘새로고침’ 띠를 띄우고 주소를 바꿔 새로 받는다 */
-const APP_VERSION = "2026-10-28d";
+const APP_VERSION = "2026-10-28e";
 async function checkVersion(){
   if(!/^https?:$/.test(location.protocol)) return;
   try{
@@ -8623,6 +8644,7 @@ async function act(a, b){
       if(a === "tmr-resume") await setTimer(rr, {...cur, endsAt:now + t.left, left:null, at:now});
       break;
     }
+    case "tmr-snd": { try{ localStorage.setItem("nonjae.tmrsnd", tmrSndOn() ? "off" : "on") }catch(e){} tmrWake(); render(); if(tmrSndOn()) tmrRing(); break }
     case "tmr-stop": { const rr = S.rooms.find(x=>x.id===b.dataset.id); if(rr) await setTimer(rr, null); break }
     case "edit-room": { S.modal = null; const rr = S.rooms.find(x=>x.id===b.dataset.id); S.form.create = formFromRoom(rr); saveFormsSoon(); S.tplNaming = false; S.view = "create"; scrollTo(0,0); break }
     case "dup": {
