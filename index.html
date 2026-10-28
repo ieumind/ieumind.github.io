@@ -3014,7 +3014,7 @@ function checkNews(){
   else if(nr.length) toast(`새 활동이 올라왔어요 · ${nr[0].title}${nr.length > 1 ? ` 외 ${nr.length - 1}개` : ""}`);
 }
 /* 홈 배너: 교사·학생 공용 (글은 왼쪽, 그림은 오른쪽) */
-const wbanner = sub => `<section class="wbanner" aria-labelledby="wb-h"><div class="wb-txt"><div class="wb-eb">THINKING WORKSPACE</div><h2 id="wb-h">생각을 연결하는 수업</h2><p>${esc(sub)}</p></div>
+const wbanner = (sub, title = "생각을 연결하는 수업") => `<section class="wbanner" aria-labelledby="wb-h"><div class="wb-txt"><div class="wb-eb">THINKING WORKSPACE</div><h2 id="wb-h">${esc(title)}</h2><p>${esc(sub)}</p></div>
     <img class="wb-art" src="img/banner.webp" width="2048" height="768" alt="" aria-hidden="true" decoding="async"></section>`;
 /* 학생 화면 지표 3칸 (교사 화면의 지표 칸과 같은 모양) */
 const stuTiles = c => `<div class="tstats s3" role="group" aria-label="내 활동 현황">${[
@@ -4866,7 +4866,7 @@ function teacherCard(r, p, ps, nav){
    ========================================================= */
 /* 🔄 새 버전 알림: 배포 때마다 APP_VERSION과 version.json의 v를 같은 값으로 올린다.
    GitHub Pages는 화면을 10분쯤 기억하므로, 옛 화면이면 아래쪽에 ‘새로고침’ 띠를 띄우고 주소를 바꿔 새로 받는다 */
-const APP_VERSION = "2026-10-28a";
+const APP_VERSION = "2026-10-28b";
 async function checkVersion(){
   if(!/^https?:$/.test(location.protocol)) return;
   try{
@@ -5538,7 +5538,7 @@ function teacherTop(){
   const recentHTML = recent.length ? `<section class="recent" aria-labelledby="recent-h"><div class="recent-h"><h2 id="recent-h" class="sec-h">${ic("clock")} 최근 활동</h2><button class="linkbtn small" type="button" data-a="to-mlist">모든 활동 보기 ${ic("arrow-down", "sm")}</button></div>
     <ul>${recent.map(r => { const t = TEMPLATES[r.template] || {};
       return `<li><button type="button" class="rrow" data-a="open" data-id="${esc(r.id)}"><span class="rr-ic" aria-hidden="true">${ic(t.icon || "file-text", "sm")}</span><span class="rr-t">${esc(r.title || "제목 없는 활동")}</span><span class="rr-k">${esc(t.label || "")}</span>${statusChip(r)}<span class="rr-d">${fmtRel(lastActivity(r))}</span></button></li>` }).join("")}</ul></section>` : "";
-  const banner = S.mcourse ? "" : wbanner("질문을 만들고, 근거를 탐색하고, 나만의 생각을 완성해 보세요.");
+  const banner = S.mcourse ? "" : wbanner("활동을 만들고, 학생들의 생각을 한눈에 살피고, 다음 질문으로 수업을 이어 가세요.", "학생의 생각이 이어지는 수업");
   return `<section class="thead"><div class="thead-hi"><div>
       <div class="eyebrow">오늘은 ${now.getMonth()+1}월 ${now.getDate()}일 ${"일월화수목금토"[now.getDay()]}요일</div>
       <h1>${nm ? `${esc(nm)} 선생님, 안녕하세요` : "선생님, 안녕하세요"}</h1></div></div>
