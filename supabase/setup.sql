@@ -1336,3 +1336,10 @@ begin
 end $$;
 revoke execute on function public.teacher_delete_me(boolean) from public, anon;
 grant  execute on function public.teacher_delete_me(boolean) to authenticated;
+
+-- ---------------------------------------------------------------------
+-- 📎 학습 나눔 파일 첨부(선생님이 활동 설정에서 켠 때만): ‘notes’ 보관함이 사진 말고 문서도 받도록
+-- 파일 한 개 10MB까지. 형식은 앱에서 PDF·한글·워드·PPT·엑셀·텍스트로 제한한다(보관함은 비공개, 경로 정책은 그대로).
+-- 여러 번 실행해도 안전하다.
+-- ---------------------------------------------------------------------
+update storage.buckets set file_size_limit = 10485760, allowed_mime_types = null where id = 'notes';
