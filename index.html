@@ -212,7 +212,7 @@ details.source:not([open]) summary::after{content:"펼치기"}
 details.source p{margin-top:6px;font-size:16.5px;line-height:1.8;white-space:pre-wrap;overflow-wrap:anywhere;max-width:80ch}
 .tmrbar{position:sticky;top:calc(env(safe-area-inset-top,0px) + 6px);z-index:30;display:flex;align-items:center;gap:12px;overflow:hidden;margin:-4px 0 14px;padding:10px 16px;border-radius:12px;background:var(--accent);color:var(--accent-ink);box-shadow:0 4px 14px rgba(0,0,0,.12)}
 .tmrbar .tmr-l{font-weight:600;font-size:15px}.tmrbar .tmr-t{margin-left:auto;font-size:26px;font-variant-numeric:tabular-nums;letter-spacing:.02em}
-.tmrbar .tmr-p,.tmrpanel .tmr-p{position:absolute;left:0;bottom:0;height:4px;background:rgba(255,255,255,.55);transition:width 1s linear}
+.tmrbar .tmr-p,.tmrpanel .tmr-p{position:absolute;left:0;bottom:0;height:4px;background:rgba(255,255,255,.55);transition:width 1s linear}.nfiles{list-style:none;margin:10px 0 0;padding:0;display:grid;gap:6px}.nfiles li{display:flex;align-items:center;gap:8px;min-width:0;padding:7px 10px;border:1px solid var(--line);border-radius:10px;background:var(--surface)}.nf-n{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:14px}
 .tmr-snd{font-size:12px;white-space:nowrap}.tmrbar .tmr-snd{color:inherit;opacity:.85;text-decoration:none;border:1px solid rgba(255,255,255,.45);border-radius:999px;padding:3px 9px}.tmrbar .tmr-t+.tmr-snd{margin-left:0}
 .tmrbar.warn{background:#c0392b;color:#fff}.tmrbar.paused{background:#6b7280;color:#fff}.tmrbar.end{background:#b45309;color:#fff}.tmrbar.end .tmr-l{font-size:16px}
 .tmrpanel{position:relative;overflow:hidden;display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;margin:12px 0;padding:10px 14px;border:1px solid var(--line);border-radius:12px;background:var(--surface)}
@@ -2167,7 +2167,7 @@ const Auth = (() => { let t = null; return Object.freeze({ set(v){ if(t === null
 Object.defineProperty(S, "canTeach", {get: () => Auth.teacher, set(){} });        // 예전 코드 호환: 읽기만
 const isTeacher = () => Auth.teacher && S.role === "teacher";                       // 교사 권한 + 교사 화면(학생 화면 미리보기 중이면 false)
 /* 교사만 쓰는 동작: 학생 권한으로는 버튼이 없을 뿐 아니라 호출해도 실행되지 않는다 */
-const TEACHER_ACTS = new Set(["att-open","att-close","att-cell","att-day","att-fill","att-deldate","att-adddate","att-month-days","att-csv","att-send","pg-facts","avatar-del","pg-mode","pg-type","pg-gen","pg-copy","pg-apply","msg-kind","sc-iadd","sc-idel","sc-paste","sc-ins","sc-tpl-reset","sc-export","msg-open","msg-tab","msg-all","msg-none","msg-cls","msg-send","msg-del","msg-withdraw","msg-repush","note-share","c-course","tname-open","tname-later","tname-save","q-custom","q-add","q-del","q-move","course-archive","courses-more","courses-arch","port-student","port-open","tmr-start","tmr-add","tmr-pause","tmr-resume","tmr-stop","ctx-img-del","qfb","qfb-close","fb-chip","pick-tool","mem-open","mem-cls","mem-all","mem-none","course-gsplit","ai-setup","ai-key-save","ai-key-del","ai-suggest","ai-pick","tadmin-open","tadmin-block","tadmin-tab","fbadmin-done","notice-add","notice-del","note-filter","note-req","note-req-send","note-req-cancel","nudge-open","nudge-all","nudge-clear","acct-del-open","acct-del-yes","create","edit-room","dup","dup-list","del","del-yes","del-ask","del-room","status","toggle","save-feedback","class-fb","pin","pin-move","pin-clear",
+const TEACHER_ACTS = new Set(["att-open","att-close","att-cell","att-day","att-fill","att-deldate","att-adddate","att-month-days","att-csv","att-send","pg-facts","avatar-del","pg-mode","pg-type","pg-gen","pg-copy","pg-apply","msg-kind","sc-iadd","sc-idel","sc-paste","sc-ins","sc-tpl-reset","sc-export","msg-open","msg-tab","msg-all","msg-none","msg-cls","msg-send","msg-del","msg-withdraw","msg-repush","note-share","c-course","tname-open","tname-later","tname-save","q-custom","q-add","q-del","q-move","course-archive","courses-more","courses-arch","port-student","port-open","tmr-start","tmr-add","tmr-pause","tmr-resume","tmr-stop","note-files","ctx-img-del","qfb","qfb-close","fb-chip","pick-tool","mem-open","mem-cls","mem-all","mem-none","course-gsplit","ai-setup","ai-key-save","ai-key-del","ai-suggest","ai-pick","tadmin-open","tadmin-block","tadmin-tab","fbadmin-done","notice-add","notice-del","note-filter","note-req","note-req-send","note-req-cancel","nudge-open","nudge-all","nudge-clear","acct-del-open","acct-del-yes","create","edit-room","dup","dup-list","del","del-yes","del-ask","del-room","status","toggle","save-feedback","class-fb","pin","pin-move","pin-clear",
   "present","present-exit","pmode","pnav","pq","pper","pnames","prand","fullscreen","export","export-go","save-tset","tpl-save-open","tpl-save","tpl-cancel","use-tpl","create-save","draft-save","publish-draft","discard-form",
   "preview","preview-form","preview-home","qr","copy-link","save-share","mcourse","course-new","course-edit","course-gadd","course-gdel","course-save","course-del","course-del-yes",
   "roster-open","roster-add","roster-reissue","roster-del","roster-print","rprint-back","rprint-go","gsel","asg-add-open","asg-add-cancel","asg-add","asg-st","racts","mview","sview","sfilter","sgo","snav","ttab","mfilter","open-student","goal","tpl","st-add","st-del","depth"]);
@@ -3364,6 +3364,34 @@ function viewRoomStudent(r){
 const isNotes = r => r?.template === "notes";
 const NOTE_MAX = r => Math.max(1, Math.min(12, Number(r?.noteCfg?.maxPages) || 3));
 const memoQOf = r => String(r?.noteCfg?.memoQ || "").trim();         // 선생님이 적은 ‘한 줄 메모’ 질문 (없으면 그냥 메모)
+/* 📎 파일 첨부(선택): 선생님이 활동 설정에서 켠 때만. 기본은 꺼짐(room.noteCfg.files) */
+const NOTE_FILE_MAX = 3, NOTE_FILE_OK = ["pdf","doc","docx","hwp","hwpx","ppt","pptx","xls","xlsx","txt","csv"];
+const noteFilesOn = r => !!r?.noteCfg?.files;
+const noteFileLimit = () => S.mode === "supa" && !S.preview && !S.demo ? 10 * 1048576 : 1500000;   // 저장소는 10MB, 체험·미리보기는 글 안에 담아 1.5MB
+const FDRAFT = {};                    // 활동 id → 제출 전 고른 파일 [{file, n, s}]
+const fileExt = n => ((String(n).match(/\.([A-Za-z0-9]+)$/) || [])[1] || "").toLowerCase();
+const fmtSize = b => b >= 1048576 ? (b / 1048576).toFixed(1) + "MB" : Math.max(1, Math.round(b / 1024)) + "KB";
+const noteSum = n => [n?.images?.length ? `사진 ${n.images.length}장` : "", n?.files?.length ? `파일 ${n.files.length}개` : ""].filter(Boolean).join(" · ");
+function noteFilesHTML(files, draft){
+  if(!files?.length) return "";
+  return `<ul class="nfiles">${files.map((x, i) => { const src = draft ? "" : noteSrc(x);
+    return `<li>${ic("file-text", "sm")}<span class="nf-n" title="${esc(x.n)}">${esc(x.n)}</span><span class="muted small">${fmtSize(x.s || 0)}</span>${draft ? `<button type="button" class="btn sm" data-a="nfile-rm" data-i="${i}" aria-label="${esc(x.n)} 빼기">${ic("x", "sm")}</button>`
+      : src ? `<a class="btn sm" href="${esc(src)}" download="${esc(x.n)}" target="_blank" rel="noopener">열기·받기</a>` : `<span class="muted small">${x.p && NURL[x.p]?.bad ? "볼 수 없어요" : "불러오는 중…"}</span>`}</li>` }).join("")}</ul>`;
+}
+function noteAddAttach(r, files){
+  const list = FDRAFT[r.id] = FDRAFT[r.id] || [], lim = noteFileLimit();
+  let badType = 0, big = 0, over = false;
+  for(const f of files){
+    if(list.length >= NOTE_FILE_MAX){ over = true; break }
+    if(!NOTE_FILE_OK.includes(fileExt(f.name))){ badType++; continue }
+    if(f.size > lim){ big++; continue }
+    list.push({file:f, n:f.name.slice(0, 80), s:f.size});
+  }
+  if(over) toast(`파일은 ${NOTE_FILE_MAX}개까지 올릴 수 있어요.`);
+  else if(big) toast(`${fmtSize(lim)}보다 큰 파일은 올릴 수 없어요.`);
+  else if(badType) toast("PDF·한글·워드·PPT·엑셀·텍스트 파일만 올릴 수 있어요.");
+  render();
+}
 const noteRedoReq = p => p?.resubmitReq && p.resubmitReq.at > (p.notes?.submittedAt || 0) ? p.resubmitReq : null;
 const NDRAFT = {};                    // 활동 id → 제출 전 고른 사진 [{blob, url, w, h}] (이 화면에만)
 const NURL = {};                      // 저장된 사진 경로 → 잠깐 쓰는 주소
@@ -3383,8 +3411,9 @@ async function loadNoteUrls(){
   for(let i = 0; i < paths.length; i += 100){
     const part = paths.slice(i, i + 100), now = Date.now();
     try{
-      const r = await SB.storage.from("notes").createSignedUrls(part, 6 * 3600);
-      const got = new Map((r.data || []).filter(x => x.signedUrl).map(x => [x.path, x.signedUrl]));
+      const isF = x => !/\.jpe?g$/i.test(x), fp = part.filter(isF), ip = part.filter(x => !isF(x));
+      const rs = await Promise.all([ip.length ? SB.storage.from("notes").createSignedUrls(ip, 6 * 3600) : {data:[]}, fp.length ? SB.storage.from("notes").createSignedUrls(fp, 6 * 3600, {download:true}) : {data:[]}]);   // 파일은 열지 않고 내려받게
+      const got = new Map(rs.flatMap(r => r.data || []).filter(x => x.signedUrl).map(x => [x.path, x.signedUrl]));
       part.forEach(p => { NURL[p] = got.has(p) ? {url:got.get(p), exp:now + 6*3600*1000 - 60000} : {url:"", exp:now + 60000, bad:true} });
     }catch(e){ part.forEach(p => { NURL[p] = {url:"", exp:now + 60000, bad:true} }) }
   }
@@ -3441,10 +3470,10 @@ async function noteAddFiles(r, files){
   render();
 }
 async function noteSubmit(r){
-  const list = NDRAFT[r.id] || [], p = myPost(r);
-  if(!list.length){ toast("사진을 한 장 이상 골라 주세요."); return }
+  const list = NDRAFT[r.id] || [], fl = noteFilesOn(r) ? (FDRAFT[r.id] || []) : [], p = myPost(r);
+  if(!list.length && !fl.length){ toast(noteFilesOn(r) ? "사진이나 파일을 하나 이상 골라 주세요." : "사진을 한 장 이상 골라 주세요."); return }
   if(r.open === false){ toast("마감된 활동이에요."); return }
-  const imgs = [];
+  const imgs = [], files = [];
   S.noteBusy = "올리는 중… 화면을 닫지 마세요"; render();
   try{
     if(useStorage()){
@@ -3458,22 +3487,30 @@ async function noteSubmit(r){
         if(up.error) throw up.error;
         imgs.push({p:path, w:list[i].w, h:list[i].h});
       }
+      for(let i = 0; i < fl.length; i++){
+        S.noteBusy = `파일 올리는 중… (${i+1}/${fl.length}) 화면을 닫지 마세요`; render();
+        const path = `${r.id}/${sid}/${stamp}-f${i+1}.${fileExt(fl[i].n)}`;
+        const up = await SB.storage.from("notes").upload(path, fl[i].file, {contentType:fl[i].file.type || "application/octet-stream", upsert:false});
+        if(up.error) throw up.error;
+        files.push({p:path, n:fl[i].n, s:fl[i].s});
+      }
     }else{
       for(const x of list) imgs.push({d:await blobToDataURL(x.blob), w:x.w, h:x.h});
+      for(const x of fl) files.push({d:await blobToDataURL(x.file), n:x.n, s:x.s});
     }
   }catch(e){
-    if(useStorage() && imgs.length) SB.storage.from("notes").remove(imgs.map(x => x.p));
-    S.noteBusy = ""; toast("사진을 올리지 못했어요. 인터넷 연결을 확인하고 다시 눌러 주세요."); render(); return;
+    if(useStorage() && (imgs.length || files.length)) SB.storage.from("notes").remove([...imgs, ...files].map(x => x.p));
+    S.noteBusy = ""; toast(fl.length ? "올리지 못했어요. 파일은 한 개 10MB 이하여야 하고, 선생님이 파일 보관 설정을 마쳐야 해요. 연결을 확인하고 다시 눌러 주세요." : "사진을 올리지 못했어요. 인터넷 연결을 확인하고 다시 눌러 주세요."); render(); return;
   }
-  const old = (p?.notes?.images || []).filter(x => x.p), now = Date.now();
-  const history = p?.notes ? [...(p.notes.history || []), {count:p.notes.images.length, submittedAt:p.notes.submittedAt}].slice(-10) : [];
+  const old = [...(p?.notes?.images || []), ...(p?.notes?.files || [])].filter(x => x.p), now = Date.now();
+  const history = p?.notes ? [...(p.notes.history || []), {count:p.notes.images.length, ...(p.notes.files?.length ? {files:p.notes.files.length} : {}), submittedAt:p.notes.submittedAt}].slice(-10) : [];
   const memo = (F("note:" + r.id).memo || "").trim().slice(0, 300);
   const ok = await savePost(r, {status:"submitted", submittedAt:p?.submittedAt || now, resubmitReq:null,
-    notes:{images:imgs, memo, submittedAt:now, version:(p?.notes?.version || 0) + 1, history}});
+    notes:{images:imgs, ...(files.length ? {files} : {}), memo, submittedAt:now, version:(p?.notes?.version || 0) + 1, history}});
   S.noteBusy = "";
-  if(!ok){ if(useStorage()) SB.storage.from("notes").remove(imgs.map(x => x.p)); render(); return }
+  if(!ok){ if(useStorage()) SB.storage.from("notes").remove([...imgs, ...files].map(x => x.p)); render(); return }
   if(useStorage() && old.length) SB.storage.from("notes").remove(old.map(x => x.p));       // 바꾼 예전 사진은 지운다
-  list.forEach(x => URL.revokeObjectURL(x.url)); delete NDRAFT[r.id]; S.noteRedo = null;
+  list.forEach(x => URL.revokeObjectURL(x.url)); delete NDRAFT[r.id]; delete FDRAFT[r.id]; S.noteRedo = null;
   if(S.form["note:" + r.id]) S.form["note:" + r.id].memo = "";
   toast(p?.notes ? "새 사진으로 다시 제출했어요." : "제출했어요! 선생님이 확인할 거예요.");
   render();
@@ -3502,34 +3539,37 @@ function viewNotesStudent(r, p){
   let h = roomHead(r, {sourceOpen:true});
   h += !n ? `<div class="cta todo"><div><b>${ic("camera")} 아직 제출하지 않았어요</b><span>필기·마인드맵 등 정리한 것을 사진으로 찍어 올려 주세요.${r.dueAt ? ` · ${esc(fmtDue(r.dueAt))}까지` : ""}</span></div></div>`
      : req ? `<div class="cta todo"><div><b>${ic("rotate-clockwise")} 선생님이 다시 제출해 달라고 했어요</b><span>${req.msg ? ic("message-circle", "sm") + " " + esc(req.msg) : "아래에서 내 사진을 확인하고, 새 사진으로 다시 올려 주세요."}</span></div></div>`
-     : `<div class="cta done"><div><b>${ic("circle-check")} 제출 완료</b><span>${esc(fmt(n.submittedAt))} · ${n.images.length}장${n.version > 1 ? ` · ${n.version}번째 제출` : ""}</span></div></div>`;
+     : `<div class="cta done"><div><b>${ic("circle-check")} 제출 완료</b><span>${esc(fmt(n.submittedAt))} · ${noteSum(n)}${n.version > 1 ? ` · ${n.version}번째 제출` : ""}</span></div></div>`;
   if(n) h += `<section class="card nsub"><div class="nsub-h"><b>내가 올린 학습 결과</b>${open && S.canWrite && !showUp ? `<button class="btn sm" type="button" data-a="note-redo">${ic("rotate-clockwise")} 새 사진으로 다시 제출</button>` : ""}</div>
-    ${noteThumbs(p, n.images)}${n.memo ? `<p class="txt small"><span class="muted">${esc(memoQOf(r) || "메모")} · </span>${esc(n.memo)}</p>` : ""}</section>`;
+    ${n.images.length ? noteThumbs(p, n.images) : ""}${noteFilesHTML(n.files)}${n.memo ? `<p class="txt small"><span class="muted">${esc(memoQOf(r) || "메모")} · </span>${esc(n.memo)}</p>` : ""}</section>`;
   const gal = noteGallery(r, p);                                       // 선생님이 ‘서로 보기’로 열면, 올린 학생끼리 친구 사진도 본다
   if(!open) return h + (n ? "" : closedNote()) + gal;
   if(!S.canWrite) return h + readonlyNote() + gal;
   if(!showUp) return h + gal;
-  const max = NOTE_MAX(r), busy = S.noteBusy, key = "note:" + r.id, mq = memoQOf(r);
+  const max = NOTE_MAX(r), busy = S.noteBusy, key = "note:" + r.id, mq = memoQOf(r), fOn = noteFilesOn(r), fdraft = fOn ? (FDRAFT[r.id] || []) : [];
   F(key, () => ({memo:""}));
   return h + `<section class="card nup" id="stage"><h3>${n ? "새 사진으로 다시 제출하기" : "사진 올리기"}</h3>
     <p class="muted small">${n ? "다시 제출하면 지금 낸 사진은 새 사진으로 바뀌어요. " : ""}여러 쪽이면 여러 장을 골라도 돼요. (최대 ${max}장 · 글씨가 잘 보이게 밝은 곳에서 찍어 주세요)</p>
     <div class="npick">
       <label class="btn pri npbtn">${ic("camera")} 사진 찍기<input type="file" accept="image/*" capture="environment" data-note-file="${esc(r.id)}" hidden ${busy ? "disabled" : ""}></label>
-      <label class="btn npbtn">${ic("photo")} 앨범에서 고르기<input type="file" accept="image/*" multiple data-note-file="${esc(r.id)}" hidden ${busy ? "disabled" : ""}></label></div>
+      <label class="btn npbtn">${ic("photo")} 앨범에서 고르기<input type="file" accept="image/*" multiple data-note-file="${esc(r.id)}" hidden ${busy ? "disabled" : ""}></label>
+      ${fOn ? `<label class="btn npbtn">${ic("file-text")} 파일 첨부<input type="file" accept="${NOTE_FILE_OK.map(x => "." + x).join(",")}" multiple data-note-attach="${esc(r.id)}" hidden ${busy ? "disabled" : ""}></label>` : ""}</div>
+    ${fOn ? `<p class="muted small">파일은 ${NOTE_FILE_MAX}개까지, 한 개에 ${fmtSize(noteFileLimit())} 이하의 PDF·한글·워드·PPT·엑셀·텍스트를 올릴 수 있어요.</p>` : ""}
     ${draft.length ? `<div class="ngrid">${draft.map((x, i) => `<figure class="nthumb"><button type="button" class="nzoom" data-a="note-view" data-draft="${esc(r.id)}" data-i="${i}" aria-label="${i+1}쪽 크게 보기"><img src="${x.url}" alt=""></button><span class="npg">${i+1}쪽</span>
         <span class="nact">${i ? `<button type="button" data-a="note-move" data-i="${i}" data-d="-1" aria-label="${i+1}쪽을 앞으로">${ic("chevron-left", "sm")}</button>` : ""}${i < draft.length - 1 ? `<button type="button" data-a="note-move" data-i="${i}" data-d="1" aria-label="${i+1}쪽을 뒤로">${ic("chevron-right", "sm")}</button>` : ""}<button type="button" data-a="note-rm" data-i="${i}" aria-label="${i+1}쪽 빼기">${ic("x", "sm")}</button></span></figure>`).join("")}</div>
       <p class="muted small">사진을 누르면 크게 볼 수 있어요. 화살표 버튼으로 순서를 바꾸고, ${ic("x", "sm")} 버튼으로 뺄 수 있어요.</p>` : `<div class="nempty">아직 고른 사진이 없어요.<br>위의 버튼으로 필기 사진을 찍거나 골라 주세요.</div>`}
+    ${fdraft.length ? `<div><b class="small">첨부할 파일</b>${noteFilesHTML(fdraft.map(x => ({n:x.n, s:x.s})), true)}</div>` : ""}
     <div class="q"><label for="${key}-memo">${mq ? `<b>${esc(mq)}</b>` : "한 줄 메모"} <span class="opt">(선택${mq ? " · 한 줄로 답해 주세요" : ""})</span></label>${ta(key, "memo", {rows:2, ph:mq ? "여기에 답을 적어 주세요" : "예: 오늘 배운 것 중 가장 중요한 것은 ___"})}</div>
-    <div class="foot"><span class="muted small" role="status">${busy ? esc(busy) : draft.length ? `${draft.length}장 골랐어요` : ""}</span><div class="row">
-      ${draft.length && !busy ? `<button class="btn" type="button" data-a="note-clear">모두 빼고 다시 고르기</button>` : ""}${n && !req && !busy ? `<button class="btn" type="button" data-a="note-redo-cancel">취소</button>` : ""}
-      <button class="btn pri" type="button" data-a="note-submit" ${busy || !draft.length ? "disabled" : ""}>${n ? "다시 제출하기" : `제출하기${draft.length ? ` (${draft.length}장)` : ""}`}</button></div></div></section>`;
+    <div class="foot"><span class="muted small" role="status">${busy ? esc(busy) : draft.length || fdraft.length ? [draft.length ? `${draft.length}장` : "", fdraft.length ? `파일 ${fdraft.length}개` : ""].filter(Boolean).join(" · ") + " 골랐어요" : ""}</span><div class="row">
+      ${(draft.length || fdraft.length) && !busy ? `<button class="btn" type="button" data-a="note-clear">모두 빼고 다시 고르기</button>` : ""}${n && !req && !busy ? `<button class="btn" type="button" data-a="note-redo-cancel">취소</button>` : ""}
+      <button class="btn pri" type="button" data-a="note-submit" ${busy || !(draft.length || fdraft.length) ? "disabled" : ""}>${n ? "다시 제출하기" : `제출하기${draft.length || fdraft.length ? ` (${[draft.length ? `${draft.length}장` : "", fdraft.length ? `파일 ${fdraft.length}` : ""].filter(Boolean).join("·")})` : ""}`}</button></div></div></section>`;
 }
 function noteGallery(r, p){
   if(r.reveal === "teacher" || !r.reveal) return "";
   if(!p?.notes) return `<p class="muted small" style="margin-top:14px">${ic("books", "sm")} 사진을 올리면 친구들이 올린 학습 나눔도 볼 수 있어요.</p>`;
   const ps = postsOf(r.id), others = ps.filter(x => x.notes && !isMe(x.author)).sort((a, b) => (b.notes.submittedAt||0) - (a.notes.submittedAt||0));
   return `<section class="card ngal"><h3>${ic("books")} 친구들의 학습 나눔 <span class="muted small">${others.length}명</span></h3>
-    ${others.length ? `<div class="ncards">${others.map(x => `<article class="ncard"><div class="ncard-h"><b>${esc(displayName(r, x.author, ps))}</b><span class="muted small">${x.notes.images.length}장</span></div>${noteThumbs(x, x.notes.images, 3)}${x.notes.memo ? `<p class="small ncard-memo">${esc(x.notes.memo)}</p>` : ""}</article>`).join("")}</div>`
+    ${others.length ? `<div class="ncards">${others.map(x => `<article class="ncard"><div class="ncard-h"><b>${esc(displayName(r, x.author, ps))}</b><span class="muted small">${noteSum(x.notes)}</span></div>${x.notes.images.length ? noteThumbs(x, x.notes.images, 3) : ""}${noteFilesHTML(x.notes.files)}${x.notes.memo ? `<p class="small ncard-memo">${esc(x.notes.memo)}</p>` : ""}</article>`).join("")}</div>`
       : `<p class="muted small">아직 친구들이 올린 사진이 없어요.</p>`}</section>`;
 }
 /* 선생님: 학생별 학습 나눔 확인 · 미제출 · 재제출 요청 */
@@ -3557,6 +3597,7 @@ function viewNotesTeacher(r){
   let h = `<div class="kpis">${viewsOn() ? `<div class="kpi" title="활동을 한 번이라도 열어 본 학생 (제출한 학생 포함)"><b>${inCls.filter(x => x.p?.notes || x.v).length}${names.length && !gs ? `<small> / ${inCls.length}</small>` : ""}</b><span>${ic("eye", "sm")} 조회</span></div>` : ""}<div class="kpi"><b>${c("done") + c("redo")}${names.length && !gs ? `<small> / ${inCls.length}</small>` : ""}</b><span>제출</span></div>
     <div class="kpi"><b>${names.length || gs ? c("none") : "–"}</b><span>미제출</span></div><div class="kpi"><b>${c("redo")}</b><span>재제출 요청</span></div></div>
     <div class="nshare-row"><span>${ic("lock", "sm")} 올린 사진 보기</span><span class="seg3" role="group" aria-label="올린 사진 보기"><button type="button" data-a="note-share" data-v="teacher" aria-pressed="${r.reveal !== "after"}">선생님만</button><button type="button" data-a="note-share" data-v="after" aria-pressed="${r.reveal === "after"}">학생끼리 서로 보기</button></span>${r.reveal === "after" ? `<span class="muted small">${r.anonymous ? "친구에게는 이름 없이 보여요" : "친구에게 이름이 보여요"}</span>` : ""}</div>
+    <div class="nshare-row"><span>${ic("file-text", "sm")} 파일 첨부</span><span class="seg3" role="group" aria-label="파일 첨부 허용"><button type="button" data-a="note-files" data-v="off" aria-pressed="${!noteFilesOn(r)}">끔 (사진만)</button><button type="button" data-a="note-files" data-v="on" aria-pressed="${noteFilesOn(r)}">켬</button></span><span class="muted small">${noteFilesOn(r) ? `학생이 PDF·한글·워드 등 파일을 ${NOTE_FILE_MAX}개까지 함께 올려요.` : "학생은 사진만 올려요."}</span></div>
 ${memoQOf(r) ? `<p class="small" style="margin-top:10px">${ic("message-circle", "sm")} <b>한 줄 메모 질문</b> · ${esc(memoQOf(r))}</p>` : ""}`;
   if(!names.length && !gs) h += `<p class="notice" style="margin-top:12px">${S.mode === "supa" ? (S.roster === undefined ? "학생 명단을 불러오는 중…" : "학생 명단(학생 코드)에 학생을 넣으면 미제출 학생도 함께 보여요.") : "설정 탭의 학생 명단을 넣으면 미제출 학생도 함께 보여요."}</p>`;
   h += `<div class="nbar"><div class="mfilters">${[["all","전체",inCls.length],["done","제출 완료",c("done")],["none","미제출",c("none")],["redo","재제출 요청",c("redo")], ...(viewsOn() ? [["viewed","조회만 함",inCls.filter(x => x.st === "none" && x.v).length]] : [])].map(([k,l,n]) => `<button type="button" data-a="note-filter" data-v="${k}" aria-pressed="${nf===k}">${l} <span class="mono">${n}</span></button>`).join("")}</div>
@@ -3565,8 +3606,8 @@ ${memoQOf(r) ? `<p class="small" style="margin-top:10px">${ic("message-circle", 
   h += nudgeBar(r, unsubN, unsubN);                                       // 🔔 미제출 학생에게 제출 알림
   if(!list.length) return h + `<div class="empty">${rows.length ? "조건에 맞는 학생이 없어요." : "아직 제출한 학생이 없어요."}</div>`;
   return h + `<div class="ncards">${list.map(({nm, p, st, v}) => `<article class="ncard ${st}"><div class="ncard-h"><b>${st === "none" ? nudgeBox(nm) : ""}${esc(nm)}</b><span class="chip nchip ${st}">${st === "none" && v ? `${ic("eye", "sm")} 조회만 함` : LBL[st]}</span></div>
-      ${p?.notes ? `<span class="muted small">${esc(fmt(p.notes.submittedAt))} · ${p.notes.images.length}장${p.notes.version > 1 ? ` · ${p.notes.version}번째 제출` : ""}</span>${noteThumbs(p, p.notes.images, 3)}${p.notes.memo ? `<p class="small ncard-memo">${esc(p.notes.memo)}</p>` : ""}
-        <div class="row end">${st === "redo" ? `<button class="btn sm" type="button" data-a="note-req-cancel" data-pid="${esc(p.id)}">요청 취소</button>` : `<button class="btn sm" type="button" data-a="note-req" data-pid="${esc(p.id)}">${ic("rotate-clockwise")} 재제출 요청</button>`}<button class="btn sm pri" type="button" data-a="note-view" data-pid="${esc(p.id)}" data-i="0">크게 보기</button></div>`
+      ${p?.notes ? `<span class="muted small">${esc(fmt(p.notes.submittedAt))} · ${noteSum(p.notes)}${p.notes.version > 1 ? ` · ${p.notes.version}번째 제출` : ""}</span>${p.notes.images.length ? noteThumbs(p, p.notes.images, 3) : ""}${noteFilesHTML(p.notes.files)}${p.notes.memo ? `<p class="small ncard-memo">${esc(p.notes.memo)}</p>` : ""}
+        <div class="row end">${st === "redo" ? `<button class="btn sm" type="button" data-a="note-req-cancel" data-pid="${esc(p.id)}">요청 취소</button>` : `<button class="btn sm" type="button" data-a="note-req" data-pid="${esc(p.id)}">${ic("rotate-clockwise")} 재제출 요청</button>`}${p.notes.images.length ? `<button class="btn sm pri" type="button" data-a="note-view" data-pid="${esc(p.id)}" data-i="0">크게 보기</button>` : ""}</div>`
       : `<p class="muted small">${p ? "올리는 중이거나 아직 제출 전이에요." : "아직 제출하지 않았어요."}</p>${viewsOn() ? `<p class="muted small">${v ? `${ic("eye", "sm")} 조회 ${v.n}회 · 마지막 ${esc(fmtRel(v.last))}` : "아직 열어 보지 않았어요."}</p>` : ""}`}</article>`).join("")}</div>`;
 }
 /* ---- 📲 휴대폰 홈 화면에 앱처럼 설치 (학생) ---- */
@@ -4927,7 +4968,7 @@ function teacherCard(r, p, ps, nav){
    ========================================================= */
 /* 🔄 새 버전 알림: 배포 때마다 APP_VERSION과 version.json의 v를 같은 값으로 올린다.
    GitHub Pages는 화면을 10분쯤 기억하므로, 옛 화면이면 아래쪽에 ‘새로고침’ 띠를 띄우고 주소를 바꿔 새로 받는다 */
-const APP_VERSION = "2026-10-28e";
+const APP_VERSION = "2026-10-29a";
 async function checkVersion(){
   if(!/^https?:$/.test(location.protocol)) return;
   try{
@@ -6812,7 +6853,7 @@ function formFromRoom(r){
   const f = featuresOf(r), t = TEMPLATES[r.template] || {};
   const form = {editId:r.id, goal:(GOALS.find(g=>g.t.includes(r.template))||{}).k, template:r.template, tool:toolOf(r), depth:depthOf(r),
     prompt:r.prompt||"", title:r.title||"", context:r.context||"", ctxImgs:ctxImgsOf(r), intro:r.intro||"",
-    maxPages:String(r.noteCfg?.maxPages||3), memoQ:r.noteCfg?.memoQ||"", personaName:r.persona?.name||"", personaAbout:r.persona?.about||"", personaFacts:r.persona?.facts||"", personaStyle:r.persona?.style||"persona", maxTurns:String(r.persona?.maxTurns||8), personaGuide:r.persona?.guide||"", pgMode:r.persona?.guide && !r.persona?.gen ? "direct" : "gen",
+    maxPages:String(r.noteCfg?.maxPages||3), memoQ:r.noteCfg?.memoQ||"", noteFiles:r.noteCfg?.files ? "on" : "", personaName:r.persona?.name||"", personaAbout:r.persona?.about||"", personaFacts:r.persona?.facts||"", personaStyle:r.persona?.style||"persona", maxTurns:String(r.persona?.maxTurns||8), personaGuide:r.persona?.guide||"", pgMode:r.persona?.guide && !r.persona?.gen ? "direct" : "gen",
     personaImg:r.persona?.img||"", personaUser:r.persona?.user||"", personaCall:r.persona?.call||"", personaGreeting:r.persona?.greeting||"", personaStarters:(r.persona?.starters||[]).join("\n"),
     ...(r.persona?.gen ? {pgType:pgTypeOf(r.persona.gen.type), pgSubj:r.persona.gen.subj||"", pgGrade:r.persona.gen.grade||"", pgGoal:r.persona.gen.goal||"", pgSupport:r.persona.gen.support||"step"} : {}),
     subject:r.subject||"", unit:r.unit||"", year:r.year||"", grade:r.grade||"", duration:String(r.duration||""), dueAt:dtv(r.dueAt), stage:r.stage||"", memo:tnote(r).memo||"",
@@ -7108,7 +7149,7 @@ function roomFromForm(f){
                                                 : String(f.stances||"").split(",").map(s=>s.trim()).filter(Boolean)).slice(0,4);
   const prompt = (f.prompt||"").trim();
   const isDebate = f.template === "debate2" || f.template === "debateN";
-  const noteCfg = f.template === "notes" ? {maxPages:Math.max(1, Math.min(12, parseInt(f.maxPages)||3)), ...(String(f.memoQ || "").trim() ? {memoQ:String(f.memoQ).trim().slice(0, 120)} : {})} : undefined;
+  const noteCfg = f.template === "notes" ? {maxPages:Math.max(1, Math.min(12, parseInt(f.maxPages)||3)), ...(String(f.memoQ || "").trim() ? {memoQ:String(f.memoQ).trim().slice(0, 120)} : {}), ...(f.noteFiles === "on" ? {files:true} : {})} : undefined;
   const persona = f.template === "chat" ? {name:(f.personaName||"").trim(), about:(f.personaAbout||"").trim(), facts:(f.personaFacts||"").trim().slice(0, 4000), style:f.personaStyle === "easy" ? "easy" : "persona", maxTurns:turnsOf(f), ...charSaved(f), ...pgSaved(f)} : undefined;
   return {
     title:(f.title||"").trim() || (f.template === "notes" ? `학습 나눔 · ${new Date().getMonth()+1}월 ${new Date().getDate()}일` : (prompt.length > 28 ? prompt.slice(0,28) + "…" : prompt)),
@@ -7646,6 +7687,8 @@ function viewCreate(){
       <p class="hint">학생은 ‘사진 찍기’나 ‘앨범에서 고르기’로 여러 장을 골라, 미리 보고 순서를 바꾸거나 뺀 뒤 제출해요. 활동 이름을 비워 두면 ‘학습 나눔 · 날짜’로 정해져요.</p>
       <div class="form-grid">
       <div class="q"><label for="c-maxp">한 번에 올릴 수 있는 사진 수</label><input type="number" id="c-maxp" data-form="create" data-k="maxPages" min="1" max="12" value="${esc(f.maxPages||"3")}"><p class="hint">1장~12장 (기본 3장)</p></div>
+      <div class="q"><label for="c-nfiles">파일 첨부</label><select id="c-nfiles" data-form="create" data-k="noteFiles"><option value="" ${f.noteFiles !== "on" ? "selected" : ""}>끔 · 사진만 (기본)</option><option value="on" ${f.noteFiles === "on" ? "selected" : ""}>켬 · 파일도 올릴 수 있어요</option></select>
+        <p class="hint">PDF·한글·워드·PPT·엑셀·텍스트, ${NOTE_FILE_MAX}개까지. 활동 화면에서 언제든 바꿀 수 있어요.</p></div>
       <div class="q"><label for="c-nshare">올린 사진 보기</label><select id="c-nshare" data-form="create" data-k="reveal"><option value="teacher" ${f.reveal !== "after" ? "selected" : ""}>선생님만 보기 (기본)</option><option value="after" ${f.reveal === "after" ? "selected" : ""}>올린 학생끼리 서로 보기</option></select>
         <p class="hint">‘서로 보기’면 자기 사진을 올린 학생이 친구들의 사진도 볼 수 있어요. 활동 화면에서 언제든 바꿀 수 있어요.</p>
         ${f.reveal === "after" ? `<label class="choice" style="min-height:36px"><input type="checkbox" data-form="create" data-k="anonymous" ${f.anonymous ? "checked" : ""}><span>친구에게는 이름 없이 보이기</span></label>` : ""}</div>
@@ -7804,6 +7847,7 @@ document.addEventListener("change", e => {
   if(el.dataset.combo){ setCombo(el.dataset.combo, el.type === "checkbox" ? el.checked : el.value); saveFormsSoon(); render(); document.getElementById(el.id)?.focus(); return }
   if(el.dataset.ctxFile !== undefined){ if(el.files?.length) ctxAddFiles(el.files); el.value = ""; return }
   if(el.dataset.avatarFile !== undefined){ if(el.files?.[0]) avatarAdd(el.files[0]); el.value = ""; return }
+  if(el.dataset.noteAttach){ const r = S.rooms.find(x => x.id === el.dataset.noteAttach); if(r && el.files?.length) noteAddAttach(r, [...el.files]); el.value = ""; return }
   if(el.dataset.noteFile){ const r = S.rooms.find(x => x.id === el.dataset.noteFile); if(r && el.files?.length) noteAddFiles(r, el.files); el.value = ""; return }
   if(el.id === "n-cls"){ S.ncls = el.value; render(); return }
   if(el.id === "roster-view"){ S.rosterView = el.value; render(); document.getElementById("roster-view")?.focus(); return }
@@ -8046,6 +8090,9 @@ async function act(a, b){
       lsSet("nonjae.name", res.data.name); location.reload(); return;                   // 들어온 활동을 새로 불러온다
     }
     case "join-open": S.modal = {type:"join"}; break;
+    case "note-files": { const v = b.dataset.v === "on"; if(!r || !!r.noteCfg?.files === v) break;
+      const cfg = {...(r.noteCfg || {}), files:v}, ok = await write(db => db.doc("rooms/" + r.id).update({noteCfg:cfg, updatedAt:Date.now()}), () => { r.noteCfg = cfg });
+      if(ok) toast(v ? "이제 학생이 파일도 올릴 수 있어요." : "이제 학생은 사진만 올려요. 이미 올린 파일은 그대로 볼 수 있어요."); break }
     case "note-share": { const v = b.dataset.v === "after" ? "after" : "teacher"; if(!r || r.reveal === v) break;
       const ok = await write(db => db.doc("rooms/" + r.id).update({reveal:v, updatedAt:Date.now()}), () => { r.reveal = v });
       if(ok) toast(v === "after" ? "이제 사진을 올린 학생끼리 서로 볼 수 있어요." : "이제 선생님만 볼 수 있어요."); break }
@@ -8182,10 +8229,11 @@ async function act(a, b){
     case "due-clear": { const f = createForm(); f.dueAt = ""; saveFormsSoon(); break }
     /* ---- 오늘의 필기 ---- */
     case "note-redo": S.noteRedo = r?.id; break;
-    case "note-redo-cancel": S.noteRedo = null; (NDRAFT[r.id]||[]).forEach(x => URL.revokeObjectURL(x.url)); delete NDRAFT[r.id]; break;
+    case "note-redo-cancel": S.noteRedo = null; (NDRAFT[r.id]||[]).forEach(x => URL.revokeObjectURL(x.url)); delete NDRAFT[r.id]; delete FDRAFT[r.id]; break;
     case "note-rm": { const l = NDRAFT[r.id] || [], i = +b.dataset.i; if(l[i]){ URL.revokeObjectURL(l[i].url); l.splice(i, 1) } break }
     case "note-move": { const l = NDRAFT[r.id] || [], i = +b.dataset.i, j = i + (+b.dataset.d); if(l[i] && l[j]) [l[i], l[j]] = [l[j], l[i]]; break }
-    case "note-clear": (NDRAFT[r.id]||[]).forEach(x => URL.revokeObjectURL(x.url)); NDRAFT[r.id] = []; break;
+    case "note-clear": (NDRAFT[r.id]||[]).forEach(x => URL.revokeObjectURL(x.url)); NDRAFT[r.id] = []; FDRAFT[r.id] = []; break;
+    case "nfile-rm": { const l = FDRAFT[r.id] || []; l.splice(+b.dataset.i, 1); break }
     case "note-submit": await noteSubmit(r); return;
     case "note-view": S.modal = {type:"note", pid:b.dataset.pid || null, draft:b.dataset.draft || null, i:+b.dataset.i || 0}; break;
     case "note-nav": if(S.modal) S.modal.i = (S.modal.i||0) + (+b.dataset.d); break;
