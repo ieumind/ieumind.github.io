@@ -3280,6 +3280,7 @@ async function setTimer(r, timer){
 /* 1초마다 숫자만 바꾸고, 진행→끝처럼 상태가 바뀔 때만 다시 그린다 */
 const TMR_SEEN = {}, TMR_RANG = {};
 /* 🔔 끝나면 소리: 브라우저는 화면을 한 번 건드려야 소리를 허락하므로 첫 터치·키 입력 때 미리 깨워 둔다 */
+const TMR_RUN = {};   // 이 화면에서 직접 돌아가는 걸 본 타이머만 울린다(들어오자마자 울리지 않게)
 let TMR_AC = null, TMR_AU = null, TMR_URL = "";
 const tmrSndOn = () => { try{ return localStorage.getItem("nonjae.tmrsnd") !== "off" }catch(e){ return true } };
 /* 소리는 <audio>(WAV)로 낸다: 아이폰은 무음 스위치가 켜져 있어도 <audio>는 들리고, 웹 오디오(AudioContext)는 막히기 때문. 웹 오디오는 예비 */
@@ -3291,15 +3292,17 @@ function tmrWav(){
   return URL.createObjectURL(new Blob([buf], {type:"audio/wav"}));
 }
 /* 첫 터치·클릭·키 입력 때 미리 깨워 둔다. 사파리는 pointerdown이 아니라 click/touchend만 ‘사용자 동작’으로 쳐 준다 */
-function tmrWake(){
-  try{ if(navigator.audioSession) navigator.audioSession.type = "playback" }catch(e){}
+const tmrLive = () => (S.rooms || []).some(r => { const t = tmrOf(r); return t && t.st !== "end" });   // 타이머가 돌고 있을 때만 소리를 준비한다(평소엔 폰의 음악을 건드리지 않음)
+function tmrWake(force){
+  if(force !== true && !tmrLive()) return;
   try{
+
     if(!TMR_AU){ TMR_URL = tmrWav(); TMR_AU = new Audio(TMR_URL); TMR_AU.preload = "auto"; TMR_AU.setAttribute("playsinline", "") }
     if(!TMR_AU.__unlocked){ TMR_AU.muted = true; const pr = TMR_AU.play(); const done = () => { TMR_AU.pause(); TMR_AU.currentTime = 0; TMR_AU.muted = false; TMR_AU.__unlocked = true }; if(pr?.then) pr.then(done, () => {}); else done() }
   }catch(e){}
   try{ TMR_AC = TMR_AC || new (window.AudioContext || window.webkitAudioContext)(); if(TMR_AC.state === "suspended") TMR_AC.resume() }catch(e){}
 }
-["click", "touchend", "keydown", "pointerup"].forEach(ev => addEventListener(ev, tmrWake, {passive:true, capture:true}));
+["click", "touchend", "keydown", "pointerup"].forEach(ev => addEventListener(ev, () => tmrWake(), {passive:true, capture:true}));
 function tmrBeepFallback(){
   try{
     const ac = TMR_AC; if(!ac) return false;
@@ -3316,19 +3319,20 @@ let TMR_WARNED = 0;
 function tmrRing(force){
   if(!force && !tmrSndOn()) return;
   try{ navigator.vibrate?.([300, 150, 300, 150, 300]) }catch(e){}
+  try{ if(navigator.audioSession){ navigator.audioSession.type = "playback"; setTimeout(() => { try{ navigator.audioSession.type = "auto" }catch(e){} }, 3500) } }catch(e){}   // 울리는 동안만 소리 채널을 쓴다
   const blocked = () => { if(Date.now() - TMR_WARNED > 60000){ TMR_WARNED = Date.now(); toast("소리가 막혀 있어요. 화면을 한 번 누르거나 휴대폰 무음 모드를 확인해 주세요.") } };
   try{
-    tmrWake();
+    tmrWake(true);
     if(TMR_AU){ TMR_AU.muted = false; TMR_AU.currentTime = 0; const pr = TMR_AU.play(); if(pr?.catch){ pr.catch(() => { if(!tmrBeepFallback()) blocked() }); return } }
     if(!tmrBeepFallback()) blocked();
   }catch(e){ if(!tmrBeepFallback()) blocked() }
 }
 function tmrSndBtn(){ const on = tmrSndOn(); return `<button class="linkbtn tmr-snd" type="button" data-a="tmr-snd" aria-pressed="${on}" title="시간이 끝나면 소리 내기">${ic(on ? "bell" : "bell-off")} 소리 ${on ? "켜짐" : "꺼짐"}</button><button class="linkbtn tmr-snd" type="button" data-a="tmr-test" title="지금 소리가 나는지 들어 보기">${ic("bell-ringing")} 들어보기</button>` }
 setInterval(() => {
-  if(isTeacher()) S.rooms.forEach(r => { const t = tmrOf(r); if(t && t.st === "end" && t.ago < 6000){ const rk = r.id + ":" + r.timer.endsAt; if(!TMR_RANG[rk]){ TMR_RANG[rk] = 1; tmrRing() } } });   // 선생님은 다른 화면에 있어도 울린다
+  if(isTeacher()) S.rooms.forEach(r => { const t = tmrOf(r); if(t && t.st === "end" && t.ago < 6000){ const rk = r.id + ":" + r.timer.endsAt; if(!TMR_RANG[rk]){ TMR_RANG[rk] = 1; if(TMR_RUN[rk]) tmrRing() } } else if(t && t.st === "run") TMR_RUN[r.id + ":" + r.timer.endsAt] = 1 });   // 선생님은 다른 화면에 있어도 울린다
   document.querySelectorAll("[data-tmr]").forEach(el => {
     const r = S.rooms.find(x => x.id === el.dataset.tmr), t = tmrOf(r), key = t ? t.st + tmrCls(t) : "";
-    if(t && t.st === "end" && t.ago < 6000){ const rk = el.dataset.tmr + ":" + r.timer.endsAt; if(!TMR_RANG[rk]){ TMR_RANG[rk] = 1; tmrRing() } }   // 방금 끝났을 때만 한 번
+    if(t && t.st === "end" && t.ago < 6000){ const rk = el.dataset.tmr + ":" + r.timer.endsAt; if(!TMR_RANG[rk]){ TMR_RANG[rk] = 1; if(TMR_RUN[rk]) tmrRing() } } else if(t && t.st === "run") TMR_RUN[el.dataset.tmr + ":" + r.timer.endsAt] = 1;   // 방금 끝났을 때만 한 번
     if(TMR_SEEN[el.dataset.tmr] !== undefined && TMR_SEEN[el.dataset.tmr] !== key){ TMR_SEEN[el.dataset.tmr] = key; render(); return }
     TMR_SEEN[el.dataset.tmr] = key;
     if(!t) return;
@@ -5027,7 +5031,7 @@ function teacherCard(r, p, ps, nav){
    ========================================================= */
 /* 🔄 새 버전 알림: 배포 때마다 APP_VERSION과 version.json의 v를 같은 값으로 올린다.
    GitHub Pages는 화면을 10분쯤 기억하므로, 옛 화면이면 아래쪽에 ‘새로고침’ 띠를 띄우고 주소를 바꿔 새로 받는다 */
-const APP_VERSION = "2026-11-03b";
+const APP_VERSION = "2026-11-03c";
 async function checkVersion(){
   if(!/^https?:$/.test(location.protocol)) return;
   try{
@@ -8751,7 +8755,7 @@ async function act(a, b){
       if(a === "tmr-resume") await setTimer(rr, {...cur, endsAt:now + t.left, left:null, at:now});
       break;
     }
-    case "tmr-test": tmrWake(); tmrRing(true); toast("소리가 들리나요? 안 들리면 휴대폰 무음 모드·음량을 확인해 주세요."); break;
+    case "tmr-test": tmrWake(true); tmrRing(true); toast("소리가 들리나요? 안 들리면 휴대폰 무음 모드·음량을 확인해 주세요."); break;
     case "tmr-snd": { try{ localStorage.setItem("nonjae.tmrsnd", tmrSndOn() ? "off" : "on") }catch(e){} tmrWake(); render(); if(tmrSndOn()) tmrRing(); break }
     case "tmr-stop": { const rr = S.rooms.find(x=>x.id===b.dataset.id); if(rr) await setTimer(rr, null); break }
     case "edit-room": { S.modal = null; const rr = S.rooms.find(x=>x.id===b.dataset.id); S.form.create = formFromRoom(rr); saveFormsSoon(); S.tplNaming = false; S.view = "create"; scrollTo(0,0); break }
