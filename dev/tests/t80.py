@@ -30,7 +30,8 @@ async def main():
       sel=await P.evaluate('[...document.querySelectorAll("#mine-crs option")].map(o=>o.textContent.trim())')
       ok(f'{name} 과목 선택에 3개 묶음(과목 없는 활동 포함)', len(sel)==3 and any('과목 없는 활동' in x for x in sel), str(sel))
       await P.select_option('#mine-crs','c1'); await W(P,300)
-      ok(f'{name} 한 화면에 8개 노드', await P.evaluate('document.querySelectorAll(".mmap-n").length')==8)
+      PER=8 if w>700 else 6
+      ok(f'{name} 한 화면에 {PER}개 노드', await P.evaluate('document.querySelectorAll(".mmap-n").length')==PER)
       ok(f'{name} 오른쪽 목록은 11개 전부', await P.evaluate('document.querySelectorAll(".mmap-li").length')==11)
       ok(f'{name} 쪽 표시 1/2', '1 / 2' in await P.inner_text('.mmap-pg'))
       tones=await P.evaluate('[...new Set([...document.querySelectorAll(".mmap-n")].map(n=>[...n.classList].find(c=>c.startsWith("t-"))))].sort().join()')
@@ -49,7 +50,7 @@ async def main():
       # 목록에서 2쪽 활동 고르면 그 쪽으로
       await P.click('.mmap-li >> nth=10'); await W(P,500)
       ok(f'{name} 목록에서 다른 쪽 활동을 고르면 그 쪽으로 넘어감', '2 / 2' in await P.inner_text('.mmap-pg'))
-      ok(f'{name} 2쪽에는 노드 3개', await P.evaluate('document.querySelectorAll(".mmap-n").length')==3)
+      ok(f'{name} 2쪽에는 노드 {11-PER}개', await P.evaluate('document.querySelectorAll(".mmap-n").length')==11-PER)
       await P.click('[data-a=mine-page][data-d="-1"]'); await W(P,300); ok(f'{name} 더 최근 쪽으로', '1 / 2' in await P.inner_text('.mmap-pg'))
       # 자료
       await P.click('.mmap-li >> nth=0'); await W(P,300)
