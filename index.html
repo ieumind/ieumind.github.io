@@ -1047,6 +1047,15 @@ a.autolink{color:var(--accent);text-decoration:underline;text-underline-offset:2
 .nbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:14px 0 6px}
 .nbar input[type=search]{min-height:40px;flex:1 1 180px;max-width:280px;border:1px solid var(--line);border-radius:10px;padding:8px 12px;background:var(--surface);color:var(--fg);font:inherit}
 .nbar select{flex:0 0 auto;width:auto;min-height:40px}
+.nset{margin-top:12px}.nset>summary{display:flex;align-items:center;gap:8px;flex-wrap:wrap;cursor:pointer;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:var(--surface);list-style:none}.nset>summary::-webkit-details-marker{display:none}.nset>summary::after{content:"▾";margin-left:auto;color:var(--muted)}.nset[open]>summary::after{content:"▴"}.nset[open]>summary{border-bottom-left-radius:0;border-bottom-right-radius:0}.nset>.nshare-row{margin-top:-1px;border-radius:0}.nset>.nshare-row:last-of-type{border-radius:0 0 10px 10px}.nset>p{padding:8px 12px;margin:0!important;border:1px solid var(--line);border-top:0;background:var(--surface);border-radius:0 0 10px 10px}
+.nudge .nudge-go{display:none}
+@media (max-width:700px){
+  .kpis.nk{grid-template-columns:repeat(4,minmax(0,1fr));gap:5px}.kpis.nk .kpi{padding:7px 6px;text-align:center}.kpis.nk .kpi b{font-size:18px}.kpis.nk .kpi b small{font-size:11px}.kpis.nk .kpi span{font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .nbar{gap:6px;margin:10px 0 4px}.nbar .mfilters{flex:0 0 100%;flex-wrap:nowrap;overflow-x:auto;padding-bottom:4px;scrollbar-width:none;-webkit-overflow-scrolling:touch}.nbar .mfilters::-webkit-scrollbar{display:none}.nbar .mfilters button{flex:0 0 auto;white-space:nowrap}
+  .nbar select{flex:1 1 40%;min-width:0;max-width:48%}.nbar input[type=search]{flex:1 1 50%;min-width:0;max-width:none}
+  .nudge.idle>:not(.nudge-go){display:none}.nudge.idle .nudge-go{display:inline-flex}
+  .nudge.has{position:sticky;bottom:calc(env(safe-area-inset-bottom,0px) + 76px);z-index:27;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:8px 10px;box-shadow:0 4px 16px rgba(0,0,0,.14)}.nudge.has .nudge-t{display:none}
+}
 a.btn{text-decoration:none;color:inherit;display:inline-flex;align-items:center}
 /* ---------- 학생 첫 화면 ---------- */
 .shome{display:grid;gap:16px}
@@ -3594,16 +3603,17 @@ function viewNotesTeacher(r){
   const pass = x => nf === "all" || (nf === "viewed" ? x.st === "none" && !!x.v : x.st === nf);
   const list = inCls.filter(x => pass(x) && (!q || x.nm.includes(q))), unsubN = inCls.filter(x => x.st === "none").map(x => x.nm);
   const LBL = {done:`${ic("check", "sm")} 제출 완료`, none:"미제출", redo:`${ic("rotate-clockwise", "sm")} 재제출 요청`};
-  let h = `<div class="kpis">${viewsOn() ? `<div class="kpi" title="활동을 한 번이라도 열어 본 학생 (제출한 학생 포함)"><b>${inCls.filter(x => x.p?.notes || x.v).length}${names.length && !gs ? `<small> / ${inCls.length}</small>` : ""}</b><span>${ic("eye", "sm")} 조회</span></div>` : ""}<div class="kpi"><b>${c("done") + c("redo")}${names.length && !gs ? `<small> / ${inCls.length}</small>` : ""}</b><span>제출</span></div>
+  let h = `<div class="kpis nk">${viewsOn() ? `<div class="kpi" title="활동을 한 번이라도 열어 본 학생 (제출한 학생 포함)"><b>${inCls.filter(x => x.p?.notes || x.v).length}${names.length && !gs ? `<small> / ${inCls.length}</small>` : ""}</b><span>${ic("eye", "sm")} 조회</span></div>` : ""}<div class="kpi"><b>${c("done") + c("redo")}${names.length && !gs ? `<small> / ${inCls.length}</small>` : ""}</b><span>제출</span></div>
     <div class="kpi"><b>${names.length || gs ? c("none") : "–"}</b><span>미제출</span></div><div class="kpi"><b>${c("redo")}</b><span>재제출 요청</span></div></div>
+    <details class="nset" data-keep="nset" ${(S.advOpen?.nset ?? !matchMedia("(max-width:700px)").matches) ? "open" : ""}><summary>${ic("settings", "sm")} <b>활동 설정</b> <span class="muted small">사진 ${r.reveal === "after" ? "서로 보기" : "선생님만"} · 파일 ${noteFilesOn(r) ? "켬" : "끔"}${memoQOf(r) ? " · 메모 질문" : ""}</span></summary>
     <div class="nshare-row"><span>${ic("lock", "sm")} 올린 사진 보기</span><span class="seg3" role="group" aria-label="올린 사진 보기"><button type="button" data-a="note-share" data-v="teacher" aria-pressed="${r.reveal !== "after"}">선생님만</button><button type="button" data-a="note-share" data-v="after" aria-pressed="${r.reveal === "after"}">학생끼리 서로 보기</button></span>${r.reveal === "after" ? `<span class="muted small">${r.anonymous ? "친구에게는 이름 없이 보여요" : "친구에게 이름이 보여요"}</span>` : ""}</div>
     <div class="nshare-row"><span>${ic("file-text", "sm")} 파일 첨부</span><span class="seg3" role="group" aria-label="파일 첨부 허용"><button type="button" data-a="note-files" data-v="off" aria-pressed="${!noteFilesOn(r)}">끔 (사진만)</button><button type="button" data-a="note-files" data-v="on" aria-pressed="${noteFilesOn(r)}">켬</button></span><span class="muted small">${noteFilesOn(r) ? `학생이 PDF·한글·워드 등 파일을 ${NOTE_FILE_MAX}개까지 함께 올려요.` : "학생은 사진만 올려요."}</span></div>
-${memoQOf(r) ? `<p class="small" style="margin-top:10px">${ic("message-circle", "sm")} <b>한 줄 메모 질문</b> · ${esc(memoQOf(r))}</p>` : ""}`;
+${memoQOf(r) ? `<p class="small" style="margin-top:10px">${ic("message-circle", "sm")} <b>한 줄 메모 질문</b> · ${esc(memoQOf(r))}</p>` : ""}</details>`;
   if(!names.length && !gs) h += `<p class="notice" style="margin-top:12px">${S.mode === "supa" ? (S.roster === undefined ? "학생 명단을 불러오는 중…" : "학생 명단(학생 코드)에 학생을 넣으면 미제출 학생도 함께 보여요.") : "설정 탭의 학생 명단을 넣으면 미제출 학생도 함께 보여요."}</p>`;
   h += `<div class="nbar"><div class="mfilters">${[["all","전체",inCls.length],["done","제출 완료",c("done")],["none","미제출",c("none")],["redo","재제출 요청",c("redo")], ...(viewsOn() ? [["viewed","조회만 함",inCls.filter(x => x.st === "none" && x.v).length]] : [])].map(([k,l,n]) => `<button type="button" data-a="note-filter" data-v="${k}" aria-pressed="${nf===k}">${l} <span class="mono">${n}</span></button>`).join("")}</div>
     ${clss.length > 1 ? `<select id="n-cls" aria-label="학교·반"><option value="">모든 학교·반</option>${clss.map(x => `<option ${x===cls?"selected":""}>${esc(x)}</option>`).join("")}</select>` : ""}
     <input type="search" id="n-q" placeholder="이름·학번 찾기" value="${esc(S.nq||"")}" aria-label="학생 찾기"></div>`;
-  h += nudgeBar(r, unsubN, unsubN);                                       // 🔔 미제출 학생에게 제출 알림
+  h += nudgeBar(r, unsubN, unsubN, nf !== "none");                        // 🔔 미제출 학생에게 제출 알림
   if(!list.length) return h + `<div class="empty">${rows.length ? "조건에 맞는 학생이 없어요." : "아직 제출한 학생이 없어요."}</div>`;
   return h + `<div class="ncards">${list.map(({nm, p, st, v}) => `<article class="ncard ${st}"><div class="ncard-h"><b>${st === "none" ? nudgeBox(nm) : ""}${esc(nm)}</b><span class="chip nchip ${st}">${st === "none" && v ? `${ic("eye", "sm")} 조회만 함` : LBL[st]}</span></div>
       ${p?.notes ? `<span class="muted small">${esc(fmt(p.notes.submittedAt))} · ${noteSum(p.notes)}${p.notes.version > 1 ? ` · ${p.notes.version}번째 제출` : ""}</span>${p.notes.images.length ? noteThumbs(p, p.notes.images, 3) : ""}${noteFilesHTML(p.notes.files)}${p.notes.memo ? `<p class="small ncard-memo">${esc(p.notes.memo)}</p>` : ""}
@@ -4691,22 +4701,23 @@ function tabOverview(r, st){
 /* ---- 탭: 참여 현황 (학생별 진행) ---- */
 /* 🔔 제출 알림: 제출하지 않은 학생(또는 선생님이 고른 학생)에게 ‘개별 안내’(+ 휴대폰 알림)를 보낸다. 보내는 길은 개별 안내(msg_send) 그대로라 읽음 확인·다시 알림도 같다 */
 const NUDGE_OK = () => S.demo || msgLive();
+const nudgeCls = n => "nudge" + (n.idle && !n.sel.length ? " idle" : "") + (n.sel.length ? " has" : "");
 function nudgeBarInner(n){
-  return `<span class="muted small">${ic("bell", "sm")} 제출 알림</span>
+  return `${n.idle ? `<button class="btn sm nudge-go" type="button" data-a="note-filter" data-v="none">${ic("bell", "sm")} 미제출 ${n.unsub.length}명에게 알림 보내기…</button>` : ""}<span class="muted small nudge-t">${ic("bell", "sm")} 제출 알림</span>
     <button class="btn sm" type="button" data-a="nudge-all" ${n.unsub.length ? "" : "disabled"}>미제출 ${n.unsub.length}명 모두 고르기</button>
     ${n.sel.length ? `<button class="btn sm" type="button" data-a="nudge-clear">고른 학생 빼기</button>` : ""}
     <button class="btn sm pri" type="button" data-a="nudge-open" ${n.sel.length ? "" : "disabled"}>${ic("bell")} ${n.sel.length ? `고른 ${n.sel.length}명에게 알림 보내기` : "아래에서 학생을 골라 주세요"}</button>`;
 }
-function nudgeBar(r, unsub, pick){                                   // unsub: 미제출 학생 · pick: 고를 수 있는 학생 (이름표)
+function nudgeBar(r, unsub, pick, idle){                                   // unsub: 미제출 학생 · pick: 고를 수 있는 학생 (이름표)
   if(!NUDGE_OK() || !pick.length) return "";
   if(!S.nudge || S.nudge.room !== r.id) S.nudge = {room:r.id, sel:[], unsub:[]};
-  const n = S.nudge; n.unsub = unsub; n.sel = n.sel.filter(x => pick.includes(x));
-  return `<div class="nudge" id="nudge-bar">${nudgeBarInner(n)}</div>`;
+  const n = S.nudge; n.unsub = unsub; n.sel = n.sel.filter(x => pick.includes(x)); n.idle = !!idle;      // idle: 휴대폰에서는 ‘미제출’ 필터를 고르기 전까지 한 줄 버튼으로만
+  return `<div class="${nudgeCls(n)}" id="nudge-bar">${nudgeBarInner(n)}</div>`;
 }
 const nudgeBox = nm => !NUDGE_OK() || !S.nudge ? "" : `<label class="ncheck" title="이 학생에게 제출 알림 보내기"><input type="checkbox" data-nudge="${esc(nm)}" ${S.nudge.sel.includes(nm) ? "checked" : ""} aria-label="${esc(nm)} 알림 받을 학생으로 고르기"></label>`;
 function nudgeRefresh(){                                              // 체크할 때는 그 자리에서만 고친다 (스크롤 유지)
   const n = S.nudge, bar = document.getElementById("nudge-bar"); if(!n) return;
-  if(bar) bar.innerHTML = nudgeBarInner(n);
+  if(bar){ bar.className = nudgeCls(n); bar.innerHTML = nudgeBarInner(n) }
   document.querySelectorAll("input[data-nudge]").forEach(i => { i.checked = n.sel.includes(i.dataset.nudge) });
 }
 function nudgeOpen(r){
@@ -4968,7 +4979,7 @@ function teacherCard(r, p, ps, nav){
    ========================================================= */
 /* 🔄 새 버전 알림: 배포 때마다 APP_VERSION과 version.json의 v를 같은 값으로 올린다.
    GitHub Pages는 화면을 10분쯤 기억하므로, 옛 화면이면 아래쪽에 ‘새로고침’ 띠를 띄우고 주소를 바꿔 새로 받는다 */
-const APP_VERSION = "2026-10-29a";
+const APP_VERSION = "2026-11-02a";
 async function checkVersion(){
   if(!/^https?:$/.test(location.protocol)) return;
   try{
