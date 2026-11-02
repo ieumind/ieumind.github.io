@@ -1590,6 +1590,13 @@ input[type=datetime-local]{border-radius:var(--r)}
 .gcard .gc-ck{width:22px;height:22px;border-radius:50%;border:1.5px solid var(--line);background:var(--surface);position:relative}
 .gcard[aria-pressed="true"]{background:var(--accent-soft);border-color:var(--accent);box-shadow:0 0 0 1px var(--accent)}
 .gcard[aria-pressed="true"] .gc-ic{background:var(--surface)}
+@media (max-width:700px){   /* 활동 만들기: 고르는 칸을 납작하게 (설명은 고른 칸에만) */
+  .gtypes{gap:6px}.gcard{grid-template-columns:36px minmax(0,1fr) 22px;align-items:center;gap:10px;min-height:0;padding:9px 12px}.gcard .gc-ic{width:36px;height:36px}.gcard:not([aria-pressed="true"]) .gc-t>span:not(.beta){display:none}
+  .tools{grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}.toolchip:not([aria-pressed="true"]) span{display:none}.toolchip{padding:8px 10px}
+  .depths{gap:6px}.depth{padding:9px 12px}.depth:not([aria-pressed="true"]) .fl{display:none}
+  .preview-steps .detail{display:none}.depth-card .preview-steps{margin-top:10px;padding:10px 12px}
+  details.adv > summary{flex-wrap:wrap;padding:12px 14px;gap:2px 8px}details.adv > summary .opt{order:3;flex:1 1 100%;font-weight:400}details.adv > summary::after{order:2}
+}
 .gcard[aria-pressed="true"] .gc-ck{background:var(--accent);border-color:var(--accent)}
 .gcard[aria-pressed="true"] .gc-ck::after{content:"";position:absolute;inset:3px;background:var(--accent-ink);-webkit-mask:var(--ti-check) center/contain no-repeat;mask:var(--ti-check) center/contain no-repeat}
 .gcard .beta{vertical-align:1px}
@@ -4985,7 +4992,7 @@ function teacherCard(r, p, ps, nav){
    ========================================================= */
 /* 🔄 새 버전 알림: 배포 때마다 APP_VERSION과 version.json의 v를 같은 값으로 올린다.
    GitHub Pages는 화면을 10분쯤 기억하므로, 옛 화면이면 아래쪽에 ‘새로고침’ 띠를 띄우고 주소를 바꿔 새로 받는다 */
-const APP_VERSION = "2026-11-02b";
+const APP_VERSION = "2026-11-02c";
 async function checkVersion(){
   if(!/^https?:$/.test(location.protocol)) return;
   try{
