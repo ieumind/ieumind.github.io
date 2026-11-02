@@ -6,6 +6,13 @@
 
 ---
 
+## 2026-11-03a — 타이머 종료 소리 보강
+- 원인 추정: 아이폰은 Web Audio가 무음 스위치에 막히고, pointerdown은 소리 잠금 해제로 인정되지 않음. 데스크톱 Chromium은 기존 방식도 정상(검증함).
+- `tmrRing`: 코드로 만든 WAV(`tmrWav`)를 `<audio>`로 재생(무음 스위치 영향 적음). 실패 시 Web Audio 대체, 그래도 막히면 토스트 안내(60초 1회).
+- 잠금 해제: click/touchend/keydown/pointerup 에서 `tmrWake()`. `audioSession.type="playback"` 설정.
+- 새 버튼 "들어보기"(act `tmr-test`). 교사는 다른 화면에 있어도 타이머 종료 시 울림.
+- 테스트: `dev/tests/t84.py`(WAV 주파수·크기, 터치 해제, 막힘 안내). 옛 `t81.py`(Web Audio 전용)는 삭제.
+
 ## 1. 프로젝트 개요
 
 ### 1-1. 서비스 목적
