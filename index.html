@@ -1541,7 +1541,6 @@ input[type=datetime-local]{border-radius:var(--r)}
 .qgrid.solo{grid-template-columns:1fr}.qgrid.solo .qa{min-height:72px}
 .qhint{margin-top:10px;font-size:13.5px;color:var(--muted);display:flex;flex-wrap:wrap;gap:4px 8px;align-items:center}.qhint .ti{vertical-align:-3px}.qhint .h-m{display:none}
 .qhint-b{border:1px solid var(--warn);background:var(--warn-soft);color:var(--warn);border-radius:999px;padding:2px 10px;font-size:13px;font-weight:600;cursor:pointer}
-@media (max-width:700px){.qhint .h-pc{display:none}.qhint.qh-pc{display:none}.qhint>.ti:first-child{display:none}}
 .qa:hover{border-color:var(--accent)}
 .qa-ic{width:44px;height:44px;border-radius:10px;display:grid;place-items:center;background:var(--accent-soft);color:var(--accent)}
 .qa-t{display:grid;gap:2px;min-width:0}
@@ -5030,7 +5029,7 @@ function teacherCard(r, p, ps, nav){
    ========================================================= */
 /* 🔄 새 버전 알림: 배포 때마다 APP_VERSION과 version.json의 v를 같은 값으로 올린다.
    GitHub Pages는 화면을 10분쯤 기억하므로, 옛 화면이면 아래쪽에 ‘새로고침’ 띠를 띄우고 주소를 바꿔 새로 받는다 */
-const APP_VERSION = "2026-11-03e";
+const APP_VERSION = "2026-11-03f";
 async function checkVersion(){
   if(!/^https?:$/.test(location.protocol)) return;
   try{
@@ -5694,8 +5693,8 @@ function teacherTop(){
   /* 주요 기능 바로가기: 예전 인사말 옆 버튼(학생 코드·개별 안내·새 활동 만들기)과 과목 목록의 ‘새 과목’을 그대로 쓴다 — 같은 액션, 같은 보이기 조건 */
   const qa = (a, icon, t, d, cls = "", attrs = "") => `<button type="button" class="qa${cls}" data-a="${a}"${attrs}><span class="qa-ic" aria-hidden="true">${ic(icon)}</span><span class="qa-t"><b>${t}</b><span>${d}</span></span><span class="qa-go" aria-hidden="true">${ic("chevron-right", "sm")}</span></button>`;
   const quick = qa("create", "plus", "새 활동 만들기", "7가지 활동 중에 골라 만들어요", " pri");      // 나머지 도구(새 과목·학생 코드·개별 안내·출석부)는 왼쪽 메뉴로 옮겼다
-  const tl = [S.mode === "supa" ? "학생 코드" : "", S.mode === "supa" || S.demo ? "개별 안내" : "", S.mode === "supa" || S.demo ? "출석부" : ""].filter(Boolean), pendMsg = attPendingMsg();
-  const qhint = tl.length ? `<p class="qhint${pendMsg ? "" : " qh-pc"}">${ic("menu-2", "sm")} <span class="h-pc">${tl.join(" · ")}는 <b>왼쪽 메뉴</b>에 있어요.</span>${pendMsg ? ` <button type="button" class="qhint-b" data-a="att-open">${ic("clipboard-list", "sm")} ${esc(pendMsg)}</button>` : ""}</p>` : "";
+  const pendMsg = attPendingMsg();
+  const qhint = pendMsg ? `<p class="qhint"><button type="button" class="qhint-b" data-a="att-open">${ic("clipboard-list", "sm")} ${esc(pendMsg)}</button></p>` : "";
   /* 최근 활동: 이미 불러온 활동을 최근 움직임 순으로 4개 (보관 제외) — 새 데이터·통계 없음 */
   const recent = S.mcourse ? [] : [...live].sort((a, b) => lastActivity(b) - lastActivity(a)).slice(0, 4);
   const recentHTML = recent.length ? `<section class="recent" aria-labelledby="recent-h"><div class="recent-h"><h2 id="recent-h" class="sec-h">${ic("clock")} 최근 활동</h2><button class="linkbtn small" type="button" data-a="to-mlist">모든 활동 보기 ${ic("arrow-down", "sm")}</button></div>
