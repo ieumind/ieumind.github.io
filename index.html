@@ -2970,7 +2970,6 @@ function renderTop(){
         + item("att-open", "clipboard-list", `출석부${pend ? '<i class="nav-dot" aria-hidden="true"></i>' : ""}`, S.modal?.type === "attend", ` title="${esc(pend || "수업 날짜마다 출석을 적고, 매달 학생에게 출석 현황을 안내해요")}"`) : "");
     if(tools) h += `<div class="nav-grp">학생 관리</div>` + tools;
     m += inst + fbItem;
-    if(S.mode === "supa") m += item("t-logout", "logout", "로그아웃", false, ` title="${esc(S.sbEmail)}"`);
   }else{
     h += item("home", "home", "홈", v === "home" || v === "room");
     if(S.name) h += item("mine", "notebook", "내 생각 기록", v === "mine");   // 로그인(코드 확인) 전에는 보이지 않는다
@@ -5031,7 +5030,7 @@ function teacherCard(r, p, ps, nav){
    ========================================================= */
 /* 🔄 새 버전 알림: 배포 때마다 APP_VERSION과 version.json의 v를 같은 값으로 올린다.
    GitHub Pages는 화면을 10분쯤 기억하므로, 옛 화면이면 아래쪽에 ‘새로고침’ 띠를 띄우고 주소를 바꿔 새로 받는다 */
-const APP_VERSION = "2026-11-03c";
+const APP_VERSION = "2026-11-03d";
 async function checkVersion(){
   if(!/^https?:$/.test(location.protocol)) return;
   try{
