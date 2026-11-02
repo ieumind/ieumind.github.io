@@ -1056,7 +1056,7 @@ a.autolink{color:var(--accent);text-decoration:underline;text-underline-offset:2
 @media (max-width:700px){
   .mfilters{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch;padding-bottom:2px}.mfilters::-webkit-scrollbar{display:none}.mfilters>*{flex:0 0 auto;white-space:nowrap}
   .mrow2{flex-wrap:nowrap}.mrow2 .sp{display:none}.mrow2 select{flex:1 1 0;min-width:0;max-width:150px}.mrow2 .vtoggle{flex:0 0 auto}
-  .wbanner{min-height:0;padding:16px}.wbanner .wb-art{display:none}.wbanner h2{font-size:21px}.wbanner p{font-size:14px;margin-top:6px}
+  .wbanner{min-height:0;padding:16px 18px}.wbanner .wb-art{display:none}.wb-eb{font-size:11px}.wbanner h2{font-size:20px;margin-top:4px}.wbanner p{font-size:14px;line-height:1.55;margin-top:6px}
   .tstat{padding:8px 12px 8px 14px}.tstat em{display:none}
   .kpis{grid-template-columns:repeat(auto-fit,minmax(78px,1fr));gap:5px;margin-top:10px}.kpis .kpi{padding:6px 8px}.kpis .kpi b{font-size:19px}.kpis .kpi span{font-size:11px;line-height:1.25}
   .kpis.nk{grid-template-columns:repeat(4,minmax(0,1fr));gap:5px}.kpis.nk .kpi{padding:7px 6px;text-align:center}.kpis.nk .kpi b{font-size:18px}.kpis.nk .kpi b small{font-size:11px}.kpis.nk .kpi span{font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -1666,9 +1666,9 @@ input[type=datetime-local]{border-radius:var(--r)}
 
 @media (max-width:1100px){ .tsum{grid-template-columns:minmax(0,1fr)} .tsum .tstats{grid-template-columns:repeat(4,minmax(0,1fr))} }
 @media (max-width:640px){
-  .wbanner{flex-direction:column;align-items:flex-start;min-height:0;padding:var(--sp-5) var(--sp-5) 0}
+  .wbanner{flex-direction:column;align-items:flex-start;min-height:0;padding:16px 18px}   /* 아래 여백이 0이라 글이 테두리에 붙어 잘려 보이던 문제 */
   .wb-txt{max-width:none}
-  .wb-art{position:static;width:calc(100% + 2 * var(--sp-5));height:auto;margin:var(--sp-3) calc(-1 * var(--sp-5)) 0}
+  .wb-art{display:none}
   .tsum .tstats,.tsum.solo .tstats{grid-template-columns:repeat(2,minmax(0,1fr))}
   .tstat .ic{display:none}
   .rrow{grid-template-columns:minmax(0,1fr) auto;row-gap:2px}
@@ -5027,7 +5027,7 @@ function teacherCard(r, p, ps, nav){
    ========================================================= */
 /* 🔄 새 버전 알림: 배포 때마다 APP_VERSION과 version.json의 v를 같은 값으로 올린다.
    GitHub Pages는 화면을 10분쯤 기억하므로, 옛 화면이면 아래쪽에 ‘새로고침’ 띠를 띄우고 주소를 바꿔 새로 받는다 */
-const APP_VERSION = "2026-11-03a";
+const APP_VERSION = "2026-11-03b";
 async function checkVersion(){
   if(!/^https?:$/.test(location.protocol)) return;
   try{
