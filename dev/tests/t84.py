@@ -46,6 +46,12 @@ async def main():
     await P.evaluate(SET.replace('Date.now()+2500','Date.now()+90000')); await P.wait_for_timeout(500)
     await P.evaluate('window.__plays=[]'); await P.tap('[data-a=tmr-test]'); await P.wait_for_timeout(500)
     ok('들어보기 버튼 → 바로 소리', len([x for x in await P.evaluate('window.__plays') if not x['muted']])>=1)
+    # 평소(타이머 없음/이미 끝난 타이머)엔 소리 준비·재생을 하지 않는다 (폰 음악 끊김 방지)
+    await P.goto(U+'?who=anon'); await P.evaluate('localStorage.clear()'); await P.reload(); await P.wait_for_timeout(600)
+    await P.tap('body', position={'x':10,'y':10}); await P.wait_for_timeout(300)
+    ok('타이머 없으면 오디오 준비 안 함', await P.evaluate('TMR_AU===null && TMR_AC===null'))
+    await P.evaluate(SET.replace('Date.now()+2500','Date.now()-1500')); await P.wait_for_timeout(2500)
+    ok('들어오자마자 이미 끝난 타이머는 울리지 않음', len(await P.evaluate('window.__plays'))==0)
     await ctx.close()
     # 2) 한 번도 안 건드린 기기: 소리 막히면 안내 문구
     ctx=await b.new_context(viewport={'width':390,'height':844}); await ctx.route(re.compile(r'https://.*'), lambda r: r.abort())
