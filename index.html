@@ -1590,11 +1590,16 @@ input[type=datetime-local]{border-radius:var(--r)}
 .gcard .gc-ck{width:22px;height:22px;border-radius:50%;border:1.5px solid var(--line);background:var(--surface);position:relative}
 .gcard[aria-pressed="true"]{background:var(--accent-soft);border-color:var(--accent);box-shadow:0 0 0 1px var(--accent)}
 .gcard[aria-pressed="true"] .gc-ic{background:var(--surface)}
+.att-introm,.att-hm{display:none}
 @media (max-width:700px){   /* 활동 만들기: 고르는 칸을 납작하게 (설명은 고른 칸에만) */
   .gtypes{gap:6px}.gcard{grid-template-columns:36px minmax(0,1fr) 22px;align-items:center;gap:10px;min-height:0;padding:9px 12px}.gcard .gc-ic{width:36px;height:36px}.gcard:not([aria-pressed="true"]) .gc-t>span:not(.beta){display:none}
   .tools{grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}.toolchip:not([aria-pressed="true"]) span{display:none}.toolchip{padding:8px 10px}
   .depths{gap:6px}.depth{padding:9px 12px}.depth:not([aria-pressed="true"]) .fl{display:none}
   .preview-steps .detail{display:none}.depth-card .preview-steps{margin-top:10px;padding:10px 12px}
+  .att-intro{display:none}.att-introm{display:block}.att-hm{display:inline}
+  .mkind{flex-wrap:nowrap;overflow-x:auto;max-width:100%;scrollbar-width:none}.mkind::-webkit-scrollbar{display:none}.mkind button{flex:0 0 auto;white-space:nowrap}
+  .msg-list{max-height:min(30vh,240px)}.mem-list{max-height:min(34vh,300px)}
+  .attbar{gap:6px;margin:6px 0}
   details.adv > summary{flex-wrap:wrap;padding:12px 14px;gap:2px 8px}details.adv > summary .opt{order:3;flex:1 1 100%;font-weight:400}details.adv > summary::after{order:2}
 }
 .gcard[aria-pressed="true"] .gc-ck{background:var(--accent);border-color:var(--accent)}
@@ -4992,7 +4997,7 @@ function teacherCard(r, p, ps, nav){
    ========================================================= */
 /* 🔄 새 버전 알림: 배포 때마다 APP_VERSION과 version.json의 v를 같은 값으로 올린다.
    GitHub Pages는 화면을 10분쯤 기억하므로, 옛 화면이면 아래쪽에 ‘새로고침’ 띠를 띄우고 주소를 바꿔 새로 받는다 */
-const APP_VERSION = "2026-11-02c";
+const APP_VERSION = "2026-11-02d";
 async function checkVersion(){
   if(!/^https?:$/.test(location.protocol)) return;
   try{
@@ -6153,8 +6158,8 @@ function attModalHTML(){
   const wait = !S.demo && (S.roster === undefined || (S.mode === "supa" && !S.loaded.attend));
   const sent = d.sent ? `<p class="small muted">${ic("check", "sm")} ${fmt(d.sent.at)}에 ${d.sent.n}명에게 이 달 출석 안내를 보냈어요. (고친 뒤 다시 보내도 돼요)</p>` : "";
   return `<h3>${ic("clipboard-list")} 출석부</h3>
-    <p class="small muted">수업 날짜를 넣고 칸을 누르면 <b>○ 출석 → △ 인정 → × 결석 → 비움</b> 순서로 바뀌어요. 적는 대로 저절로 저장돼요. <b>‘하루’ 칸</b>을 누르면 그날 교시가 한꺼번에 바뀌어요.</p>
-    <details class="atthelp"><summary>${ic("help-circle", "sm")} 키보드로 빠르게 입력하기</summary><p class="small">칸을 하나 고른 뒤 <b>방향키</b>로 옮기고, <b>1</b> ○ 출석 · <b>2</b> △ 인정 · <b>3</b> × 결석 · <b>0</b>(또는 Backspace) 비움을 누르세요. <b>하루</b> 칸에서 누르면 그날 전체가 바뀌고 아래 학생으로 내려가요. 교시 칸에서 누르면 오른쪽 교시로 넘어가요. Tab은 표 안으로 한 번만 들어가요.</p></details>
+    <p class="small muted att-intro">수업 날짜를 넣고 칸을 누르면 <b>○ 출석 → △ 인정 → × 결석 → 비움</b> 순서로 바뀌어요. 적는 대로 저절로 저장돼요. <b>‘하루’ 칸</b>을 누르면 그날 교시가 한꺼번에 바뀌어요.</p>
+    <details class="atthelp"><summary>${ic("help-circle", "sm")} <span class="att-hm">사용법 · </span>키보드로 빠르게 입력하기</summary><p class="small att-introm">수업 날짜를 넣고 칸을 누르면 <b>○ 출석 → △ 인정 → × 결석 → 비움</b> 순서로 바뀌어요. 적는 대로 저절로 저장돼요. <b>‘하루’ 칸</b>을 누르면 그날 교시가 한꺼번에 바뀌어요.</p><p class="small">칸을 하나 고른 뒤 <b>방향키</b>로 옮기고, <b>1</b> ○ 출석 · <b>2</b> △ 인정 · <b>3</b> × 결석 · <b>0</b>(또는 Backspace) 비움을 누르세요. <b>하루</b> 칸에서 누르면 그날 전체가 바뀌고 아래 학생으로 내려가요. 교시 칸에서 누르면 오른쪽 교시로 넘어가요. Tab은 표 안으로 한 번만 들어가요.</p></details>
     <div class="attbar">${cs.length ? `<select id="att-crs" aria-label="과목"><option value="">전체 학생</option>${cs.map(c => `<option value="${esc(c.id)}" ${A.cid === c.id ? "selected" : ""}>${esc(c.title)}</option>`).join("")}</select>` : ""}
       <input type="month" id="att-ym" value="${esc(A.ym)}" aria-label="달">
       <select id="att-per" aria-label="하루 교시 수">${[1, 2, 3, 4, 5, 6, 7].map(n => `<option value="${n}" ${n === per ? "selected" : ""}>하루 ${n}교시</option>`).join("")}</select>
