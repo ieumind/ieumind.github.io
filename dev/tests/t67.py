@@ -14,7 +14,7 @@ async def main():
     await T.goto(U+'?who=teacher'); await T.evaluate('localStorage.clear()'); await T.reload(); await W(T,700)
     # 교사: 왼쪽 막대 순서 = 앱으로 설치 → 오류·건의하기 → 로그아웃, 맨 아래 푸터에는 없음
     order=await T.eval_on_selector_all('#sideme [data-a]','e=>e.map(x=>x.dataset.a)')
-    ok('교사 왼쪽 막대: 설치 → 오류·건의 → 로그아웃', order==['install-help','feedback-open','t-logout'], str(order))
+    ok('교사 왼쪽 막대: 설치 → 오류·건의 (로그아웃은 상단 동그라미 메뉴로 일원화)', order==['install-help','feedback-open'], str(order))
     ok('푸터에 오류·건의하기 없음', await T.evaluate('!document.querySelector(".appfoot [data-a=feedback-open]")') and '제작' in await T.inner_text('.appfoot'))
     await T.click('#sideme [data-a=feedback-open]'); await W(T); ok('왼쪽 막대의 단추로 건의 창이 열림', await T.is_visible('#fb-body')); await T.keyboard.press('Escape'); await W(T)
     # 교사가 학생·과목·활동 만들기
