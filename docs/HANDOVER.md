@@ -6,6 +6,11 @@
 
 ---
 
+## 2026-11-03h — 로고/‘내 과목’ 이동 + 학습 나눔 최근 제출순
+- 로고(`data-a="home-top"`): 교사는 `S.mcourse=""`로 메인(배너 화면) + 맨 위. ‘내 과목’ 메뉴(`home-courses`): 같은 화면으로 가서 `#my-courses`(과목 카드 제목, `scroll-margin-top:76px`)로 부드럽게 스크롤. 페이지가 짧으면 맨 아래까지.
+- 학습 나눔 교사 화면: 정렬 선택 `#n-sort`(이름순 기본 / 최근 제출순 `notes.submittedAt` 내림차순, 미제출은 뒤, 상태 `S.nsort`). 모바일은 학교·반/정렬/검색이 한 줄이 되도록 `.nbar` 선택 칸 크기 조정.
+- 테스트 `t87.py`.
+
 ## 2026-11-03g — 과목 카드 색 강화 + 교사용 학생별 생각 흐름 모음
 - 과목 안 상단 카드(`.chead`): 뒤쪽 규칙 `border-left-width:4px`가 7px 색 띠를 덮어 어두운 화면에서 안 보이던 문제 → 과목 색 옅은 배경(`--cs`) + 7px 띠 + 아이콘 원. `viewManage`가 과목 안에서 `.cscope`(--c/--cs)로 감싸 포트폴리오·섹션 제목·필터 칩·보기 전환까지 같은 색을 이어 줌. (색은 과목 id 해시 4색이라 과목이 많으면 겹칠 수 있음)
 - 새 화면 `S.view="stu"`(`viewStuFlow`): 포트폴리오에서 학생 이름 → 그 학생의 ‘나의 생각 흐름 모음’(지도/목록, 학생 화면 코드 재사용: `mineMapHTML`, 새로 뺀 `mineListHTML`, `mineBody`는 `isTeacher()`일 때 중립 표현·‘활동에서 전체 사고 과정 보기’ 버튼). 이전/다음 학생(`stu-nav`), 닫기(`stu-close`), 이 학생에게 안내 버튼. 기존 작은 창(`portStudentHTML`, modal type `port`)은 삭제.
