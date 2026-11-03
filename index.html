@@ -804,10 +804,8 @@ a.autolink{color:var(--accent);text-decoration:underline;text-underline-offset:2
 .tgl input{accent-color:var(--accent);width:16px;height:16px;margin:0}
 .tgl:has(input:checked){border-color:var(--accent);background:var(--accent-soft)}
 .mctools{display:flex;flex-wrap:wrap;gap:0 2px;margin-top:-2px}
-.mctools button{border:0;background:none;font:inherit;font-size:12.5px;color:var(--muted);padding:4px 7px;white-space:nowrap;border-radius:8px;cursor:pointer;min-height:32px}
+.mctools button{border:0;background:none;font:inherit;font-size:12.5px;color:var(--muted);padding:4px 5px;white-space:nowrap;border-radius:8px;cursor:pointer;min-height:32px}
 .mctools button:hover{background:var(--sunk);color:var(--fg)}
-.mctools .del{margin-left:auto}
-.mctools .del:hover{background:var(--s2-soft);color:var(--s2)}
 .cm-sec{border-top:1px solid var(--line);padding-top:12px;margin-top:12px;display:grid;gap:8px}
 .cm-sec:first-of-type{border-top:0;margin-top:4px;padding-top:0}
 .cm-h{display:flex;align-items:baseline;flex-wrap:wrap;gap:6px 8px}
@@ -1741,6 +1739,19 @@ input[type=datetime-local]{border-radius:var(--r)}
 .stucnt{font-size:13px;color:var(--muted);margin:0 0 12px}
 @media (max-width:700px){.stuhead{padding:12px 14px}.stuhead h1{font-size:19px}.stunav{width:100%}.stunav .btn{flex:1 1 0;min-width:0;justify-content:center}}
 #my-courses{scroll-margin-top:76px}
+/* 활동 카드: 제목은 두 줄까지(단어 단위로 줄바꿈), 삭제는 ‘⋯’ 메뉴 안으로 */
+.mcard{display:flex;flex-direction:column}.mcard .macts{margin-top:auto}   /* 같은 줄 카드는 버튼 줄이 아래에 나란히 */
+.mcard h2{word-break:keep-all;overflow-wrap:break-word}
+.mcard h2 button{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;text-align:left}
+@media (min-width:701px){.mcard h2{min-height:2.8em}}
+.mmore{position:relative;margin-left:auto}
+.mmore>summary{list-style:none;display:inline-flex;align-items:center;justify-content:center;min-width:34px;min-height:32px;padding:4px 7px;border-radius:8px;color:var(--muted);cursor:pointer}
+.mmore>summary::-webkit-details-marker{display:none}
+.mmore>summary:hover,.mmore[open]>summary{background:var(--sunk);color:var(--fg)}
+.mmore>summary:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.mmore-pop{position:absolute;right:0;top:100%;z-index:6;margin-top:4px;background:var(--surface);border:1px solid var(--line);border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,.14);padding:4px;min-width:110px}
+.mmore-pop button{display:flex;align-items:center;gap:6px;width:100%;margin:0;border:0;background:none;font:inherit;font-size:13.5px;padding:8px 10px;border-radius:8px;cursor:pointer;min-height:40px;color:var(--s2)}
+.mmore-pop button:hover{background:var(--s2-soft)}
 </style>
 
 <div class="shell">
@@ -3011,7 +3022,9 @@ function sideOpen(on){
 document.getElementById("side-tog")?.addEventListener("click", () => sideOpen(!document.body.classList.contains("side-open")));
 document.getElementById("side")?.addEventListener("click", e => { if(e.target.closest("[data-a]") && !e.target.closest("#theme")) sideOpen(false) });
 addEventListener("keydown", e => { if(e.key === "Escape" && S.mine?.fs && !S.modal){ S.mine.fs = false; render(); return } if(e.key === "Escape" && document.body.classList.contains("side-open")) sideOpen(false); if(e.key === "Escape" && S.pop){ S.pop = null; renderTopbar() } });
-document.addEventListener("click", e => { if(S.pop && !e.target.closest("#topbar,#topbar-m")){ S.pop = null; renderTopbar() } });
+document.addEventListener("click", e => { if(S.pop && !e.target.closest("#topbar,#topbar-m")){ S.pop = null; renderTopbar() }
+  document.querySelectorAll(".mmore[open]").forEach(d => { if(!d.contains(e.target)) d.open = false }) });          // 활동 카드 ‘⋯’ 메뉴는 바깥을 누르면 닫힌다
+addEventListener("keydown", e => { if(e.key === "Escape") document.querySelectorAll(".mmore[open]").forEach(d => { d.open = false }) });
 function distHTML(r, posts){
   if(!(r.stances||[]).length || !posts.length) return "";
   const n = posts.length;
@@ -5051,7 +5064,7 @@ function teacherCard(r, p, ps, nav){
    ========================================================= */
 /* 🔄 새 버전 알림: 배포 때마다 APP_VERSION과 version.json의 v를 같은 값으로 올린다.
    GitHub Pages는 화면을 10분쯤 기억하므로, 옛 화면이면 아래쪽에 ‘새로고침’ 띠를 띄우고 주소를 바꿔 새로 받는다 */
-const APP_VERSION = "2026-11-03h";
+const APP_VERSION = "2026-11-03i";
 async function checkVersion(){
   if(!/^https?:$/.test(location.protocol)) return;
   try{
@@ -6662,7 +6675,7 @@ function manageCard(r){
   const cc = courseOf(r.courseId);
   return `<article class="mcard" style="--c:var(--${cc ? subjTone("c:" + cc.id) : "line"})">
     <div class="mtop">${statusChip(r)}${dueChip(r)}<span class="chip tpl">${t.icon ? ic(t.icon, "sm") : ""}${esc(t.label||"")}${t.mode?` · ${esc(t.mode)}`:""}</span>${r.duration?`<span class="chip">${ic("clock", "sm")} ${esc(r.duration)}분</span>`:""}${asgSummary(r)}</div>
-    <h2><button type="button" data-a="open" data-id="${esc(r.id)}">${esc(r.title || "제목 없는 활동")}</button></h2>
+    <h2><button type="button" data-a="open" data-id="${esc(r.id)}" title="${esc(r.title || "제목 없는 활동")}">${esc(r.title || "제목 없는 활동")}</button></h2>
     <div class="mmeta">${!S.mcourse && courseOf(r.courseId) ? `${courseIcon(courseOf(r.courseId), "sm")} ${esc(courseOf(r.courseId).title)} · ` : ""}${esc([r.grade, r.subject, r.unit].filter(Boolean).join(" / ") || "수업 정보 없음")}</div>
     <div class="mrates"><span>참여</span><span class="mprog" aria-hidden="true"><i style="width:${st.total ? pp : (st.participants ? 100 : 0)}%"></i></span><span class="mono">${st.participants}${st.total ? ` / ${st.total}` : "명"}</span>
       <span>완료</span><span class="mprog" aria-hidden="true"><i style="width:${cp}%"></i></span><span class="mono">${st.participants ? `${st.complete} / ${st.participants}` : "–"}</span></div>
@@ -6672,7 +6685,7 @@ function manageCard(r){
       : `<button class="btn sm pri" type="button" data-a="open" data-id="${esc(r.id)}">${ic("chart-bar")} 결과 보기</button><button class="btn sm" type="button" data-a="copy-link" data-id="${esc(r.id)}">${ic("link")} 링크</button><button class="btn sm" type="button" data-a="preview" data-id="${esc(r.id)}" title="학생 화면 미리보기">${ic("eye")} 학생 화면</button>`}</div>
     ${s === "draft" ? "" : `<div class="mctools" role="group" aria-label="활동 관리"><button type="button" data-a="edit-room" data-id="${esc(r.id)}">${ic("pencil", "sm")} 수정</button><button type="button" data-a="dup" data-id="${esc(r.id)}">${ic("copy", "sm")} 복제</button>${
       s === "open" ? `<button type="button" data-a="status" data-id="${esc(r.id)}" data-v="closed" title="${STATUS.closed.d}">${ic("player-stop", "sm")} 마감</button>` : s === "closed" ? `<button type="button" data-a="status" data-id="${esc(r.id)}" data-v="open" title="${STATUS.open.d}">${ic("player-play", "sm")} 다시 열기</button>` : `<button type="button" data-a="status" data-id="${esc(r.id)}" data-v="closed" title="보관을 풀면 ‘마감’ 상태로 돌아가요.">${ic("archive-off", "sm")} 보관 해제</button>`}${
-      s !== "archived" ? `<button type="button" data-a="status" data-id="${esc(r.id)}" data-v="archived" title="${STATUS.archived.d}">${ic("archive")} 보관</button>` : ""}<button type="button" class="del" data-a="del-ask" data-id="${esc(r.id)}" aria-label="${esc(r.title)} 삭제">${ic("trash", "sm")} 삭제</button></div>`}</article>`;
+      s !== "archived" ? `<button type="button" data-a="status" data-id="${esc(r.id)}" data-v="archived" title="${STATUS.archived.d}">${ic("archive")} 보관</button>` : ""}<details class="mmore"><summary aria-label="더보기" title="더보기">${ic("dots", "sm")}</summary><div class="mmore-pop"><button type="button" class="del" data-a="del-ask" data-id="${esc(r.id)}" aria-label="${esc(r.title)} 삭제">${ic("trash", "sm")} 삭제</button></div></details></div>`}</article>`;
 }
 function manageList(){
   const list = manageFiltered();
