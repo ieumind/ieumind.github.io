@@ -28,7 +28,7 @@ async def main():
     P=await pc.new_page(); P.on('pageerror',lambda e:errs.append('P:'+str(e)))
     await P.goto('file:///tmp/claude-0/smoke/pdemo.html?demo=1'); await W(P,700); await P.evaluate('S.tour=null; act("mcourse",{dataset:{v:"c-demo"}})'); await W(P,400)
     await P.click('.cport > summary'); await W(P,400); await P.click('.cport-t tbody tr:nth-child(2) [data-a=port-student]'); await W(P,300)
-    who=await P.inner_text('#modal h3'); await P.click('#modal [data-a=msg-open]'); await W(P,300)
+    who=await P.inner_text('.stuhead h1'); await P.click('.stuhead [data-a=msg-open]'); await W(P,300)
     print('port →', who[:20], '| preselected:', await P.evaluate('MSGF().sel'), await P.inner_text('#msg-count'))
     print('errors', errs); await b.close()
 asyncio.run(main())

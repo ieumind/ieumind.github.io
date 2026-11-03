@@ -1722,6 +1722,24 @@ input[type=datetime-local]{border-radius:var(--r)}
   body.has-qbar .qgrid{display:none}
 }
 @media print{.side{display:none}.shell{display:block}.qbar{display:none!important}}
+/* 과목 안: 상단 과목 카드를 과목 색으로 또렷하게, 아래 목록까지 같은 색을 이어 준다 */
+.chead{border-left-width:7px;background:var(--cs,var(--surface));border-color:color-mix(in srgb,var(--c,var(--line)) 32%,var(--line));border-left-color:var(--c,var(--line))}
+.chead-ic{display:inline-flex;align-items:center;justify-content:center;flex:0 0 auto;width:34px;height:34px;border-radius:50%;background:var(--surface);border:2px solid var(--c,var(--line));font-size:18px;line-height:1}
+.chead .mmeta{color:var(--fg);opacity:.78}
+.cscope .cport{border-left:5px solid var(--c)}
+.cscope .cport > summary .ti{color:var(--c)}
+.cscope .sec-h .ti{color:var(--c)}
+.cscope .mfilters button[aria-pressed="true"]{background:var(--c);border-color:var(--c);color:var(--bg)}
+.cscope .seg button[aria-pressed="true"]{box-shadow:inset 0 -3px 0 var(--c)}
+@media (max-width:700px){.chead-ic{width:30px;height:30px;font-size:16px}.chead .mmeta{font-size:13px}}
+/* 학생별 생각 흐름 (교사) */
+.stuhead{display:flex;flex-wrap:wrap;align-items:flex-end;gap:10px 16px;border-left:7px solid var(--c);background:var(--cs);border:1px solid var(--line);border-left:7px solid var(--c);border-radius:12px;padding:14px 18px;margin:8px 0 14px}
+.stuhead h1{font-size:22px;line-height:1.3}.stuhead .eyebrow{color:var(--c)}
+.stuhead .sp{flex:1}
+.stunav{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.stunav .btn{min-height:40px}
+.stucnt{font-size:13px;color:var(--muted);margin:0 0 12px}
+@media (max-width:700px){.stuhead{padding:12px 14px}.stuhead h1{font-size:19px}.stunav{width:100%}.stunav .btn{flex:1 1 0;min-width:0;justify-content:center}}
 </style>
 
 <div class="shell">
@@ -2196,7 +2214,7 @@ const Auth = (() => { let t = null; return Object.freeze({ set(v){ if(t === null
 Object.defineProperty(S, "canTeach", {get: () => Auth.teacher, set(){} });        // 예전 코드 호환: 읽기만
 const isTeacher = () => Auth.teacher && S.role === "teacher";                       // 교사 권한 + 교사 화면(학생 화면 미리보기 중이면 false)
 /* 교사만 쓰는 동작: 학생 권한으로는 버튼이 없을 뿐 아니라 호출해도 실행되지 않는다 */
-const TEACHER_ACTS = new Set(["att-open","att-close","att-cell","att-day","att-fill","att-deldate","att-adddate","att-month-days","att-csv","att-send","pg-facts","avatar-del","pg-mode","pg-type","pg-gen","pg-copy","pg-apply","msg-kind","sc-iadd","sc-idel","sc-paste","sc-ins","sc-tpl-reset","sc-export","msg-open","msg-tab","msg-all","msg-none","msg-cls","msg-send","msg-del","msg-withdraw","msg-repush","note-share","c-course","tname-open","tname-later","tname-save","q-custom","q-add","q-del","q-move","course-archive","courses-more","courses-arch","port-student","port-open","tmr-start","tmr-add","tmr-pause","tmr-resume","tmr-stop","note-files","ctx-img-del","qfb","qfb-close","fb-chip","pick-tool","mem-open","mem-cls","mem-all","mem-none","course-gsplit","ai-setup","ai-key-save","ai-key-del","ai-suggest","ai-pick","tadmin-open","tadmin-block","tadmin-tab","fbadmin-done","notice-add","notice-del","note-filter","note-req","note-req-send","note-req-cancel","nudge-open","nudge-all","nudge-clear","acct-del-open","acct-del-yes","create","edit-room","dup","dup-list","del","del-yes","del-ask","del-room","status","toggle","save-feedback","class-fb","pin","pin-move","pin-clear",
+const TEACHER_ACTS = new Set(["att-open","att-close","att-cell","att-day","att-fill","att-deldate","att-adddate","att-month-days","att-csv","att-send","pg-facts","avatar-del","pg-mode","pg-type","pg-gen","pg-copy","pg-apply","msg-kind","sc-iadd","sc-idel","sc-paste","sc-ins","sc-tpl-reset","sc-export","msg-open","msg-tab","msg-all","msg-none","msg-cls","msg-send","msg-del","msg-withdraw","msg-repush","note-share","c-course","tname-open","tname-later","tname-save","q-custom","q-add","q-del","q-move","course-archive","courses-more","courses-arch","port-student","port-open","stu-close","stu-nav","tmr-start","tmr-add","tmr-pause","tmr-resume","tmr-stop","note-files","ctx-img-del","qfb","qfb-close","fb-chip","pick-tool","mem-open","mem-cls","mem-all","mem-none","course-gsplit","ai-setup","ai-key-save","ai-key-del","ai-suggest","ai-pick","tadmin-open","tadmin-block","tadmin-tab","fbadmin-done","notice-add","notice-del","note-filter","note-req","note-req-send","note-req-cancel","nudge-open","nudge-all","nudge-clear","acct-del-open","acct-del-yes","create","edit-room","dup","dup-list","del","del-yes","del-ask","del-room","status","toggle","save-feedback","class-fb","pin","pin-move","pin-clear",
   "present","present-exit","pmode","pnav","pq","pper","pnames","prand","fullscreen","export","export-go","save-tset","tpl-save-open","tpl-save","tpl-cancel","use-tpl","create-save","draft-save","publish-draft","discard-form",
   "preview","preview-form","preview-home","qr","copy-link","save-share","mcourse","course-new","course-edit","course-gadd","course-gdel","course-save","course-del","course-del-yes",
   "roster-open","roster-add","roster-reissue","roster-del","roster-print","rprint-back","rprint-go","gsel","asg-add-open","asg-add-cancel","asg-add","asg-st","racts","mview","sview","sfilter","sgo","snav","ttab","mfilter","open-student","goal","tpl","st-add","st-del","depth"]);
@@ -2845,6 +2863,7 @@ function render(){
   else if(S.view === "room" && S.pendingRoom === S.roomId) h += `<p class="who">활동을 저장하는 중…</p>`;   // 방금 만든 활동이 저장소에서 돌아오기 전
   else if(S.view === "create" && isTeacher()) h += viewCreate();
   else if(S.view === "mine" && !isTeacher()) h += viewMine();
+  else if(S.view === "stu" && isTeacher()) h += viewStuFlow();
   else { S.view = "home"; h += isTeacher() ? viewManage() : viewHome() }
 
   app.innerHTML = h;
@@ -5029,7 +5048,7 @@ function teacherCard(r, p, ps, nav){
    ========================================================= */
 /* 🔄 새 버전 알림: 배포 때마다 APP_VERSION과 version.json의 v를 같은 값으로 올린다.
    GitHub Pages는 화면을 10분쯤 기억하므로, 옛 화면이면 아래쪽에 ‘새로고침’ 띠를 띄우고 주소를 바꿔 새로 받는다 */
-const APP_VERSION = "2026-11-03f";
+const APP_VERSION = "2026-11-03g";
 async function checkVersion(){
   if(!/^https?:$/.test(location.protocol)) return;
   try{
@@ -5827,7 +5846,8 @@ function courseHead(){
   const id = esc(c.id), rs = courseRooms(c.id), open = rs.filter(r => statusOf(r) === "open").length;
   const nMem = Array.isArray(c.members) ? c.members.length : null, gs = groupsOf(c), live = S.mode === "supa" && !S.demo;
   const memBtn = `<button class="btn sm${live && !nMem ? " pri" : ""}" type="button" data-a="course-edit" data-id="${id}" data-focus="students" title="수강 학생·그룹 고르기">${ic("users")} ${nMem === null ? "학생 고르기" : `학생 ${nMem}명`}</button>`;
-  return back + `<section class="chead" style="--c:var(--${subjTone("c:" + c.id)})"><div class="cardh"><h2 class="mqh"><span aria-hidden="true">${courseIcon(c)}</span>${mq(c.title)}</h2><span class="row chead-acts">
+  const tn = subjTone("c:" + c.id);
+  return back + `<section class="chead" style="--c:var(--${tn});--cs:var(--${tn}-soft)"><div class="cardh"><h2 class="mqh"><span class="chead-ic" aria-hidden="true">${courseIcon(c)}</span>${mq(c.title)}</h2><span class="row chead-acts">
       ${memBtn}<button class="btn sm pc-only" type="button" data-a="copy-link" data-kind="course" data-id="${id}">${ic("link")} 과목 링크</button><button class="btn sm pc-only" type="button" data-a="qr" data-kind="course" data-id="${id}">QR</button><button class="btn sm m-only" type="button" data-a="qr" data-kind="course" data-id="${id}" title="QR 코드와 링크 복사">${ic("qrcode")} 링크·QR</button><button class="btn sm" type="button" data-a="course-edit" data-id="${id}">${ic("pencil")} <span class="lt">과목 </span>수정</button></span></div>
     <p class="mmeta">${esc([c.subject, c.year, c.description].filter(Boolean).join(" · "))}${c.subject || c.year || c.description ? " · " : ""}활동 ${rs.length}개 · 진행 중 ${open}개 · 오늘 응답 ${respToday(rs)}개${gs.length ? ` · 그룹 ${gs.map(g => esc(g.name) + (Array.isArray(g.members) ? `(${g.members.length})` : "")).join(", ")}` : ""}</p>
     ${c.archived ? `<p class="archwarn">${ic("archive", "sm")} 보관한 과목이에요. 학생 화면과 ‘내 과목’ 목록에 보이지 않아요. <button class="btn sm" type="button" data-a="course-archive" data-id="${id}" data-v="0">보관 해제</button></p>` : ""}
@@ -5863,21 +5883,6 @@ function coursePortfolio(c){
     <tbody>${rows.map(x => `<tr><th class="cn"><button type="button" class="linkbtn" data-a="port-student" data-c="${esc(c.id)}" data-v="${esc(x.n)}">${esc(x.n)}</button></th>${x.cs.map((y, i) => `<td>${y.p ? `<button type="button" class="pc ${y.k}" data-a="port-open" data-id="${esc(rs[i].id)}" data-v="${esc(y.p.id)}" title="${esc(y.t)}">${IC[y.k]}</button>` : `<span class="pc none" title="미참여">${IC.none}</span>`}</td>`).join("")}<td class="mono cnum">${x.done}/${rs.length}</td></tr>`).join("")}</tbody></table></div></div></details>`;
   return h;
 }
-/* 학생 한 명의 과목 포트폴리오 (창) */
-function portStudentHTML(m){
-  const c = courseOf(m.c); if(!c) return "";
-  const rs = courseRooms(c.id).filter(r => statusOf(r) !== "draft").sort((a, b) => (a.createdAt||0) - (b.createdAt||0));
-  const items = rs.map(r => { const p = S.posts.find(x => x.roomId === r.id && x.author === m.v), g = progressOf(r, p);
-    const txt = p ? (presentThought(r, p) || "").toString() : "";
-    return `<li class="pf-it ${!p ? "none" : g.cls === "done" ? "done" : "doing"}"><div class="pf-h"><b>${TEMPLATES[r.template]?.icon ? ic(TEMPLATES[r.template].icon, "sm") : ""} ${esc(r.title)}</b><span class="chip">${esc(p ? (g.cls === "done" ? "완료" : "하는 중") : "아직 안 함")}</span></div>
-      ${txt ? `<p class="pf-tx">${esc(txt.length > 220 ? txt.slice(0, 220) + "…" : txt)}</p>` : ""}
-      ${p ? `<button class="linkbtn" type="button" data-a="port-open" data-id="${esc(r.id)}" data-v="${esc(p.id)}">사고 과정 보기 ${ic("arrow-right", "sm")}</button>` : ""}</li>` }).join("");
-  const done = rs.filter(r => { const p = S.posts.find(x => x.roomId === r.id && x.author === m.v); return p && progressOf(r, p).cls === "done" }).length;
-  const sid = S.demo ? "d:" + m.v : (S.roster || []).find(x => rosterLabel(x) === m.v)?.id;
-  return `<h3>${ic("notebook")} ${esc(m.v)} · ${esc(c.title)}</h3><p class="muted small">활동 ${rs.length}개 중 ${done}개 완료</p><ol class="pf-list">${items}</ol>
-    <div class="row end">${sid && (S.demo || msgLive()) ? `<button class="btn" type="button" data-a="msg-open" data-v="${esc(sid)}">${ic("mail")} 이 학생에게 안내</button>` : ""}<button class="btn pri" type="button" data-a="modal-close">닫기</button></div>`;
-}
-
 /* 📨 학생 개별 안내: 선생님이 고른 학생에게만 (서버 student_msgs) — 학생이 앱을 열면 화면 가운데에 크게 뜨고 ‘확인했어요’로 읽음
    체험에서는 이 기기 안에서만 (보낸 안내는 ‘학생 화면 미리보기’에서 학생에게 온 것처럼 보인다) */
 const msgLive = () => S.mode === "supa" && !!SB && !S.demo && !S.preview;
@@ -6678,8 +6683,9 @@ function viewManage(){
   Object.keys(STATUS).forEach(k => counts[k] = S.rooms.filter(r=>statusOf(r)===k && inC(r)).length);
   const subs = [...new Set(S.rooms.map(r=>r.subject).filter(Boolean))], grades = [...new Set(S.rooms.map(r=>r.grade).filter(Boolean))];
   const local = S.form.create && !S.form.create.editId && ((S.form.create.prompt||"").trim() || (S.form.create.title||"").trim()) ? S.form.create : null;
-  let h = teacherTop() + courseHead();
-  if(S.mcourse && S.mcourse !== "_none" && courseOf(S.mcourse)) h += coursePortfolio(courseOf(S.mcourse));
+  const cc = S.mcourse && S.mcourse !== "_none" ? courseOf(S.mcourse) : null, ctn = cc ? subjTone("c:" + cc.id) : "";
+  let h = teacherTop() + (cc ? `<div class="cscope" style="--c:var(--${ctn});--cs:var(--${ctn}-soft)">` : "") + courseHead();     // 과목 안에서는 과목 색을 아래까지 이어 준다
+  if(cc) h += coursePortfolio(cc);
   h += `<h2 class="sec-h" id="mlist-h" style="margin:18px 0 10px">${ic("list-details")} ${S.mcourse && S.mcourse !== "_none" ? "이 과목의 활동" : S.mcourse === "_none" ? "과목 없는 활동" : "모든 활동"} <span class="muted small">${counts.all}개${counts.archived ? ` · 보관 ${counts.archived}` : ""}</span></h2>`;
   if(!shareBase()) h += `<div class="setup"><b>${ic("link")} 학생 링크 설정 (처음 한 번)</b><p class="small">화면 오른쪽 위의 <b>공유</b>에서 이 페이지 링크를 만든 뒤 아래에 붙여 넣으면, 활동마다 학생 링크와 QR 코드를 바로 만들 수 있어요. 학생이 들어올 수 있도록 공유 범위도 확인해 주세요.</p>
     <div class="row"><input type="text" id="share-url" placeholder="https://claude.ai/…" aria-label="공유 링크"><button class="btn sm pri" type="button" data-a="save-share">저장</button></div></div>`;
@@ -6694,7 +6700,7 @@ function viewManage(){
   if(local && (S.mf==="all" || S.mf==="draft")) h += `<article class="mcard" style="margin-bottom:14px"><div class="mtop"><span class="chip st-draft">작성 중 · 저장 전</span></div>
     <h2>${esc((local.title||"").trim() || (local.prompt||"").trim().slice(0,40) || "새 활동")}</h2><p class="mmeta">이 기기에서 쓰던 내용이에요.</p>
     <div class="macts"><button class="btn sm pri" type="button" data-a="create">이어서 만들기</button><span class="sp"></span><button class="btn sm danger" type="button" data-a="discard-form">지우기</button></div></article>`;
-  return h + `<div id="mlist">${manageList()}</div>`;
+  return h + `<div id="mlist">${manageList()}</div>` + (cc ? `</div>` : "");
 }
 /* 모달: QR · 링크 · CSV · 삭제 확인 */
 let qrLoading = null;
@@ -6746,8 +6752,7 @@ function renderModal(){
   if(!m){ el.innerHTML = ""; delete el.dataset.yt; return }
   if(m.type !== "yt") delete el.dataset.yt;
   let h = "";
-  if(m.type === "port"){ h = portStudentHTML(m) }
-  else if(m.type === "msg"){ h = msgModalHTML(m) }
+  if(m.type === "msg"){ h = msgModalHTML(m) }
   else if(m.type === "attend"){ h = attModalHTML() }
   else if(m.type === "inbox"){ h = inboxListHTML() }
   else if(m.type === "inbox-pop"){ h = inboxPopHTML(); if(!h){ S.modal = null; el.innerHTML = ""; return }
@@ -7060,13 +7065,14 @@ function mineBody(r, p){
     : p.readAt ? `<p class="txt small">우리 반 친구들의 생각을 둘러봤어요.</p>` : `<p class="muted small">아직 친구 생각을 만나기 전이에요.</p>`;
   const showMeet = !isRelay(r) && stepsOf(r).includes("read");
   const got = reps.filter(x => x.kind === "rebuttal" || x.kind === "comment"), fb = reps.filter(x => x.kind === "teacher");
-  return `<div class="compare"><div><div class="lbl">① ${first.label}</div>${first.html}</div>${showMeet ? `<div><div class="lbl">② 친구 생각을 만남</div>${meetHTML}</div>` : ""}<div><div class="lbl">${showMeet ? "③ " : ""}${esc(fin.label)}</div><p class="txt">${esc(fin.text)}</p>${ci ? `<p style="margin-top:8px">${changeChip(ci)}</p>` : ""}</div></div>
+  const T = isTeacher(), who = x => T ? x.replace(/^내가 낸 /, "낸 ").replace(/^내가 만든 /, "만든 ").replace(/^내 예측/, "예측") : x;     // 교사가 학생 기록을 볼 때는 ‘내’ 대신 중립 표현
+  return `<div class="compare"><div><div class="lbl">① ${who(first.label)}</div>${first.html}</div>${showMeet ? `<div><div class="lbl">② 친구 생각을 만남</div>${meetHTML}</div>` : ""}<div><div class="lbl">${showMeet ? "③ " : ""}${esc(who(fin.label))}</div><p class="txt">${esc(fin.text)}</p>${ci ? `<p style="margin-top:8px">${changeChip(ci)}</p>` : ""}</div></div>
         ${ci && ci.k === "keep" ? `<p class="muted small">생각을 유지한 것도 친구 생각과 견주어 다시 생각해 본 결과예요. 바뀌지 않았다고 생각하지 않은 것은 아니에요.</p>` : ""}
         ${p.change?.biggest ? `<div><div class="eyebrow">그렇게 생각하게 된 이유</div><p class="txt">${esc(p.change.biggest)}</p></div>` : ""}
-        ${p.body?.reason ? `<div><div class="eyebrow">내가 든 이유</div><p class="txt">${p.evidenceType ? `<span class="chip">${esc(p.evidenceType)}</span> ` : ""}${esc(p.body.reason)}</p></div>` : ""}
+        ${p.body?.reason ? `<div><div class="eyebrow">${T ? "학생이 든 이유" : "내가 든 이유"}</div><p class="txt">${p.evidenceType ? `<span class="chip">${esc(p.evidenceType)}</span> ` : ""}${esc(p.body.reason)}</p></div>` : ""}
         <div><div class="eyebrow">친구들이 남긴 답</div>${got.length ? `<div class="replies">${got.map(x => replyHTML(r, x, ps)).join("")}</div>` : `<p class="muted">없음</p>`}</div>
         <div><div class="eyebrow">선생님 피드백</div>${fb.length ? `<div class="replies">${fb.map(x => replyHTML(r, x, ps)).join("")}</div>` : `<p class="muted">없음</p>`}</div>
-        <div class="row end"><button class="btn sm" type="button" data-a="open-record" data-id="${esc(r.id)}">나의 생각 흐름 보기 ${ic("arrow-right")}</button></div>`;
+        <div class="row end">${T ? `<button class="btn sm" type="button" data-a="port-open" data-id="${esc(r.id)}" data-v="${esc(p.id)}">활동에서 전체 사고 과정 보기 ${ic("arrow-right")}</button>` : `<button class="btn sm" type="button" data-a="open-record" data-id="${esc(r.id)}">나의 생각 흐름 보기 ${ic("arrow-right")}</button>`}</div>`;
 }
 /* 🗺 지도로 보기: 가운데 = 과목, 둘레 = 그 과목에서 내가 쓴 활동(한 화면에 8개). 새로 저장하는 것 없이 있는 기록만 보여 준다 */
 const mmapPer = () => matchMedia("(max-width:700px)").matches ? 6 : 8;      // 휴대폰은 한 화면에 6개(겹치지 않게)
@@ -7137,6 +7143,45 @@ function mineMapHTML(all){
       <h3 class="mmap-dt">${esc(cur.r.title)}</h3><div class="pbody">${mineBody(cur.r, cur.p)}</div></section>` : "";
   return `<div class="mmapwrap${M.fs ? " fs" : ""}">${bar}<div class="mmap-grid"><div class="mmap-main">${stage}${detail}</div>${side}</div></div>`;
 }
+function mineListHTML(all){
+  let h = `<div class="list">`;
+  for(const {p, r, ci} of all){
+    const reps = repliesOf(p.id), d = p.change ? DEGREES.find(x=>x.k===p.change.degree) : null;
+    const got = reps.filter(x=>x.kind==="rebuttal"||x.kind==="comment"), fb = reps.filter(x=>x.kind==="teacher");
+    h += `<details class="pcard"><summary>
+        <span class="rmeta" style="margin:0"><span class="year">${esc(r.year||"")}</span>${r.subject?`<span>${esc(r.subject)}</span>`:""}<span>${fmtDate(p.createdAt)}</span>
+          ${submitted(p) ? "" : `<span class="chip">쓰는 중</span>`}${ci ? changeChip(ci) : d ? `<span class="chip tpl">${esc(d.l)}</span>` : ""}</span>
+        <span class="t">${esc(r.title)}</span>
+        <span class="muted small">친구의 답 ${got.length} · 선생님 피드백 ${fb.length} · 눌러서 펼치기</span></summary>
+      <div class="pbody">${mineBody(r, p)}</div></details>`;
+  }
+  return h + `</div>`;
+}
+/* 👩‍🏫 교사: 한 학생의 과목 ‘생각 흐름 모음’ — 학생 화면(목록·지도)을 그대로 쓰되 보기만 한다 */
+function stuItems(c, name){
+  return S.posts.filter(p => p.author === name).map(p => ({p, r:S.rooms.find(x => x.id === p.roomId)})).filter(x => x.r && x.r.courseId === c && statusOf(x.r) !== "draft")
+    .sort((a, b) => (b.p.createdAt || 0) - (a.p.createdAt || 0)).map(x => ({...x, ci:changeInfo(x.r, x.p)}));
+}
+function stuNames(c){
+  const rs = courseRooms(c).filter(r => statusOf(r) !== "draft");
+  return portStudents(courseOf(c), rs);
+}
+function viewStuFlow(){
+  const {c, v} = S.stu || {}, co = courseOf(c);
+  if(!co || !v){ S.view = "home"; return viewManage() }
+  const tn = subjTone("c:" + co.id), names = stuNames(c), idx = names.indexOf(v), all = stuItems(c, v);
+  const rs = courseRooms(c).filter(r => statusOf(r) !== "draft"), done = all.filter(x => submitted(x.p)).length;
+  const changed = all.filter(x => x.p.change && ["much", "some"].includes(x.p.change.degree)).length, fb = S.replies.filter(x => x.kind === "teacher" && all.some(y => y.p.id === x.postId)).length;
+  const sid = S.demo ? "d:" + v : (S.roster || []).find(x => rosterLabel(x) === v)?.id;
+  const nav = `<div class="stunav"><button class="btn sm" type="button" data-a="stu-nav" data-d="-1" ${idx <= 0 ? "disabled" : ""}>${ic("chevron-left", "sm")} 이전 학생</button><span class="small muted">${idx >= 0 ? `${idx + 1} / ${names.length}` : ""}</span><button class="btn sm" type="button" data-a="stu-nav" data-d="1" ${idx < 0 || idx >= names.length - 1 ? "disabled" : ""}>다음 학생 ${ic("chevron-right", "sm")}</button></div>`;
+  let h = `<div class="cscope" style="--c:var(--${tn});--cs:var(--${tn}-soft)"><button class="linkbtn back" type="button" data-a="stu-close">${ic("arrow-left", "sm")} ${esc(co.title)}</button>
+    <section class="stuhead"><div><div class="eyebrow">학생 생각 기록 · ${esc(co.title)}</div><h1>${esc(v)}의 생각 흐름 모음</h1>
+      <p class="stucnt" style="margin:6px 0 0">활동 ${rs.length}개 중 <b class="mono">${done}</b>개 제출 · 생각이 달라진 활동 <b class="mono">${changed}</b> · 보낸 선생님 피드백 <b class="mono">${fb}</b></p></div>
+      <span class="sp"></span>${sid && (S.demo || msgLive()) ? `<button class="btn sm" type="button" data-a="msg-open" data-v="${esc(sid)}">${ic("mail", "sm")} 이 학생에게 안내</button>` : ""}${nav}</section>`;
+  if(!all.length) return h + `<div class="empty">아직 이 과목에서 낸 글이 없어요.</div></div>`;
+  h += mineView() === "map" ? mineMapHTML(all) : `<div class="mmapbar">${mineSeg()}</div>` + mineListHTML(all);
+  return h + `</div>`;
+}
 function viewMine(){
   let h = `<button class="linkbtn back" type="button" data-a="home">${ic("arrow-left", "sm")} 활동 목록</button>
     <div class="home-head"><div><div class="eyebrow">내 생각 기록</div><h1>나의 생각 흐름 모음</h1>
@@ -7149,19 +7194,8 @@ function viewMine(){
   const fbAll = S.replies.filter(x => x.kind==="teacher" && mine.some(p=>p.id===x.postId)).length;
   h += `<p class="muted" style="margin-bottom:14px">참여한 논제 <b class="mono">${mine.length}</b> · 생각이 달라진 논제 <b class="mono">${changed}</b> · 받은 선생님 피드백 <b class="mono">${fbAll}</b></p>`;
   if(mineView() === "map") return h + mineMapHTML(all);
-  h += `<div class="mmapbar">${mineSeg()}</div><div class="list">`;
-
-  for(const {p, r, ci} of all){
-    const reps = repliesOf(p.id), d = p.change ? DEGREES.find(x=>x.k===p.change.degree) : null;
-    const got = reps.filter(x=>x.kind==="rebuttal"||x.kind==="comment"), fb = reps.filter(x=>x.kind==="teacher");
-    h += `<details class="pcard"><summary>
-        <span class="rmeta" style="margin:0"><span class="year">${esc(r.year||"")}</span>${r.subject?`<span>${esc(r.subject)}</span>`:""}<span>${fmtDate(p.createdAt)}</span>
-          ${submitted(p) ? "" : `<span class="chip">쓰는 중</span>`}${ci ? changeChip(ci) : d ? `<span class="chip tpl">${esc(d.l)}</span>` : ""}</span>
-        <span class="t">${esc(r.title)}</span>
-        <span class="muted small">친구의 답 ${got.length} · 선생님 피드백 ${fb.length} · 눌러서 펼치기</span></summary>
-      <div class="pbody">${mineBody(r, p)}</div></details>`;
-  }
-  return h + `</div>`;
+  h += `<div class="mmapbar">${mineSeg()}</div>` + mineListHTML(all);
+  return h;
 }
 
 /* =========================================================
@@ -7769,7 +7803,8 @@ function viewCreate(){
   ${isChat ? chatPromptHTML(f, N) : ""}
 
   ${stepQOn(f) ? `<div class="card stepq-card" style="margin-top:16px"><h3>${N()} 어떤 질문을 따라 생각할까요?<span class="req" title="꼭 적어야 해요" aria-label="필수">*</span> <span class="opt">단계별 질문 · 1개 이상</span></h3>${stepQHTML(f, locked)}</div>` : ""}
-  ${isNoteT ? `<style>.depth-card,.preview-steps,details[data-adv]{display:none!important}</style>` : ""}
+  ${isNoteT ? `<style>.depth-card,.preview-steps,details[data-adv]{display:none!important}
+</style>` : ""}
   <div class="card depth-card" style="margin-top:16px"><h3>${isNoteT ? "" : N()} 생각을 어디까지 이어 갈까요? <span class="opt">생각 → 만남 → 변화</span></h3>${lockWrap(locked, `
     <div class="depths" role="group" aria-label="생각 깊이">${Object.entries(DEPTHS).filter(([k]) => !(NO_DEEP.includes(f.template) && k === "deep")).map(([k,d])=>{
       const est = d.stages === stg ? estMinutes(preview) : (() => { const g = {...f}; applyDepth(k, g); return estMinutes(roomFromForm(g)) })();   // 아래 ‘학생은 이렇게 활동해요’와 같은 계산
@@ -8128,7 +8163,9 @@ async function act(a, b){
     case "focus-com": { const t = document.getElementById("com:" + b.dataset.id + "-text") || document.querySelector(`[data-form="com:${b.dataset.id}"]`); t?.scrollIntoView({block:"center"}); t?.focus(); return }
     case "open-post": S.openPost = b.dataset.id; S.fbSent = null; if(b.dataset.c) S.comFocus = b.dataset.id; if(isTeacher() && S.view === "room"){ S.ttab = "students"; setTimeout(() => document.querySelector(".snav")?.scrollIntoView({block:"start"}), 0) } break;
     case "close-post": S.openPost = null; S.fbSent = null; break;
-    case "port-student": S.modal = {type:"port", c:b.dataset.c, v:b.dataset.v}; break;
+    case "port-student": S.modal = null; S.stu = {c:b.dataset.c, v:b.dataset.v}; Object.assign(mmapS(), {sel:null, page:0, crs:b.dataset.c, f:"all", fs:false}); S.view = "stu"; scrollTo(0,0); break;
+    case "stu-close": S.view = "home"; S.mcourse = S.stu?.c || S.mcourse; scrollTo(0,0); break;
+    case "stu-nav": { const ns = stuNames(S.stu.c), i = ns.indexOf(S.stu.v) + (+b.dataset.d || 0); if(ns[i]){ S.stu.v = ns[i]; Object.assign(mmapS(), {sel:null, page:0}); scrollTo(0,0) } break }
     case "port-open": S.modal = null; S.view = "room"; S.roomId = b.dataset.id; S.ttab = "students"; S.openPost = b.dataset.v; S.gsel = ""; scrollTo(0,0); break;
     case "go-respond": goStep(r, "respond"); S.openPost = b.dataset.id; break;
     case "starter": insertStarter(b); return;

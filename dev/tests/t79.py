@@ -22,9 +22,9 @@ async def main():
       await P.evaluate('S.modal=null; render()')
       if w>700:
         ok(f'{name} 홈 카드는 새 활동 만들기 하나', await P.evaluate('document.querySelectorAll(".qgrid .qa").length')==1 and await P.is_visible('.qgrid [data-a=create]'))
-        ok(f'{name} 메뉴 위치 안내 글', '왼쪽 메뉴' in await P.inner_text('.qhint'))
+        ok(f'{name} 메뉴 위치 안내 글은 없음(출석 안내 대기 때만 줄 표시)', '왼쪽 메뉴' not in await P.inner_text('#app'))
       else:
-        ok(f'{name} 휴대폰 안내 글(☰)', '☰' in await P.inner_text('.qhint'))
+        ok(f'{name} 휴대폰 안내 글(☰)은 없음', '위쪽 ☰' not in await P.inner_text('#app'))
       # 최근 활동 최대 4개
       n=await P.evaluate('document.querySelectorAll(".recent li").length'); ok(f'{name} 최근 활동 4개 이하', 0<n<=4, str(n))
       await P.screenshot(path=f'/tmp/claude-0/smoke/t79_home_{name}.png')
