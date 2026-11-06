@@ -1752,6 +1752,7 @@ input[type=datetime-local]{border-radius:var(--r)}
 .mmore-pop{position:absolute;right:0;top:100%;z-index:6;margin-top:4px;background:var(--surface);border:1px solid var(--line);border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,.14);padding:4px;min-width:110px}
 .mmore-pop button{display:flex;align-items:center;gap:6px;width:100%;margin:0;border:0;background:none;font:inherit;font-size:13.5px;padding:8px 10px;border-radius:8px;cursor:pointer;min-height:40px;color:var(--s2)}
 .mmore-pop button:hover{background:var(--s2-soft)}
+.q textarea.bad,.q input.bad{border-color:var(--s2);box-shadow:0 0 0 2px var(--s2-soft)}
 </style>
 
 <div class="shell">
@@ -2226,7 +2227,7 @@ const Auth = (() => { let t = null; return Object.freeze({ set(v){ if(t === null
 Object.defineProperty(S, "canTeach", {get: () => Auth.teacher, set(){} });        // 예전 코드 호환: 읽기만
 const isTeacher = () => Auth.teacher && S.role === "teacher";                       // 교사 권한 + 교사 화면(학생 화면 미리보기 중이면 false)
 /* 교사만 쓰는 동작: 학생 권한으로는 버튼이 없을 뿐 아니라 호출해도 실행되지 않는다 */
-const TEACHER_ACTS = new Set(["att-open","att-close","att-cell","att-day","att-fill","att-deldate","att-adddate","att-month-days","att-csv","att-send","pg-facts","avatar-del","pg-mode","pg-type","pg-gen","pg-copy","pg-apply","msg-kind","sc-iadd","sc-idel","sc-paste","sc-ins","sc-tpl-reset","sc-export","msg-open","msg-tab","msg-all","msg-none","msg-cls","msg-send","msg-del","msg-withdraw","msg-repush","note-share","c-course","tname-open","tname-later","tname-save","q-custom","q-add","q-del","q-move","course-archive","courses-more","courses-arch","port-student","port-open","stu-close","stu-nav","tmr-start","tmr-add","tmr-pause","tmr-resume","tmr-stop","note-files","ctx-img-del","qfb","qfb-close","fb-chip","pick-tool","mem-open","mem-cls","mem-all","mem-none","course-gsplit","ai-setup","ai-key-save","ai-key-del","ai-suggest","ai-pick","tadmin-open","tadmin-block","tadmin-tab","fbadmin-done","notice-add","notice-del","note-filter","note-req","note-req-send","note-req-cancel","nudge-open","nudge-all","nudge-clear","acct-del-open","acct-del-yes","create","edit-room","dup","dup-list","del","del-yes","del-ask","del-room","status","toggle","save-feedback","class-fb","pin","pin-move","pin-clear",
+const TEACHER_ACTS = new Set(["att-open","att-close","att-cell","att-day","att-fill","att-deldate","att-adddate","att-month-days","att-csv","att-send","pg-facts","avatar-del","pg-mode","pg-type","pg-gen","pg-copy","pg-apply","msg-kind","sc-iadd","sc-idel","sc-paste","sc-ins","sc-tpl-reset","sc-export","msg-open","msg-tab","msg-all","msg-none","msg-cls","msg-send","msg-del","msg-withdraw","msg-repush","note-share","c-course","tname-open","tname-later","tname-save","q-custom","q-add","q-del","q-move","course-archive","courses-more","courses-arch","port-student","port-open","stu-close","stu-nav","tmr-start","tmr-add","tmr-pause","tmr-resume","tmr-stop","note-files","note-memoreq","ctx-img-del","qfb","qfb-close","fb-chip","pick-tool","mem-open","mem-cls","mem-all","mem-none","course-gsplit","ai-setup","ai-key-save","ai-key-del","ai-suggest","ai-pick","tadmin-open","tadmin-block","tadmin-tab","fbadmin-done","notice-add","notice-del","note-filter","note-req","note-req-send","note-req-cancel","nudge-open","nudge-all","nudge-clear","acct-del-open","acct-del-yes","create","edit-room","dup","dup-list","del","del-yes","del-ask","del-room","status","toggle","save-feedback","class-fb","pin","pin-move","pin-clear",
   "present","present-exit","pmode","pnav","pq","pper","pnames","prand","fullscreen","export","export-go","save-tset","tpl-save-open","tpl-save","tpl-cancel","use-tpl","create-save","draft-save","publish-draft","discard-form",
   "preview","preview-form","preview-home","qr","copy-link","save-share","mcourse","course-new","course-edit","course-gadd","course-gdel","course-save","course-del","course-del-yes",
   "roster-open","roster-add","roster-reissue","roster-del","roster-print","rprint-back","rprint-go","gsel","asg-add-open","asg-add-cancel","asg-add","asg-st","racts","mview","sview","sfilter","sgo","snav","ttab","mfilter","open-student","goal","tpl","st-add","st-del","depth"]);
@@ -3455,6 +3456,7 @@ function viewRoomStudent(r){
    ========================================================= */
 const isNotes = r => r?.template === "notes";
 const NOTE_MAX = r => Math.max(1, Math.min(12, Number(r?.noteCfg?.maxPages) || 3));
+const memoReqOf = r => !!(r?.noteCfg?.memoReq && memoQOf(r));          // ‘필수’는 질문이 있을 때만 적용
 const memoQOf = r => String(r?.noteCfg?.memoQ || "").trim();         // 선생님이 적은 ‘한 줄 메모’ 질문 (없으면 그냥 메모)
 /* 📎 파일 첨부(선택): 선생님이 활동 설정에서 켠 때만. 기본은 꺼짐(room.noteCfg.files) */
 const NOTE_FILE_MAX = 3, NOTE_FILE_OK = ["pdf","doc","docx","hwp","hwpx","ppt","pptx","xls","xlsx","txt","csv"];
@@ -3565,6 +3567,10 @@ async function noteSubmit(r){
   const list = NDRAFT[r.id] || [], fl = noteFilesOn(r) ? (FDRAFT[r.id] || []) : [], p = myPost(r);
   if(!list.length && !fl.length){ toast(noteFilesOn(r) ? "사진이나 파일을 하나 이상 골라 주세요." : "사진을 한 장 이상 골라 주세요."); return }
   if(r.open === false){ toast("마감된 활동이에요."); return }
+  if(memoReqOf(r) && !String(F("note:" + r.id).memo || "").trim()){          // 필수 메모: 비었으면 제출하지 않고 그 칸으로
+    toast("한 줄 메모를 적어 주세요. 이 활동은 메모가 필수예요.");
+    const ta = document.getElementById("note:" + r.id + "-memo"); if(ta){ ta.scrollIntoView({block:"center", behavior:"smooth"}); ta.focus(); ta.setAttribute("aria-invalid", "true"); ta.classList.add("bad") }
+    return }
   const imgs = [], files = [];
   S.noteBusy = "올리는 중… 화면을 닫지 마세요"; render();
   try{
@@ -3651,7 +3657,7 @@ function viewNotesStudent(r, p){
         <span class="nact">${i ? `<button type="button" data-a="note-move" data-i="${i}" data-d="-1" aria-label="${i+1}쪽을 앞으로">${ic("chevron-left", "sm")}</button>` : ""}${i < draft.length - 1 ? `<button type="button" data-a="note-move" data-i="${i}" data-d="1" aria-label="${i+1}쪽을 뒤로">${ic("chevron-right", "sm")}</button>` : ""}<button type="button" data-a="note-rm" data-i="${i}" aria-label="${i+1}쪽 빼기">${ic("x", "sm")}</button></span></figure>`).join("")}</div>
       <p class="muted small">사진을 누르면 크게 볼 수 있어요. 화살표 버튼으로 순서를 바꾸고, ${ic("x", "sm")} 버튼으로 뺄 수 있어요.</p>` : `<div class="nempty">아직 고른 사진이 없어요.<br>위의 버튼으로 필기 사진을 찍거나 골라 주세요.</div>`}
     ${fdraft.length ? `<div><b class="small">첨부할 파일</b>${noteFilesHTML(fdraft.map(x => ({n:x.n, s:x.s})), true)}</div>` : ""}
-    <div class="q"><label for="${key}-memo">${mq ? `<b>${esc(mq)}</b>` : "한 줄 메모"} <span class="opt">(선택${mq ? " · 한 줄로 답해 주세요" : ""})</span></label>${ta(key, "memo", {rows:2, ph:mq ? "여기에 답을 적어 주세요" : "예: 오늘 배운 것 중 가장 중요한 것은 ___"})}</div>
+    <div class="q"><label for="${key}-memo">${mq ? `<b>${esc(mq)}</b>` : "한 줄 메모"} ${memoReqOf(r) ? `<span class="req" title="꼭 적어야 해요" aria-label="필수">*</span> <span class="opt">(필수 · 한 줄로 답해 주세요)</span>` : `<span class="opt">(선택${mq ? " · 한 줄로 답해 주세요" : ""})</span>`}</label>${ta(key, "memo", {rows:2, ph:mq ? "여기에 답을 적어 주세요" : "예: 오늘 배운 것 중 가장 중요한 것은 ___"})}</div>
     <div class="foot"><span class="muted small" role="status">${busy ? esc(busy) : draft.length || fdraft.length ? [draft.length ? `${draft.length}장` : "", fdraft.length ? `파일 ${fdraft.length}개` : ""].filter(Boolean).join(" · ") + " 골랐어요" : ""}</span><div class="row">
       ${(draft.length || fdraft.length) && !busy ? `<button class="btn" type="button" data-a="note-clear">모두 빼고 다시 고르기</button>` : ""}${n && !req && !busy ? `<button class="btn" type="button" data-a="note-redo-cancel">취소</button>` : ""}
       <button class="btn pri" type="button" data-a="note-submit" ${busy || !(draft.length || fdraft.length) ? "disabled" : ""}>${n ? "다시 제출하기" : `제출하기${draft.length || fdraft.length ? ` (${[draft.length ? `${draft.length}장` : "", fdraft.length ? `파일 ${fdraft.length}` : ""].filter(Boolean).join("·")})` : ""}`}</button></div></div></section>`;
@@ -3691,6 +3697,7 @@ function viewNotesTeacher(r){
     <div class="kpi"><b>${names.length || gs ? c("none") : "–"}</b><span>미제출</span></div><div class="kpi"><b>${c("redo")}</b><span>재제출 요청</span></div></div>
     <details class="nset" data-keep="nset" ${(S.advOpen?.nset ?? !matchMedia("(max-width:700px)").matches) ? "open" : ""}><summary>${ic("settings", "sm")} <b>활동 설정</b> <span class="muted small">사진 ${r.reveal === "after" ? "서로 보기" : "선생님만"} · 파일 ${noteFilesOn(r) ? "켬" : "끔"}${memoQOf(r) ? " · 메모 질문" : ""}</span></summary>
     <div class="nshare-row"><span>${ic("lock", "sm")} 올린 사진 보기</span><span class="seg3" role="group" aria-label="올린 사진 보기"><button type="button" data-a="note-share" data-v="teacher" aria-pressed="${r.reveal !== "after"}">선생님만</button><button type="button" data-a="note-share" data-v="after" aria-pressed="${r.reveal === "after"}">학생끼리 서로 보기</button></span>${r.reveal === "after" ? `<span class="muted small">${r.anonymous ? "친구에게는 이름 없이 보여요" : "친구에게 이름이 보여요"}</span>` : ""}</div>
+    <div class="nshare-row"><span>${ic("message-circle", "sm")} 한 줄 메모</span><span class="seg3" role="group" aria-label="한 줄 메모 필수 여부"><button type="button" data-a="note-memoreq" data-v="off" aria-pressed="${!memoReqOf(r)}">선택</button><button type="button" data-a="note-memoreq" data-v="on" aria-pressed="${memoReqOf(r)}" ${memoQOf(r) ? "" : "disabled"}>필수</button></span><span class="muted small">${!memoQOf(r) ? "질문을 적어야 ‘필수’로 할 수 있어요. (활동 수정 → 한 줄 메모 질문)" : memoReqOf(r) ? "학생이 메모를 적어야 제출돼요." : "비워서 낼 수도 있어요."}</span></div>
     <div class="nshare-row"><span>${ic("file-text", "sm")} 파일 첨부</span><span class="seg3" role="group" aria-label="파일 첨부 허용"><button type="button" data-a="note-files" data-v="off" aria-pressed="${!noteFilesOn(r)}">끔 (사진만)</button><button type="button" data-a="note-files" data-v="on" aria-pressed="${noteFilesOn(r)}">켬</button></span><span class="muted small">${noteFilesOn(r) ? `학생이 PDF·한글·워드 등 파일을 ${NOTE_FILE_MAX}개까지 함께 올려요.` : "학생은 사진만 올려요."}</span></div>
 ${memoQOf(r) ? `<p class="small" style="margin-top:10px">${ic("message-circle", "sm")} <b>한 줄 메모 질문</b> · ${esc(memoQOf(r))}</p>` : ""}</details>`;
   if(!names.length && !gs) h += `<p class="notice" style="margin-top:12px">${S.mode === "supa" ? (S.roster === undefined ? "학생 명단을 불러오는 중…" : "학생 명단(학생 코드)에 학생을 넣으면 미제출 학생도 함께 보여요.") : "설정 탭의 학생 명단을 넣으면 미제출 학생도 함께 보여요."}</p>`;
@@ -5064,7 +5071,7 @@ function teacherCard(r, p, ps, nav){
    ========================================================= */
 /* 🔄 새 버전 알림: 배포 때마다 APP_VERSION과 version.json의 v를 같은 값으로 올린다.
    GitHub Pages는 화면을 10분쯤 기억하므로, 옛 화면이면 아래쪽에 ‘새로고침’ 띠를 띄우고 주소를 바꿔 새로 받는다 */
-const APP_VERSION = "2026-11-03i";
+const APP_VERSION = "2026-11-06a";
 async function checkVersion(){
   if(!/^https?:$/.test(location.protocol)) return;
   try{
@@ -6935,7 +6942,7 @@ function formFromRoom(r){
   const f = featuresOf(r), t = TEMPLATES[r.template] || {};
   const form = {editId:r.id, goal:(GOALS.find(g=>g.t.includes(r.template))||{}).k, template:r.template, tool:toolOf(r), depth:depthOf(r),
     prompt:r.prompt||"", title:r.title||"", context:r.context||"", ctxImgs:ctxImgsOf(r), intro:r.intro||"",
-    maxPages:String(r.noteCfg?.maxPages||3), memoQ:r.noteCfg?.memoQ||"", noteFiles:r.noteCfg?.files ? "on" : "", personaName:r.persona?.name||"", personaAbout:r.persona?.about||"", personaFacts:r.persona?.facts||"", personaStyle:r.persona?.style||"persona", maxTurns:String(r.persona?.maxTurns||8), personaGuide:r.persona?.guide||"", pgMode:r.persona?.guide && !r.persona?.gen ? "direct" : "gen",
+    maxPages:String(r.noteCfg?.maxPages||3), memoQ:r.noteCfg?.memoQ||"", noteFiles:r.noteCfg?.files ? "on" : "", memoReq:r.noteCfg?.memoReq && r.noteCfg?.memoQ ? "on" : "", personaName:r.persona?.name||"", personaAbout:r.persona?.about||"", personaFacts:r.persona?.facts||"", personaStyle:r.persona?.style||"persona", maxTurns:String(r.persona?.maxTurns||8), personaGuide:r.persona?.guide||"", pgMode:r.persona?.guide && !r.persona?.gen ? "direct" : "gen",
     personaImg:r.persona?.img||"", personaUser:r.persona?.user||"", personaCall:r.persona?.call||"", personaGreeting:r.persona?.greeting||"", personaStarters:(r.persona?.starters||[]).join("\n"),
     ...(r.persona?.gen ? {pgType:pgTypeOf(r.persona.gen.type), pgSubj:r.persona.gen.subj||"", pgGrade:r.persona.gen.grade||"", pgGoal:r.persona.gen.goal||"", pgSupport:r.persona.gen.support||"step"} : {}),
     subject:r.subject||"", unit:r.unit||"", year:r.year||"", grade:r.grade||"", duration:String(r.duration||""), dueAt:dtv(r.dueAt), stage:r.stage||"", memo:tnote(r).memo||"",
@@ -7260,7 +7267,7 @@ function roomFromForm(f){
                                                 : String(f.stances||"").split(",").map(s=>s.trim()).filter(Boolean)).slice(0,4);
   const prompt = (f.prompt||"").trim();
   const isDebate = f.template === "debate2" || f.template === "debateN";
-  const noteCfg = f.template === "notes" ? {maxPages:Math.max(1, Math.min(12, parseInt(f.maxPages)||3)), ...(String(f.memoQ || "").trim() ? {memoQ:String(f.memoQ).trim().slice(0, 120)} : {}), ...(f.noteFiles === "on" ? {files:true} : {})} : undefined;
+  const noteCfg = f.template === "notes" ? {maxPages:Math.max(1, Math.min(12, parseInt(f.maxPages)||3)), ...(String(f.memoQ || "").trim() ? {memoQ:String(f.memoQ).trim().slice(0, 120)} : {}), ...(f.noteFiles === "on" ? {files:true} : {}), ...(f.memoReq === "on" && String(f.memoQ || "").trim() ? {memoReq:true} : {})} : undefined;
   const persona = f.template === "chat" ? {name:(f.personaName||"").trim(), about:(f.personaAbout||"").trim(), facts:(f.personaFacts||"").trim().slice(0, 4000), style:f.personaStyle === "easy" ? "easy" : "persona", maxTurns:turnsOf(f), ...charSaved(f), ...pgSaved(f)} : undefined;
   return {
     title:(f.title||"").trim() || (f.template === "notes" ? `학습 나눔 · ${new Date().getMonth()+1}월 ${new Date().getDate()}일` : (prompt.length > 28 ? prompt.slice(0,28) + "…" : prompt)),
@@ -7804,7 +7811,8 @@ function viewCreate(){
         <p class="hint">‘서로 보기’면 자기 사진을 올린 학생이 친구들의 사진도 볼 수 있어요. 활동 화면에서 언제든 바꿀 수 있어요.</p>
         ${f.reveal === "after" ? `<label class="choice" style="min-height:36px"><input type="checkbox" data-form="create" data-k="anonymous" ${f.anonymous ? "checked" : ""}><span>친구에게는 이름 없이 보이기</span></label>` : ""}</div>
       <div class="q wide"><label for="c-memoq">한 줄 메모 질문 <span class="opt">(선택 · 학생이 사진과 함께 한 줄로 답해요)</span></label><input type="text" id="c-memoq" data-form="create" data-k="memoQ" maxlength="120" placeholder="예: 오늘 배운 것 중 가장 중요한 것은 무엇인가요?" value="${esc(f.memoQ || "")}">
-        <p class="hint">비워 두면 ‘한 줄 메모’ 칸만 보여요. 답은 선택이라 비워서 낼 수도 있어요.</p></div>
+        <div class="memoreq row" style="margin-top:8px;gap:10px;align-items:center"><span class="small" id="c-mreq-l">답하기</span><div class="choices" role="radiogroup" aria-labelledby="c-mreq-l"><label class="choice"><input type="radio" name="create-memoReq" data-form="create" data-k="memoReq" value="off" ${f.memoReq !== "on" ? "checked" : ""}><span>선택</span></label><label class="choice"><input type="radio" name="create-memoReq" data-form="create" data-k="memoReq" value="on" ${f.memoReq === "on" ? "checked" : ""} ${String(f.memoQ || "").trim() ? "" : "disabled"}><span>필수</span></label></div></div>
+        <p class="hint" id="c-mreq-h">${String(f.memoQ || "").trim() ? "필수로 하면 학생이 메모를 적어야 제출돼요. 활동 화면에서 언제든 바꿀 수 있어요." : "질문을 적으면 ‘필수’로 고를 수 있어요. 비워 두면 ‘한 줄 메모’ 칸만 보이고 답은 선택이에요."}</p></div>
       </div></section>` : ""}
     ${(f.template==="inquiry" || relay) ? `<div class="wide">${lockWrap(locked, `<fieldset class="q"><legend style="font-size:15px">질문 유형은 무엇인가요? <span class="opt">(선택)</span></legend>${radios("create","qtype",qopts,{label:"질문 유형"})}${qtypeHelp("질문 유형 설명 보기")}</fieldset>`)}</div>` : ""}
     ${t.stances.length ? `<div class="wide">${lockWrap(locked, `<fieldset class="q"><legend style="font-size:15px">입장<span class="req" title="꼭 적어야 해요" aria-label="필수">*</span> <span class="opt">(2개 이상 · 이름을 바꿀 수 있어요)</span></legend>
@@ -7930,6 +7938,11 @@ document.addEventListener("input", e => {
   if(!el.dataset.form || el.type==="checkbox" || el.type==="radio" || el.tagName==="SELECT") return;
   if(el.isContentEditable && !el.textContent.trim() && !el.querySelector("li")) el.innerHTML = "";   // 지우고 나면 안내 문구가 다시 보이게
   const {key} = onFormValue(el);
+  if(el.classList?.contains("bad") && el.value?.trim()){ el.classList.remove("bad"); el.removeAttribute("aria-invalid") }
+  if(key === "create" && el.dataset.k === "memoQ"){          // 질문을 적으면 ‘필수’를 고를 수 있게
+    const has = !!el.value.trim(), on = document.querySelector('.memoreq input[value="on"]'), hh = document.getElementById("c-mreq-h");
+    if(on){ on.disabled = !has; if(!has && on.checked){ document.querySelector('.memoreq input[value="off"]').checked = true; F("create").memoReq = "off" } }
+    if(hh) hh.textContent = has ? "필수로 하면 학생이 메모를 적어야 제출돼요. 활동 화면에서 언제든 바꿀 수 있어요." : "질문을 적으면 ‘필수’로 고를 수 있어요. 비워 두면 ‘한 줄 메모’ 칸만 보이고 답은 선택이에요." }
   if(el.isContentEditable) document.querySelectorAll(".rte-st").forEach(x => { x.textContent = "저장 중…" });
   if(key.startsWith("write:")) refreshWriteStatus();
   if(key.startsWith("essay:")){ const r = room(), box = document.getElementById("estatus"); if(r && box) box.outerHTML = essayStatusHTML(r) }
@@ -8208,6 +8221,9 @@ async function act(a, b){
       lsSet("nonjae.name", res.data.name); location.reload(); return;                   // 들어온 활동을 새로 불러온다
     }
     case "join-open": S.modal = {type:"join"}; break;
+    case "note-memoreq": { const v = b.dataset.v === "on"; if(!r || !!r.noteCfg?.memoReq === v || (v && !memoQOf(r))) break;
+      const cfg = {...(r.noteCfg || {}), memoReq:v}, ok = await write(db => db.doc("rooms/" + r.id).update({noteCfg:cfg, updatedAt:Date.now()}), () => { r.noteCfg = cfg });
+      if(ok) toast(v ? "이제 한 줄 메모가 필수예요. 이미 낸 학생에게는 영향이 없어요." : "이제 한 줄 메모는 선택이에요."); break }
     case "note-files": { const v = b.dataset.v === "on"; if(!r || !!r.noteCfg?.files === v) break;
       const cfg = {...(r.noteCfg || {}), files:v}, ok = await write(db => db.doc("rooms/" + r.id).update({noteCfg:cfg, updatedAt:Date.now()}), () => { r.noteCfg = cfg });
       if(ok) toast(v ? "이제 학생이 파일도 올릴 수 있어요." : "이제 학생은 사진만 올려요. 이미 올린 파일은 그대로 볼 수 있어요."); break }
