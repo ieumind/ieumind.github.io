@@ -181,3 +181,4 @@ grant execute on function public.debate_join(text), public.debate_send(text, tex
 do $$ begin
   begin alter publication supabase_realtime add table public.debate_jury; exception when duplicate_object then null; end;
 end $$;
+-- (대기실·직접 닉네임·판정단 의견: supabase/live_lobby.sql 을 이어서 실행)
