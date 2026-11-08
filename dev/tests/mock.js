@@ -16,7 +16,9 @@
   const myName = () => label(myStu());
   const ch=[]; window.__sbLog=[];
   const notify=(ev,row)=>ch.forEach(c=>c(ev,row));
-  window.addEventListener("storage",e=>{ if(e.key===KEY){ const old=D; D=JSON.parse(e.newValue); for(const k in D.docs) if(JSON.stringify(D.docs[k])!==JSON.stringify(old.docs[k])) notify(old.docs[k]?"UPDATE":"INSERT",D.docs[k]); for(const k in old.docs) if(!D.docs[k]) notify("DELETE",{col:old.docs[k].col,id:old.docs[k].id}) }});
+  window.addEventListener("storage",e=>{ if(e.key===KEY){ const old=D; D=JSON.parse(e.newValue); for(const k in D.docs) if(JSON.stringify(D.docs[k])!==JSON.stringify(old.docs[k])) notify(old.docs[k]?"UPDATE":"INSERT",D.docs[k]); for(const k in old.docs) if(!D.docs[k]) notify("DELETE",{col:old.docs[k].col,id:old.docs[k].id});
+    for(const t of ["debate_members","debate_msgs","debate_votes"]){ const a=((old.live||{})[t]||[]), b=((D.live||{})[t]||[]), key=r=>t==="debate_msgs"?r.id:r.room_id+"|"+r.mkey;
+      const om=new Map(a.map(r=>[key(r),JSON.stringify(r)])); b.forEach(r=>{ const o=om.get(key(r)); if(o===undefined) notify("INSERT",{...r,table:t}); else if(o!==JSON.stringify(r)) notify("UPDATE",{...r,table:t}) }) } }});
   const courseOk = (cid, t) => { const c = cid && D.docs["courses/"+cid]; if(!c || !Array.isArray(c.data.members)) return true; return c.data.members.includes(sidFor(t || tidOf(c))) };
   const roomOk = rid => { const r = D.docs["rooms/"+rid]; return !r || courseOk(r.data.courseId, tidOf(r)) };
   const canRead0 = r => isT ? tidOf(r)===uid : !!sidFor(tidOf(r)) && (["config","treplies"].includes(r.col) || (r.col==="courses" && courseOk(r.id)) || (r.col==="rooms" && courseOk(r.data.courseId)) || (r.col==="posts" && (mySids().includes(r.owner) || ((D.docs["rooms/"+r.data.roomId]?.data?.reveal||"after")!=="teacher" && roomOk(r.data.roomId)))) || (r.col==="replies" && roomOk(r.data.roomId)));
@@ -31,12 +33,28 @@
     if(r.col==="treplies") return r.data.kind==="class" || D.docs["posts/"+r.data.postId]?.owner===uid; return false };
   const guestWrite = r => !isT && ["posts","replies"].includes(r.col) && !!r.data.roomId && gIn(r.data.roomId) && roomFree(r.data.roomId) && r.data.author===gNick(r.data.roomId) && !["teacher","class"].includes(r.data.kind||"");
   const canRead = r => canRead0(r) || guestRead(r);
+  /* 💬 실시간 토론(debate_*) 흉내: 서버 함수·권한 규칙을 그대로 따라 한다 */
+  const LVD = () => { D.live = D.live || {debate_members:[], debate_msgs:[], debate_votes:[], seq:0}; return D.live };
+  const lvRoom = rid => { const r = D.docs["rooms/"+rid]; return r && r.data.template==="live" ? r : null };
+  const lvKey = rid => { const r = lvRoom(rid); if(!r || isT) return null; const sid = sidFor(tidOf(r)); if(sid && roomOk(rid)) return "s:"+sid; if(gIn(rid) && roomFree(rid)) return "g:"+uid; return null };
+  const lvMember = rid => LVD().debate_members.find(m => m.room_id===rid && m.mkey===lvKey(rid));
+  const lvCanRead = row => { const r = lvRoom(row.room_id); if(!r) return false; if(isT) return tidOf(r)===uid;
+    if(row.table==="debate_msgs") return !!lvMember(row.room_id); return row.mkey===lvKey(row.room_id) };
+  const lvSave = (t, row, ev) => { save(); notify(ev, {...row, table:t}) };
   const canWrite = (r) => isT ? tidOf(r)===uid : guestWrite(r) || (["posts","replies"].includes(r.col) && !!sidFor(tidOf(r)) && r.data.author===nameFor(tidOf(r)) && roomOk(r.data.roomId) && !["teacher","class"].includes(r.data.kind||""));
   const deny = () => ({data:null, error:{message:"new row violates row-level security policy"}});
   function qb(table){
     const st={table, filters:[], op:"select", rng:null};
     const run = async () => {
       await new Promise(r=>setTimeout(r,5)); D=load();
+      if(table.startsWith("debate_")){
+        const L = LVD(), rows = L[table];
+        const match = r => st.filters.every(([k,v]) => r[k]===v);
+        if(st.op==="select"){ let out = rows.filter(r => match(r) && lvCanRead({...r, table})).sort((a,b) => (a.id||0)-(b.id||0)); if(st.rng) out = out.slice(st.rng[0], st.rng[1]+1);
+          return {data: out.map(r => { const x = {...r}; if(!isT) delete x.real_name; return x }), error:null} }
+        if(st.op==="update"){ if(!isT) return {data:null, error:null}; let n=0; rows.forEach(r => { if(match(r) && tidOf(lvRoom(r.room_id))===uid){ Object.assign(r, st.row); n++; lvSave(table, r, "UPDATE") } }); return {data:null, error:null} }
+        return {data:null, error:{message:"permission denied"}};
+      }
       if(table==="docs"){
         if(st.op==="select"){ let rows=Object.values(D.docs).filter(r=>st.filters.every(([k,v])=>r[k]===v)).filter(canRead); if(st.rng) rows=rows.slice(st.rng[0],st.rng[1]+1); return {data:rows.map(r=>({id:r.id,data:r.data,tid:tidOf(r)})),error:null} }
         if(st.op==="upsert"||st.op==="insert"){ const k=st.row.col+"/"+st.row.id, ex=D.docs[k];
@@ -83,6 +101,28 @@
         if(gList().filter(g=>g.room===p.p_room).some(g=>g.nick.replace(/ /g,"").toLowerCase()===key)) return bad("taken");
         D.guests=[...gList(), {uid, room:p.p_room, tid:tidOf(rr), nick}]; save(); window.__sbLog.push("guest_join:"+nick); return {data:{ok:true,name:nick},error:null} }
       if(fn==="teacher_checkin") return {data:null,error:null};
+      if(fn.startsWith("debate_")){ const L = LVD(), rid = p.p_room, r = lvRoom(rid), no = why => ({data:{ok:false, reason:why}, error:null});
+        if(fn==="debate_join"){ if(!r || ["draft","archived"].includes(r.data.status||"open")) return no("denied"); const k = lvKey(rid); if(!k) return no("denied");
+          const ex = L.debate_members.find(m => m.room_id===rid && m.mkey===k); if(ex) return {data:{ok:true, nick:ex.nick, team:ex.team, muted:ex.muted, mkey:k}, error:null};
+          const pre = ['논객','역사탐정','기록자','탐구자','사관','관찰자','해설자','질문가']; let nick; do { nick = pre[Math.floor(Math.random()*pre.length)] + String(Math.floor(Math.random()*100)).padStart(2,"0") } while(L.debate_members.some(m => m.room_id===rid && m.nick===nick));
+          let team = null; if((r.data.liveCfg||{}).teamMode !== "teacher"){ const ms = L.debate_members.filter(m => m.room_id===rid), np = ms.filter(m => m.team==="pro").length, nc = ms.filter(m => m.team==="con").length; team = np < nc ? "pro" : nc < np ? "con" : (Math.random() < .5 ? "pro" : "con") }
+          const real = k.startsWith("s:") ? nameFor(tidOf(r)) : gNick(rid);
+          const row = {room_id:rid, mkey:k, tid:tidOf(r), uid, real_name:real||"이름 없음", nick, team, muted:false, joined_at:new Date().toISOString()};
+          L.debate_members.push(row); lvSave("debate_members", row, "INSERT"); return {data:{ok:true, nick, team, muted:false, mkey:k}, error:null} }
+        if(fn==="debate_send"){ if(!r) return no("denied"); const m = lvMember(rid); if(!m) return no("denied");
+          if(((r.data.live||{}).state||"wait") !== "live") return no("closed"); if(!m.team) return no("noteam"); if(m.muted) return no("muted");
+          const b = String(p.p_body||"").trim(); if(!b) return no("empty"); if(b.length > 200) return no("long");
+          const now = Date.now(), mine = L.debate_msgs.filter(x => x.room_id===rid && x.mkey===m.mkey);
+          if(mine.some(x => now - Date.parse(x.created_at) < 3000)) return no("fast"); if(mine.filter(x => now - Date.parse(x.created_at) < 60000).length >= 10) return no("many");
+          const row = {id:++L.seq, room_id:rid, tid:m.tid, mkey:m.mkey, nick:m.nick, team:m.team, body:b, deleted:false, created_at:new Date().toISOString()};
+          L.debate_msgs.push(row); lvSave("debate_msgs", row, "INSERT"); window.__sbLog.push("debate_send"); return {data:{ok:true, id:row.id}, error:null} }
+        if(fn==="debate_vote"){ if(!r) return no("denied"); const m = lvMember(rid); if(!m) return no("denied"); if(((r.data.live||{}).state||"wait") !== "vote") return no("closed");
+          if(!["pro","con"].includes(p.p_choice)) return no("bad"); if(L.debate_votes.some(v => v.room_id===rid && v.mkey===m.mkey)) return no("dup");
+          const row = {room_id:rid, mkey:m.mkey, tid:m.tid, choice:p.p_choice, created_at:new Date().toISOString()}; L.debate_votes.push(row); lvSave("debate_votes", row, "INSERT"); return {data:{ok:true}, error:null} }
+        if(fn==="debate_result"){ if(!r) return {data:null, error:null}; const ok = (isT && tidOf(r)===uid) || (((r.data.live||{}).state)==="result" && !!lvMember(rid)); if(!ok) return {data:null, error:null};
+          const vs = L.debate_votes.filter(v => v.room_id===rid); return {data:{pro:vs.filter(v => v.choice==="pro").length, con:vs.filter(v => v.choice==="con").length}, error:null} }
+        if(fn==="debate_purge"){ if(!isT) return {data:null, error:null}; ["debate_msgs","debate_votes","debate_members"].forEach(t => { L[t] = L[t].filter(x => x.room_id!==rid) }); save(); window.__sbLog.push("debate_purge:"+rid); return {data:null, error:null} }
+      }
       if(fn==="ai_key_status"){ const k=localStorage.getItem("__aikey"); return {data:{teacher:isT, has:!!k && isT, tail:k?k.slice(-4):null, model:k?"gemini-3.5-flash-lite":null}} }
       if(fn==="ai_key_set"){ if(!isT) return {data:{ok:false,reason:"denied"}}; const k=(p.p_key||"").trim(); if(!k){ localStorage.removeItem("__aikey"); return {data:{ok:true,has:false}} } if(!/^[A-Za-z0-9_.-]{20,200}$/.test(k)) return {data:{ok:false,reason:"format"}}; localStorage.setItem("__aikey",k); return {data:{ok:true,has:true,tail:k.slice(-4)}} }
       if(fn==="room_view"){ const sid=sidFor(tidOf(D.docs["rooms/"+p.p_room])); if(isT||!sid) return {data:null,error:null}; const v=JSON.parse(localStorage.getItem("__views")||"{}"); const r=v[p.p_room]=v[p.p_room]||{}; const now=new Date().toISOString(); r[sid]=r[sid]?{...r[sid],last_at:now,n:r[sid].n+1}:{first_at:now,last_at:now,n:1}; localStorage.setItem("__views",JSON.stringify(v)); return {data:null,error:null} }
@@ -139,7 +179,10 @@
       list: async (prefix) => { const st=JSON.parse(localStorage.getItem("__sbstore")||"{}"), seen=new Map(); Object.keys(st).filter(k=>k.startsWith(prefix+"/")).forEach(k=>{ const rest=k.slice(prefix.length+1).split("/"); seen.set(rest[0], rest.length>1 ? null : "f") }); return {data:[...seen].map(([name,id])=>({name,id})),error:null} },
       remove: async (paths) => { const st=JSON.parse(localStorage.getItem("__sbstore")||"{}"); paths.forEach(p=>{ const sid=p.split("/")[1]; if(isT || mySids().includes(sid)) delete st[p] }); localStorage.setItem("__sbstore",JSON.stringify(st)); window.__sbLog.push("remove:"+paths.length); return {error:null} }
     })},
-    channel(){ const subs=[]; const c={ on(type,f,cb){ subs.push([f,cb]); return c }, subscribe(){ ch.push((ev,row)=>{ for(const [f,cb] of subs){ if(f.event!==ev) continue; if(f.filter && f.filter!=="col=eq."+row.col) continue; if(!canRead(row) && ev!=="DELETE") continue; cb(ev==="DELETE"?{old:row}:{new:{id:row.id,data:row.data,col:row.col}}) } }); return c } }; return c }
+    channel(){ const subs=[]; const c={ on(type,f,cb){ subs.push([f,cb]); return c }, subscribe(sc){ ch.push((ev,row)=>{ for(const [f,cb] of subs){ if(f.event!==ev && f.event!=="*") continue;
+          if(row.table){ if(f.table!==row.table) continue; if(f.filter && f.filter!=="room_id=eq."+row.room_id) continue; if(!lvCanRead(row)) continue; const x={...row}; delete x.table; if(!isT) delete x.real_name; cb({new:x}); continue }
+          if(f.table && f.table!=="docs") continue;
+          if(f.filter && f.filter!=="col=eq."+row.col) continue; if(!canRead(row) && ev!=="DELETE") continue; cb(ev==="DELETE"?{old:row}:{new:{id:row.id,data:row.data,col:row.col}}) } }); if(sc) setTimeout(()=>sc("SUBSCRIBED"), 10); return c } }; return c }
   };
   rpcImpl = client._rpc;
   window.supabase={createClient:()=>client};
