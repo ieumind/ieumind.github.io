@@ -2363,7 +2363,7 @@ const Auth = (() => { let t = null; return Object.freeze({ set(v){ if(t === null
 Object.defineProperty(S, "canTeach", {get: () => Auth.teacher, set(){} });        // 예전 코드 호환: 읽기만
 const isTeacher = () => Auth.teacher && S.role === "teacher";                       // 교사 권한 + 교사 화면(학생 화면 미리보기 중이면 false)
 /* 교사만 쓰는 동작: 학생 권한으로는 버튼이 없을 뿐 아니라 호출해도 실행되지 않는다 */
-const TEACHER_ACTS = new Set(["att-open","att-close","att-cell","att-day","att-fill","att-deldate","att-adddate","att-month-days","att-csv","att-send","pg-facts","avatar-del","pg-mode","pg-type","pg-gen","pg-copy","pg-apply","msg-kind","sc-iadd","sc-idel","sc-paste","sc-ins","sc-tpl-reset","sc-export","msg-open","msg-tab","msg-all","msg-none","msg-cls","msg-send","msg-del","msg-withdraw","msg-repush","note-share","c-course","tname-open","tname-later","tname-save","q-custom","q-add","q-del","q-move","course-archive","courses-more","courses-arch","port-student","port-open","stu-close","stu-nav","tmr-start","tmr-add","tmr-pause","tmr-resume","tmr-stop","note-files","note-memoreq","ctx-img-del","lv-state","lv-team","lv-mute","lv-jhide","lv-note-del","lv-nick-reset","lv-del","lv-auto","lv-file-del","qfb","qfb-close","fb-chip","pick-tool","mem-open","mem-cls","mem-all","mem-none","course-gsplit","ai-setup","ai-key-save","ai-key-del","ai-suggest","ai-pick","tadmin-open","tadmin-block","tadmin-tab","fbadmin-done","notice-add","notice-del","note-filter","note-req","note-req-send","note-req-cancel","nudge-open","nudge-all","nudge-clear","acct-del-open","acct-del-yes","create","edit-room","dup","dup-list","del","del-yes","del-ask","del-room","status","toggle","save-feedback","class-fb","pin","pin-move","pin-clear",
+const TEACHER_ACTS = new Set(["att-open","att-close","att-cell","att-day","att-fill","att-deldate","att-adddate","att-month-days","att-csv","att-send","pg-facts","avatar-del","pg-mode","pg-type","pg-gen","pg-copy","pg-apply","msg-kind","sc-iadd","sc-idel","sc-paste","sc-ins","sc-tpl-reset","sc-export","msg-open","msg-tab","msg-all","msg-none","msg-cls","msg-send","msg-del","msg-withdraw","msg-repush","note-share","c-course","tname-open","tname-later","tname-save","q-custom","q-add","q-del","q-move","course-archive","courses-more","courses-arch","port-student","port-open","stu-close","stu-nav","tmr-start","tmr-add","tmr-pause","tmr-resume","tmr-stop","note-files","note-memoreq","ctx-img-del","lv-state","lv-team","lv-mute","lv-jhide","lv-note-del","lv-nick-reset","lv-del","lv-auto","qfb","qfb-close","fb-chip","pick-tool","mem-open","mem-cls","mem-all","mem-none","course-gsplit","ai-setup","ai-key-save","ai-key-del","ai-suggest","ai-pick","tadmin-open","tadmin-block","tadmin-tab","fbadmin-done","notice-add","notice-del","note-filter","note-req","note-req-send","note-req-cancel","nudge-open","nudge-all","nudge-clear","acct-del-open","acct-del-yes","create","edit-room","dup","dup-list","del","del-yes","del-ask","del-room","status","toggle","save-feedback","class-fb","pin","pin-move","pin-clear",
   "present","present-exit","pmode","pnav","pq","pper","pnames","prand","fullscreen","export","export-go","save-tset","tpl-save-open","tpl-save","tpl-cancel","use-tpl","create-save","draft-save","publish-draft","discard-form",
   "preview","preview-form","preview-home","qr","copy-link","save-share","mcourse","course-new","course-edit","course-gadd","course-gdel","course-save","course-del","course-del-yes",
   "roster-open","roster-add","roster-reissue","roster-del","roster-print","rprint-back","rprint-go","gsel","asg-add-open","asg-add-cancel","asg-add","asg-st","racts","mview","sview","sfilter","sgo","snav","ttab","mfilter","open-student","goal","tpl","st-add","st-del","depth"]);
@@ -4326,32 +4326,6 @@ async function shrinkImage(file, maxSide, q){
 }
 const blobToDataURL = b => new Promise(ok => { const fr = new FileReader(); fr.onload = () => ok(fr.result); fr.readAsDataURL(b) });
 /* 📚 자료 사진: Supabase는 공개 보관함 ‘materials’의 {교사id}/…jpg, 그 밖(체험·미리보기)은 작게 줄여 글 안에 */
-/* 💬 실시간 토론 자료 파일: 자료 사진과 같은 공개 보관함(materials)에 올린다. 체험·미리보기는 이 기기 안에서만 */
-const LIVE_FILE_OK = ["pdf", "hwp", "hwpx", "doc", "docx", "ppt", "pptx", "xls", "xlsx", "txt"];
-const LIVE_FILE_MIME = {pdf:"application/pdf", hwp:"application/x-hwp", hwpx:"application/hwp+zip", doc:"application/msword", docx:"application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-  ppt:"application/vnd.ms-powerpoint", pptx:"application/vnd.openxmlformats-officedocument.presentationml.presentation", xls:"application/vnd.ms-excel", xlsx:"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", txt:"text/plain"};
-async function liveAddFiles(files){
-  const f = F("create"), have = (f.liveFiles || []).length, room = 5 - have;
-  const ext = n => (String(n).split(".").pop() || "").toLowerCase();
-  const list = [...files].filter(x => LIVE_FILE_OK.includes(ext(x.name)) && x.size <= 5 * 1024 * 1024).slice(0, Math.max(0, room));
-  if(!list.length){ toast(room <= 0 ? "자료 파일은 5개까지예요." : "PDF·한글·워드·PPT·엑셀·텍스트 파일을 5MB 이하로 골라 주세요."); return }
-  if(list.length < files.length) toast("넣을 수 없는 파일(종류·크기·개수)은 빼고 올렸어요.");
-  S.lvUploading = true; render();
-  const remote = S.mode === "supa" && SB && !S.demo && !S.preview && S.sbUid;
-  try{
-    for(const file of list){
-      let u;
-      if(remote){
-        const e = ext(file.name), path = `${S.sbUid}/doc-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 7)}.${e}`;
-        const up = await SB.storage.from("materials").upload(path, file, {contentType:LIVE_FILE_MIME[e] || "application/octet-stream", upsert:false});
-        if(up.error) throw up.error;
-        u = SB.storage.from("materials").getPublicUrl(path).data.publicUrl;
-      }else u = await blobToDataURL(file);
-      f.liveFiles = [...(f.liveFiles || []), {u, n:file.name.slice(0, 80)}].slice(0, 5); saveFormsSoon();
-    }
-  }catch(e){ toast("파일을 올리지 못했어요: " + (e?.message || "다시 해 보세요.")) }
-  S.lvUploading = false; render();
-}
 async function ctxAddFiles(files){
   const f = F("create"), room = 10 - (f.ctxImgs || []).length, list = [...files].filter(x => /^image\//.test(x.type)).slice(0, Math.max(0, room));
   if(!list.length){ toast(room <= 0 ? "사진은 10장까지 넣을 수 있어요." : "사진 파일만 넣을 수 있어요."); return }
@@ -5898,7 +5872,7 @@ function teacherCard(r, p, ps, nav){
    ========================================================= */
 /* 🔄 새 버전 알림: 배포 때마다 APP_VERSION과 version.json의 v를 같은 값으로 올린다.
    GitHub Pages는 화면을 10분쯤 기억하므로, 옛 화면이면 아래쪽에 ‘새로고침’ 띠를 띄우고 주소를 바꿔 새로 받는다 */
-const APP_VERSION = "2026-11-09c";
+const APP_VERSION = "2026-11-09d";
 async function checkVersion(){
   if(!/^https?:$/.test(location.protocol)) return;
   try{
@@ -8647,20 +8621,16 @@ function viewCreate(){
         <p class="hint" id="c-mreq-h">${String(f.memoQ || "").trim() ? "필수로 하면 학생이 메모를 적어야 제출돼요. 활동 화면에서 언제든 바꿀 수 있어요." : "질문을 적으면 ‘필수’로 고를 수 있어요. 비워 두면 ‘한 줄 메모’ 칸만 보이고 답은 선택이에요."}</p></div>
       </div></section>` : ""}
     ${isLiveT ? `<section class="wide subpanel" aria-labelledby="lv-h"><h4 id="lv-h">${ic("messages", "sm")} 실시간 토론 설정</h4>
-      <p class="hint">학생은 링크나 QR로 들어오면 ‘논객07’처럼 익명 닉네임을 받아요. 친구끼리는 닉네임만 보이고, 실제 이름은 선생님만 볼 수 있어요. 학생이 대기실에 모이면 활동 화면에서 토론 시작 · 종료 · 최종 투표(판정)를 진행해요.</p>
+      <p class="hint">학생이 링크나 QR로 들어오면 모두 ‘청중 판정단’으로 대기실에 모여요. 대기실에서 찬성·반대 자리로 옮기거나 선생님이 직접 정해 줄 수 있어요. 친구끼리는 닉네임만 보이고, 실제 이름은 선생님만 볼 수 있어요. 토론 시작 · 종료 · 최종 투표(판정) · 결과 공개는 활동 화면에서 진행해요.</p>
       <div class="form-grid">
-      <div class="q"><label for="c-nick">닉네임</label><select id="c-nick" data-form="create" data-k="nickMode"><option value="auto" ${f.nickMode !== "custom" ? "selected" : ""}>자동 · 찬성01, 반대01, 판정단01처럼 역할에 따라 부여 (기본)</option><option value="custom" ${f.nickMode === "custom" ? "selected" : ""}>직접 · 학생이 대기실에서 닉네임을 정해요</option></select>
+      <div class="q"><label for="c-nick">닉네임</label><select id="c-nick" data-form="create" data-k="nickMode"><option value="auto" ${f.nickMode !== "custom" ? "selected" : ""}>자동 · 찬성01·반대01·판정단01 (기본)</option><option value="custom" ${f.nickMode === "custom" ? "selected" : ""}>직접 · 학생이 대기실에서 정함</option></select>
         <p class="hint">직접 정하면 2~8자, 중복·실명 불가예요. 부적절한 닉네임은 활동 화면에서 되돌릴 수 있어요.</p></div>
       <div class="q"><label for="c-teamn">찬성팀 · 반대팀 인원</label><select id="c-teamn" data-form="create" data-k="teamN">${[2, 3, 4, 5, 6, 8].map(n => `<option value="${n}" ${String(f.teamN || "4") === String(n) ? "selected" : ""}>각 ${n}명${n === 4 ? " (기본 4 : 4)" : ""}</option>`).join("")}</select>
         <p class="hint">학생은 모두 대기실에서 ‘청중 판정단’으로 시작해요. 나머지 학생은 판정단으로 토론을 지켜보고 의견을 남겨요.</p></div>
-      <div class="q"><label for="c-selfmove">역할 정하기</label><select id="c-selfmove" data-form="create" data-k="selfMove"><option value="on" ${f.selfMove !== "off" ? "selected" : ""}>학생이 대기실에서 직접 옮기기 + 교사도 지정 (기본)</option><option value="off" ${f.selfMove === "off" ? "selected" : ""}>교사만 지정</option></select>
+      <div class="q"><label for="c-selfmove">역할 정하기</label><select id="c-selfmove" data-form="create" data-k="selfMove"><option value="on" ${f.selfMove !== "off" ? "selected" : ""}>학생이 직접 옮기기 + 교사 지정 (기본)</option><option value="off" ${f.selfMove === "off" ? "selected" : ""}>교사만 지정</option></select>
         <p class="hint">어느 쪽이든 활동 화면에서 학생의 역할을 바꿀 수 있어요. 토론이 시작되면 학생은 옮길 수 없어요.</p></div>
       <div class="q"><label for="c-notemin">판정 전 청중 의견 최소 개수</label><select id="c-notemin" data-form="create" data-k="noteMin">${[[0, "필수 아님"], [1, "1개 이상 (기본)"], [2, "2개 이상"]].map(([n, l]) => `<option value="${n}" ${String(f.noteMin ?? "1") === String(n) ? "selected" : ""}>${l}</option>`).join("")}</select>
         <p class="hint">판정단이 질문이나 생각을 이만큼 남겨야 판정(최종 투표)을 낼 수 있어요. 토론 중·종료 후에 쓸 수 있고, 모두가 실시간으로 볼 수 있어요.</p></div>
-      <div class="q"><span class="lbl-like">자료 파일 <span class="opt">(선택 · PDF·한글·워드·PPT·엑셀·텍스트, 5개 · 한 개 5MB까지)</span></span>
-        <ul class="lvfiles">${(f.liveFiles || []).map((x, i) => `<li>${ic("file-text", "sm")} ${esc(x.n)} <button type="button" class="linkbtn" data-a="lv-file-del" data-i="${i}" aria-label="${esc(x.n)} 빼기">${ic("x", "sm")}</button></li>`).join("")}</ul>
-        ${(f.liveFiles || []).length < 5 ? `<label class="ctxadd">${ic("file-text")} 파일 첨부 <span>${(f.liveFiles || []).length}/5</span><input type="file" accept="${LIVE_FILE_OK.map(x => "." + x).join(",")}" multiple data-live-file hidden></label>` : ""}${S.lvUploading ? `<span class="muted small">올리는 중…</span>` : ""}
-        <p class="hint">글·사진·링크 자료는 아래 ‘자료’ 칸에 넣어요.</p></div>
       </div></section>` : ""}
     ${(f.template==="inquiry" || relay) ? `<div class="wide">${lockWrap(locked, `<fieldset class="q"><legend style="font-size:15px">질문 유형은 무엇인가요? <span class="opt">(선택)</span></legend>${radios("create","qtype",qopts,{label:"질문 유형"})}${qtypeHelp("질문 유형 설명 보기")}</fieldset>`)}</div>` : ""}
     ${t.stances.length && !isLiveT ? `<div class="wide">${lockWrap(locked, `<fieldset class="q"><legend style="font-size:15px">입장<span class="req" title="꼭 적어야 해요" aria-label="필수">*</span> <span class="opt">(2개 이상 · 이름을 바꿀 수 있어요)</span></legend>
@@ -8823,7 +8793,6 @@ document.addEventListener("change", e => {
   if(el.dataset.memg && S.form.course){ const f = S.form.course; f.gm = f.gm || {}; if(el.value) f.gm[el.dataset.memg] = el.value; else delete f.gm[el.dataset.memg]; memRefresh(); return }
   if(el.dataset.combo){ setCombo(el.dataset.combo, el.type === "checkbox" ? el.checked : el.value); saveFormsSoon(); render(); document.getElementById(el.id)?.focus(); return }
   if(el.dataset.ctxFile !== undefined){ if(el.files?.length) ctxAddFiles(el.files); el.value = ""; return }
-  if(el.dataset.liveFile !== undefined){ if(el.files?.length) liveAddFiles(el.files); el.value = ""; return }
   if(el.dataset.avatarFile !== undefined){ if(el.files?.[0]) avatarAdd(el.files[0]); el.value = ""; return }
   if(el.dataset.noteAttach){ const r = S.rooms.find(x => x.id === el.dataset.noteAttach); if(r && el.files?.length) noteAddAttach(r, [...el.files]); el.value = ""; return }
   if(el.dataset.noteFile){ const r = S.rooms.find(x => x.id === el.dataset.noteFile); if(r && el.files?.length) noteAddFiles(r, el.files); el.value = ""; return }
@@ -9097,7 +9066,6 @@ async function act(a, b){
     case "lv-mute": if(r && isLive(r)){ const m = lv(r).members.get(b.dataset.k); if(m){ await liveMember(r, b.dataset.k, {muted:!m.muted}); toast(m.muted ? `${m.nick}의 채팅을 잠시 막았어요.` : `${m.nick}의 채팅 제한을 풀었어요.`) } } return;
     case "lv-del": if(r && isLive(r)) await liveDelMsg(r, +b.dataset.v); return;
     case "lv-auto": if(r && isLive(r)) liveAuto(r); return;
-    case "lv-file-del": { const f = F("create"); f.liveFiles = (f.liveFiles || []).filter((_, i) => i !== +b.dataset.i); saveFormsSoon(); break }
     case "note-memoreq": { const v = b.dataset.v === "on"; if(!r || !!r.noteCfg?.memoReq === v || (v && !memoQOf(r))) break;
       const cfg = {...(r.noteCfg || {}), memoReq:v}, ok = await write(db => db.doc("rooms/" + r.id).update({noteCfg:cfg, updatedAt:Date.now()}), () => { r.noteCfg = cfg });
       if(ok) toast(v ? "이제 한 줄 메모가 필수예요. 이미 낸 학생에게는 영향이 없어요." : "이제 한 줄 메모는 선택이에요."); break }
