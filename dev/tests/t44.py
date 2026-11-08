@@ -52,7 +52,7 @@ async def main():
     await K.evaluate('scrollTo(0,600)'); await W(K,300)
     print('sticky top:', await K.evaluate('document.querySelector(".tmrbar").getBoundingClientRect().top'))
     await K.screenshot(path='/tmp/claude-0/smoke/mob/tmr_student.png')
-    await K.click('[data-a=home]'); await W(K,400); await K.screenshot(path="/tmp/claude-0/smoke/mob/tmr_home.png"); print("home overflow:", await K.evaluate("document.documentElement.scrollWidth")); print("live bar:", await K.eval_on_selector_all(".livebar","e=>e.map(x=>x.innerText.replace(/\\n/g, \" \"))"))
+    await K.evaluate('act("home",{dataset:{}})'); await W(K,400); await K.screenshot(path="/tmp/claude-0/smoke/mob/tmr_home.png"); print("home overflow:", await K.evaluate("document.documentElement.scrollWidth")); print("live bar:", await K.eval_on_selector_all(".livebar","e=>e.map(x=>x.innerText.replace(/\\n/g, \" \"))"))
     await K.evaluate(f'act("open",{{dataset:{{id:"{rid}"}}}})'); await W(K,300)
     await T.click('[data-a=tmr-stop]'); await W(T,600); await W(K,1200); print('student bar after stop:', bool(await K.query_selector('.tmrbar')))
     print('m overflow:', await K.evaluate('document.documentElement.scrollWidth'))

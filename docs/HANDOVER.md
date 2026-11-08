@@ -6,6 +6,16 @@
 
 ---
 
+## 2026-11-09a — 💬 실시간 토론 채팅 (토론 > 실시간 토론 채팅)
+- 새 활동 유형 `template:"live"` (GOALS compare에 추가, 만들기 화면 ‘어떤 방식으로 토론할까요? 일반 토론 / 실시간 토론 채팅’). 일반 토론(debate2/debateN)은 그대로.
+- DB(supabase/live_debate.sql, 운영 DB에 적용함): `debate_members`(실명↔닉네임·팀·제한, 교사만 전체 열람) · `debate_msgs`(닉네임·팀만, 서버 번호 순) · `debate_votes`(PK room+mkey → 1인 1표). 학생 쓰기는 `debate_join/send/vote` RPC만(상태 live·팀 배정·제한·200자·3초 1개·1분 10개 서버 검사), 결과는 `debate_result`(교사 또는 result 공개 뒤 참여자). 활동 삭제 시 `debate_purge`. Realtime 게시에 세 표 추가. materials 보관함에 문서 MIME 허용(토론 자료 파일).
+  - 역할 흉내 SQL로 검증(롤백): 다른 학생 실명·멤버 안 보임, 직접 insert/update 거절, 시작 전·종료 후 작성 거절, 제한 학생 거절, 중복 투표 거절, 공개 전 결과 숨김, 외부인 0건.
+- 상태 `room.live.state`: wait → live → ended → vote → result (교사 버튼). 팀 구성 `liveCfg.teamMode` auto(인원 적은 팀) / teacher(교사 지정, 대기자 ‘자동으로 나누기’). 자료: 기존 자료 칸 + `liveCfg.files`(PDF 등 5개).
+- 클라이언트: `LV[rid]`(msgs Map 중복 제거·id 정렬), `liveSub` 채널(debate_* postgres_changes, 다시 연결·화면 복귀 시 다시 불러옴), 메시지는 채팅 칸만 갱신. 입력 중(#lv-in)에도 상태 변화는 `liveRender`로 바로 그리고 쓰던 글 유지. Enter 보내기(한글 조합 중 제외).
+- 성찰 3문항 + 생각 변화 정도 → 기존 posts(reveal teacher)로 저장, `live:{nick,team,vote,msgs}` 포함 → 나의 생각 흐름 모음(`liveMineBody`)·학생별 화면·교사 피드백(qfb) 연결.
+- 체험 모드에 예시 활동 `demo-live`(학생 6명·메시지 6개, 메모리에서만). 미리보기는 보기만.
+- mock.js에 debate_* RPC·표·채널 흉내 추가. 테스트 t90(전체 흐름·여러 학생 동시)·t91(휴대폰·체험·미리보기). t44·t51은 숨은 메뉴 버튼 대신 act("home")로 고침.
+
 ## 2026-11-06a — 학습 나눔 ‘한 줄 메모’ 선택/필수
 - `noteCfg.memoReq`(true=필수). `memoReqOf(r)`는 질문(`memoQ`)이 있을 때만 true. 기본은 선택.
 - 만들기/수정 폼: 질문 칸 아래 `선택/필수` 라디오(`.memoreq`, 질문이 비면 ‘필수’ 비활성, 입력 중에도 즉시 반영·질문을 지우면 선택으로 복귀). 저장 시 질문이 비면 memoReq 제거.

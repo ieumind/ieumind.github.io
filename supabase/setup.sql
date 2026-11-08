@@ -1343,3 +1343,7 @@ grant  execute on function public.teacher_delete_me(boolean) to authenticated;
 -- 여러 번 실행해도 안전하다.
 -- ---------------------------------------------------------------------
 update storage.buckets set file_size_limit = 10485760, allowed_mime_types = null where id = 'notes';
+
+-- =====================================================================
+-- 💬 실시간 토론 채팅 (2026-11-09): supabase/live_debate.sql 을 이어서 실행한다 (이미 적용됨)
+-- =====================================================================

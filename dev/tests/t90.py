@@ -1,0 +1,97 @@
+# 💬 실시간 토론 채팅: 만들기 → 학생 둘 입장(익명 닉네임·자동 배정) → 시작 → 실시간 메시지 → 삭제·제한 → 종료 → 투표 → 결과 → 성찰 → 포트폴리오
+import asyncio, re
+from playwright.async_api import async_playwright
+U='file:///tmp/claude-0/smoke/p26.html'
+fails=[]
+def ok(n,c,x=''):
+  print(('PASS ' if c else 'FAIL ')+n,x)
+  if not c: fails.append(n)
+W=lambda pg,ms=250: pg.wait_for_timeout(ms)
+async def main():
+  async with async_playwright() as p:
+    b=await p.chromium.launch(); ctx=await b.new_context(viewport={'width':1280,'height':900}); await ctx.route(re.compile(r'https://.*'), lambda r: r.abort())
+    errs=[]
+    T=await ctx.new_page(); T.on('pageerror',lambda e:errs.append('T:'+str(e)))
+    await T.goto(U+'?who=teacher'); await T.evaluate('localStorage.clear()'); await T.reload(); await W(T,700)
+    await T.click('[data-a=create]'); await W(T)
+    await T.click('[data-a=goal][data-v=compare]'); await W(T)
+    ok('토론에 방식 선택(일반/실시간)', await T.locator('[data-a=tpl][data-v=live]').count()==1 and await T.locator('[data-a=tpl][data-v=debate2]').count()==1)
+    ok('기본은 일반 토론', await T.get_attribute('[data-a=tpl][data-v=debate2]','aria-pressed')=='true')
+    await T.click('[data-a=tpl][data-v=live]'); await W(T,300)
+    ok('실시간 토론 설정 칸', await T.locator('#c-team').count()==1)
+    ok('입장 입력·깊이 카드 숨김', await T.locator('[id^=c-st]:not(#c-stage)').count()==0 and not await T.locator('.depth-card').is_visible())
+    await T.fill('#c-prompt','대한민국 임시 정부는 독립운동에 큰 성과를 거두었다.')
+    await T.click('[data-a=create-save]'); await W(T,900); rid=await T.evaluate('S.roomId')
+    rm=await T.evaluate(f'S.rooms.find(r=>r.id==="{rid}")')
+    ok('저장: template live·찬반·선생님만 보기·자동 배정', rm['template']=='live' and rm['stances']==['찬성','반대'] and rm['reveal']=='teacher' and rm['liveCfg']['teamMode']=='auto', str({k:rm.get(k) for k in ['template','stances','reveal','liveCfg']}))
+    ok('교사 화면: 시작 전 + 토론 시작 버튼', await T.locator('[data-a=lv-state][data-v=live]').count()==1 and '시작 전' in await T.inner_text('.lvctl'))
+    async def stu(nm):
+      K=await ctx.new_page(); K.on('pageerror',lambda e:errs.append('K:'+str(e))); await K.goto(U+'?who=anon#'+rid); await W(K,500)
+      await K.fill('#g-nick',nm); await K.click('[data-a=guest-join]'); await W(K,1600); return K
+    A=await stu('김가온'); B=await stu('나다은')
+    na=await A.evaluate(f'lv(S.rooms.find(r=>r.id==="{rid}")).me'); nb=await B.evaluate(f'lv(S.rooms.find(r=>r.id==="{rid}")).me')
+    ok('익명 닉네임 부여', bool(na and na['nick']) and bool(nb and nb['nick']) and na['nick']!=nb['nick'], f"{na} {nb}")
+    ok('자동 배정: 두 팀으로 나뉨', {na['team'],nb['team']}=={'pro','con'}, f"{na['team']} {nb['team']}")
+    ok('학생 화면에 내 닉네임·팀', na['nick'] in await A.inner_text('.lvme'))
+    ok('시작 전에는 입력창 잠김', await A.locator('#lv-in').count()==0 and '시작하면' in await A.inner_text('.lvcomp'))
+    await W(T,800)
+    ok('교사: 참여 2명·실명↔닉네임', '2' in await T.inner_text('#lv-kpis') and '김가온' in await T.inner_text('.lvmem') and na['nick'] in await T.inner_text('.lvmem'))
+    await T.click('[data-a=lv-state][data-v=live]'); await W(T,400); await W(A,900)
+    ok('시작하면 학생 화면 LIVE·입력창', await A.locator('#lv-in').count()==1 and 'LIVE' in await A.inner_text('.lvst'))
+    await A.fill('#lv-in','임시 헌장 제1조가 민주 공화제를 선언했어요.'); await A.keyboard.press('Enter'); await W(A,600)
+    ok('Enter로 보냄·입력칸 비움', await A.input_value('#lv-in')=='' and '민주 공화제' in await A.inner_text('#lv-msgs'))
+    await W(B,900)
+    ok('다른 학생 화면에 실시간 표시', '민주 공화제' in await B.inner_text('#lv-msgs'))
+    ok('학생에게는 실명이 안 보임', '김가온' not in await B.inner_text('#app') and na['nick'] in await B.inner_text('#lv-msgs'))
+    await A.fill('#lv-in','두 번째'); await A.keyboard.press('Enter'); await W(A,400)
+    ok('3초 안에 또 보내면 막힘', '천천히' in await A.inner_text('body'))
+    await A.fill('#lv-in','가'*201 if False else '가'*200); ok('200자 넘게는 못 씀(maxlength)', await A.get_attribute('#lv-in','maxlength')=='200')
+    await A.fill('#lv-in','')
+    await B.wait_for_timeout(3100); await B.fill('#lv-in','연통제는 오래가지 못했어요.'); await B.click('[data-a=lv-send]'); await W(B,700); await W(T,800)
+    ok('교사 화면에 메시지 2개·실명 표시', await T.locator('#lv-msgs .lvm:not(.del)').count()==2 and '나다은' in await T.inner_text('#lv-msgs'))
+    # 삭제
+    mid=await T.get_attribute('#lv-msgs .lvm.%s'%('con' if nb['team']=='con' else 'pro')+' [data-a=lv-del]','data-v')
+    await T.click(f'[data-a=lv-del][data-v="{mid}"]'); await W(T,500); await W(A,900)
+    ok('교사가 지우면 학생 화면에서 사라짐', '연통제' not in await A.inner_text('#lv-msgs') and '연통제' not in await B.inner_text('#lv-msgs'))
+    # 제한
+    await T.click(f'[data-a=lv-mute][data-k="{nb["mkey"]}"]'); await W(T,500); await W(B,900)
+    ok('채팅 제한하면 그 학생 입력창 잠김', await B.locator('#lv-in').count()==0 and '제한' in await B.inner_text('.lvcomp'))
+    await T.click(f'[data-a=lv-mute][data-k="{nb["mkey"]}"]'); await W(T,400); await W(B,900)
+    ok('제한 풀면 다시 쓸 수 있음', await B.locator('#lv-in').count()==1)
+    # 팀 바꾸기
+    other='con' if na['team']=='pro' else 'pro'
+    await T.click(f'[data-a=lv-team][data-k="{na["mkey"]}"][data-v={other}]'); await W(T,400); await W(A,900)
+    ok('교사가 팀을 바꾸면 학생 화면 반영', await A.evaluate(f'lv(S.rooms.find(r=>r.id==="{rid}")).me.team')==other)
+    # 입력 중 종료
+    await B.fill('#lv-in','쓰는 중인 글'); await B.focus('#lv-in')
+    await T.click('[data-a=lv-state][data-v=ended]'); await W(T,400); await W(B,1000)
+    ok('토론 종료 → 입력창 잠김(입력 중이어도 바로)', await B.locator('#lv-in').count()==0 and '끝났' in await B.inner_text('.lvcomp'))
+    r2=await B.evaluate(f'SB.rpc("debate_send",{{p_room:"{rid}",p_body:"몰래"}})')
+    ok('종료 뒤 서버도 거절', r2['data']['reason']=='closed', str(r2))
+    ok('종료 뒤 성찰 칸', await B.locator('[data-a=lv-ref-save]').count()==1)
+    # 투표
+    await T.click('[data-a=lv-state][data-v=vote]'); await W(T,400); await W(A,900); await W(B,300)
+    ok('투표 시작 → 학생 투표 버튼', await A.locator('[data-a=lv-vote]').count()==2)
+    await A.click('[data-a=lv-vote][data-v=pro]'); await W(A,700); await B.click('[data-a=lv-vote][data-v=con]'); await W(B,700)
+    ok('투표 완료 표시', '투표했어요' in await A.inner_text('.lvvote'))
+    r3=await A.evaluate(f'SB.rpc("debate_vote",{{p_room:"{rid}",p_choice:"con"}})'); ok('중복 투표 서버 거절', r3['data']['reason']=='dup', str(r3))
+    r4=await A.evaluate(f'SB.rpc("debate_result",{{p_room:"{rid}"}})'); ok('공개 전 학생은 결과 못 봄', r4['data'] is None, str(r4))
+    await W(T,900); ok('교사는 투표 현황 봄(1:1)', '1표' in await T.inner_text('.lvres'))
+    await T.click('[data-a=lv-state][data-v=result]'); await W(T,500); await W(A,1200)
+    ok('결과 공개 → 학생 결과·비율·참고 안내', '50%' in await A.inner_text('.lvres') and '정답이라는 뜻은 아니' in await A.inner_text('.lvres'))
+    # 성찰
+    await A.fill('[id="lvref:%s-before"]'%rid,'임시 정부의 성과가 크다고 생각했다.'); await A.fill('[id="lvref:%s-persuasive"]'%rid,'국내와의 연결이 끊긴 점'); await A.fill('[id="lvref:%s-after"]'%rid,'성과와 한계를 함께 보게 됐다.')
+    await A.check('input[name="lvref:%s-degree"][value=some]'%rid); await A.click('[data-a=lv-ref-save]'); await W(A,900)
+    ok('성찰 제출', '제출 완료' in await A.inner_text('.lvcard:has([data-a=lv-ref-edit])'))
+    post=await A.evaluate(f'myPost(S.rooms.find(r=>r.id==="{rid}"))')
+    ok('성찰에 내 메시지·닉네임·투표가 함께 저장', post['live']['nick']==na['nick'] and len(post['live']['msgs'])==1 and post['live']['vote']=='pro', str(post.get('live')))
+    await W(T,900); ok('교사 화면 성찰 목록', '성과와 한계' in await T.inner_text('.lvrefs'))
+    # 포트폴리오(나의 생각 흐름 모음)
+    await A.evaluate('act("mine",{dataset:{}})'); await W(A,500); await A.evaluate('act("mine-view",{dataset:{v:"list"}})'); await W(A,400)
+    await A.evaluate('document.querySelector(".pcard") && (document.querySelector(".pcard").open=true)'); await W(A,200)
+    ok('나의 생각 흐름 모음에 토론 성찰', '성과와 한계' in await A.inner_text('#app'), (await A.inner_text('#app'))[:120])
+    ok('페이지 오류 없음', not errs, str(errs[:3]))
+    await T.screenshot(path='/tmp/claude-0/lv_teacher.png', full_page=True)
+    await b.close()
+  print('\nFAILED:',fails) if fails else print('\nALL PASS')
+asyncio.run(main())
