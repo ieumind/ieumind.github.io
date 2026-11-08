@@ -6,6 +6,16 @@
 
 ---
 
+## 2026-11-09b — ⚖️ 청중 판정단 (실시간 토론 채팅 확장) + 일반 토론 설명 문구 정리
+- 기존 실시간 토론 구조를 그대로 두고 역할 `jury`만 추가: `debate_members.team` 이 `pro | con | jury`. 판정단은 채팅을 읽기만 한다(입력창 없음, 서버 `debate_send` 도 `jury` 로 거절).
+- 설정: 만들기 화면 ‘청중 판정단’ 선택(`liveCfg.jury` = 0 | 10 | 20 | 30 %). 0이면 기존과 완전히 같다. 자동 배정이면 `debate_join` 이 비율만큼 판정단으로 먼저 넣고 나머지는 찬반 균형. 교사 지정이면 ‘자동으로 나누기’에 같은 비율을 쓰고 직접 바꿀 수도 있다(토론 시작 뒤에는 판정단↔토론 팀 전환 버튼 비활성).
+- 판정: `debate_jury`(근거 c1 · 설득력 c2 · 반박 c3 = pro/con, 이유 5~300자, 한 사람 한 번, `hidden`). 서버 함수 `debate_judge` 는 판정단만·투표 단계(vote)만·1회. 판정단은 최종 투표(`debate_vote`)를 하지 못한다(두 결과 분리). 최종 투표 결과와 판정 결과는 화면·DB 모두 따로.
+- 결과(`debate_result` → `{pro, con, jury:{n,c1,c2,c3,win,reasons}}`): 교사는 언제나, 학생은 결과 공개(result) 뒤에만. 이유는 익명, 교사가 ‘학생 화면에서 가리기’ 가능. ‘win’ = 세 기준 중 2개 이상 우세로 본 판정단 수. 정답·절대 승패가 아니라는 안내 문구 포함.
+- 기록: 성찰 저장 시 `post.live = {team:"jury", jury:{c1,c2,c3,reason}}`. 판정단 성찰 질문은 별도(`LIVE_RQJ`). 교사 성찰 목록·내 생각 기록에 판정 내용 표시.
+- SQL: `supabase/live_jury.sql` (운영 DB에 적용함: 마이그레이션 `live_jury`). 판정단 없는 기존 토론은 t90·t91 그대로 통과.
+- 테스트: t92(판정단 전체 흐름·서버 거절·익명·가리기). 목 서버(dev/tests/mock.js)에 `debate_jury`·`debate_judge` 추가.
+- 일반 토론 설명의 ‘(지금까지의 토론)’ 문구 삭제. ‘notes’ 보관함: 크기 10MB·형식 제한 해제(운영 DB 적용).
+
 ## 2026-11-09a — 💬 실시간 토론 채팅 (토론 > 실시간 토론 채팅)
 - 새 활동 유형 `template:"live"` (GOALS compare에 추가, 만들기 화면 ‘어떤 방식으로 토론할까요? 일반 토론 / 실시간 토론 채팅’). 일반 토론(debate2/debateN)은 그대로.
 - DB(supabase/live_debate.sql, 운영 DB에 적용함): `debate_members`(실명↔닉네임·팀·제한, 교사만 전체 열람) · `debate_msgs`(닉네임·팀만, 서버 번호 순) · `debate_votes`(PK room+mkey → 1인 1표). 학생 쓰기는 `debate_join/send/vote` RPC만(상태 live·팀 배정·제한·200자·3초 1개·1분 10개 서버 검사), 결과는 `debate_result`(교사 또는 result 공개 뒤 참여자). 활동 삭제 시 `debate_purge`. Realtime 게시에 세 표 추가. materials 보관함에 문서 MIME 허용(토론 자료 파일).
