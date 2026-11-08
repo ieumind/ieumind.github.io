@@ -208,3 +208,4 @@ update storage.buckets set allowed_mime_types = array['image/jpeg', 'image/png',
   'application/vnd.ms-powerpoint', 'application/vnd.openxmlformats-officedocument.presentationml.presentation',
   'application/vnd.ms-excel', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', 'text/plain']
  where id = 'materials';
+-- (청중 판정단: supabase/live_jury.sql 을 이어서 실행)
