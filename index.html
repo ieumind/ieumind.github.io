@@ -1692,7 +1692,6 @@ input[type=datetime-local]{border-radius:var(--r)}
   .cform > .foot > .row:first-child .btn{min-height:36px;padding:4px 10px;font-size:14px}
   .cform > .foot > .row:first-child .linkbtn{font-size:13px;white-space:nowrap}
   .cform > .foot > .row:last-child{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.4fr)}
-  .cform > .foot > .row:last-child > label{grid-column:1/-1}
   .cform > .foot .btn.pri{width:auto}
 }
 
@@ -6011,7 +6010,7 @@ function teacherCard(r, p, ps, nav){
    ========================================================= */
 /* 🔄 새 버전 알림: 배포 때마다 APP_VERSION과 version.json의 v를 같은 값으로 올린다.
    GitHub Pages는 화면을 10분쯤 기억하므로, 옛 화면이면 아래쪽에 ‘새로고침’ 띠를 띄우고 주소를 바꿔 새로 받는다 */
-const APP_VERSION = "2026-11-10e";
+const APP_VERSION = "2026-11-10f";
 async function checkVersion(){
   if(!/^https?:$/.test(location.protocol)) return;
   try{
@@ -8815,16 +8814,6 @@ function viewCreate(){
 
 
 
-  <details class="cfold" data-keep="info" ${(S.advOpen?.info ?? !!editR) ? "open" : ""}><summary>${ic("clipboard-list", "sm")} 수업 정보 <span class="opt">학년·단원·차시·교사용 메모</span></summary><div><div class="form-grid">
-      <div class="q"><label for="c-grade">학년</label><select id="c-grade" data-form="create" data-k="grade"><option value="">선택 안 함</option>${GRADES.map(g=>`<option ${f.grade===g?"selected":""}>${g}</option>`).join("")}</select></div>
-      <div class="q"><label for="c-subject">교과</label><input type="text" id="c-subject" data-form="create" data-k="subject" maxlength="20" value="${esc(f.subject||"")}" placeholder="예: 한국사, 국어, 통합사회"></div>
-      <div class="q"><label for="c-unit">단원</label><input type="text" id="c-unit" data-form="create" data-k="unit" maxlength="40" value="${esc(f.unit||"")}"></div>
-      <div class="q"><label for="c-year">차시·연도</label><input type="text" id="c-year" data-form="create" data-k="year" maxlength="16" placeholder="예: 3차시" value="${esc(f.year||"")}"></div>
-      <div class="q"><label for="c-duration">예상 활동 시간 (분)</label><input type="number" id="c-duration" data-form="create" data-k="duration" min="0" max="180" step="5" value="${esc(f.duration||"")}" placeholder="예: 20"></div>
-      <div class="q"><label for="c-stage">수업 단계</label><select id="c-stage" data-form="create" data-k="stage"><option value="">선택 안 함</option>${["도입","전개","정리","과제"].map(g=>`<option ${f.stage===g?"selected":""}>${g}</option>`).join("")}</select></div>
-      <div class="q wide"><label for="c-memo">${ic("notes", "sm")} 교사용 메모 <span class="opt">(학생에게 보이지 않아요)</span></label>${ta("create","memo",{rows:2, ph:"예: 다음 시간 토론 전에 활용", id:"c-memo"})}</div>
-    </div></div></details>
-
   <details class="cfold" data-cfold data-keep="adv" ${S.advOpen?.adv ? "open" : ""}><summary>${ic("settings", "sm")} 세부 설정 <span class="opt">고르지 않아도 ‘생각을 어디까지’에 맞게 정해져 있어요</span></summary><div>`;
   let adv = "";
   const toolOpts = Object.entries(TOOLS).filter(([k,v]) => v.only ? v.only === f.template : (TOOL_PICK.includes(k) || k === f.tool));
@@ -8863,14 +8852,24 @@ function viewCreate(){
           <button type="button" class="cchip none" data-a="c-course" data-v="" aria-pressed="${!sel.length}" ${lockC ? "disabled" : ""}>과목 없이 (링크 하나로 사용)</button></div>
         ${lockC ? `<p class="hint">학생 응답이 있어 과목은 바꿀 수 없어요.</p>` : sel.length > 1 ? `<p class="hint">${ic("check", "sm")} ${sel.length}개 과목을 골랐어요. 저장하면 과목마다 같은 활동이 만들어지고, 결과는 과목별로 따로 모여요.</p>` : ""}</div>` : ""}
       ${!sel.length && S.mode === "supa" ? `<p class="hint" style="margin-top:6px">${ic("users", "sm")} 과목 없이 만들면 학생이 링크·QR로 들어와 <b>개인 코드 없이 이름이나 닉네임만 적고</b> 바로 참여해요. (개인 코드로 들어온 학생은 그대로 학번·이름으로 보여요.)</p>` : ""}
+      ${(!editR || isDraft) && canPush() && courseOf(f.courseId) ? `<div class="feat c-notify" style="margin-top:12px"><label><input type="checkbox" data-form="create" data-k="notify" ${f.notify === false ? "" : "checked"}><span>${ic("bell", "sm")} 공개할 때 학생 앱에 알림 보내기 <span class="opt">— 고른 과목(그룹) 학생에게</span></span></label></div>` : ""}
       <div class="form-grid" style="margin-top:12px"><div class="q"><label for="c-due">마감 <span class="opt">(선택)</span></label><input type="datetime-local" id="c-due" data-form="create" data-k="dueAt" value="${esc(f.dueAt||"")}">
         <p class="hint">이 시각에 저절로 마감돼요.${f.dueAt ? ` <button class="linkbtn" type="button" data-a="due-clear">지우기</button>` : ""}</p></div></div>
-      ${sel.map(cid => gschedHTML(courseOf(cid), f, usedG)).join("")}</div>` })();   // ⑤ 누구와·언제까지: 세부 설정을 위로 올리고 이 카드를 저장 막대 바로 위에 둔다
+      ${sel.map(cid => gschedHTML(courseOf(cid), f, usedG)).join("")}</div>` })();   // ⑤ 누구와·언제까지: 세부 설정(④ 바로 아래) 다음
+  h += `  <details class="cfold" data-keep="info" ${(S.advOpen?.info ?? !!editR) ? "open" : ""}><summary>${ic("clipboard-list", "sm")} 수업 정보 <span class="opt">학년·단원·차시·교사용 메모</span></summary><div><div class="form-grid">
+      <div class="q"><label for="c-grade">학년</label><select id="c-grade" data-form="create" data-k="grade"><option value="">선택 안 함</option>${GRADES.map(g=>`<option ${f.grade===g?"selected":""}>${g}</option>`).join("")}</select></div>
+      <div class="q"><label for="c-subject">교과</label><input type="text" id="c-subject" data-form="create" data-k="subject" maxlength="20" value="${esc(f.subject||"")}" placeholder="예: 한국사, 국어, 통합사회"></div>
+      <div class="q"><label for="c-unit">단원</label><input type="text" id="c-unit" data-form="create" data-k="unit" maxlength="40" value="${esc(f.unit||"")}"></div>
+      <div class="q"><label for="c-year">차시·연도</label><input type="text" id="c-year" data-form="create" data-k="year" maxlength="16" placeholder="예: 3차시" value="${esc(f.year||"")}"></div>
+      <div class="q"><label for="c-duration">예상 활동 시간 (분)</label><input type="number" id="c-duration" data-form="create" data-k="duration" min="0" max="180" step="5" value="${esc(f.duration||"")}" placeholder="예: 20"></div>
+      <div class="q"><label for="c-stage">수업 단계</label><select id="c-stage" data-form="create" data-k="stage"><option value="">선택 안 함</option>${["도입","전개","정리","과제"].map(g=>`<option ${f.stage===g?"selected":""}>${g}</option>`).join("")}</select></div>
+      <div class="q wide"><label for="c-memo">${ic("notes", "sm")} 교사용 메모 <span class="opt">(학생에게 보이지 않아요)</span></label>${ta("create","memo",{rows:2, ph:"예: 다음 시간 토론 전에 활용", id:"c-memo"})}</div>
+    </div></div></details>`;   // 수업 정보(학년·단원·메모): 학생 활동에 영향이 없는 기록이라 맨 아래
   if(S.tplNaming) h += `<div class="setup" style="margin-top:16px"><b>${ic("device-floppy")} 내 템플릿으로 저장</b><p class="small">활동 유형·깊이·세부 설정을 저장해 두고 다음에 불러올 수 있어요.</p>
     <div class="row"><input type="text" id="tpl-name" maxlength="30" placeholder="예: 한국사 토론 기본형" aria-label="템플릿 이름"><button class="btn sm pri" type="button" data-a="tpl-save">저장</button><button class="btn sm" type="button" data-a="tpl-cancel">취소</button></div></div>`;
   h += `<div class="foot"><div class="row"><button class="btn" type="button" data-a="preview-form">${ic("eye")} 학생 화면 미리보기</button>
       ${!locked && !S.tplNaming ? `<button class="linkbtn" type="button" data-a="tpl-save-open">${ic("device-floppy", "sm")} 내 템플릿으로 저장</button>` : ""}</div>
-    <div class="row">${(!editR || isDraft) && canPush() && courseOf(f.courseId) ? `<label class="choice" style="min-height:36px" title="공개할 때 이 과목(고른 그룹) 학생 앱에 알림을 보내요"><input type="checkbox" data-form="create" data-k="notify" ${f.notify === false ? "" : "checked"}><span>${ic("bell", "sm")} 학생 알림</span></label>` : ""}${!editR || isDraft ? `<button class="btn" type="button" data-a="draft-save">임시 저장</button>` : ""}
+    <div class="row">${!editR || isDraft ? `<button class="btn" type="button" data-a="draft-save">임시 저장</button>` : ""}
       <button class="btn pri" type="button" data-a="${editR && !isDraft ? "create-save" : (isDraft ? "publish-draft" : "create-save")}">${editR ? (isDraft ? "공개하기" : "변경사항 저장") : "활동 만들기"}</button></div></div>`;
   return `<div class="cform" data-tpl="${esc(f.template)}">${h}</div>`;   // 만들기·수정 화면 전용 모양(.cform) — 안의 칸·동작은 그대로
 }
