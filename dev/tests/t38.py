@@ -12,7 +12,7 @@ async def main():
     pressed=lambda: T.evaluate('[...document.querySelectorAll(".depth")].map(x=>x.getAttribute("aria-pressed")==="true"?x.dataset.v:"").join("")')
     stages=lambda: T.eval_on_selector_all('.pv-st','e=>e.map(x=>x.innerText.replace(/\\n/g,": "))')
     await T.click('details[data-keep=adv] > summary'); await W(T)
-    secs=lambda: T.eval_on_selector_all('.adv-sec h4','e=>e.map(x=>x.textContent)')
+    secs=lambda: T.eval_on_selector_all('.cf-sec h4','e=>e.map(x=>x.textContent)')
     for d in ['quick','normal','deep']:
       await T.click(f'[data-a=depth][data-v={d}]'); await W(T)
       print(d, 'pressed', await pressed(), '| stages', await stages(), '| adv', await secs())

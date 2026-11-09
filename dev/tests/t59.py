@@ -39,7 +39,7 @@ async def main():
           await P.evaluate(f'act("present",{{dataset:{{id:"{rid}"}}}})'); await W(P); await chk(P, f'{vw} {rid[:10]} 함께보기'); await P.evaluate('act("present-exit",{dataset:{}})'); await W(P)
       await P.evaluate('act("ttab",{dataset:{v:"students"}})'); await W(P)
       await P.evaluate('act("home",{dataset:{}}); act("create",{dataset:{}})'); await W(P,400)
-      await P.evaluate('document.querySelectorAll("details.adv").forEach(d=>d.open=true)'); await W(P); await chk(P, f'{vw} 새 활동')
+      await P.evaluate('document.querySelectorAll("details.cfold").forEach(d=>d.open=true)'); await W(P); await chk(P, f'{vw} 새 활동')
       for g in ['question','sketch','chat','notes']:
         await P.evaluate(f'act("goal",{{dataset:{{v:"{g}"}}}})'); await W(P,200); await chk(P, f'{vw} 새 활동/{g}')
       for m in ['msg-open','tname-open']:

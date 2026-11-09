@@ -22,31 +22,31 @@ async def main():
       row=lambda n: f'.att tbody tr:has(th b:text-is("{n}"))'
       D='2026-10-12'
       ok(f'{vw} Tab으로 들어올 첫 칸이 있음', await T.evaluate('document.querySelectorAll("#att-wrap .ac[tabindex=\\"0\\"]").length')==1)
-      ok(f'{vw} 하루 칸이 날짜마다 있음', await T.evaluate('document.querySelectorAll(".att tbody tr:first-child .ad").length')==4)
+      ok(f'{vw} 하루 칸이 날짜마다 있음', await T.evaluate('document.querySelectorAll(".att tbody tr:first-child .attday").length')==4)
       # 하루 칸: ○ → △ → × → 비움 → ○
       seq=[]
       for k in range(5):
-        await T.click(f'{row("안소은")} .ad[data-d="{D}"]'); seq.append(await m(f'{row("안소은")} .ac:not(.ad)[data-d="{D}"]'))
+        await T.click(f'{row("안소은")} .attday[data-d="{D}"]'); seq.append(await m(f'{row("안소은")} .ac:not(.attday)[data-d="{D}"]'))
       ok(f'{vw} 하루 칸을 누를 때마다 3교시가 함께 바뀜', seq==['○○○','△△△','×××','---','○○○'], str(seq))
       # 한 교시만 바꾸면 하루 칸은 ◐, 누르면 모두 ○
-      await T.click(f'{row("안소은")} .ac:not(.ad)[data-d="{D}"][data-i="1"]'); await W(T,50)
-      ok(f'{vw} 섞이면 하루 칸이 섞임', await T.inner_text(f'{row("안소은")} .ad[data-d="{D}"]')=='섞임')
-      await T.click(f'{row("안소은")} .ad[data-d="{D}"]')
-      ok(f'{vw} 섞인 날은 하루 칸이 모두 ○로', await m(f'{row("안소은")} .ac:not(.ad)[data-d="{D}"]')=='○○○')
+      await T.click(f'{row("안소은")} .ac:not(.attday)[data-d="{D}"][data-i="1"]'); await W(T,50)
+      ok(f'{vw} 섞이면 하루 칸이 섞임', await T.inner_text(f'{row("안소은")} .attday[data-d="{D}"]')=='섞임')
+      await T.click(f'{row("안소은")} .attday[data-d="{D}"]')
+      ok(f'{vw} 섞인 날은 하루 칸이 모두 ○로', await m(f'{row("안소은")} .ac:not(.attday)[data-d="{D}"]')=='○○○')
       # 키보드: 박하늘(첫 줄) 하루 칸에서 2 → 아래로 내려가 3 → 아래 0
-      await T.focus(f'{row("박하늘")} .ad[data-d="{D}"]')
+      await T.focus(f'{row("박하늘")} .attday[data-d="{D}"]')
       await T.keyboard.press('2'); await T.keyboard.press('3'); await T.keyboard.press('0'); await W(T,100)
-      ok(f'{vw} 키보드 하루 칸: 2·3·0 한 줄씩 내려가며 입력', [await m(f'{row(n)} .ac:not(.ad)[data-d="{D}"]') for n in ('박하늘','안소은','김연아')]==['△△△','×××','---'], str([await m(f'{row(n)} .ac:not(.ad)[data-d="{D}"]') for n in ('박하늘','안소은','김연아')]))
+      ok(f'{vw} 키보드 하루 칸: 2·3·0 한 줄씩 내려가며 입력', [await m(f'{row(n)} .ac:not(.attday)[data-d="{D}"]') for n in ('박하늘','안소은','김연아')]==['△△△','×××','---'], str([await m(f'{row(n)} .ac:not(.attday)[data-d="{D}"]') for n in ('박하늘','안소은','김연아')]))
       foc=await T.evaluate('document.activeElement?.dataset.sid && attRoster("").find(x=>x.id===document.activeElement.dataset.sid)?.name')
       ok(f'{vw} 초점이 마지막 줄에서 멈춤', foc=='김연아', str(foc))
       # 교시 칸: 위로 올라가 1교시에서 1(○) 누르면 오른쪽 2교시로 이동
-      await T.focus(f'{row("김연아")} .ac:not(.ad)[data-d="{D}"][data-i="0"]'); await T.keyboard.press('1'); await T.keyboard.press('2'); await W(T,100)
-      ok(f'{vw} 교시 칸: 누르면 오른쪽 교시로 넘어가며 입력', await m(f'{row("김연아")} .ac:not(.ad)[data-d="{D}"]')=='○△-', await m(f'{row("김연아")} .ac:not(.ad)[data-d="{D}"]'))
+      await T.focus(f'{row("김연아")} .ac:not(.attday)[data-d="{D}"][data-i="0"]'); await T.keyboard.press('1'); await T.keyboard.press('2'); await W(T,100)
+      ok(f'{vw} 교시 칸: 누르면 오른쪽 교시로 넘어가며 입력', await m(f'{row("김연아")} .ac:not(.attday)[data-d="{D}"]')=='○△-', await m(f'{row("김연아")} .ac:not(.attday)[data-d="{D}"]'))
       await T.keyboard.press('3'); await W(T,100)   # 3교시 ×
       foc=await T.evaluate('document.activeElement.classList.contains("ad")+":"+document.activeElement.dataset.d')
       ok(f'{vw} 마지막 교시 다음은 다음 날 1교시로 건너뜀(하루 칸 건너뜀)', foc=='false:2026-10-19', foc)
       # 방향키
-      await T.focus(f'{row("박하늘")} .ac:not(.ad)[data-d="{D}"][data-i="0"]'); await T.keyboard.press('ArrowDown'); await T.keyboard.press('ArrowDown'); await T.keyboard.press('ArrowRight')
+      await T.focus(f'{row("박하늘")} .ac:not(.attday)[data-d="{D}"][data-i="0"]'); await T.keyboard.press('ArrowDown'); await T.keyboard.press('ArrowDown'); await T.keyboard.press('ArrowRight')
       pos=await T.evaluate('(()=>{const e=document.activeElement;return attRoster("").find(x=>x.id===e.dataset.sid).name+":"+e.dataset.i})()')
       ok(f'{vw} 방향키: 아래 둘·오른쪽 하나', pos=='김연아:1', pos)
       await T.keyboard.press('Home'); ok(f'{vw} Home은 줄 맨 앞', await T.evaluate('document.activeElement.dataset.d')=='2026-10-05')
