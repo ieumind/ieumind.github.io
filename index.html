@@ -531,6 +531,16 @@ details.adv > div{padding:2px 20px 16px;display:grid;gap:12px}
 .land{animation:land .35s ease-out}
 @keyframes land{from{opacity:0;transform:translateY(-8px) scale(.98)}to{opacity:1;transform:none}}
 .smap-more{justify-self:center}
+.smap-tools{display:grid;gap:8px}
+.smap-jump{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;padding-bottom:2px}
+.smap-j{flex:0 0 auto;display:inline-flex;align-items:center;gap:5px;max-width:220px;border:1px solid var(--line);border-left:4px solid var(--c);background:var(--surface);color:var(--fg);border-radius:999px;padding:6px 11px;font:inherit;font-size:13.5px;cursor:pointer}
+.smap-j>span:not(.shp){overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.smap-j b{font-family:var(--f-mono);color:var(--c)}
+.smap-sort{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none}
+.smap-sort button{flex:0 0 auto;white-space:nowrap;border:1px solid var(--line);background:transparent;color:var(--muted);border-radius:999px;padding:4px 10px;font:inherit;font-size:13px;cursor:pointer}
+.smap-sort button.on{background:var(--fg);color:var(--bg);border-color:var(--fg)}
+.smap-col{scroll-margin-top:84px}
+@media (min-width:721px){ .smap-jump{display:none} }
 /* 나의 생각 흐름: 번호로 순서를 보여 준다 */
 .flow{counter-reset:fl}
 .flow > li{counter-increment:fl}
@@ -1162,10 +1172,10 @@ a.btn{text-decoration:none;color:inherit;display:inline-flex;align-items:center}
 .pad-h{display:flex;align-items:center;gap:9px;min-width:0}
 .pad-h .ava{flex:0 0 auto;width:32px;height:32px;border-radius:999px;background:var(--av);color:#fff;display:grid;place-items:center;font-weight:700;font-size:14px}
 .pad-h .who{display:grid;line-height:1.25;min-width:0;flex:1}
-.pad-h .who b{font-size:14.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.pad-h .who span{font-size:12px;color:var(--muted)}
+.pad-h .who b{color:var(--fg);font-size:14.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pad-h .who span{font-size:12px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .pad-b{display:grid;gap:4px;cursor:pointer}
-.pad-title{font-size:16.5px;font-weight:800;line-height:1.4;overflow-wrap:anywhere}
+.pad-title{font-size:16.5px;font-weight:800;line-height:1.4;overflow-wrap:anywhere;display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;overflow:hidden}
 .post.wcard .wact{margin-top:2px;padding-top:8px;border-top:1px solid rgba(0,0,0,.08)}
 :root[data-theme="dark"] .post.wcard .wact{border-top-color:rgba(255,255,255,.1)}
 .post.wcard .hbtn,.post.wcard .cbtn{background:transparent;border-color:transparent;min-height:30px;padding:2px 8px}
@@ -1173,6 +1183,11 @@ a.btn{text-decoration:none;color:inherit;display:inline-flex;align-items:center}
 :root[data-theme="dark"] .post.wcard .hbtn.on{background:#3A1B22}
 .pad-add{display:flex;align-items:center;gap:6px;width:100%;border:0;border-top:1px solid rgba(0,0,0,.06);background:transparent;color:var(--muted);font:inherit;font-size:13.5px;padding:8px 2px 2px;cursor:pointer;text-align:left}
 .pad-add:hover{color:var(--fg)}
+.pad-last{display:grid;grid-template-columns:auto 1fr;gap:2px 6px;align-items:start;width:100%;text-align:left;border:0;border-radius:10px;background:rgba(255,255,255,.55);color:var(--fg);font:inherit;font-size:13.5px;line-height:1.45;padding:7px 9px;margin-top:2px;cursor:pointer}
+:root[data-theme="dark"] .pad-last{background:rgba(0,0,0,.18)}
+.pad-last>span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pad-last .ti{color:var(--muted);margin-top:2px}
+.pad-last em{grid-column:2;font-style:normal;font-size:12.5px;color:var(--muted)}
 .pad-add span{width:20px;height:20px;border-radius:999px;border:1px solid var(--line);display:inline-grid;place-items:center;font-size:13px}
 .padopen{gap:10px}
 .pad-cmt{display:flex;gap:6px;align-items:flex-end;margin-top:4px}
@@ -3187,8 +3202,8 @@ addEventListener("keydown", e => { if(e.key === "Escape") document.querySelector
 function distHTML(r, posts){
   if(!(r.stances||[]).length || !posts.length) return "";
   const n = posts.length;
-  const bars = r.stances.map((s,i)=>{ const c = posts.filter(p=>p.stance===s).length; return c ? `<i style="width:${c/n*100}%;background:var(--${SC[i%4]})"></i>` : "" }).join("");
-  const lg = r.stances.map((s,i)=>`<span style="--c:var(--${SC[i%4]})"><span class="shp" aria-hidden="true">${ic(SHAPES[i%4], "sm")}</span>${esc(s)} ${posts.filter(p=>p.stance===s).length}</span>`).join("");
+  const bars = r.stances.map((s,i)=>{ const c = posts.filter(p=>stanceIdx(r,p.stance)===i).length; return c ? `<i style="width:${c/n*100}%;background:var(--${SC[i%4]})"></i>` : "" }).join("");
+  const lg = r.stances.map((s,i)=>`<span style="--c:var(--${SC[i%4]})"><span class="shp" aria-hidden="true">${ic(SHAPES[i%4], "sm")}</span>${esc(s)} ${posts.filter(p=>stanceIdx(r,p.stance)===i).length}</span>`).join("");
   return `<div class="dist" aria-hidden="true">${bars}</div><div class="legend">${lg}</div>`;
 }
 function nameForm(){
@@ -4963,7 +4978,7 @@ function readCard(r, p, mine, ps, {pickable=true}={}){
 }
 /* ---- 우리 반 게시판: 패들렛처럼 카드로 모아 보기. ‘제출 후 공개’ 활동은 내 생각을 게시하기 전까지 흐리게 ---- */
 const wallTone = (r, p) => {                                     // 쪽지 색: 토론은 입장 색, 그 밖에는 글마다 옅은 6색 중 하나 (늘 같은 색)
-  const si = (r.stances || []).indexOf(p.stance);
+  const si = stanceIdx(r, p.stance);
   if(si >= 0) return `--wc:var(--${SC[si % 4]}-soft)`;
   let h = 0; for(const c of String(p.id || p.author)) h = (h*31 + c.charCodeAt(0)) >>> 0;
   return `--wc:var(--pad${h % 6})`;
@@ -4983,12 +4998,14 @@ function wallActs(r, p, {open=false}={}){
 function padHead(r, p, ps){
   const nm = displayName(r, p.author, ps), sa = splitAuthor(nm), ini = nm === "나" ? "나" : /^익명/.test(nm) ? "?" : (sa.name || nm).trim().slice(0, 1);
   let h = 0; for(const c of String(p.author || "")) h = (h*31 + c.charCodeAt(0)) >>> 0;
-  return `<div class="pad-h"><span class="ava" style="--av:var(--${SC[h%4]})" aria-hidden="true">${esc(ini)}</span><span class="who"><b>${esc(nm)}</b><span>${esc(fmtRel(p.updatedAt||p.createdAt))}${p.revision ? " · 다시 쓴 글" : ""}</span></span>${p.stance ? stanceChip(r,p.stance) : ""}</div>`;
+    const big = sa.number ? sa.name || nm : nm, sub = sa.number ? `${sa.school ? sa.school + " " : ""}${sa.number} · ` : "";
+  const chip = p.stance && stanceIdx(r, p.stance) < 0 ? stanceChip(r, p.stance) : "";   // 입장 칸 안의 카드는 칸 제목이 입장을 보여 준다
+  return `<div class="pad-h"><span class="ava" style="--av:var(--${SC[h%4]})" aria-hidden="true">${esc(ini)}</span><span class="who"><b title="${esc(nm)}">${esc(big)}</b><span>${esc(sub)}${esc(fmtRel(p.updatedAt||p.createdAt))}${p.revision ? " · 다시 쓴 글" : ""}</span></span>${chip}</div>`;
 }
 function padText(r, p){
   if(p.revision?.essay || p.essay?.text || isRelay(r)) return {title:"", text:previewText(r, p)};
   const b = finalBody(p), vals = effFields(r).map(x => b[x.k]).filter(v => v && !isImg(v)).map(v => String(v).trim()).filter(Boolean);
-  if(vals.length >= 2 && vals[0].length <= 70) return {title:vals[0], text:vals.slice(1).join("\n")};
+  if(vals.length >= 2) return {title:vals[0], text:vals.slice(1).join("\n")};
   return {title:"", text:vals.join("\n")};
 }
 function wallCardBody(r, p, ps, extra = ""){
@@ -4996,7 +5013,14 @@ function wallCardBody(r, p, ps, extra = ""){
   const canCom = (!isTeacher() || S.preview) && !!S.name && S.canWrite && r.open !== false;
   return `<div class="pad-b" data-a="open-post" data-id="${esc(p.id)}" title="눌러서 펼쳐 읽기">${img ? `<img class="wimg" src="${esc(img)}" alt="${esc(displayName(r,p.author,ps))}의 그림" loading="lazy">` : ""}
     ${title ? `<b class="pad-title">${esc(title)}</b>` : ""}${text ? `<p class="wtxt">${esc(text)}</p>` : ""}${extra ? `<p class="small muted">${extra}</p>` : ""}</div>
-    ${wallActs(r, p)}${canCom ? `<button class="pad-add" type="button" data-a="open-post" data-id="${esc(p.id)}" data-c="1">${ic("plus", "sm")} 댓글 추가</button>` : ""}`;
+    ${lastReplyHTML(r, p, ps)}${wallActs(r, p)}${canCom ? `<button class="pad-add" type="button" data-a="open-post" data-id="${esc(p.id)}" data-c="1">${ic("plus", "sm")} 댓글 추가</button>` : ""}`;
+}
+/* 접힌 쪽지에 최신 댓글 한 줄 (눌러서 전체 보기) */
+function lastReplyHTML(r, p, ps){
+  const reps = visibleReplies(p).filter(x => x.text), x = reps[reps.length - 1];
+  if(!x) return "";
+  const who = x.kind === "teacher" ? "선생님" : (n => splitAuthor(n).name || n)(displayName(r, x.author, ps));
+  return `<button class="pad-last" type="button" data-a="open-post" data-id="${esc(p.id)}" data-c="1">${ic("message-circle", "sm")}<span><b>${esc(who)}</b> ${esc(String(x.text).replace(/\s+/g, " "))}</span>${reps.length > 1 ? `<em>댓글 ${reps.length}개 모두 보기</em>` : ""}</button>`;
 }
 function wallCard(r, p, mine, ps){
   if(S.openPost === p.id) return readCard(r, p, mine, ps, {pickable:false});
@@ -5023,23 +5047,37 @@ function wallHTML(r, p){
   const inner = hasSt
     ? stanceMap(r, list, null, {preview:pick})                              // 입장별 인원과 ‘내 생각이 들어갈 자리’만
     : head + `<div class="wall">${list.slice(0, 12).map((x,i) => blurCard(i)).join("")}</div>`;
-  const blur = hasSt ? `<div class="wall blurred" style="margin-top:12px">${list.slice(0, 8).map((x,i) => blurCard(i, SC[Math.max(0,(r.stances||[]).indexOf(x.stance))%4])).join("")}</div>` : "";
+  const blur = hasSt ? `<div class="wall blurred" style="margin-top:12px">${list.slice(0, 8).map((x,i) => blurCard(i, SC[Math.max(0,stanceIdx(r,x.stance))%4])).join("")}</div>` : "";
   return `<section class="wall-sec" aria-label="우리 반 게시판">${hasSt ? inner : ""}<div class="wall-lock">${hasSt ? blur : inner}
     ${list.length ? `<div class="wall-veil"><div><b>${ic("lock")} 내 생각을 게시하면<br>친구들의 생각 ${list.length}개가 보여요</b>
       <button class="btn pri sm" type="button" data-a="to-stage">내 생각 쓰러 가기</button></div></div>` : ""}</div></section>`;
 }
 /* 우리 반의 생각 지도: 입장마다 영역을 나누고 인원과 생각 카드를 보여 준다 (휴대폰에서는 위아래로) */
+const MAP_SORTS = [["new","최신순"],["todo","내가 댓글 안 단 글"],["few","댓글 적은 순"],["heart","하트 많은 순"]];
+function mapSorter(k){
+  const t = p => p.updatedAt || p.createdAt || 0, nc = p => visibleReplies(p).length, did = p => visibleReplies(p).some(x => isMe(x.author));
+  if(k === "todo") return (a,b) => (did(a) - did(b)) || (t(b) - t(a));
+  if(k === "few") return (a,b) => (nc(a) - nc(b)) || (t(b) - t(a));
+  if(k === "heart") return (a,b) => (heartsOf(b.id).length - heartsOf(a.id).length) || (t(b) - t(a));
+  return (a,b) => t(b) - t(a);
+}
 function stanceMap(r, list, cardFn, {lockNote="", preview=""}={}){
-  const n = list.length || 0, st = r.stances || [], LIMIT = 4;
+  const n = list.length || 0, LIMIT = 4, other = list.filter(p => stanceIdx(r, p.stance) < 0);
+  const st = [...(r.stances || []), ...(other.length ? ["다른 입장"] : [])], oi = (r.stances || []).length;
+  const sk = S.mapSort?.[r.id] || "new", sorter = mapSorter(sk);
+  const ofCol = i => (i === oi ? other : list.filter(p => stanceIdx(r, p.stance) === i)).slice().sort((a,b) => (isMe(b.author) - isMe(a.author)) || sorter(a, b));
+  const tools = cardFn && n > 1 ? `<div class="smap-tools">
+      <div class="smap-jump" role="group" aria-label="입장으로 이동">${st.map((s,i) => `<button type="button" class="smap-j" style="--c:var(--${i === oi ? "muted" : SC[i%4]})" data-a="map-jump" data-v="${i}">${i === oi ? "" : `<span class="shp" aria-hidden="true">${ic(SHAPES[i%4], "sm")}</span>`}<span>${esc(s)}</span><b>${ofCol(i).length}</b></button>`).join("")}</div>
+      <div class="smap-sort" role="group" aria-label="정렬">${MAP_SORTS.map(([k,l]) => `<button type="button" class="${k === sk ? "on" : ""}" aria-pressed="${k === sk}" data-a="map-sort" data-v="${k}">${l}</button>`).join("")}</div></div>` : "";
   return `<section class="smap" aria-label="우리 반의 생각 지도">
-    <div class="smap-h"><span class="eyebrow">우리 반의 생각 지도</span><span class="muted small">${n}명 참여</span></div>
+    <div class="smap-h"><span class="eyebrow">우리 반의 생각 지도</span><span class="muted small">${n}명 참여</span></div>${tools}
     <div class="smap-cols" style="--n:${st.length}">${st.map((s,i)=>{
-      const items = list.filter(p=>p.stance===s).sort((a,b) => (isMe(b.author)) - (isMe(a.author)));
+      const items = ofCol(i);
       const pct = n ? Math.round(items.length/n*100) : 0, more = S.mapMore?.[r.id+":"+i];
       const shown = cardFn && !more ? items.slice(0, LIMIT) : items;
       const ghost = preview === s ? `<div class="post ghost land" style="--c:var(--${SC[i%4]})">${ic("pencil", "sm")} 내 생각이 여기에 들어가요</div>` : "";
-      return `<div class="smap-col" style="--c:var(--${SC[i%4]});--cs:var(--${SC[i%4]}-soft)">
-        <div class="smap-top"><span class="ic" aria-hidden="true">${stanceIcon(r,i)}</span><b>${esc(s)}</b><span class="num">${items.length}<small>명</small></span></div>
+      return `<div class="smap-col" id="smap-${esc(r.id)}-${i}" style="--c:var(--${i === oi ? "muted" : SC[i%4]});--cs:var(--${i === oi ? "line" : SC[i%4] + "-soft"})">
+        <div class="smap-top"><span class="ic" aria-hidden="true">${i === oi ? ic("help-circle") : stanceIcon(r,i)}</span><b>${esc(s)}</b><span class="num">${items.length}<small>명</small></span></div>
         <div class="smap-bar" aria-hidden="true"><i style="width:${pct}%"></i></div>
         ${ghost}
         ${cardFn ? (items.length ? shown.map(cardFn).join("") : `<p class="smap-empty">아직 이 입장의 생각이 없어요.</p>`) : ""}
@@ -5804,7 +5842,7 @@ function viewPresent(r){
   if(!n) return h + `<p class="lead">아직 제출한 생각이 없어요.</p></div>`;
   if(mode === "stance"){
     h += `<p class="lead">우리 반은 이렇게 생각하고 있습니다. <span class="muted">(${n}명)</span></p><div class="pbars">${r.stances.map((s,i)=>{
-      const c = sub.filter(p=>p.stance===s).length, pct = Math.round(c/n*100);
+      const c = sub.filter(p=>stanceIdx(r,p.stance)===i).length, pct = Math.round(c/n*100);
       return `<div class="pb" style="--c:var(--${SC[i%4]})"><span><span aria-hidden="true">${stanceIcon(r,i)}</span> ${esc(s)}</span><span class="tr" aria-hidden="true"><i style="width:${pct}%"></i></span><span class="pct">${pct}%</span></div>`;
     }).join("")}</div>`;
     const ch = sub.filter(p=>p.change);
@@ -5901,7 +5939,7 @@ function teacherCard(r, p, ps, nav){
    ========================================================= */
 /* 🔄 새 버전 알림: 배포 때마다 APP_VERSION과 version.json의 v를 같은 값으로 올린다.
    GitHub Pages는 화면을 10분쯤 기억하므로, 옛 화면이면 아래쪽에 ‘새로고침’ 띠를 띄우고 주소를 바꿔 새로 받는다 */
-const APP_VERSION = "2026-11-09g";
+const APP_VERSION = "2026-11-09h";
 async function checkVersion(){
   if(!/^https?:$/.test(location.protocol)) return;
   try{
@@ -7414,7 +7452,7 @@ function lessonHints(r, st){
 function stanceCard(r, st){
   const sts = r.stances || [], sub = st.sub, n = sub.length;
   if(!sts.length) return "";
-  const rows = sts.map((s,i) => ({s, i, c: sub.filter(p => p.stance === s).length}));
+  const rows = sts.map((s,i) => ({s, i, c: sub.filter(p => stanceIdx(r,p.stance) === i).length}));
   let interp = "";
   if(n >= 5){
     const cs = rows.map(x => x.c).sort((a,b) => b-a), top = cs[0]/n, second = (cs[1]||0)/n;
@@ -9449,6 +9487,8 @@ async function act(a, b){
     case "hlabel": { const i = HLABELS.findIndex(([k]) => k === (S.hlabel || "posted")); S.hlabel = HLABELS[(i + 1) % HLABELS.length][0]; lsSet("nonjae.hlabel", S.hlabel); break }
     case "hsub": S.hsub = b.dataset.v; lsSet("nonjae.hsub", S.hsub); break;
     case "map-more": S.mapMore = {...(S.mapMore||{}), [r.id+":"+b.dataset.v]:true}; break;
+    case "map-sort": S.mapSort = {...(S.mapSort||{}), [r.id]:b.dataset.v}; break;
+    case "map-jump": { const el = document.getElementById(`smap-${r.id}-${b.dataset.v}`); if(el) el.scrollIntoView({behavior:"smooth", block:"start"}); return }
     case "unpick": { F("meet:"+r.id).diffPostId = ""; saveFormsSoon(); break }
     /* 일반 활동: 고른 친구 생각에 한마디 → 기존 답글(반박/댓글) 형식으로 저장 */
     case "meet-reply": {
