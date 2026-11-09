@@ -36,7 +36,7 @@ async def main():
     code=(await S.evaluate('JSON.parse(localStorage.getItem("__sbmock"))'))['students'][0]['code']
     for prompt,unit,yr in [('토론 주제 하나','근대 · 개항','3차시'),('질문 주제','','')]:
       await S.click('[data-a=create]'); await W(S); await S.fill('#c-prompt',prompt)
-      await S.evaluate('document.querySelectorAll("details.adv").forEach(d=>d.open=true)'); await S.fill('#c-subject','한국사'); await S.fill('#c-unit',unit); await S.fill('#c-year',yr)
+      await S.evaluate('document.querySelectorAll("details.cfold").forEach(d=>d.open=true)'); await S.fill('#c-subject','한국사'); await S.fill('#c-unit',unit); await S.fill('#c-year',yr)
       await S.click('[data-a=create-save]'); await W(S,500)
     await S.goto(U+'?who=anon'); await W(S,600)
     await S.fill('#f-num','10301'); await S.fill('#f-name','김가온'); await S.fill('#f-code',code); await S.press('#f-code','Enter'); await W(S,1200)

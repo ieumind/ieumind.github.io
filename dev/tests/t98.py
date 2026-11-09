@@ -12,7 +12,7 @@ async def make(T, mode):
   await T.click('[data-a=tpl][data-v=debate2]'); await W()
   await T.fill('#c-prompt','해방 직후 무엇을 먼저 해야 했을까?')
   await T.fill('#c-st0','친일 청산'); await T.fill('#c-st1','국가 체제 정비'); await W(200)
-  await T.evaluate('document.querySelectorAll("details.adv").forEach(d=>d.open=true)'); await W(200)
+  await T.evaluate('document.querySelectorAll("details.cfold").forEach(d=>d.open=true)'); await W(200)
   has=await T.locator('#c-counter').count()
   if mode: await T.select_option('#c-counter', mode); await W(200)
   await T.click('[data-a=create-save]'); await W(900)
