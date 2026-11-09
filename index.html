@@ -5227,6 +5227,18 @@ function stepRevise(r, p, open){
       <div class="foot"><span></span><button class="btn pri" type="button" data-a="save-revise">다시 쓴 글 저장</button></div></div>`;
 }
 
+/* 나의 생각 흐름 부제: 토론·기본 활동은 이 활동에 실제로 있는 단계만 이어 보여 준다 (없는 ‘생각 변화’·‘지금의 입장’은 빼고) */
+function flowSummaryOf(r){
+  const t = TEMPLATES[r.template], fixed = t?.flowSummary;
+  if(fixed && !/생각 변화 → 지금의 입장/.test(fixed)) return fixed;
+  const st = stepsOf(r), f = featuresOf(r), has = !!(r.stances || []).length, a = [has ? "처음 입장" : "처음 생각"];
+  if(st.includes("counter")) a.push("예상 반론");
+  if(st.includes("read")) a.push("친구의 생각");
+  if(st.includes("respond")) a.push("답하기");
+  if(st.includes("reflect")) a.push(f.change ? "생각 변화" : "돌아보기", ...(f.change ? [has ? "지금의 입장" : "지금의 생각"] : []));
+  if(st.includes("revise")) a.push("다시 쓰기");
+  return a.length > 1 ? a.join(" → ") : (has ? "처음 입장" : "내가 쓴 생각");
+}
 /* ---- 결과 화면: 나의 생각 흐름 (입력 없음, 자동 정리) ---- */
 function thinkFlow(r, p){
   if(isRelay(r)) return relayFlow(r, p);
@@ -5273,7 +5285,7 @@ function thinkFlow(r, p){
 }
 function stepRecord(r, p){
   if(!submitted(p)) return `<div class="empty">글을 내면 나의 생각 흐름이 여기에 정리돼요.</div>`;
-  let h = `<div class="card"><div class="flow-h"><h3>${ic("compass")} 나의 생각 흐름</h3><p class="muted small">${esc(TEMPLATES[r.template]?.flowSummary || "처음 생각 → 친구의 생각 → 지금의 생각")}</p></div>${thinkFlow(r,p)}</div>`;
+  let h = `<div class="card"><div class="flow-h"><h3>${ic("compass")} 나의 생각 흐름</h3><p class="muted small">${esc(flowSummaryOf(r))}</p></div>${thinkFlow(r,p)}</div>`;
   // 빠른 활동: 만남 단계가 없어도 친구 글은 둘러볼 수 있다
   if(!featuresOf(r).meet && r.reveal !== "teacher"){
     const ps = postsOf(r.id), others = ps.filter(x=>!isMe(x.author));
@@ -5889,7 +5901,7 @@ function teacherCard(r, p, ps, nav){
    ========================================================= */
 /* 🔄 새 버전 알림: 배포 때마다 APP_VERSION과 version.json의 v를 같은 값으로 올린다.
    GitHub Pages는 화면을 10분쯤 기억하므로, 옛 화면이면 아래쪽에 ‘새로고침’ 띠를 띄우고 주소를 바꿔 새로 받는다 */
-const APP_VERSION = "2026-11-09f";
+const APP_VERSION = "2026-11-09g";
 async function checkVersion(){
   if(!/^https?:$/.test(location.protocol)) return;
   try{
