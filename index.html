@@ -1160,6 +1160,9 @@ a.btn{text-decoration:none;color:inherit;display:inline-flex;align-items:center}
 .tc-meta{display:flex;flex-wrap:wrap;gap:4px 12px;font-size:13px;color:var(--muted)}
 .tc-meta .fbok,.tc-meta .wok{color:var(--accent);font-weight:600}
 .tdist{margin:0 0 12px}
+.cqbox{display:grid;gap:10px;margin-top:16px;padding:12px 14px;border:1px dashed var(--line);border-left:4px solid var(--accent);border-radius:12px;background:var(--sunk)}
+.cqbox > .eyebrow{display:flex;align-items:center;gap:5px}
+.cqbox .q{margin:0}
 .tc-h{display:flex;align-items:baseline;gap:8px;min-width:0}
 .tc-h strong{font-size:15px;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .tc-h .tc-date{margin-left:auto;flex:0 0 auto;font-size:12.5px;color:var(--muted)}
@@ -4754,6 +4757,19 @@ function stepThink(r, p, open){
     <div class="foot"><span></span><button class="btn pri" type="button" data-a="save-initial">처음 생각 남기기</button></div></div>`;
 }
 
+/* 예상 반론: 토론(입장 있는 활동)에서 글쓰기 화면에 펼쳐서 묻는다. off | opt(선택) | req(꼭) | step(예전 ‘근거를 탄탄하게’의 별도 단계) */
+function counterMode(r){
+  if(!(r.stances || []).length || isRelay(r) || r.template === "live") return "off";
+  if(featuresOf(r).counter) return "step";
+  const m = r.features?.counterMode; return m === "off" || m === "req" ? m : "opt";
+}
+const counterOn = r => ["opt", "req"].includes(counterMode(r));
+/* 예상 반론 한 곳에서 읽기: counter가 없으면 예전 ‘다른 관점’ 칸(deeper.other)을 쓴다 */
+const counterOf = p => p?.counter?.objection ? p.counter : p?.deeper?.other ? {objection:p.deeper.other, response:""} : null;
+function counterQ(r, mine){
+  const st = r.stances || [], others = st.filter(x => stanceIdx(r, x) !== stanceIdx(r, mine || ""));
+  return mine && st.length === 2 && others.length === 1 ? `‘${others[0]}’ 쪽 친구는 내 생각에 어떻게 반박할까요?` : "다른 입장의 친구는 내 생각에 어떻게 반박할까요?";
+}
 /* ---- 생각하기 · 내 생각과 이유 ---- */
 function writeKey(r){ return "write:" + r.id }
 function writeForm(r, p){
@@ -4761,6 +4777,7 @@ function writeForm(r, p){
     _stance: p?.stance || ((p?.initial?.stance && stanceIdx(r,p.initial.stance)>=0) ? p.initial.stance : ""),
     _etype: p?.evidenceType || "",
     _other: p?.deeper?.other || "", _source: p?.deeper?.source || "",
+    _obj: p?.counter?.objection || p?.deeper?.other || "", _resp: p?.counter?.response || "",
     ...(p?.body || {})
   }));
 }
@@ -4857,10 +4874,16 @@ function stepWrite(r, p, open, part){
     h += ta(key, x.k, {rows: x.k==="claim" || x.k==="center" ? 2 : 3, rich:true}) + `</div>`;
   }
   if(toolOf(r) === "sketch") h += `<div class="q"><span class="hint">내 생각 지도 미리 보기</span><div id="skprev">${sketchMapHTML(F(key))}</div></div>`;
+  const cm = counterMode(r);
+  if(counterOn(r) && part !== 0){                                   // 예상 반론: 펼쳐서 (선생님 설정에 따라 선택/꼭)
+    h += `<div class="cqbox" id="wq-_obj"><span class="eyebrow">${ic("arrows-exchange", "sm")} 예상 반론${cm === "req" ? "" : ` <span class="opt">(선택)</span>`}</span>
+      ${question(key,"_obj",{q:counterQ(r, F(key)._stance), rows:2, tip:"상대편이 내 주장의 어디를 공격할지 한 가지만 떠올려 보세요.", starters:[{show:"상대편은 ___라고 반박할 것이다.", ins:"상대편은 "}]})}
+      ${question(key,"_resp",{q:"그 반박에 나는 뭐라고 답할까요?", opt:true, rows:2, tip:"인정할 부분이 있다면 먼저 인정해도 좋아요.", starters:[{show:"그 말도 일리가 있지만, ___", ins:"그 말도 일리가 있지만, "}]})}</div>`;
+  }
   // 상위권을 위한 선택 영역: 기본 화면에는 접혀 있다
   if(depthOf(r) !== "quick" && part !== 0){
     h += `<details class="help" style="margin-top:18px"><summary>${ic("search", "sm")} 더 깊이 생각해보기 (선택)</summary><div style="display:grid;gap:14px;margin-top:8px">
-      ${question(key,"_other",{q:"나와 다른 관점에서 보면 어떨까요?", opt:true, rows:2, tip:"반대편이나 다른 사람의 자리에서 한 번 생각해 보세요.", starters:[{show:"다른 관점에서 보면 ___라고 볼 수도 있다.", ins:"다른 관점에서 보면 "}]})}
+      ${cm !== "off" ? "" : question(key,"_other",{q:"나와 다른 관점에서 보면 어떨까요?", opt:true, rows:2, tip:"반대편이나 다른 사람의 자리에서 한 번 생각해 보세요.", starters:[{show:"다른 관점에서 보면 ___라고 볼 수도 있다.", ins:"다른 관점에서 보면 "}]})}
       ${question(key,"_source",{q:"내 생각을 받쳐 주는 자료가 있나요?", opt:true, rows:2, tip:"교과서, 사료, 통계 중 하나면 충분해요.", starters:[{show:"교과서(자료)를 보면 ___", ins:"자료를 보면 "}]})}
     </div></details>`;
   }
@@ -5283,7 +5306,7 @@ function flowSummaryOf(r){
   const t = TEMPLATES[r.template], fixed = t?.flowSummary;
   if(fixed && !/생각 변화 → 지금의 입장/.test(fixed)) return fixed;
   const st = stepsOf(r), f = featuresOf(r), has = !!(r.stances || []).length, a = [has ? "처음 입장" : "처음 생각"];
-  if(st.includes("counter")) a.push("예상 반론");
+  if(st.includes("counter") || counterOn(r)) a.push("예상 반론");
   if(st.includes("read")) a.push("친구의 생각");
   if(st.includes("respond")) a.push("답하기");
   if(st.includes("reflect")) a.push(f.change ? "생각 변화" : "돌아보기", ...(f.change ? [has ? "지금의 입장" : "지금의 생각"] : []));
@@ -5308,9 +5331,11 @@ function thinkFlow(r, p){
   }else{
     h += node("pencil", L("내가 말한 생각","작성한 글"), `<div class="v">${fieldsHTML(r, b, {evidenceType:p.evidenceType})}</div>`);
   }
-  if(p.deeper && (p.deeper.other || p.deeper.source)) h += node("search", L("더 깊이 생각한 것","심화(다른 관점·자료)"), `${p.deeper.other?`<div class="sub"><span class="muted">다른 관점 · </span>${esc(p.deeper.other)}</div>`:""}${p.deeper.source?`<div class="sub"><span class="muted">자료 · </span>${esc(p.deeper.source)}</div>`:""}`);
+  const dOther = p.counter?.objection ? p.deeper?.other : "";   // 예상 반론이 따로 있으면 ‘다른 관점’도 함께, 없으면 아래 예상 반론 칸에 나온다
+  if(p.deeper && (dOther || p.deeper.source)) h += node("search", L("더 깊이 생각한 것","심화(다른 관점·자료)"), `${dOther?`<div class="sub"><span class="muted">다른 관점 · </span>${esc(dOther)}</div>`:""}${p.deeper.source?`<div class="sub"><span class="muted">자료 · </span>${esc(p.deeper.source)}</div>`:""}`);
   if(p.essay?.text) h += node("file-text", L("내가 쓴 글","작성한 글"), `<div class="v">${esc(p.essay.text)}</div>`);
-  if(p.counter) h += node("arrows-exchange", L("나와 다른 생각 예상","예상 반론"), `<div class="v">${esc(p.counter.objection)}</div>${p.counter.response?`<div class="sub"><span class="muted">${L("내 대답","재반박")} · </span>${esc(p.counter.response)}</div>`:""}`);
+  const cq = counterOf(p);
+  if(cq) h += node("arrows-exchange", L("나와 다른 생각 예상","예상 반론"), `<div class="v">${esc(cq.objection)}</div>${cq.response?`<div class="sub"><span class="muted">${L("내 대답","재반박")} · </span>${esc(cq.response)}</div>`:""}`);
   // 만난 다른 생각
   const diff = p.meet?.diffPostId && ps.find(x=>x.id===p.meet.diffPostId);
   const myReplies = S.replies.filter(x=>x.roomId===r.id && x.author===p.author && (x.kind==="rebuttal"||x.kind==="comment"));
@@ -5656,7 +5681,7 @@ function tabOverview(r, st){
   if(fields.some(x=>x.k==="reason")) rows.push(["근거 작성", all.filter(p=>(p.body?.reason||"").trim()).length]);
   if(fields.some(x=>x.k==="warrant")) rows.push(["근거 설명", all.filter(p=>(p.body?.warrant||"").trim()).length]);
   if(!isRelay(r) && !fields.some(x=>x.k==="claim")) rows.push(["글 작성", st.sub.length]);
-  if(f.counter) rows.push(["예상 반론", all.filter(p=>p.counter?.objection).length]);
+  if(f.counter || counterOn(r)) rows.push(["예상 반론", all.filter(p=>counterOf(p)).length]);
   if(f.meet && !isRelay(r)) rows.push(["친구 생각 만나기", all.filter(p=>readDone(r,p)).length]);
   if(f.meet && f.comment && !isRelay(r)) rows.push([f.deep ? "반박 작성" : "친구 글에 한마디", new Set(S.replies.filter(x=>x.roomId===r.id && (x.kind==="rebuttal"||x.kind==="comment")).map(x=>x.author)).size]);
   if(f.change && !isRelay(r)) rows.push(["생각 변화 기록", all.filter(p=>p.change).length]);
@@ -5958,7 +5983,7 @@ function teacherCard(r, p, ps, nav){
    ========================================================= */
 /* 🔄 새 버전 알림: 배포 때마다 APP_VERSION과 version.json의 v를 같은 값으로 올린다.
    GitHub Pages는 화면을 10분쯤 기억하므로, 옛 화면이면 아래쪽에 ‘새로고침’ 띠를 띄우고 주소를 바꿔 새로 받는다 */
-const APP_VERSION = "2026-11-10a";
+const APP_VERSION = "2026-11-10b";
 async function checkVersion(){
   if(!/^https?:$/.test(location.protocol)) return;
   try{
@@ -7314,6 +7339,7 @@ function marksOf(r){
       if(hasC) out.push({k:"claim", l:"주장", ok:p => !!(finalBody(p).claim||"").trim()});
       else out.push({k:"write", l: isEssay(r) ? "생각 정리" : toolOf(r) === "sketch" ? "스케치" : toolOf(r) === "draw" ? "그림" : toolOf(r) === "chatReflect" ? "대화 정리" : "생각 쓰기", ok:p => stepDone(r,p,"write")});
       if(hasR && !stepsOf(r).includes("why")) out.push({k:"reason", l:"근거", ok:p => !!(finalBody(p).reason||"").trim()});
+      if(counterOn(r)) out.push({k:"counter", l:"예상 반론", ok:p => !!counterOf(p)});
       return;
     }
     if(s === "reflect"){ out.push({k:s, l: f.change ? "생각 변화" : "돌아보기", ok:p => stepDone(r,p,s)}); return }
@@ -7369,6 +7395,7 @@ function sfilters(r, st){
     {k:"noread", l:"친구 생각 미확인", t:e => !!e.p && !stepDone(r,e.p,"read"), show:steps.includes("read")},
     {k:"nochange", l: f.change ? "생각 변화 미작성" : "돌아보기 미작성", t:e => !!e.p && !stepDone(r,e.p,"reflect"), show:steps.includes("reflect")},
     {k:"noreason", l:"근거 없음", t:e => !!e.p && !(finalBody(e.p).reason||"").trim(), show:hasReason},
+    {k:"nocounter", l:"예상 반론 없음", t:e => !!e.p && submitted(e.p) && !counterOf(e.p), show:counterOn(r) || steps.includes("counter")},
     ...(r.stances || []).map((s, i) => ({k:"st" + i, l:(s.length > 12 ? s.slice(0, 11) + "…" : s), full:s, si:i, t:e => !!e.p && stanceIdx(r, e.p.stance) === i})),
     {k:"stx", l:"입장 확인 필요", t:e => !!e.p && !!e.p.stance && stanceIdx(r, e.p.stance) < 0, show:(r.stances||[]).length > 0 && (st.all||[]).some(p => p.stance && stanceIdx(r, p.stance) < 0)}
   ].filter(x => x.show !== false);
@@ -7848,7 +7875,7 @@ function formFromRoom(r){
     stances:(r.stances||[]).join(", "), nst:(r.stances||[]).length,
     initial:f.initial, predict:f.predict, evidenceType:f.evidenceType, evidenceTypes:f.evidenceTypes, warrant:f.warrant, counter:f.counter,
     meet:f.meet, missionDeep:f.readMission.length>0, comment:f.comment, rebuttal:f.rebuttal, change:f.change, feedback:f.feedback,
-    revise:f.revise, terms:!!f.terms, develop:!!f.develop};
+    revise:f.revise, terms:!!f.terms, develop:!!f.develop, counterMode:r.features?.counterMode || "opt"};
   (r.stances||[]).forEach((x,i) => form["st"+i] = x);
   form.courseId = courseOf(r.courseId) ? r.courseId : ""; form.groups = asgIds(r);
   return form;
@@ -7882,7 +7909,7 @@ function exportRows(r){
     col.push(["근거 유형", p => p.evidenceType || ""]);
     col.push(["다른 관점·자료", p => [p.deeper?.other, p.deeper?.source].filter(Boolean).join(" / ")]);
     col.push(["쓴 글", p => p.essay?.text || ""]);
-    col.push(["예상 반론", p => p.counter ? `${p.counter.objection}${p.counter.response?` → ${p.counter.response}`:""}` : ""]);
+    col.push(["예상 반론", p => { const c = counterOf(p); return c ? `${c.objection}${c.response?` → ${c.response}`:""}` : "" }]);
     col.push(["고른 친구 생각", p => { const d = ps.find(x=>x.id===p.meet?.diffPostId); return d ? `${d.author}: ${previewText(r,d)}` : "" }]);
     col.push(["친구에게 남긴 말·반론", p => S.replies.filter(x=>x.roomId===r.id && x.author===p.author && (x.kind==="rebuttal"||x.kind==="comment")).map(x=>x.text+(x.evidence?` (이유: ${x.evidence})`:"")).join("\n")]);
     col.push(["받은 댓글·반론 수", p => { const n = repliesOf(p.id).filter(x=>x.kind==="rebuttal"||x.kind==="comment").length; return n ? String(n) : "" }]);
@@ -8180,7 +8207,8 @@ function roomFromForm(f){
       initial:!!f.initial, predict:!!f.predict, evidenceType:!!f.evidenceType, evidenceTypes:(f.evidenceTypes||[]).length ? f.evidenceTypes : EVIDENCE_TYPES,
       warrant:!!f.warrant, counter:!!f.counter && f.depth==="deep", meet:!!f.meet,
       readMission: f.meet && f.missionDeep ? ["new","best","diff"] : [],
-      change:!!f.change, feedback:!!f.feedback, revise:!!f.revise, terms:!!f.terms, develop:!!f.develop
+      change:!!f.change, feedback:!!f.feedback, revise:!!f.revise, terms:!!f.terms, develop:!!f.develop,
+      counterMode: ["off","req"].includes(f.counterMode) ? f.counterMode : "opt"
     }
   };
 }
@@ -8786,6 +8814,9 @@ function viewCreate(){
         ${stg === 3 ? `<label><input type="checkbox" id="c-initial" data-combo="start" ${comboVal(f,"start") !== "none" ? "checked" : ""}><span>처음 생각 먼저 남기기 <span class='opt'>— 마지막에 ‘지금 생각’과 나란히 비교해요</span></span></label>` : ""}
         <label><input type="checkbox" id="c-evid" data-combo="evidence" ${comboVal(f,"evidence") ? "checked" : ""}><span>근거를 탄탄하게 <span class='opt'>— 근거 종류 고르기${hasReason ? "·근거 설명" : ""}</span></span></label>
         ${comboVal(f,"evidence") ? `<div class="sub"><div class="choices">${etBoxes}</div></div>` : ""}
+        ${["debate2","debateN"].includes(f.template) || (TEMPLATES[f.template]?.stances || []).length && f.template !== "live" ? (f.counter && f.depth === "deep"
+          ? `<p class="hint">${ic("arrows-exchange", "sm")} ‘근거를 탄탄하게’가 켜져 있어 예상 반론이 따로 한 단계(반론 → 재반박)로 나와요.</p>`
+          : `<div class="q" style="max-width:360px"><label for="c-counter">예상 반론 <span class="opt">— 상대편이 어떻게 반박할지 미리 써 보기</span></label><select id="c-counter" data-form="create" data-k="counterMode">${[["opt","글쓰기 화면에 보이기 (선택)"],["req","꼭 쓰기"],["off","묻지 않기"]].map(([k,l]) => `<option value="${k}" ${(f.counterMode||"opt")===k?"selected":""}>${l}</option>`).join("")}</select></div>`) : ""}
         <div class="q" style="max-width:260px"><label for="c-min">최소 글자 수</label><input type="number" id="c-min" data-form="create" data-k="minChars" min="0" max="3000" step="10" value="${esc(f.minChars||"0")}"></div>
       </div>`);
     adv += sec("eye", "만남 — 친구 생각을 어떻게 볼까요?", `<div class="form-grid">
@@ -8914,7 +8945,8 @@ document.addEventListener("change", e => {
   if(!el.dataset.form || !(el.type==="checkbox" || el.type==="radio" || el.tagName==="SELECT")) return;
   const {key, k} = onFormValue(el);
   if(key.startsWith("write:")) refreshWriteStatus();
-  if(key.startsWith("write:") && k === "_stance"){ const wm = document.getElementById("wmap"), r = room(); if(wm && r) wm.outerHTML = writeMapHTML(r) }
+  if(key.startsWith("write:") && k === "_stance"){ const wm = document.getElementById("wmap"), r = room(); if(wm && r) wm.outerHTML = writeMapHTML(r);
+    const lb = document.querySelector(`label[for="${key}-_obj"]`); if(lb && r) lb.textContent = counterQ(r, F(key)._stance) }
   if(key === "create"){
     const f = F("create");
     if(k === "template") applyTemplate(f.template);
@@ -9239,8 +9271,12 @@ async function act(a, b){
       if(!st.ok){ toast(st.msg); return }
       const f = F(writeKey(r)), body = {};
       effFields(r).forEach(x => body[x.k] = (f[x.k]||"").trim());
+      const cmode = counterMode(r), obj = (f._obj||"").trim();
+      if(cmode === "req" && !obj){ toast("예상 반론을 한 가지 적어 볼까요?"); document.getElementById(writeKey(r) + "-_obj")?.focus(); return }
       const patch = {stance:f._stance||null, body, evidenceType:f._etype||""};
-      if((f._other||"").trim() || (f._source||"").trim()) patch.deeper = {other:(f._other||"").trim(), source:(f._source||"").trim()};
+      const oth = cmode === "off" ? (f._other||"").trim() : "";
+      if(oth || (f._source||"").trim() || p?.deeper) patch.deeper = {other:oth, source:(f._source||"").trim()};
+      if(counterOn(r)){ if(obj) patch.counter = {objection:obj, response:(f._resp||"").trim(), at:p?.counter?.at || Date.now()}; else if(p?.counter) patch.counter = null }
       const editing = S.editing === r.id, counter = featuresOf(r).counter;
       if(!editing && !counter && !isEssay(r)){ patch.status = "submitted"; patch.submittedAt = Date.now() }
       b.disabled = true;
