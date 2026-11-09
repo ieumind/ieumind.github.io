@@ -1198,6 +1198,11 @@ a.btn{text-decoration:none;color:inherit;display:inline-flex;align-items:center}
 :root[data-theme="dark"] .post.wcard .hbtn.on{background:#3A1B22}
 .pad-add{display:flex;align-items:center;gap:6px;width:100%;border:0;border-top:1px solid rgba(0,0,0,.06);background:transparent;color:var(--muted);font:inherit;font-size:13.5px;padding:8px 2px 2px;cursor:pointer;text-align:left}
 .pad-add:hover{color:var(--fg)}
+.pad-more{display:inline-flex;align-items:center;gap:3px;margin-top:4px;font-size:13px;font-weight:600;color:var(--accent);cursor:pointer}
+details.fsum > summary{display:flex;align-items:center;gap:8px;cursor:pointer;list-style:none}
+details.fsum > summary::-webkit-details-marker{display:none}
+details.fsum > summary .chev{margin-left:auto;color:var(--muted);transition:transform .15s}
+details.fsum[open] > summary .chev{transform:rotate(180deg)}
 .pad-last{display:grid;grid-template-columns:auto 1fr;gap:2px 6px;align-items:start;width:100%;text-align:left;border:0;border-radius:10px;background:rgba(255,255,255,.55);color:var(--fg);font:inherit;font-size:13.5px;line-height:1.45;padding:7px 9px;margin-top:2px;cursor:pointer}
 :root[data-theme="dark"] .pad-last{background:rgba(0,0,0,.18)}
 .pad-last>span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
@@ -4831,9 +4836,11 @@ function fieldsHTML(r, body, {evidenceType}={}){
   if(toolOf(r) === "sketch") return sketchMapHTML(body);
   if(toolOf(r) === "draw") return (drawingHTML(body?.drawing) || `<p class="muted">아직 그린 그림이 없어요.</p>`) + (body?.note ? `<dl class="pf"><dt>${esc(fieldLabel(r, {k:"note", l:"그림 설명"}))}</dt><dd>${esc(body.note)}</dd></dl>` : "");
   let h = "";
-  for(const f of effFields(r)){
+  const ef = effFields(r), solo = ef.length === 1;                  // 칸이 하나뿐이면 칸 이름 없이 글만
+  for(const f of ef){
     const v = body?.[f.k];
     if(!v) continue;
+    if(solo){ h += `<dl class="pf"><dd>${esc(v)}</dd></dl>`; continue }
     const et = f.k==="reason" && evidenceType ? `<span class="chip">${esc(evidenceType)}</span>` : "";
     h += `<dl class="pf"><dt>${esc(fieldLabel(r,f))} ${et}</dt><dd>${esc(v)}</dd></dl>`;
   }
@@ -5044,11 +5051,16 @@ function padText(r, p){
   if(vals.length >= 2) return {title:vals[0], text:vals.slice(1).join("\n")};
   return {title:"", text:vals.join("\n")};
 }
+/* 접힌 쪽지에서 글이 잘릴 만큼 긴지 (휴대폰 한 줄 ≈ 22자, 본문 7줄 · 제목 4줄) */
+function padLong(title, text){
+  const lines = s => String(s || "").split("\n").reduce((n, l) => n + Math.max(1, Math.ceil(l.length / 22)), 0);
+  return lines(text) > 7 || lines(title) > 4;
+}
 function wallCardBody(r, p, ps, extra = ""){
   const img = Object.values(finalBody(p)).find(isImg), {title, text} = padText(r, p);
   const canCom = (!isTeacher() || S.preview) && !!S.name && S.canWrite && r.open !== false;
   return `<div class="pad-b" data-a="open-post" data-id="${esc(p.id)}" title="눌러서 펼쳐 읽기">${img ? `<img class="wimg" src="${esc(img)}" alt="${esc(displayName(r,p.author,ps))}의 그림" loading="lazy">` : ""}
-    ${title ? `<b class="pad-title">${esc(title)}</b>` : ""}${text ? `<p class="wtxt">${esc(text)}</p>` : ""}${extra ? `<p class="small muted">${extra}</p>` : ""}</div>
+    ${title ? `<b class="pad-title">${esc(title)}</b>` : ""}${text ? `<p class="wtxt">${esc(text)}</p>` : ""}${extra ? `<p class="small muted">${extra}</p>` : ""}${padLong(title, text) ? `<span class="pad-more">전체 보기 ${ic("chevron-down", "sm")}</span>` : ""}</div>
     ${lastReplyHTML(r, p, ps)}${wallActs(r, p)}${canCom ? `<button class="pad-add" type="button" data-a="open-post" data-id="${esc(p.id)}" data-c="1">${ic("plus", "sm")} 댓글 추가</button>` : ""}`;
 }
 /* 접힌 쪽지에 최신 댓글 한 줄 (눌러서 전체 보기) */
@@ -5301,17 +5313,32 @@ function stepRevise(r, p, open){
       <div class="foot"><span></span><button class="btn pri" type="button" data-a="save-revise">다시 쓴 글 저장</button></div></div>`;
 }
 
-/* 나의 생각 흐름 부제: 토론·기본 활동은 이 활동에 실제로 있는 단계만 이어 보여 준다 (없는 ‘생각 변화’·‘지금의 입장’은 빼고) */
+/* 나의 생각 흐름 부제: 이 활동에 실제로 있는 단계만 이어 보여 준다 (유형마다 부르는 말만 다르게).
+   학습 나눔·실시간 토론은 자기만의 흐름이라 정해진 문구를 쓴다 */
+const FLOW_WORDS = {
+  debate2:{write:"처음 입장", read:"친구의 생각"}, debateN:{write:"처음 입장", read:"친구의 생각"},
+  inquiry:{write:"내 답", read:"친구의 답", reflect:"다시 생각"},
+  essay:{think:"처음 생각", write:"근거", revise:"수정한 생각"},
+  reflect:{write:"내 생각", read:"친구 생각"}, predict:{think:"예측", write:"내 생각", read:"친구 생각"},
+  sketch:{write:"키워드 스케치", read:"친구 스케치"}, draw:{write:"손으로 그리기", read:"친구 그림"},
+  chat:{chat:"인물과 대화", write:"대화 후 내 생각", read:"친구 생각"},
+  relay:{ask:"내 질문", take:"친구의 생각", back:"내가 발견한 점", develop:"새로운 질문"}
+};
 function flowSummaryOf(r){
-  const t = TEMPLATES[r.template], fixed = t?.flowSummary;
-  if(fixed && !/생각 변화 → 지금의 입장/.test(fixed)) return fixed;
-  const st = stepsOf(r), f = featuresOf(r), has = !!(r.stances || []).length, a = [has ? "처음 입장" : "처음 생각"];
-  if(st.includes("counter") || counterOn(r)) a.push("예상 반론");
-  if(st.includes("read")) a.push("친구의 생각");
-  if(st.includes("respond")) a.push("답하기");
-  if(st.includes("reflect")) a.push(f.change ? "생각 변화" : "돌아보기", ...(f.change ? [has ? "지금의 입장" : "지금의 생각"] : []));
-  if(st.includes("revise")) a.push("다시 쓰기");
-  return a.length > 1 ? a.join(" → ") : (has ? "처음 입장" : "내가 쓴 생각");
+  const t = TEMPLATES[r.template] || TEMPLATES.reflect, W = FLOW_WORDS[r.template];
+  if(!W) return t.flowSummary || "내 생각";
+  const st = stepsOf(r), f = featuresOf(r), has = !!(r.stances || []).length, a = [];
+  const word = {think: f.predict ? "예측" : "처음 생각", why:"이유", counter:"예상 반론", compose:"글쓰기", respond:"답하기", feedback:"선생님 피드백",
+    reflect: f.change ? "생각 변화" : "돌아보기", revise:"다시 쓰기", ...W};
+  if(has && st.includes("think")) word.write = "내 입장";                // 처음 생각을 먼저 남기는 토론: 처음 생각 → 내 입장
+  st.forEach(k => {
+    if(k === "see" || !word[k]) return;
+    if(k === "write" && W.write && a.includes(W.write)) return;
+    a.push(word[k]);
+    if(k === "write" && counterOn(r)) a.push("예상 반론");
+    if(k === "reflect" && f.change && W.reflect !== "다시 생각") a.push(has ? "지금의 입장" : "지금의 생각");
+  });
+  return [...new Set(a)].join(" → ") || "내 생각";
 }
 /* ---- 결과 화면: 나의 생각 흐름 (입력 없음, 자동 정리) ---- */
 function thinkFlow(r, p){
@@ -5361,11 +5388,11 @@ function thinkFlow(r, p){
 }
 function stepRecord(r, p){
   if(!submitted(p)) return `<div class="empty">글을 내면 나의 생각 흐름이 여기에 정리돼요.</div>`;
-  let h = `<div class="card"><div class="flow-h"><h3>${ic("compass")} 나의 생각 흐름</h3><p class="muted small">${esc(flowSummaryOf(r))}</p></div>${thinkFlow(r,p)}</div>`;
+  let h = `<div class="card"><div class="flow-h"><p class="muted small">이 활동의 흐름 · ${esc(flowSummaryOf(r))}</p></div>${thinkFlow(r,p)}</div>`;   // 제목 ‘나의 생각 흐름’은 위 안내판에 있다
   // 빠른 활동: 만남 단계가 없어도 친구 글은 둘러볼 수 있다
   if(!featuresOf(r).meet && r.reveal !== "teacher"){
     const ps = postsOf(r.id), others = ps.filter(x=>!isMe(x.author));
-    if(others.length) h += `<details class="card"><summary>친구들 생각 둘러보기 (${others.length}편)</summary><div style="margin-top:12px">${groupedPosts(r, others, x => readCard(r, x, p, ps, {pickable:false}))}</div></details>`;
+    if(others.length) h += `<details class="card fsum"><summary><span class="eyebrow">${ic("layout-board", "sm")} 친구들 생각 둘러보기</span><span class="muted small">${others.length}편</span><span class="chev" aria-hidden="true">${ic("chevron-down", "sm")}</span></summary><div style="margin-top:12px">${groupedPosts(r, others, x => readCard(r, x, p, ps, {pickable:false}))}</div></details>`;
   }
   return h + `<div class="row end"><button class="btn" type="button" data-a="mine">내 생각 기록 전체 보기</button></div>`;
 }
@@ -5983,7 +6010,7 @@ function teacherCard(r, p, ps, nav){
    ========================================================= */
 /* 🔄 새 버전 알림: 배포 때마다 APP_VERSION과 version.json의 v를 같은 값으로 올린다.
    GitHub Pages는 화면을 10분쯤 기억하므로, 옛 화면이면 아래쪽에 ‘새로고침’ 띠를 띄우고 주소를 바꿔 새로 받는다 */
-const APP_VERSION = "2026-11-10b";
+const APP_VERSION = "2026-11-10c";
 async function checkVersion(){
   if(!/^https?:$/.test(location.protocol)) return;
   try{
