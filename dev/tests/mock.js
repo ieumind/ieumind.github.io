@@ -172,6 +172,7 @@
         if(fn==="msg_read"){ const s=sess(); M.forEach(m=>{ if(p.p_ids.includes(m.id) && s[m.tid]===m.student_id && !m.read_at) m.read_at=new Date().toISOString() }); saveM(); window.__sbLog.push("msg_read:"+p.p_ids.join(",")); return {data:null,error:null} } }
       if(fn==="my_student_ids") return {data: mySids(), error:null};
       if(fn==="my_students") return {data: isT ? [] : Object.entries(sess()).map(([tid,sid])=>({tid, sid, name:label(D.students.find(x=>x.id===sid))})), error:null};
+      if(fn==="push_who"){ return {data:window.__pushWho||[],error:null} }
       if(fn==="push_save"){ window.__push=p; return {data:null,error:null} }
       if(fn==="feedback_send"){ if(!p.p_body||p.p_body.length<2) return {data:{ok:false,reason:"empty"}}; const fb=JSON.parse(localStorage.getItem("__fb")||"[]"); fb.push({id:fb.length+1, who: isT?"교사 t@school.kr":(myName()||"이름 없음"), kind:p.p_kind, body:p.p_body, page:p.p_page, done:false, created_at:new Date().toISOString()}); localStorage.setItem("__fb",JSON.stringify(fb)); return {data:{ok:true},error:null} }
       if(fn==="admin_list_feedback") return {data:JSON.parse(localStorage.getItem("__fb")||"[]"),error:null};

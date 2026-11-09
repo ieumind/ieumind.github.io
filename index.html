@@ -1777,6 +1777,7 @@ input[type=datetime-local]{border-radius:var(--r)}
 .lvcrit{border:0;padding:0;margin:14px 0 0}.lvcrit legend{padding:0;margin-bottom:2px}.lvcrit ul{margin:0 0 6px;padding-left:18px}
 .lvjmine{list-style:none;margin:0 0 8px;padding:0;display:flex;flex-direction:column;gap:4px}.lvjmine li{display:flex;justify-content:space-between;gap:8px;align-items:center}
 /* 🚪 대기실 · 💡 청중 의견 */
+.pushmk{color:var(--pri,#2563eb);vertical-align:middle;white-space:nowrap}
 .lvroles{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:12px 0}
 .lvrole{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;padding:12px 8px;min-height:64px;border-radius:12px;border:2px solid var(--line);background:var(--surface);color:var(--fg);font:inherit;cursor:pointer;text-align:center}
 .lvrole b{font-size:15px}.lvrole:disabled{opacity:.5;cursor:not-allowed}
@@ -3292,7 +3293,7 @@ function pushBarHTML(){
     return "";
   }
   if(S.push === "denied") return `<div class="pushbar"><span>${ic("bell-off")} 이 기기에서 알림이 꺼져 있어요. 휴대폰(브라우저) 설정에서 생각이음 알림을 허용하면 받을 수 있어요.</span><button class="linkbtn small" type="button" data-a="push-hide">닫기</button></div>`;
-  return `<div class="pushbar"><span>${ic("bell")} 선생님이 <b>새 활동·공지</b>를 올리면 알림으로 알려 드릴까요?</span><span class="row"><button class="btn sm pri" type="button" data-a="push-on">알림 받기</button><button class="linkbtn small" type="button" data-a="push-hide">괜찮아요</button></span></div>`;
+  return `<div class="pushbar"><span>${ic("bell")} 선생님이 <b>새 활동·공지</b>를 올리면 알림으로 알려 드릴까요? <small class="muted">(알림을 켰는지는 선생님이 볼 수 있어요)</small></span><span class="row"><button class="btn sm pri" type="button" data-a="push-on">알림 받기</button><button class="linkbtn small" type="button" data-a="push-hide">괜찮아요</button></span></div>`;
 }
 function viewDashList(groups, all){
   const nm = splitAuthor(S.name).name.trim(), now = new Date();
@@ -5872,7 +5873,7 @@ function teacherCard(r, p, ps, nav){
    ========================================================= */
 /* 🔄 새 버전 알림: 배포 때마다 APP_VERSION과 version.json의 v를 같은 값으로 올린다.
    GitHub Pages는 화면을 10분쯤 기억하므로, 옛 화면이면 아래쪽에 ‘새로고침’ 띠를 띄우고 주소를 바꿔 새로 받는다 */
-const APP_VERSION = "2026-11-09d";
+const APP_VERSION = "2026-11-09e";
 async function checkVersion(){
   if(!/^https?:$/.test(location.protocol)) return;
   try{
@@ -6223,10 +6224,13 @@ function splitAuthor(a){
   return {school:t.slice(0, i).join(" "), number:t[i], name:t.slice(i + 1).join(" ")};
 }
 const rosterLabel = x => `${x.school ? x.school + " " : ""}${x.number} ${x.name}`;
+const pushMark = id => S.pushWho?.has(id) ? ` <span class="pushmk" title="알림을 켠 학생">${ic("bell", "sm")}<span class="sr">알림 켬</span></span>` : "";
 async function loadRoster(){
   const r = await SB.from("students").select("id,school,number,name,code").order("school").order("number");
   if(r.error){ toast("학생 명단을 불러오지 못했어요."); return }
-  S.roster = r.data || []; if(S.modal?.type === "roster") render();
+  S.roster = r.data || [];
+  try{ const w = await SB.rpc("push_who"); S.pushWho = new Set(w.error ? [] : (w.data || [])) }catch(_){ S.pushWho = new Set() }
+  if(S.modal?.type === "roster") render();
   if(S.modal?.type === "course"){ cmGuess(S.form.course); renderModal() }
 }
 /* 학생 코드 보기: 전체 / 과목별 / 그룹별 (값: "" · "c|과목" · "g|과목|그룹"). 수강 학생을 정하지 않은 과목은 모든 학생이 보인다 */
@@ -6258,8 +6262,9 @@ function rosterModalHTML(){
     ${S.roster === undefined ? `<p class="muted small">불러오는 중…</p>` : `
     <div class="row" style="flex-wrap:wrap">${vopts ? `<select id="roster-view" aria-label="과목·그룹으로 보기" style="max-width:260px"><option value="">전체 학생</option>${vopts}</select>` : ""}<input type="search" id="roster-q" placeholder="학교·학번·이름으로 찾기" value="${esc(q)}" style="flex:1;min-width:150px" aria-label="학생 찾기"><span class="muted small">${list.length === S.roster.length ? `${S.roster.length}명` : `${list.length}명 / 전체 ${S.roster.length}명`}</span>
       <button class="btn sm" type="button" data-a="roster-print" ${rosterPrintList().length ? "" : "disabled"}>${ic("printer")} 코드 쪽지 인쇄${vids ? ` (${rosterPrintList().length}명)` : ""}</button></div>
+    <p class="small muted">${ic("bell", "sm")} 표시는 그 학생이 알림을 켰다는 뜻이에요. (코드로 들어온 학생만 알 수 있어요)</p>
     <div class="tscroll" style="max-height:46vh;overflow:auto"><table class="ptable"><thead><tr>${hasSch ? "<th>학교</th>" : ""}<th>학번</th><th>이름</th><th>코드</th><th><span class="sr">관리</span></th></tr></thead><tbody>
-      ${list.map(x => `<tr>${hasSch ? `<td>${esc(x.school || "–")}</td>` : ""}<td class="mono">${esc(x.number)}</td><td>${esc(x.name)}</td><td class="mono"><b>${esc(x.code)}</b></td>
+      ${list.map(x => `<tr>${hasSch ? `<td>${esc(x.school || "–")}</td>` : ""}<td class="mono">${esc(x.number)}</td><td>${esc(x.name)}${pushMark(x.id)}</td><td class="mono"><b>${esc(x.code)}</b></td>
         <td style="white-space:nowrap"><button class="btn sm" type="button" data-a="roster-reissue" data-id="${esc(x.id)}">새 코드</button> <button class="btn sm danger" type="button" data-a="roster-del" data-id="${esc(x.id)}">빼기</button></td></tr>`).join("") || `<tr><td colspan="4" class="muted">아직 학생이 없어요.</td></tr>`}
     </tbody></table></div>`}
     <div class="row end"><button class="btn" type="button" data-a="modal-close">닫기</button></div>`;
@@ -7006,7 +7011,7 @@ function attTableHTML(d, ros, dates, per){
   return first(`<div class="att-wrap" id="att-wrap"><table class="att"><thead><tr><th class="att-nm" rowspan="2" scope="col">학생</th>${dates.map(dt =>
       `<th colspan="${per + 1}" class="att-d dg" scope="colgroup"><span>${attMD(dt)}</span><button type="button" class="att-hb" data-a="att-fill" data-v="${dt}" title="이 날 빈칸을 모두 ○로">빈칸 ○</button><button type="button" class="att-hb" data-a="att-deldate" data-v="${dt}" aria-label="${attMD(dt)} 날짜 지우기" title="이 날짜 지우기">${S.attDelDate === dt ? "지울까요?" : ic("x", "sm")}</button></th>`).join("")}<th class="att-sum" rowspan="2" scope="col">이 달 합계<small>(교시)</small></th></tr>
     <tr>${dates.map(() => Array.from({length:per}, (_, i) => `<th class="att-p${i === 0 ? " dg" : ""}" scope="col">${i + 1}</th>`).join("") + `<th class="att-p" scope="col">하루</th>`).join("")}</tr></thead>
-    <tbody>${ros.map(x => `<tr data-sid="${esc(x.id)}"><th class="att-nm" scope="row"><b>${esc(x.name)}</b><small>${esc((x.school ? x.school + " " : "") + x.number)}</small></th>${dates.map(dt => attDayCells(d, x, dt, per)).join("")}<td class="att-sum" data-sum>${attSumHTML(d, x.id)}</td></tr>`).join("")}</tbody></table></div>`);
+    <tbody>${ros.map(x => `<tr data-sid="${esc(x.id)}"><th class="att-nm" scope="row"><b>${esc(x.name)}</b>${pushMark(x.id)}<small>${esc((x.school ? x.school + " " : "") + x.number)}</small></th>${dates.map(dt => attDayCells(d, x, dt, per)).join("")}<td class="att-sum" data-sum>${attSumHTML(d, x.id)}</td></tr>`).join("")}</tbody></table></div>`);
 }
 function attNotesHTML(d, ros, dates){
   const rows = []; ros.forEach(x => dates.forEach(dt => { const ps = attPeriods(attCells(d.marks?.[x.id]?.[dt], d.per || 3)); if(ps.length) rows.push({x, dt, ps}) }));
