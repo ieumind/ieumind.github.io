@@ -491,11 +491,11 @@ details.adv > div{padding:2px 20px 16px;display:grid;gap:12px}
 .goal{text-align:left;border:1.5px solid var(--line);background:var(--surface);border-radius:10px;padding:12px 14px;cursor:pointer;font-size:15px;min-height:52px}
 .goal[aria-pressed="true"]{border-color:var(--accent);background:var(--accent-soft);font-weight:600;box-shadow:0 0 0 1px var(--accent)}
 .types{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:8px}
-.tcard{text-align:left;border:1.5px solid var(--line);background:var(--surface);border-radius:12px;padding:12px 14px;cursor:pointer;display:grid;gap:2px}
-.tcard b{font-size:16px}
+.tcard:not(.post){text-align:left;border:1.5px solid var(--line);background:var(--surface);border-radius:12px;padding:12px 14px;cursor:pointer;display:grid;gap:2px}
+.tcard:not(.post) b{font-size:16px}
 .tcard .beta,.beta{display:inline-block;margin-left:6px;padding:1px 7px;border-radius:999px;font-size:11px;font-weight:700;letter-spacing:.02em;line-height:1.5;vertical-align:2px;color:var(--s4);background:var(--s4-soft);border:1px solid currentColor}
-.tcard span{font-size:13.5px;color:var(--muted)}
-.tcard[aria-pressed="true"]{border-color:var(--accent);background:var(--accent-soft);box-shadow:0 0 0 1px var(--accent)}
+.tcard:not(.post) span{font-size:13.5px;color:var(--muted)}
+.tcard:not(.post)[aria-pressed="true"]{border-color:var(--accent);background:var(--accent-soft);box-shadow:0 0 0 1px var(--accent)}
 
 /* ---------- 우리 반의 생각 지도 (토론) ---------- */
 .smap{display:grid;gap:10px;min-width:0}
@@ -1158,7 +1158,19 @@ a.btn{text-decoration:none;color:inherit;display:inline-flex;align-items:center}
 .tc-body:hover{background:var(--sunk)}
 .tc-body .preview{white-space:pre-wrap;overflow:hidden;display:-webkit-box;-webkit-line-clamp:5;-webkit-box-orient:vertical;line-height:1.6}
 .tc-meta{display:flex;flex-wrap:wrap;gap:4px 12px;font-size:13px;color:var(--muted)}
-.tc-meta .fbok{color:var(--accent);font-weight:600}
+.tc-meta .fbok,.tc-meta .wok{color:var(--accent);font-weight:600}
+.tdist{margin:0 0 12px}
+.tc-h{display:flex;align-items:baseline;gap:8px;min-width:0}
+.tc-h strong{font-size:15px;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tc-h .tc-date{margin-left:auto;flex:0 0 auto;font-size:12.5px;color:var(--muted)}
+.tc-st{display:flex;flex-wrap:wrap;align-items:center;gap:6px}
+.tc-warn{display:inline-flex;align-items:center;gap:3px;font-size:12.5px;color:var(--warn);font-weight:600}
+.tc-prog{display:flex;flex-wrap:wrap;align-items:center;gap:4px 5px}
+.tc-prog .sst{display:inline-flex;align-items:center;gap:3px;font-size:13px;font-weight:700;margin-right:3px}
+.tc-prog .pm{font-size:12px;padding:1px 8px;border-radius:999px;border:1px solid var(--line);color:var(--muted)}
+.tc-prog .pm.on{border-color:var(--accent);color:var(--accent)}
+.tc-prog .pm.on::before{content:"";display:inline-block;width:12px;height:12px;margin-right:2px;vertical-align:-2px;background:currentColor;-webkit-mask:var(--ti-check) center/contain no-repeat;mask:var(--ti-check) center/contain no-repeat}
+.tc-prog .pm.off{border-style:dashed}
 .tc-fb{font-size:13.5px;background:var(--accent-soft);border-radius:8px;padding:6px 10px}
 .tc-acts{display:flex;flex-wrap:nowrap;gap:5px;align-items:center;border-top:1px dashed var(--line);padding-top:8px}
 .tc-acts .sp{flex:1}
@@ -3204,7 +3216,8 @@ function distHTML(r, posts){
   const n = posts.length;
   const bars = r.stances.map((s,i)=>{ const c = posts.filter(p=>stanceIdx(r,p.stance)===i).length; return c ? `<i style="width:${c/n*100}%;background:var(--${SC[i%4]})"></i>` : "" }).join("");
   const lg = r.stances.map((s,i)=>`<span style="--c:var(--${SC[i%4]})"><span class="shp" aria-hidden="true">${ic(SHAPES[i%4], "sm")}</span>${esc(s)} ${posts.filter(p=>stanceIdx(r,p.stance)===i).length}</span>`).join("");
-  return `<div class="dist" aria-hidden="true">${bars}</div><div class="legend">${lg}</div>`;
+  const nx = posts.filter(p => stanceIdx(r, p.stance) < 0).length;   // 활동의 입장 이름과 맞지 않는 글 (회색)
+  return `<div class="dist" aria-hidden="true">${bars}</div><div class="legend">${lg}${nx ? `<span style="--c:var(--muted)">${ic("alert-triangle", "sm")} 입장 확인 필요 ${nx}</span>` : ""}</div>`;
 }
 function nameForm(){
   if(S.mode === "supa") return codeForm();
@@ -5715,9 +5728,10 @@ function tabStudents(r, st){
   if(S.openPost){ const p = st.all.find(x => x.id === S.openPost); if(p) return studentDetail(r, st, p); S.openPost = null }
   const v = studentView(r, st);
   if(!v.all.length) return queuePanel(r) + `<div class="empty">아직 참여한 학생이 없어요. 학생 링크나 QR 코드를 공유해 보세요.<br><span class="small">설정 탭에서 명단을 넣으면 미참여 학생도 이름으로 보여요.</span></div>`;
-  return queuePanel(r) + `<div class="stools">
+  const dist = (r.stances||[]).length ? distHTML(r, st.all.filter(p => p.stance)) : "";
+  return queuePanel(r) + (dist ? `<div class="tdist">${dist}</div>` : "") + `<div class="stools">
       <input type="search" id="s-q" placeholder="학생 이름·번호 검색" value="${esc(S.sq)}" aria-label="학생 이름 또는 번호 검색" autocomplete="off">
-      <div class="mfilters" role="group" aria-label="학생 상태 필터">${v.fl.map(x => `<button type="button" data-a="sfilter" data-v="${x.k}" aria-pressed="${S.sf===x.k}">${esc(x.l)} <span class="mono">${v.all.filter(x.t).length}</span></button>`).join("")}</div>
+      <div class="mfilters" role="group" aria-label="학생 상태 필터">${v.fl.map(x => `<button type="button" data-a="sfilter" data-v="${x.k}" aria-pressed="${S.sf===x.k}"${x.full ? ` title="${esc(x.full)}" style="--c:var(--${SC[x.si%4]})"` : ""}>${x.full ? `<span class="shp" aria-hidden="true">${ic(SHAPES[x.si%4], "sm")}</span>` : ""}${esc(x.l)} <span class="mono">${v.all.filter(x.t).length}</span></button>`).join("")}</div>
       <div class="mrow2"><label for="s-sort">정렬</label><select id="s-sort">${v.so.map(x => `<option value="${x.k}" ${S.ss===x.k?"selected":""}>${esc(x.l)}</option>`).join("")}</select>
         <span class="sp"></span>${vtoggle("sview", S.sview, [["card",`${ic("layout-grid", "sm")} 카드형`],["grid",`${ic("list", "sm")} 한눈에 보기`]])}</div></div>
     <div id="slist">${studentListHTML(r, st, v)}</div>`;
@@ -5891,6 +5905,8 @@ function viewPresent(r){
   return h + `</div>`;
 }
 
+/* 이 학생이 친구 글에 남긴 댓글·답 수 (토론 참여도) */
+const writtenCmts = (r, p) => S.replies.filter(x => x.roomId === r.id && x.author === p.author && (x.kind === "comment" || x.kind === "rebuttal") && x.postId !== p.id).length;
 const QUICK_FB = ["근거가 탄탄해요", "예시를 하나 더 들어 볼까요?", "친구 생각과 비교해 보세요", "내 말로 다시 정리해 볼까요?"];
 function teacherCard(r, p, ps, nav){
   const f = featuresOf(r), isOpen = S.openPost === p.id, ss = sstatus(r, p);
@@ -5902,9 +5918,12 @@ function teacherCard(r, p, ps, nav){
   if(!isOpen){                                                     // 학생 카드: 상태 색 띠 · 글 · 반응 · 바로 피드백
     const {title, text} = padText(r, p), img = Object.values(finalBody(p)).find(isImg), lastFb = repliesOf(p.id).filter(x => x.kind === "teacher").slice(-1)[0];
     const nH = heartsOf(p.id).length, nC = visibleReplies(p).filter(x => x.kind === "comment" || x.kind === "rebuttal").length, qOpen = S.qfb === p.id, key = "fb:" + p.id;
-    return `<article class="post tcard st-${ss.k}">${postHead(r,p,ps)}${prog}
+    const nW = writtenCmts(r, p), ch = p.stance ? stanceChip(r, p.stance) : "";
+    const head = `<div class="tc-h"><strong>${esc(displayName(r,p.author,ps))}</strong>${p.revision ? `<span class="chip">다시 쓴 글</span>` : ""}<span class="tc-date">${fmt(p.updatedAt||p.createdAt)}</span></div>${ch ? `<div class="tc-st">${ch}${stanceIdx(r, p.stance) < 0 ? `<span class="tc-warn" title="활동의 입장 이름과 맞지 않아요">${ic("alert-triangle", "sm")} 입장 확인</span>` : ""}</div>` : ""}${isTeacher() && r.anonymous ? `<span class="muted small">학생들에게는 익명</span>` : ""}`;
+    const line = `<div class="tc-prog"><span class="sst ${ss.k}">${ic(ss.ic, "sm")} ${ss.l}</span>${marksOf(r).map(m => { const ok = m.ok(p); return `<span class="pm ${ok?"on":"off"}">${esc(m.l)}<span class="sr">${ok?" 완료":" 아직"}</span></span>` }).join("")}</div>`;
+    return `<article class="post tcard st-${ss.k}">${head}${line}
       <div class="tc-body" data-a="open-post" data-id="${esc(p.id)}" title="사고 과정 보기">${img ? `<img class="wimg" src="${esc(img)}" alt="" loading="lazy">` : ""}${title ? `<b class="pad-title">${esc(title)}</b>` : ""}${text ? `<p class="preview">${esc(text)}</p>` : ""}</div>
-      <div class="tc-meta"><span title="친구들이 누른 하트">${ic("heart", "sm")} ${nH}</span><span title="친구 댓글·답">${ic("message-circle", "sm")} ${nC}</span>${f.feedback ? `<span class="${nfb ? "fbok" : ""}" title="선생님 피드백">${ic("chalkboard-teacher", "sm")} ${nfb ? `피드백 ${nfb}` : "피드백 아직"}</span>` : ""}</div>
+      <div class="tc-meta"><span title="친구들이 누른 하트">${ic("heart", "sm")} ${nH}</span><span title="친구에게 받은 댓글·답">${ic("message-circle", "sm")} 받은 ${nC}</span>${f.comment ? `<span class="${nW ? "wok" : ""}" title="이 학생이 친구 글에 쓴 댓글·답">${ic("pencil", "sm")} 쓴 ${nW}</span>` : ""}${f.feedback ? `<span class="${nfb ? "fbok" : ""}" title="선생님 피드백">${ic("chalkboard-teacher", "sm")} ${nfb ? `피드백 ${nfb}` : "피드백 전"}</span>` : ""}</div>
       ${lastFb ? `<p class="tc-fb">${ic("chalkboard-teacher", "sm")} ${esc(lastFb.text.slice(0, 80))}${lastFb.text.length > 80 ? "…" : ""}</p>` : ""}
       ${qOpen ? `<div class="qfb"><div class="qfb-chips">${QUICK_FB.map(t => `<button type="button" class="chip" data-a="fb-chip" data-id="${esc(p.id)}" data-v="${esc(t)}">${esc(t)}</button>`).join("")}</div>
         ${ta(key, "text", {rows:2, ph:"잘한 점 한 가지 + 다음에 해 볼 점 한 가지", id:key + "-text"})}
@@ -5939,7 +5958,7 @@ function teacherCard(r, p, ps, nav){
    ========================================================= */
 /* 🔄 새 버전 알림: 배포 때마다 APP_VERSION과 version.json의 v를 같은 값으로 올린다.
    GitHub Pages는 화면을 10분쯤 기억하므로, 옛 화면이면 아래쪽에 ‘새로고침’ 띠를 띄우고 주소를 바꿔 새로 받는다 */
-const APP_VERSION = "2026-11-09h";
+const APP_VERSION = "2026-11-10a";
 async function checkVersion(){
   if(!/^https?:$/.test(location.protocol)) return;
   try{
@@ -7349,7 +7368,9 @@ function sfilters(r, st){
     {k:"pinned", l:"발표 후보", t:e => e.pin >= 0},
     {k:"noread", l:"친구 생각 미확인", t:e => !!e.p && !stepDone(r,e.p,"read"), show:steps.includes("read")},
     {k:"nochange", l: f.change ? "생각 변화 미작성" : "돌아보기 미작성", t:e => !!e.p && !stepDone(r,e.p,"reflect"), show:steps.includes("reflect")},
-    {k:"noreason", l:"근거 없음", t:e => !!e.p && !(finalBody(e.p).reason||"").trim(), show:hasReason}
+    {k:"noreason", l:"근거 없음", t:e => !!e.p && !(finalBody(e.p).reason||"").trim(), show:hasReason},
+    ...(r.stances || []).map((s, i) => ({k:"st" + i, l:(s.length > 12 ? s.slice(0, 11) + "…" : s), full:s, si:i, t:e => !!e.p && stanceIdx(r, e.p.stance) === i})),
+    {k:"stx", l:"입장 확인 필요", t:e => !!e.p && !!e.p.stance && stanceIdx(r, e.p.stance) < 0, show:(r.stances||[]).length > 0 && (st.all||[]).some(p => p.stance && stanceIdx(r, p.stance) < 0)}
   ].filter(x => x.show !== false);
 }
 function ssorts(r){
@@ -7362,7 +7383,9 @@ function ssorts(r){
     {k:"change", l:"생각 변화가 큰 순", c:(a,b) => (b.ci?.score ?? 0) - (a.ci?.score ?? 0), show:steps.includes("reflect") && f.change},
     {k:"noreason", l:"근거 없는 학생 먼저", c:(a,b) => !!(finalBody(a.p).reason||"").trim() - !!(finalBody(b.p).reason||"").trim(), show:hasReason},
     {k:"noread", l:"친구 생각 안 본 학생 먼저", c:(a,b) => stepDone(r,a.p,"read") - stepDone(r,b.p,"read"), show:steps.includes("read")},
-    {k:"nofb", l:"피드백 없는 학생 먼저", c:(a,b) => (!!a.fb) - (!!b.fb), show:f.feedback}
+    {k:"nofb", l:"피드백 없는 학생 먼저", c:(a,b) => (!!a.fb) - (!!b.fb), show:f.feedback},
+    {k:"stance", l:"입장별", c:(a,b) => { const k = e => { const si = e.p ? stanceIdx(r, e.p.stance) : -1; return si < 0 ? 99 : si }; return k(a) - k(b) }, show:(r.stances||[]).length > 0},
+    {k:"cmt", l:"댓글 많이 쓴 순", c:(a,b) => (b.p ? writtenCmts(r, b.p) : 0) - (a.p ? writtenCmts(r, a.p) : 0), show:f.comment && f.meet}
   ].filter(x => x.show !== false);
 }
 function studentView(r, st){
@@ -7397,7 +7420,7 @@ function studentTableHTML(r, list){
       return `<tr class="${e.p?"":"nj"}"><td class="mono c">${esc(e.no||"–")}</td><td>${cell(`<b>${esc(cleanName(e.name))}</b>`, "")}</td>${showG ? `<td class="c small">${e.p?.groupId ? esc(groupName(r0.courseId, e.p.groupId)) : "–"}</td>` : ""}
         <td class="c">${cell(`<span class="sst ${e.st.k}">${ic(e.st.ic, "sm")} ${e.st.l}</span>`, e.st.l)}</td>
         ${e.marks.map(m => `<td class="c">${e.p ? cell(yn(m.ok), m.l + (m.ok ? " 완료" : " 아직")) : `<span class="no">–</span>`}</td>`).join("")}
-        ${f.feedback ? `<td class="c">${e.p ? cell(yn(e.fb > 0), e.fb ? "피드백 보냄" : "피드백 아직") : `<span class="no">–</span>`}</td>` : ""}
+        ${f.feedback ? `<td class="c">${e.p ? cell(yn(e.fb > 0), e.fb ? "피드백 보냄" : "피드백 전") : `<span class="no">–</span>`}</td>` : ""}
         <td class="c">${e.p && submitted(e.p) ? `<button class="cellbtn" type="button" data-a="pin" data-id="${esc(e.p.id)}" aria-pressed="${e.pin>=0}" title="발표 목록에 넣기/빼기" aria-label="${esc(e.name)} 발표 목록 ${e.pin>=0?"빼기":"넣기"}">${e.pin>=0 ? `${ic("presentation", "sm")} ${e.pin+1}` : ic("plus", "sm")}</button>` : ""}</td></tr>`;
     }).join("")}</tbody></table></div>
     <p class="muted small" style="margin-top:8px">${ic("check", "sm")} 한 단계 · ${ic("x", "sm")} 아직 안 한 단계 · 칸을 누르면 그 학생의 생각 과정으로 가요.</p>`;
