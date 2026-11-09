@@ -2500,7 +2500,17 @@ function meFor(roomId){
 const myPost = r => S.name ? S.posts.find(p => p.roomId === r.id && isMe(p.author)) : null;
 const postId = r => "p-" + r.id + "-" + hash(S.name);
 const roomsSorted = () => [...S.rooms].filter(r => isTeacher() || (visibleToStudents(r) && (!S.course || r.courseId === S.course))).sort((a,b)=> String(a.year||"").localeCompare(String(b.year||"")) || (a.createdAt||0)-(b.createdAt||0));
-const stanceIdx = (r,s) => (r.stances||[]).indexOf(s);
+/* 입장 글자가 방 설정과 정확히 같지 않아도(선생님이 입장 이름을 고친 뒤 등) 가장 비슷한 입장을 찾아 같은 모양·색을 보여 준다 */
+const stNorm = s => String(s||"").replace(/[^0-9A-Za-z가-힣]/g, "");
+const stBig = s => { const a = new Set(); for(let i = 0; i < s.length - 1; i++) a.add(s.slice(i, i + 2)); return a };
+function stanceIdx(r, s){
+  const L = r.stances || [], e = L.indexOf(s); if(e >= 0 || !s || !L.length) return e;
+  const n = stNorm(s), nl = L.map(stNorm), ne = nl.indexOf(n); if(n && ne >= 0) return ne;
+  const A = stBig(n); if(!A.size) return -1;
+  const sc = nl.map(t => { const B = stBig(t); let c = 0; A.forEach(x => { if(B.has(x)) c++ }); return B.size ? 2 * c / (A.size + B.size) : 0 });
+  const best = Math.max(...sc), bi = sc.indexOf(best), second = Math.max(0, ...sc.filter((_, i) => i !== bi));
+  return best >= .4 && best - second >= .15 ? bi : -1;
+}
 const isBig = r => (r.minChars||0) >= 300;                                // 분량이 중요한 활동(논술)만 숫자를 보여 준다
 
 /* =========================================================
@@ -2601,6 +2611,12 @@ function phasesOf(r){
 }
 const phaseOfStep = (r, st) => phasesOf(r).find(ph => ph.steps.includes(st));
 function myRepliesIn(r, kinds, author = S.name){ return S.replies.filter(x => x.roomId===r.id && x.author===author && kinds.includes(x.kind)) }
+/* 친구 생각 만나기: 만났다고 눌렀거나, 친구 글에 댓글·반박을 하나라도 남겼으면 마친 것으로 (‘만나기’ 단계 밖에서 댓글을 단 경우 포함. 심화 질문이 있는 활동은 ‘다 읽었어요’가 필요) */
+function readDone(r, p){
+  if(p.readAt) return true;
+  const fe = featuresOf(r); if((fe.deep && fe.rebuttal) || (fe.readMission || []).length) return false;
+  return S.replies.some(x => x.roomId === r.id && x.author === p.author && (x.kind === "comment" || x.kind === "rebuttal") && S.posts.some(q => q.id === x.postId && q.author !== p.author));
+}
 function stepDone(r, p, st){
   if(st === "see") return !!p || !!S.form["seen:"+r.id];
   if(!p) return false;
@@ -2609,7 +2625,7 @@ function stepDone(r, p, st){
     case "write":   return submitted(p) || (isSplit(r) ? !!(p.body?.[effFields(r)[0].k]||"").trim() : bodyComplete(r, p.body, p.stance));
     case "why":     return submitted(p);
     case "counter": return !!p.counter?.objection;
-    case "read":    return !!p.readAt;
+    case "read":    return readDone(r, p);
     case "respond": return myRepliesIn(r,["rebuttal"],p.author).length > 0 || !!p.respondSkipped;   // 넘어가기도 마친 것으로
     case "reflect": return !!p.change || (!featuresOf(r).change && !!p.revisit);
     case "revise":  return !!p.revision;
@@ -5211,6 +5227,18 @@ function stepRevise(r, p, open){
       <div class="foot"><span></span><button class="btn pri" type="button" data-a="save-revise">다시 쓴 글 저장</button></div></div>`;
 }
 
+/* 나의 생각 흐름 부제: 토론·기본 활동은 이 활동에 실제로 있는 단계만 이어 보여 준다 (없는 ‘생각 변화’·‘지금의 입장’은 빼고) */
+function flowSummaryOf(r){
+  const t = TEMPLATES[r.template], fixed = t?.flowSummary;
+  if(fixed && !/생각 변화 → 지금의 입장/.test(fixed)) return fixed;
+  const st = stepsOf(r), f = featuresOf(r), has = !!(r.stances || []).length, a = [has ? "처음 입장" : "처음 생각"];
+  if(st.includes("counter")) a.push("예상 반론");
+  if(st.includes("read")) a.push("친구의 생각");
+  if(st.includes("respond")) a.push("답하기");
+  if(st.includes("reflect")) a.push(f.change ? "생각 변화" : "돌아보기", ...(f.change ? [has ? "지금의 입장" : "지금의 생각"] : []));
+  if(st.includes("revise")) a.push("다시 쓰기");
+  return a.length > 1 ? a.join(" → ") : (has ? "처음 입장" : "내가 쓴 생각");
+}
 /* ---- 결과 화면: 나의 생각 흐름 (입력 없음, 자동 정리) ---- */
 function thinkFlow(r, p){
   if(isRelay(r)) return relayFlow(r, p);
@@ -5257,7 +5285,7 @@ function thinkFlow(r, p){
 }
 function stepRecord(r, p){
   if(!submitted(p)) return `<div class="empty">글을 내면 나의 생각 흐름이 여기에 정리돼요.</div>`;
-  let h = `<div class="card"><div class="flow-h"><h3>${ic("compass")} 나의 생각 흐름</h3><p class="muted small">${esc(TEMPLATES[r.template]?.flowSummary || "처음 생각 → 친구의 생각 → 지금의 생각")}</p></div>${thinkFlow(r,p)}</div>`;
+  let h = `<div class="card"><div class="flow-h"><h3>${ic("compass")} 나의 생각 흐름</h3><p class="muted small">${esc(flowSummaryOf(r))}</p></div>${thinkFlow(r,p)}</div>`;
   // 빠른 활동: 만남 단계가 없어도 친구 글은 둘러볼 수 있다
   if(!featuresOf(r).meet && r.reveal !== "teacher"){
     const ps = postsOf(r.id), others = ps.filter(x=>!isMe(x.author));
@@ -5578,7 +5606,7 @@ function tabOverview(r, st){
   if(fields.some(x=>x.k==="warrant")) rows.push(["근거 설명", all.filter(p=>(p.body?.warrant||"").trim()).length]);
   if(!isRelay(r) && !fields.some(x=>x.k==="claim")) rows.push(["글 작성", st.sub.length]);
   if(f.counter) rows.push(["예상 반론", all.filter(p=>p.counter?.objection).length]);
-  if(f.meet && !isRelay(r)) rows.push(["친구 생각 만나기", all.filter(p=>p.readAt).length]);
+  if(f.meet && !isRelay(r)) rows.push(["친구 생각 만나기", all.filter(p=>readDone(r,p)).length]);
   if(f.meet && f.comment && !isRelay(r)) rows.push([f.deep ? "반박 작성" : "친구 글에 한마디", new Set(S.replies.filter(x=>x.roomId===r.id && (x.kind==="rebuttal"||x.kind==="comment")).map(x=>x.author)).size]);
   if(f.change && !isRelay(r)) rows.push(["생각 변화 기록", all.filter(p=>p.change).length]);
   if(isEssay(r)) rows.push(["글쓰기", all.filter(p=>p.essay?.text).length]);
@@ -5873,7 +5901,7 @@ function teacherCard(r, p, ps, nav){
    ========================================================= */
 /* 🔄 새 버전 알림: 배포 때마다 APP_VERSION과 version.json의 v를 같은 값으로 올린다.
    GitHub Pages는 화면을 10분쯤 기억하므로, 옛 화면이면 아래쪽에 ‘새로고침’ 띠를 띄우고 주소를 바꿔 새로 받는다 */
-const APP_VERSION = "2026-11-09e";
+const APP_VERSION = "2026-11-09g";
 async function checkVersion(){
   if(!/^https?:$/.test(location.protocol)) return;
   try{
@@ -9469,7 +9497,12 @@ async function act(a, b){
         break;
       }
       const ok = await addReply({roomId:r.id, postId:pid, author:meFor(r.id), kind:"comment", text, evidence:"", createdAt:Date.now()});
-      if(ok){ dropForm("com:"+pid); toast("올렸어요.") }
+      if(ok){
+        dropForm("com:"+pid);
+        if(!isTeacher() && p && !p.readAt && tgt && !isMe(tgt.author) && fe.meet && !isRelay(r) && !(fe.deep && fe.rebuttal) && !(fe.readMission || []).length)   // 다른 화면에서 단 댓글도 ‘친구 생각 만나기’로 센다
+          await savePost(r, {readAt:Date.now(), meet:{answers:{reply:text}, diffPostId:pid, at:Date.now()}});
+        toast("올렸어요.")
+      }
       break;
     }
 
