@@ -1966,6 +1966,16 @@ details.help.helpcta > summary:hover{border-color:var(--accent)}
 .lvtabn{min-width:18px;padding:0 5px;border-radius:999px;background:var(--s2);color:#fff;font-size:11.5px;line-height:18px;text-align:center}
 .lvduo{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);gap:12px;align-items:start}
 .lvduo .lvchat{margin-top:12px}.lvduo .lvnotes{margin-top:12px}
+.lvside{display:grid;gap:12px;align-content:start;min-width:0;margin-top:12px}
+.lvduo .lvside .lvnotes{margin-top:0}
+.lvstat{border:1px solid var(--line);border-radius:12px;background:var(--surface);overflow:hidden}
+.lvst-b{padding:12px 14px;display:grid;gap:8px}
+.lvbal{display:flex;height:10px;border-radius:999px;overflow:hidden;background:var(--sunk)}
+.lvbal .pro{background:var(--s1)}.lvbal .con{background:var(--s2)}
+.lvst-row{display:flex;justify-content:space-between;gap:8px;font-size:13.5px}
+.lvst-row .pro b{color:var(--s1)}.lvst-row .con b{color:var(--s2)}
+.lvst-l{list-style:none;margin:0;padding:0;display:grid;gap:6px;font-size:13.5px;color:var(--muted)}
+.lvst-l li{display:flex;align-items:center;gap:6px;flex-wrap:wrap}.lvst-l b{color:var(--fg)}
 .lvnotes{border:1px solid var(--line);border-radius:12px;background:var(--surface);display:flex;flex-direction:column;overflow:hidden}
 .lvnotelist{list-style:none;margin:0;padding:10px;display:flex;flex-direction:column;gap:8px;overflow-y:auto;min-height:140px;max-height:min(46vh,440px);background:var(--bg)}
 .lvn{padding:8px 10px;border-radius:10px;background:var(--surface);border-left:3px solid var(--muted)}.lvn.q{border-left-color:var(--warn)}.lvn.mine{outline:1px solid var(--line)}.lvn.del{background:transparent;border-left-color:transparent}
@@ -1976,7 +1986,7 @@ details.help.helpcta > summary:hover{border-color:var(--accent)}
 .lvnotes.tvn{border:0}.lvcard.lvnotes.tv{padding:0}.lvnotes.tv .lvnotelist{max-height:min(40vh,360px)}
 @media (max-width:899px){
   .lvtabs{display:flex}.lvduo{grid-template-columns:1fr}
-  .lvduo[data-tab="chat"] .lvnotes{display:none}.lvduo[data-tab="notes"] .lvchat{display:none}.lvduo .lvchat,.lvduo .lvnotes{margin-top:0}
+  .lvduo[data-tab="chat"] .lvside{display:none}.lvduo[data-tab="notes"] .lvchat,.lvduo[data-tab="notes"] .lvstat{display:none}.lvduo[data-tab="stat"] .lvchat,.lvduo[data-tab="stat"] .lvnotes{display:none}.lvduo .lvchat,.lvduo .lvnotes,.lvduo .lvside{margin-top:0}
   .lvroster{grid-template-columns:1fr}
   .lvslots{grid-template-columns:1fr}
   .lvslot{flex-direction:row;align-items:stretch}.lvslot .lvrole{flex:0 0 42%;min-height:64px}.lvslot .lr-l{flex:1;padding:10px 10px 10px 0;justify-content:center}
@@ -3810,6 +3820,7 @@ function liveRefresh(r, why, mine){
       const c = document.getElementById("lv-kpis"); if(c) c.outerHTML = liveKpis(r);
       const tn = document.getElementById("lv-tabn"); if(tn){ tn.textContent = String(lv(r).noteNew || 0); tn.hidden = !lv(r).noteNew }
       const mc = document.getElementById("lv-mynotes"); if(mc) mc.outerHTML = liveMyNotesHTML(r);
+      const sp = document.getElementById("lv-stat"); if(sp) sp.outerHTML = liveStatHTML(r);
       return;
     }
   }
@@ -3817,6 +3828,7 @@ function liveRefresh(r, why, mine){
     const atEnd = box.scrollHeight - box.scrollTop - box.clientHeight < 80;
     box.innerHTML = liveMsgsHTML(r);
     if(atEnd || mine) box.scrollTop = box.scrollHeight; else document.getElementById("lv-newmsg")?.removeAttribute("hidden");
+    const sp = document.getElementById("lv-stat"); if(sp) sp.outerHTML = liveStatHTML(r);
     const c = document.getElementById("lv-kpis"); if(c) c.outerHTML = liveKpis(r);
     return;
   }
@@ -3952,6 +3964,19 @@ function liveNotesPanel(r, canWrite){
     <ol class="lvnotelist" id="lv-notelist" aria-live="polite">${liveNotesHTML(r)}</ol>${comp}</section>`;
 }
 
+/* 📊 토론 현황: 팀별 발언 수(균형 막대) · 아직 말하지 않은 토론자 수 · 판정단 의견 수. 학생에게는 이름 없이 숫자만 */
+function liveStatHTML(r){
+  const L = lv(r), ms = lvMsgs(r).filter(m => !m.deleted), n = {pro:ms.filter(m => m.team === "pro").length, con:ms.filter(m => m.team === "con").length};
+  const deb = t => L.roster.filter(x => x.team === t), spoke = new Set(ms.map(m => m.nick));
+  const quiet = t => deb(t).filter(x => !spoke.has(x.nick)).length, tot = n.pro + n.con, pc = tot ? Math.round(n.pro / tot * 100) : 50;
+  const notes = [...L.notes.values()].filter(x => !x.deleted).length, jury = L.roster.filter(x => x.team === "jury").length;
+  return `<section class="lvstat" id="lv-stat" aria-label="토론 현황"><div class="lvchat-h"><b>${ic("chart-bar", "sm")} 토론 현황</b><span class="small muted">숫자만 보여요</span></div>
+    <div class="lvst-b"><div class="lvbal" role="img" aria-label="발언 수 ${esc(teamL(r, "pro"))} ${n.pro}개, ${esc(teamL(r, "con"))} ${n.con}개"><span class="pro" style="width:${pc}%"></span><span class="con" style="width:${100 - pc}%"></span></div>
+      <div class="lvst-row"><span class="pro"><b>${esc(teamL(r, "pro"))}</b> 발언 ${n.pro}개</span><span class="con"><b>${esc(teamL(r, "con"))}</b> 발언 ${n.con}개</span></div>
+      <ul class="lvst-l">
+        <li>${ic("users", "sm")} 아직 말하지 않은 토론자 <b>${esc(teamL(r, "pro"))} ${quiet("pro")}명 · ${esc(teamL(r, "con"))} ${quiet("con")}명</b></li>
+        <li>${ic("bulb", "sm")} 청중 판정단 ${jury}명 · 의견 <b>${notes}개</b></li></ul></div></section>`;
+}
 /* 🚪 대기실(학생): 모두 청중 판정단으로 시작해서, 찬성·반대 자리(팀당 최대 N명)로 옮길 수 있다.
    역할 카드 3개 안에 바로 그 역할의 닉네임 목록 (예전의 아래 명단 칸과 겹치던 것을 하나로) */
 function liveMineHTML(r){
@@ -3981,7 +4006,7 @@ function liveLobbyHTML(r){
 }
 /* 토론방(학생): 토론 채팅 + 청중 의견. 넓은 화면은 나란히, 좁은 화면은 탭으로 */
 function liveDuoHTML(r){
-  const L = lv(r), s = liveSt(r), jury = L.me?.team === "jury", tab = L.tab === "notes" ? "notes" : "chat";
+  const L = lv(r), s = liveSt(r), jury = L.me?.team === "jury", tab = ["notes", "stat"].includes(L.tab) ? L.tab : "chat";
   const canWrite = s === "live" && L.me?.team && !jury && !L.me?.muted && !S.preview;
   const why = S.preview ? "미리보기에서는 보낼 수 없어요." : jury ? (s === "live" ? "청중 판정단은 채팅을 읽기만 해요. ‘청중 의견’에 질문이나 생각을 남겨 주세요." : LIVE_ST[s].d) : s !== "live" ? LIVE_ST[s].d : !L.me?.team ? LIVE_ERR.noteam : L.me?.muted ? LIVE_ERR.muted : "";
   const chat = `<section class="lvchat${s === "live" ? " on" : ""}" aria-label="실시간 토론 채팅">
@@ -3991,8 +4016,8 @@ function liveDuoHTML(r){
     <div class="lvcomp">${canWrite ? `<label class="sr" for="lv-in">메시지</label><textarea id="lv-in" rows="1" maxlength="${LIVE_MAX}" placeholder="주장이나 반박을 적어 보세요" title="Enter로 보내기 · Shift+Enter로 줄 바꿈">${esc(LV_DRAFT[r.id] || "")}</textarea>
       <span class="lvcnt small muted" id="lv-cnt">${(LV_DRAFT[r.id] || "").length}/${LIVE_MAX}</span><button class="btn pri" type="button" data-a="lv-send" ${L.sending ? "disabled" : ""}>${ic("send")} <span class="lt">보내기</span></button>`
       : `<p class="lvlock small">${ic("lock", "sm")} ${esc(why)}</p>`}</div></section>`;
-  return `<div class="lvtabs" role="group" aria-label="보기 고르기"><button type="button" class="lvtab" data-a="lv-tab" data-v="chat" aria-pressed="${tab === "chat"}">${ic("messages", "sm")} 토론 채팅</button><button type="button" class="lvtab" data-a="lv-tab" data-v="notes" aria-pressed="${tab === "notes"}">${ic("bulb", "sm")} 청중 의견 <span class="lvtabn" id="lv-tabn" ${L.noteNew ? "" : "hidden"}>${L.noteNew || 0}</span></button></div>
-    <div class="lvduo" data-tab="${tab}">${chat}${liveNotesPanel(r, jury)}</div>`;
+  return `<div class="lvtabs" role="group" aria-label="보기 고르기"><button type="button" class="lvtab" data-a="lv-tab" data-v="chat" aria-pressed="${tab === "chat"}">${ic("messages", "sm")} 토론 채팅</button><button type="button" class="lvtab" data-a="lv-tab" data-v="notes" aria-pressed="${tab === "notes"}">${ic("bulb", "sm")} 청중 의견 <span class="lvtabn" id="lv-tabn" ${L.noteNew ? "" : "hidden"}>${L.noteNew || 0}</span></button><button type="button" class="lvtab" data-a="lv-tab" data-v="stat" aria-pressed="${tab === "stat"}">${ic("chart-bar", "sm")} 현황</button></div>
+    <div class="lvduo" data-tab="${tab}">${chat}<div class="lvside">${liveNotesPanel(r, jury)}${liveStatHTML(r)}</div></div>`;
 }
 function viewLiveStudent(r){
   liveSeed(r);
@@ -6182,7 +6207,7 @@ function teacherCard(r, p, ps, nav){
    ========================================================= */
 /* 🔄 새 버전 알림: 배포 때마다 APP_VERSION과 version.json의 v를 같은 값으로 올린다.
    GitHub Pages는 화면을 10분쯤 기억하므로, 옛 화면이면 아래쪽에 ‘새로고침’ 띠를 띄우고 주소를 바꿔 새로 받는다 */
-const APP_VERSION = "2026-11-10m";
+const APP_VERSION = "2026-11-10n";
 async function checkVersion(){
   if(!/^https?:$/.test(location.protocol)) return;
   try{
@@ -9465,7 +9490,7 @@ async function act(a, b){
     case "lv-note-send": if(r && isLive(r)) await liveNoteSend(r); return;
     case "lv-nkind": if(r && isLive(r)){ lv(r).noteKind = b.dataset.v === "t" ? "t" : "q"; liveRender() } return;
     case "lv-ntgt": if(r && isLive(r)){ lv(r).noteTgt = ["pro", "con"].includes(b.dataset.v) ? b.dataset.v : "all"; liveRender() } return;
-    case "lv-tab": if(r && isLive(r)){ const L = lv(r); L.tab = b.dataset.v === "notes" ? "notes" : "chat"; if(L.tab === "notes") L.noteNew = 0; liveRender(); if(L.tab === "notes") document.getElementById("lv-note")?.focus?.({preventScroll:true}) } return;
+    case "lv-tab": if(r && isLive(r)){ const L = lv(r); L.tab = ["notes", "stat"].includes(b.dataset.v) ? b.dataset.v : "chat"; if(L.tab === "notes") L.noteNew = 0; liveRender(); if(L.tab === "notes") document.getElementById("lv-note")?.focus?.({preventScroll:true}) } return;
     case "lv-note-del": if(r && isLive(r)) await liveNoteDel(r, b.dataset.v); return;
     case "lv-nick-reset": if(r && isLive(r)) await liveNickReset(r, b.dataset.k); return;
     case "lv-jhide": if(r && isLive(r)) await liveJHide(r, b.dataset.v); return;
