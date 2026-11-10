@@ -6,6 +6,11 @@
 
 ---
 
+## 2026-11-10zg — 감상·성찰/논술 각자의 특장점
+- 감상·성찰: 깊이 ③에서 논술용 warrant·evidenceType이 켜지던 문제 수정(applyDepth에서 reflect는 끔, missionDeep은 ③만). 단계 이름·질문을 느낌의 말로(TEMPLATES.reflect stepNames/titles/descs, 이유 질문 "왜 그렇게 느꼈나요?"). ③ 읽기 임무는 `same`(비슷한 느낌)+`diff`(다른 느낌) — `MISSION_Q`/`missionsFor(r)`로 템플릿별 문구. ① 2단계, ② 3단계(임무 없음), ③ 5단계(활동 전 → 느낌 → 이유 → 친구 느낌 → 달라진 점).
+- 논술: 글쓰기 단계에 `essayGuideHTML` 가이드(내 생각 → 이유·근거 → 다른 생각 → 마무리, 시작 문장 버튼, 정리한 내용 불러오기, 다 쓴 뒤 점검 목록). 근거 설명·근거 유형·설득력 임무는 논술에 그대로.
+- t110 신규.
+
 ## 2026-11-10zf — 논술 "근거 설명" 문구 자연스럽게
 - STUDENT_FIELDS.warrant: 질문 "이 자료로 내 생각을 어떻게 설명할 수 있나요?", 틀 "이 자료를 보면 ___ 점을 알 수 있다. 그래서 ___." (예전 "이 이유는 ___을 보여 주기 때문에 내 생각을 뒷받침한다.")
 - 알려진 문제(미수정): 감상·성찰 깊이 ③에서 논술용 warrant·evidenceType·missionDeep이 같이 켜짐(applyDepth/effFields). 단계별 보완안은 사용자와 논의 중.

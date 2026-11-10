@@ -287,6 +287,13 @@ details.help summary::-webkit-details-marker{display:none}
 details.help[open] summary{margin-bottom:6px}
 .help-body{background:var(--help);border:1px solid var(--help-line);border-radius:8px;padding:10px 12px;display:grid;gap:8px;font-size:14.5px}
 .starters{display:flex;flex-wrap:wrap;gap:6px}
+.wguide{background:var(--help);border:1px solid var(--help-line);border-radius:10px;padding:12px 14px;margin:6px 0 12px;display:grid;gap:10px}
+.wguide .wg-h{display:grid;gap:2px}.wguide .wg-h b{font-size:15px}
+.wguide .wg-list{list-style:none;margin:0;padding:0;display:grid;gap:10px}
+.wguide .wg-list li{display:flex;gap:10px;align-items:flex-start}
+.wguide .wg-n{flex:0 0 auto;width:22px;height:22px;border-radius:50%;background:var(--accent);color:#fff;font-size:12px;font-weight:700;display:inline-grid;place-items:center;margin-top:2px}
+.wguide .wg-list b{font-size:14.5px}.wguide .wg-list p{margin:2px 0 6px;font-size:13.5px;color:var(--muted)}
+.wguide .wg-check summary{cursor:pointer;font-size:14px;color:var(--muted)}.wguide .wg-check ul{margin:6px 0 0;padding-left:18px;font-size:14px;display:grid;gap:3px}
 .starter{border:1px dashed var(--help-line);background:var(--surface);border-radius:8px;padding:6px 10px;font-size:14px;cursor:pointer;text-align:left;min-height:38px;font-family:var(--f-display)}
 .starter:hover{border-style:solid}
 
@@ -2250,12 +2257,16 @@ const EVIDENCE_TYPES = ["교과서","사료","통계","사례","기사","친구�
 const MISSIONS = [
   {k:"new",     q:"친구의 생각 중 새롭게 알게 된 점은?", tip:"친구 글에서 처음 알게 된 사실이나 관점을 한 가지만 적어도 돼요.", starters:[{show:"친구는 ___라고 생각했다. 이 점이 새로웠다.", ins:"친구는 "}]},
   {k:"best",    q:"친구의 생각 중 가장 설득력 있다고 생각한 부분은?", tip:"읽으면서 고개가 끄덕여진 부분을 떠올려 보세요.", starters:[{show:"가장 그럴듯한 부분은 ___이다. 왜냐하면…", ins:"가장 그럴듯한 부분은 "}]},
+  {k:"same",    q:"나와 비슷하게 느낀 친구의 생각은?", tip:"친구 글에서 ‘나도 그래!’ 싶은 부분을 하나만 적어도 돼요.", starters:[{show:"친구도 ___라고 느꼈다. 나와 비슷했다.", ins:"친구도 "}]},
   {k:"diff",    q:"내 생각과 가장 다른 부분은?", tip:"위에서 고른 ‘가장 다른 글’을 떠올리며 써 보세요.", starters:[{show:"나는 ___라고 생각했는데, 친구는 ___라고 생각했다.", ins:"나는 "}]},
   {k:"core",    q:"이 글의 핵심 주장은 무엇인가요?"},
   {k:"doubt",   q:"더 궁금하거나 동의하기 어려운 부분은?"},
   {k:"improve", q:"이 글을 더 설득력 있게 만들려면 무엇이 필요할까요?"},
   {k:"reply",   q:"친구 생각에 남긴 한마디"}          // 일반 활동의 '고르고 한마디' 답 (질문으로는 쓰지 않음)
 ];
+/* 활동 유형마다 같은 임무를 그 활동의 말로 묻는다 (감상·성찰은 ‘설득력’이 아니라 ‘느낌’) */
+const MISSION_Q = {reflect:{diff:{q:"나와 다르게 느낀 부분은? 왜 다를까요?", tip:"위에서 고른 ‘가장 다른 글’을 떠올리며, 어떤 점이 달랐는지 써 보세요.", starters:[{show:"나는 ___라고 느꼈는데, 친구는 ___라고 느꼈다.", ins:"나는 "}]}}};
+const missionsFor = r => MISSIONS.map(m => MISSION_Q[r?.template]?.[m.k] ? {...m, ...MISSION_Q[r.template][m.k]} : m);
 /* 친구 생각에 한마디: 짧은 문장 시작 */
 const MEET_HELP = {
   tip:"한 문장이면 충분해요. 길게 따지지 않아도 돼요.",
@@ -2381,9 +2392,13 @@ const TEMPLATES = {
   reflect:{icon:"plant-2", label:"감상·성찰", desc:"활동 후 자신의 생각과 느낌을 돌아봐요.", flowSummary:"내 생각 → 친구 생각 → 돌아보기",
     stances:[], reveal:"after", anonymous:true, tool:"feel", depth:"normal", splitWrite:true,
     flow:["think","write","why","read","reflect"],
-    labels:{text:{q:"어떤 생각이나 느낌이 들었나요?", dl:"내 생각·느낌"}, reason:{q:"왜 그렇게 생각했나요?", dl:"그렇게 생각한 이유"}},
-    phaseDefs:[{k:"think", l:"생각하기", steps:["think","write"]}, {k:"why", l:"이유 쓰기", steps:["why"]},
-               {k:"meet", l:"친구 생각", steps:["read"]}, {k:"rethink", l:"돌아보기", steps:["reflect"]}]},
+    labels:{text:{q:"어떤 생각이나 느낌이 들었나요?", dl:"내 생각·느낌"}, reason:{q:"왜 그렇게 느꼈나요?", dl:"그렇게 느낀 이유"}},
+    /* 감상·성찰의 말: 근거로 설득하는 글이 아니라, 느낌을 쓰고 활동 전과 비교해 돌아본다 */
+    stepNames:{think:"활동 전 생각", write:"내 느낌", why:"그렇게 느낀 이유", read:"친구 느낌 만나기", reflect:"달라진 점"},
+    titles:{think:"활동 전에는 어떻게 생각했나요?", write:"활동을 마친 지금, 마음에 남은 것은?", read:"친구는 어떻게 느꼈을까요?", reflect:"처음과 달라진 점이 있나요? 왜 그럴까요?"},
+    descs:{think:"지금 떠오르는 기대나 생각을 짧게 적어 보세요. 나중에 비교해 볼 거예요.", write:"정답은 없어요. 느낀 점이나 떠오른 질문을 그대로 적어 보세요.", read:"나와 비슷하게 느낀 친구, 다르게 느낀 친구를 한 명씩 찾아 보세요.", reflect:"달라진 점이 없어도 괜찮아요. 왜 그런지 적어 보세요."},
+    phaseDefs:[{k:"think", l:"내 느낌", steps:["think","write"]}, {k:"why", l:"그렇게 느낀 이유", steps:["why"]},
+               {k:"meet", l:"친구 느낌", steps:["read"]}, {k:"rethink", l:"달라진 점", steps:["reflect"]}]},
   /* 생각 스케치: 생각을 눈에 보이게. 지금은 키워드 지도(중심 생각–키워드–연결)로 그린다.
      펜·도형 같은 드로잉 도구는 이 유형에 나중에 더할 수 있다 */
   sketch:{icon:"pencil", label:"생각 스케치", mode:"키워드 지도", modeLabel:"키워드 지도", modeIcon:"hierarchy-2", studentMode:true, modeDesc:"중심 생각과 키워드를 적고 서로 이어 생각 지도를 만들어요.",
@@ -5796,7 +5811,7 @@ function stepRead(r, p, open){
   if(p?.readAt){
     const ans = p.meet?.answers || {};
     let saved = diffPost ? `<div class="lbl">내가 고른 ${esc(diffName)}의 생각</div><p class="quote">${esc(previewText(r,diffPost))}</p>` : "";
-    saved += MISSIONS.filter(m => ans[m.k]).map(m=>`<div class="lbl">${esc(m.q)}</div><p class="txt">${esc(ans[m.k])}</p>`).join("");
+    saved += missionsFor(r).filter(m => ans[m.k]).map(m=>`<div class="lbl">${esc(m.q)}</div><p class="txt">${esc(ans[m.k])}</p>`).join("");
     if(saved) h += `<div class="card saved">${saved}</div>`;
     return h + nextBtn(r);
   }
@@ -5804,7 +5819,7 @@ function stepRead(r, p, open){
   if(!others.length) return h + `<div class="next"><button class="btn" type="button" data-a="read-done">지금은 넘어가기 ${ic("arrow-right")}</button></div>`;
 
   // 선택 질문 (교사가 켠 경우에만, 모두 선택)
-  const extra = MISSIONS.filter(m => f.readMission.includes(m.k));
+  const extra = missionsFor(r).filter(m => f.readMission.includes(m.k));
   const extraHTML = extra.length ? `<details class="help" style="margin-top:14px"><summary>${ic("plus", "sm")} 더 생각해 보기 (선택)</summary><div style="display:grid;gap:14px;margin-top:6px">${extra.map(m=>question(key, m.k, {q:m.q, rows:2, opt:true, tip:m.tip, starters:m.starters})).join("")}</div></details>` : "";
   const pickedQuote = diffPost ? `<div class="q"><span class="hint">내가 고른 ${esc(diffName)}의 생각</span><p class="quote">${esc(previewText(r,diffPost))}</p></div>` : "";
 
@@ -6006,7 +6021,7 @@ function thinkFlow(r, p){
   // 만난 다른 생각
   const diff = p.meet?.diffPostId && ps.find(x=>x.id===p.meet.diffPostId);
   const myReplies = S.replies.filter(x=>x.roomId===r.id && x.author===p.author && (x.kind==="rebuttal"||x.kind==="comment"));
-  const meetAns = MISSIONS.filter(m => p.meet?.answers?.[m.k] && !(m.k==="reply" && myReplies.length));
+  const meetAns = missionsFor(r).filter(m => p.meet?.answers?.[m.k] && !(m.k==="reply" && myReplies.length));
   if(diff || meetAns.length){
     h += node("users", L("친구의 생각","친구 글 읽기"),
       (diff ? `<div class="v"><span class="muted small">내가 고른 생각 · ${esc(displayName(r,diff.author,ps))}</span><p class="quote" style="margin-top:4px">${esc(previewText(r,diff))}</p></div>` : "") +
@@ -6053,6 +6068,22 @@ function essayStatusHTML(r){
   return `<div class="status ${ok?"ok":""}" id="estatus" aria-live="polite"><span class="meter" aria-hidden="true"><i style="width:${pct}%"></i></span>
     ${min ? `<span class="mono small">${n} / 최소 ${min}자</span>` : ""}<span>${ok ? `${ic("check", "sm")} 보낼 수 있어요.` : "정리한 생각과 근거를 이어서 써 보세요."}</span></div>`;
 }
+/* 논술 글쓰기 가이드: 막막하지 않게 ‘주장 → 근거 → 다른 생각 → 마무리’를 한 칸씩 채우듯 이어 쓰게 한다 (버튼을 누르면 쓰기 칸 끝에 문장 시작이 들어간다) */
+const ESSAY_GUIDE = [
+  {n:"1", t:"내 생각 (첫 문장)", d:"먼저 내 생각을 한 문장으로 말해요.", st:[{show:"나는 ___라고 생각한다.", ins:"나는 "}]},
+  {n:"2", t:"이유와 근거", d:"왜 그렇게 생각하는지 이유를 한두 가지 들어요. 자료나 수업에서 배운 내용을 넣으면 더 단단해져요.", st:[{show:"그 이유는 첫째, ___ 때문이다.", ins:"그 이유는 첫째, "},{show:"자료를 보면 ___ 점을 알 수 있다.", ins:"자료를 보면 "},{show:"수업에서 배운 ___을 생각하면", ins:"수업에서 배운 "}]},
+  {n:"3", t:"다른 생각도 짚기", d:"나와 다르게 생각하는 사람은 뭐라고 할까요? 한 번 짚고, 그래도 내 생각이 맞는 까닭을 써요.", st:[{show:"물론 ___라고 생각하는 사람도 있다. 하지만 ___.", ins:"물론 "}]},
+  {n:"4", t:"마무리", d:"처음 한 말을 다시 한 번 정리하고, 이 생각이 왜 중요한지 덧붙여요.", st:[{show:"따라서 나는 ___라고 생각한다.", ins:"따라서 나는 "},{show:"이 생각이 중요한 까닭은 ___ 때문이다.", ins:"이 생각이 중요한 까닭은 "}]}
+];
+const ESSAY_CHECK = ["내 생각이 첫 문장에 분명히 나오나요?", "이유(근거)가 한 가지 이상 있나요?", "자료나 수업에서 배운 내용을 한 번 들었나요?", "나와 다른 생각을 한 번 짚었나요?", "마지막에 내 생각을 다시 정리했나요?"];
+function essayGuideHTML(targetId, outline){
+  const btn = (x) => `<button type="button" class="starter" data-a="starter" data-target="${esc(targetId)}" data-text="${esc(x.ins)}">${esc(x.show)}</button>`;
+  return `<div class="wguide" role="group" aria-label="글쓰기 가이드">
+    <div class="wg-h"><b>${ic("bulb", "sm")} 이렇게 써 보세요</b><span class="muted small">한 칸씩 채우듯 이어 쓰면 돼요. 순서는 바꿔도 괜찮아요.</span></div>
+    ${outline ? `<div class="wg-load"><button type="button" class="starter" data-a="starter" data-target="${esc(targetId)}" data-text="${esc(outline)}">${ic("file-text", "sm")} 위에 정리한 내용 불러오기</button></div>` : ""}
+    <ol class="wg-list">${ESSAY_GUIDE.map(g => `<li><span class="wg-n" aria-hidden="true">${g.n}</span><div><b>${esc(g.t)}</b><p>${esc(g.d)}</p><div class="starters">${g.st.map(btn).join("")}</div></div></li>`).join("")}</ol>
+    <details class="wg-check"><summary>${ic("circle-check", "sm")} 다 쓴 뒤 점검해 보기</summary><ul>${ESSAY_CHECK.map(c => `<li>${esc(c)}</li>`).join("")}</ul></details></div>`;
+}
 function stepCompose(r, p, open){
   const editing = S.form[essayKey(r)]?._edit;
   if(p?.essay?.text && !editing){
@@ -6066,7 +6097,7 @@ function stepCompose(r, p, open){
   const outline = effFields(r).map(x => b[x.k] ? `${b[x.k]}` : "").filter(Boolean).join("\n\n");
   return `<details class="card" open><summary style="cursor:pointer;font-weight:600">내가 정리한 생각과 근거</summary><div style="margin-top:10px">${fieldsHTML(r, b, {evidenceType:p?.evidenceType})}</div></details>
     <div class="card"><div class="q"><label for="${key}-text">한 편의 글로 써 보세요</label>
-      ${helpBox(`${key}-text`, "처음–가운데–끝으로 나누면 쉬워요. 정리한 내용을 불러와서 다듬어도 돼요.", [{show:"정리한 내용 불러오기", ins:outline},{show:"나는 ___라고 생각한다. 그 이유는 첫째, …", ins:"나는 "}])}
+      ${essayGuideHTML(`${key}-text`, outline)}
       ${ta(key,"text",{rows:12, rich:true})}</div>
       <div class="foot">${essayStatusHTML(r)}<button class="btn pri" type="button" data-a="essay-save">글 보내기</button></div></div>`;
 }
@@ -6650,7 +6681,7 @@ function teacherCard(r, p, ps, nav){
    ========================================================= */
 /* 🔄 새 버전 알림: 배포 때마다 APP_VERSION과 version.json의 v를 같은 값으로 올린다.
    GitHub Pages는 화면을 10분쯤 기억하므로, 옛 화면이면 아래쪽에 ‘새로고침’ 띠를 띄우고 주소를 바꿔 새로 받는다 */
-const APP_VERSION = "2026-11-10zf";
+const APP_VERSION = "2026-11-10zg";
 async function checkVersion(){
   if(!/^https?:$/.test(location.protocol)) return;
   try{
@@ -8831,6 +8862,7 @@ function applyDepth(k, f = F("create")){
     minChars: String(TOOLS[t.tool]?.only ? t.minChars : t.minChars && k !== "quick" ? t.minChars : (t.tool==="free" || t.tool==="feel" ? Math.min(d.minChars, 40) : d.minChars)),
     evidenceTypes: f.evidenceTypes || [...EVIDENCE_TYPES]
   });
+  if(f.template === "reflect") Object.assign(f, {evidenceType:false, warrant:false, missionDeep:k === "deep"});   // 감상·성찰: 근거 유형·근거 설명은 논술의 도구. ③에서만 ‘비슷한/다른 느낌’ 임무
 }
 /* 활동 유형은 입장·공개 방식·사고 도구·기본 깊이를 정한다 */
 function applyTemplate(k){
@@ -8875,7 +8907,7 @@ function roomFromForm(f){
     features:{
       initial:!!f.initial, predict:!!f.predict, evidenceType:!!f.evidenceType, evidenceTypes:(f.evidenceTypes||[]).length ? f.evidenceTypes : EVIDENCE_TYPES,
       warrant:!!f.warrant, counter:!!f.counter && f.depth==="deep", meet:!!f.meet,
-      readMission: f.meet && f.missionDeep ? ["new","best","diff"] : [],
+      readMission: f.meet && f.missionDeep ? (f.template === "reflect" ? ["same","diff"] : ["new","best","diff"]) : [],
       change:!!f.change, feedback:!!f.feedback, revise:!!f.revise, terms:!!f.terms, develop:!!f.develop,
       counterMode: ["off","req"].includes(f.counterMode) ? f.counterMode : "opt"
     }
