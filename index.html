@@ -1971,6 +1971,14 @@ details.help.helpcta > summary:hover{border-color:var(--accent)}
 .lr-t{display:inline-block;font-size:11.5px;border:1px solid #bbb;border-radius:5px;padding:0 5px;color:#444}
 .lvrec-h{display:none;font-size:15px;margin:0 0 8px}.lr-s{font-size:13.5px}.lr-ref{border-top:1px dashed #ccc;padding-top:6px;display:grid;gap:4px}
 @media print{body:has(.rp-sheet.lvrec) .rp-sheet.lvrec{display:block}body:has(.rp-sheet.lvrec) .lvrec-h{display:block}body:has(.rp-sheet.lvrec) .lvrec-c{margin-bottom:8px}}
+.lvn-head{align-items:center;justify-content:space-between}
+.lvn-hd{display:inline-flex;align-items:center;gap:4px;font-size:12.5px;padding:2px 8px;border-radius:999px;background:var(--sunk,#f1efe9);color:var(--muted)}.lvn-hd b{color:var(--fg)}
+.lvn-ta{position:relative;flex:1;min-width:0;display:flex}
+.lvn-ta textarea{flex:1;padding-bottom:22px}
+.lvn-ta .lvcnt{position:absolute;right:10px;bottom:5px;min-width:0;font-size:11.5px;pointer-events:none}
+.lvncomp{gap:6px}.lvncomp .lvnrow .lvseg button{padding-top:4px;padding-bottom:4px}
+.lvchat.lvc-me{border-width:2px}.lvchat.lvc-me.pro{border-color:color-mix(in srgb,var(--s1) 70%,var(--line))}.lvchat.lvc-me.con{border-color:color-mix(in srgb,var(--s2) 70%,var(--line))}.lvchat.lvc-me.jury{border-color:color-mix(in srgb,var(--muted) 55%,var(--line))}
+.lvc-mine{display:inline-flex;align-items:center;gap:3px;margin-left:6px;padding:1px 8px;border-radius:999px;font-size:11.5px;font-weight:700;color:#fff;background:var(--muted)}.lvsides .lvc-mine.lvc-pro{color:#fff;background:var(--s1)}.lvsides .lvc-mine.lvc-con{color:#fff;background:var(--s2)}
 .lvtabs{display:none;gap:6px;margin:12px 0 6px}
 .lvtab{flex:1;display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:44px;border:1px solid var(--line);border-radius:10px;background:var(--surface);color:var(--fg);font:inherit;cursor:pointer}
 .lvtab[aria-pressed="true"]{background:var(--ink);color:#fff;border-color:var(--ink)}
@@ -2038,12 +2046,16 @@ details.help.helpcta > summary:hover{border-color:var(--accent)}
 .lvnotice > .ti{flex:0 0 auto;margin-top:3px;color:var(--warn)}
 .lvconn{display:flex;align-items:flex-start;gap:8px;margin:12px 0 0;padding:12px 16px;border-radius:12px;background:color-mix(in srgb,#c0392b 12%,var(--surface));border:1px solid #c0392b;font-size:14.5px;line-height:1.55}
 .lvconn > .ti{flex:0 0 auto;margin-top:3px;color:#c0392b}
-.lvqpin{margin:0;padding:10px 12px;border-bottom:1px solid var(--line);background:var(--warn-soft)}
-.lvqpin-h{display:flex;align-items:center;gap:6px;font-size:13.5px}
-.lvqpin ul{list-style:none;margin:6px 0 0;padding:0;display:grid;gap:6px}
+.lvqpin{margin:0;padding:6px 12px;border-bottom:1px solid var(--line);background:var(--warn-soft)}
+.lvqpin ul{list-style:none;margin:0;padding:0;display:grid;gap:6px}
+.lvqpin.open ul{max-height:min(40vh,260px);overflow:auto;overscroll-behavior:contain}
 .lvqpin li{display:flex;align-items:center;gap:8px;font-size:14px;line-height:1.5}
-.lvqpin li > span{flex:1;min-width:0;overflow-wrap:anywhere}
+.lvqpin .lvq-t{flex:1;min-width:0;overflow-wrap:anywhere}
+.lvqpin .lvq-one .lvq-t{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .lvqpin li .btn{flex:0 0 auto}
+.lvq-bar{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:6px}
+.lvq-ic{flex:0 0 auto;color:var(--warn,#b7791f);display:inline-flex}
+.lvq-more{border:0;background:none;color:var(--accent);font:inherit;font-size:13px;font-weight:700;cursor:pointer;padding:2px 4px;display:inline-flex;align-items:center;gap:2px}
 .lvm-q.jury{border-left-color:var(--warn);cursor:default}
 .lvreply.jury{border-left-color:var(--warn)}
 .lvn-ans{margin:4px 0 0;display:flex;align-items:center;gap:4px;color:var(--accent);font-weight:600}
@@ -2067,9 +2079,9 @@ details.help.helpcta > summary:hover{border-color:var(--accent)}
 .lvsum-l p{margin:4px 0 0;font-size:14.5px;line-height:1.55;white-space:pre-wrap;overflow-wrap:anywhere}
 .lvsum-h{display:flex;flex-wrap:wrap;align-items:center;gap:6px}
 .lvnotes{border:1px solid var(--line);border-radius:12px;background:var(--surface);display:flex;flex-direction:column;overflow:hidden}
-.lvnotelist{list-style:none;margin:0;padding:10px;display:flex;flex-direction:column;gap:8px;overflow-y:auto;min-height:140px;max-height:min(46vh,440px);background:var(--bg)}
-.lvn{padding:8px 10px;border-radius:10px;background:var(--surface);border-left:3px solid var(--muted)}.lvn.q{border-left-color:var(--warn)}.lvn.mine{outline:1px solid var(--line)}.lvn.del{background:transparent;border-left-color:transparent}
-.lvn-h{display:flex;flex-wrap:wrap;align-items:center;gap:4px 8px}.lvn .lvm-b{margin:4px 0 0}
+.lvnotelist{list-style:none;margin:0;padding:8px;display:flex;flex-direction:column;gap:6px;overflow-y:auto;min-height:140px;max-height:min(46vh,440px);background:var(--bg)}
+.lvn{padding:6px 10px 7px;border-radius:8px;background:var(--surface);border-left:3px solid var(--muted)}.lvn.lvn-q{border-left-color:var(--warn)}.lvn.mine{outline:1px solid var(--line)}.lvn.del{background:transparent;border-left-color:transparent}
+.lvn-h{display:flex;flex-wrap:wrap;align-items:center;gap:2px 6px;font-size:12.5px}.lvn-h .lvm-n{font-size:13px}.lvn-h .lvtag{font-size:11px;padding:0 6px}.lvn-h .small{font-size:12px}.lvn .lvm-b{margin:2px 0 0;font-size:14.5px;line-height:1.5}
 .lvncomp{border-top:1px solid var(--line);padding:10px;display:flex;flex-direction:column;gap:8px;background:var(--surface)}
 .lvncomp .lvcomp{padding:0;border:0}.lvnrow{display:flex;flex-wrap:wrap;gap:6px}
 .lvnneed{margin:0;color:var(--muted)}.lvnneed.bad{color:var(--warn)}
@@ -4102,7 +4114,7 @@ function liveNotesHTML(r){
   return list.map(x => {
     if(x.deleted) return `<li class="lvn del"><span class="small muted">${ic("trash", "sm")} ${esc(x.nick)}의 의견을 지웠어요.</span></li>`;
     const mine = !T && L.me && x.mkey === L.me.mkey, ans = x.kind === "q" ? lvMsgs(r).filter(m => +m.reply_note === +x.id && !m.deleted) : [];
-    return `<li class="lvn ${x.kind === "q" ? "q" : "t"}${mine ? " mine" : ""}" data-nid="${esc(String(x.id))}"><div class="lvn-h"><b class="lvm-n">${esc(x.nick)}</b><span class="lvtag jury">${x.kind === "q" ? "질문" : "생각"}</span><span class="small muted">${esc(noteTgtL(r, x.target))}</span>${mine ? `<span class="small muted">나</span>` : ""}<time class="small muted" datetime="${esc(x.created_at)}">${lvTime(x.created_at)}</time>
+    return `<li class="lvn ${x.kind === "q" ? "lvn-q" : "lvn-t"}${mine ? " mine" : ""}" data-nid="${esc(String(x.id))}"><div class="lvn-h"><b class="lvm-n">${esc(x.nick)}</b><span class="lvtag jury">${x.kind === "q" ? "질문" : "생각"}</span><span class="small muted">${esc(noteTgtL(r, x.target))}</span>${mine ? `<span class="small muted">나</span>` : ""}<time class="small muted" datetime="${esc(x.created_at)}">${lvTime(x.created_at)}</time>
       ${T ? `<button type="button" class="lvm-del" data-a="lv-note-del" data-v="${esc(String(x.id))}" title="이 의견 지우기" aria-label="${esc(x.nick)}의 의견 지우기">${ic("trash", "sm")}</button>` : ""}</div>
       <p class="lvm-b">${esc(x.body)}</p>${ans.length ? `<p class="lvn-ans small">${ic("circle-check", "sm")} ${[...new Set(ans.map(m => teamL(r, m.team) + "팀"))].map(esc).join("·")}이 답했어요 · ${ans.length}개</p>` : ""}</li>`;
   }).join("");
@@ -4113,12 +4125,13 @@ function liveNotesPanel(r, canWrite){
   const comp = canWrite && open && !L.me?.muted ? `<div class="lvncomp">
       <div class="lvnrow"><span class="seg3 lvseg" role="group" aria-label="의견 종류"><button type="button" data-a="lv-nkind" data-v="q" aria-pressed="${kind === "q"}">질문</button><button type="button" data-a="lv-nkind" data-v="t" aria-pressed="${kind === "t"}">생각</button></span>
         <span class="seg3 lvseg" role="group" aria-label="누구에게"><button type="button" data-a="lv-ntgt" data-v="all" aria-pressed="${tgt === "all"}">모두에게</button><button type="button" data-a="lv-ntgt" data-v="pro" aria-pressed="${tgt === "pro"}">${esc(teamL(r, "pro"))}팀에게</button><button type="button" data-a="lv-ntgt" data-v="con" aria-pressed="${tgt === "con"}">${esc(teamL(r, "con"))}팀에게</button></span></div>
-      <div class="lvcomp"><label class="sr" for="lv-note">청중 의견</label><textarea id="lv-note" rows="2" maxlength="${LIVE_NOTE_MAX}" placeholder="${kind === "q" ? "토론자에게 궁금한 점을 질문해 보세요" : "토론을 보며 든 생각을 남겨 보세요"}">${esc(LV_NDRAFT[r.id] || "")}</textarea>
-        <span class="lvcnt small muted" id="lv-ncnt">${(LV_NDRAFT[r.id] || "").length}/${LIVE_NOTE_MAX}</span><button class="btn pri" type="button" data-a="lv-note-send" ${L.noting ? "disabled" : ""}>${ic("send")} <span class="lt">남기기</span></button></div>
+      <div class="lvcomp"><label class="sr" for="lv-note">청중 의견</label><div class="lvn-ta"><textarea id="lv-note" rows="2" maxlength="${LIVE_NOTE_MAX}" placeholder="${kind === "q" ? "토론자에게 궁금한 점을 질문해 보세요" : "토론을 보며 든 생각을 남겨 보세요"}">${esc(LV_NDRAFT[r.id] || "")}</textarea>
+        <span class="lvcnt small muted" id="lv-ncnt">${(LV_NDRAFT[r.id] || "").length}/${LIVE_NOTE_MAX}</span></div><button class="btn pri" type="button" data-a="lv-note-send" ${L.noting ? "disabled" : ""}>${ic("send")} <span class="lt">남기기</span></button></div>
       ${liveMyNotesHTML(r)}</div>`
     : canWrite && L.me?.muted ? `<p class="lvlock small">${ic("lock", "sm")} ${esc(LIVE_ERR.muted)}</p>`
     : canWrite ? `<p class="lvlock small">${ic("lock", "sm")} 토론이 시작되면 질문이나 생각을 남길 수 있어요.</p>` : "";
-  return `<section class="lvnotes" aria-label="청중 의견">${canWrite ? livePreHTML(r) : ""}<div class="lvchat-h"><b>${ic("bulb", "sm")} 청중 의견</b><span class="small muted">판정단의 질문과 생각 · 모두 볼 수 있어요</span></div>
+  const pre = canWrite ? livePreHTML(r) : "", preDone = pre.startsWith('<p class="lvpre-done'), preBadge = preDone && L.myPre ? `<span class="lvn-hd" title="토론 전 내 생각 · 판정할 때 견줘 봐요">${ic("scale", "sm")} 토론 전 생각: <b>${esc(preL(r, L.myPre))}</b></span>` : "";
+  return `<section class="lvnotes" aria-label="청중 의견">${preDone ? "" : pre}<div class="lvchat-h lvn-head"><b>${ic("bulb", "sm")} 청중 의견</b>${preBadge || `<span class="small muted">판정단의 질문과 생각 · 모두 볼 수 있어요</span>`}</div>
     <ol class="lvnotelist" id="lv-notelist" aria-live="polite">${liveNotesHTML(r)}</ol>${comp}</section>`;
 }
 
@@ -4130,8 +4143,13 @@ function liveQPinHTML(r){
   const answered = new Set(lvMsgs(r).filter(m => m.reply_note != null && m.team === t && !m.deleted).map(m => +m.reply_note));
   const qs = [...L.notes.values()].filter(x => !x.deleted && x.kind === "q" && (x.target === "all" || x.target === t) && !answered.has(+x.id)).sort((a, b) => a.id - b.id);
   if(!qs.length) return `<div id="lv-qpin" hidden></div>`;
-  return `<div class="lvqpin" id="lv-qpin" role="region" aria-label="답하지 않은 판정단 질문"><b class="lvqpin-h">${ic("bulb", "sm")} 판정단이 우리 팀에 물었어요 <span class="small muted">${qs.length}개</span></b>
-    <ul>${qs.slice(-3).map(x => `<li><span><b>${esc(x.nick)}</b>${x.target === "all" ? ` <span class="small muted">모두에게</span>` : ""} ${esc(x.body)}</span><button type="button" class="btn sm" data-a="lv-qans" data-v="${esc(String(x.id))}">${ic("arrow-back-up", "sm")} 답하기</button></li>`).join("")}</ul></div>`;
+  qs.reverse();                                                                      // 가장 최근 질문이 맨 위
+  const open = !!L.qOpen && qs.length > 1, more = qs.length - 1;
+  const moreBtn = more ? `<button type="button" class="lvq-more" data-a="lv-qmore" aria-expanded="${open}">${open ? `접기 ${ic("chevron-up", "sm")}` : `+${more}개 ${ic("chevron-down", "sm")}`}</button>` : "";
+  const item = (x, one) => `<li${one ? ` class="lvq-one"` : ""}>${one ? `<span class="lvq-ic" title="판정단 질문">${ic("bulb", "sm")}</span>` : ""}<span class="lvq-t"><b>${esc(x.nick)}</b>${x.target === "all" ? ` <span class="small muted">모두에게</span>` : ""} ${esc(x.body)}</span><button type="button" class="btn sm" data-a="lv-qans" data-v="${esc(String(x.id))}">${ic("arrow-back-up", "sm")} 답하기</button>${one ? moreBtn : ""}</li>`;
+  return `<div class="lvqpin${open ? " open" : ""}" id="lv-qpin" role="region" aria-label="판정단 질문 ${qs.length}개">
+    ${open ? `<div class="lvq-bar"><span class="small muted">${ic("bulb", "sm")} 판정단 질문 ${qs.length}개 · 최근 순</span>${moreBtn}</div>` : ""}
+    <ul>${open ? qs.map(x => item(x)).join("") : item(qs[0], true)}</ul></div>`;
 }
 function liveStatHTML(r){
   const L = lv(r), ms = lvMsgs(r).filter(m => !m.deleted), spoke = new Set(ms.map(m => m.nick));
@@ -4174,8 +4192,9 @@ function liveDuoHTML(r){
   const L = lv(r), s = liveSt(r), jury = L.me?.team === "jury", tab = ["notes", "stat"].includes(L.tab) ? L.tab : "chat";
   const canWrite = s === "live" && L.me?.team && !jury && !L.me?.muted && !S.preview;
   const why = S.preview ? "미리보기에서는 보낼 수 없어요." : jury ? (s === "live" ? "청중 판정단은 채팅을 읽기만 해요. ‘청중 의견’에 질문이나 생각을 남겨 주세요." : LIVE_ST[s].d) : s !== "live" ? LIVE_ST[s].d : !L.me?.team ? LIVE_ERR.noteam : L.me?.muted ? LIVE_ERR.muted : "";
-  const chat = `<section class="lvchat${s === "live" ? " on" : ""}" aria-label="실시간 토론 채팅">
-    <div class="lvsides" aria-hidden="true"><span class="pro">${ic("chevron-left", "sm")} ${esc(teamL(r, "pro"))}팀</span><b>${ic("messages", "sm")} 토론 채팅</b><span class="con">${esc(teamL(r, "con"))}팀 ${ic("chevron-right", "sm")}</span></div>
+  const myT = ["pro", "con", "jury"].includes(L.me?.team) && !S.preview ? L.me.team : "";
+  const chat = `<section class="lvchat${s === "live" ? " on" : ""}${myT ? " lvc-me " + myT : ""}" aria-label="실시간 토론 채팅">
+    <div class="lvsides" aria-hidden="true"><span class="pro">${ic("chevron-left", "sm")} ${esc(teamL(r, "pro"))}팀</span><b>${ic("messages", "sm")} 토론 채팅${myT ? `<span class="lvc-mine lvc-${myT}">나 · ${myT === "jury" ? "판정단 · 읽기만" : esc(teamL(r, myT)) + "팀"}</span>` : ""}</b><span class="con">${esc(teamL(r, "con"))}팀 ${ic("chevron-right", "sm")}</span></div>
     ${liveQPinHTML(r)}
     <ol class="lvmsgs" id="lv-msgs" aria-live="polite">${liveMsgsHTML(r)}</ol>
     <button type="button" class="lvnew" id="lv-newmsg" data-a="lv-bottom" hidden>${ic("arrow-down", "sm")} 새 메시지</button>
@@ -6492,7 +6511,7 @@ function teacherCard(r, p, ps, nav){
    ========================================================= */
 /* 🔄 새 버전 알림: 배포 때마다 APP_VERSION과 version.json의 v를 같은 값으로 올린다.
    GitHub Pages는 화면을 10분쯤 기억하므로, 옛 화면이면 아래쪽에 ‘새로고침’ 띠를 띄우고 주소를 바꿔 새로 받는다 */
-const APP_VERSION = "2026-11-10t";
+const APP_VERSION = "2026-11-10u";
 async function checkVersion(){
   if(!/^https?:$/.test(location.protocol)) return;
   try{
@@ -9776,6 +9795,7 @@ async function act(a, b){
     case "lv-notice-off": if(r && isLive(r) && await liveSetNotice(r, null)) toast("공지를 내렸어요."); break;
     case "lv-to-ref": { document.getElementById("lv-ref")?.scrollIntoView({block:"start", behavior:matchMedia("(prefers-reduced-motion:reduce)").matches ? "auto" : "smooth"}); return }
     case "lv-pre": if(r && isLive(r)) await liveSetPre(r, b.dataset.v); return;
+    case "lv-qmore": if(r && isLive(r)){ const L = lv(r); L.qOpen = !L.qOpen; liveRender() } return;
     case "lv-qans": if(r && isLive(r)){ const L = lv(r); L.replyNote = b.dataset.v ? +b.dataset.v : null; L.replyTo = null; if(L.tab !== "chat") L.tab = "chat"; liveRender(); document.getElementById("lv-in")?.focus() } return;
     case "lv-reply": if(r && isLive(r)){ const L = lv(r); L.replyTo = b.dataset.v ? +b.dataset.v : null; L.replyNote = null; if(L.tab !== "chat") L.tab = "chat"; liveRender(); document.getElementById("lv-in")?.focus() } return;
     case "lv-mark": if(r && isLive(r)) await liveMark(r, +b.dataset.v); return;
