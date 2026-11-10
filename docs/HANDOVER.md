@@ -6,6 +6,12 @@
 
 ---
 
+## 2026-11-10t — 실시간 토론: 세특용 학생별 토론 기록 (교사 전용)
+- 교사 토론 화면(대기실 뒤)에 ‘학생별 토론 기록’ 띠(`.lvrecbar`) → ‘기록 보기 · 내보내기’(`lv-rec`) → 시트 모달 `type:"lvrec"`(`liveRecHTML`). 모두/토론자/판정단 보기(`S.lvRecF`).
+- 한 사람씩(`liveRecRows`): 번호·실명·닉네임·역할 / 토론자: 발언·반박(reply_to)·판정단 질문에 답(reply_note)·‘좋은 근거’로 꼽힌 발언과 사람 수·발언 전체 / 판정단: 청중 의견(질문·생각)·토론 전 생각(`debate_members.pre`, 교사 select에 추가)·판정 c1~c4·판정 이유 / 공통: 성찰 3문항·생각 변화 정도·선생님 피드백. 성찰은 `p.author === real_name`, 없으면 `p.live.nick`으로 맞춘다.
+- ‘CSV(엑셀)’ = `liveRecCSV`(BOM, 칸 안 줄바꿈), `saveFile`이 안 되면 복사용 텍스트 모달. ‘인쇄 · PDF’ = 기존 코드 쪽지 인쇄와 같은 `.rp-sheet` 인쇄 규칙(모달 시트만 인쇄) + 인쇄 때만 보이는 머리글 `.lvrec-h`.
+- 숫자는 참고용이라고 안내문에 적었다(발언 수로 줄 세우지 않음, 정렬은 번호·이름순). 자동 세특 문장은 만들지 않았다.
+
 ## 2026-11-10s — 실시간 토론: 판정단 질문에 답하기 · 판정단의 토론 전후 생각 변화
 - **서버**(`supabase/live_jury_q_shift.sql`, 마이그레이션 `live_jury_q_shift` 적용함): `debate_msgs.reply_note`, `debate_members.pre`(pro/con/none). `debate_send(room, body, reply, note)`는 note가 같은 방의 q 의견이고 대상이 모두/보낸 사람 팀일 때만 저장. `debate_pre(room, choice)` — choice가 null이면 지금 값, 판정단만, 대기실에서는 바꿀 수 있고 토론 중에는 비어 있을 때 한 번만. `debate_shift(room)` — 토론 전 생각과 종합 판정(c4)을 견준 숫자 {pre, post, changed, kept, decided, both}, 교사는 언제나·학생은 결과 공개 뒤.
 - **판정단 질문 고정**: 토론 중 토론자 채팅 위에 아직 답하지 않은 우리 팀(또는 모두) 대상 질문(`#lv-qpin`). ‘답하기’ → 입력칸 위 ‘질문에 답하기’ 인용(`L.replyNote`) → 보낸 메시지에 질문 인용(`.lvm-q.jury`), 의견 목록에 ‘○○팀이 답했어요’(`.lvn-ans`), 고정에서 빠짐.
