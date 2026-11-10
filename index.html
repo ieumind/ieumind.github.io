@@ -1674,6 +1674,58 @@ input[type=datetime-local]{border-radius:var(--r)}
 .cform .cset-card .cimg{background:var(--sunk);border-radius:var(--r-lg);padding:var(--sp-4) var(--sp-3)}
 .cform .pguide{background:var(--sunk);border-color:transparent}
 .cform .pguide .tcard{background:var(--surface)}
+/* 새 활동 화면: 고른 칸만 체크 · AI 추천 접이 · 단계 막대 · 학생 화면 미리보기 */
+.gcard:not([aria-pressed="true"]) .gc-ck{visibility:hidden}
+.cform details.aisug{display:block;padding:0;background:transparent;border:1px dashed var(--line);border-radius:var(--r-lg)}
+.cform details.aisug[open]{background:var(--sunk);border:1px solid transparent}
+details.aisug > summary{list-style:none;cursor:pointer;display:flex;flex-wrap:wrap;align-items:center;gap:2px 8px;padding:12px 16px;min-height:48px;font-weight:600;font-size:15px;color:var(--fg)}
+details.aisug > summary::-webkit-details-marker{display:none}
+details.aisug > summary .opt{font-weight:400;font-size:13px}
+details.aisug > summary::after{content:"펼치기";margin-left:auto;flex:0 0 auto;font-size:13px;font-weight:600;color:var(--s4);background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:4px 12px}
+details.aisug[open] > summary::after{content:"접기"}
+.aisug-body{display:grid;gap:8px;padding:0 16px 16px}
+.btn.wand{background:var(--surface);color:var(--s4);border:1px solid var(--s4);font-weight:600}
+.btn.wand:hover:not(:disabled){background:var(--s4);color:#fff}
+.aisug-note{display:flex;flex-wrap:wrap;align-items:center;gap:2px 6px;margin:0;font-size:13px;color:var(--muted);line-height:1.6}
+details.help.helpcta > summary{border:1px solid var(--line);border-radius:999px;padding:4px 14px 4px 10px;color:var(--fg);background:var(--surface);min-height:36px}
+details.help.helpcta > summary:hover{border-color:var(--accent)}
+.qt-d{display:flex;align-items:flex-start;gap:6px;margin:8px 0 0}
+.cstep{position:sticky;top:0;z-index:18;display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;margin:12px 0 0;padding:8px 2px;background:var(--bg)}
+.cstep::-webkit-scrollbar{display:none}
+.cstep button{flex:0 0 auto;display:inline-flex;align-items:center;gap:6px;min-height:36px;padding:4px 12px;border:1px solid var(--line);border-radius:999px;background:var(--surface);color:var(--fg);font:inherit;font-size:14px;font-weight:600;cursor:pointer;white-space:nowrap}
+.cstep button:hover{border-color:var(--accent)}
+.cstep button .n{color:var(--accent);font-size:16px;line-height:1}
+.cstep button[aria-current="step"]{border-color:var(--accent);background:var(--accent-soft)}
+.cstep .st{font-size:12px;font-weight:700;line-height:1.4;border-radius:999px;padding:0 7px}
+.cstep .st.ok{color:var(--accent);background:var(--accent-soft)}
+.cstep .st.need{color:var(--danger,#c0392b);background:rgba(192,57,43,.12)}
+.cprev{margin-top:16px}
+.cprev-tog{display:flex;width:100%;align-items:center;gap:8px;min-height:48px;padding:12px 18px;border:1px solid var(--line);border-radius:12px;background:var(--surface);color:var(--fg);font:inherit;font-weight:600;cursor:pointer;text-align:left}
+.cprev-tog::after{content:"펼치기";margin-left:auto;font-size:13px;color:var(--accent);background:var(--accent-soft);border-radius:999px;padding:4px 12px}
+.cprev.open .cprev-tog::after{content:"접기"}
+.cprev-b{display:none;margin-top:8px;gap:8px}
+.cprev.open .cprev-b{display:grid}
+.cp{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:16px;display:grid;gap:10px;min-width:0}
+.cp-k{display:flex;align-items:center;gap:6px;font-size:12.5px;font-weight:600;color:var(--muted)}
+.cp h4{font-size:17px;line-height:1.4;margin:0;word-break:keep-all}
+.cp-q{font-size:15.5px;line-height:1.6;font-weight:600;margin:0;word-break:keep-all;overflow-wrap:anywhere}
+.cp-mute{color:var(--muted);font-weight:400}
+.cp-chips{display:flex;flex-wrap:wrap;gap:6px}
+.cp-box{border:1px dashed var(--line);border-radius:10px;padding:8px 10px;font-size:13.5px;color:var(--muted);line-height:1.55;overflow-wrap:anywhere}
+.cp-fl{display:grid;gap:8px}
+.cp-f{display:grid;gap:4px;font-size:13.5px;font-weight:600}
+.cp-f i{display:block;height:34px;border:1px solid var(--line);border-radius:8px;background:var(--sunk)}
+.cp-flow{font-size:13px;color:var(--muted);line-height:1.6;border-top:1px solid var(--line);padding-top:8px}
+.cprev-more{justify-self:start}
+@media (min-width:1400px){
+  body.v-create .wrap{max-width:1360px}
+  .cform{max-width:none;position:relative;padding-right:328px}
+  .cform > .cprev{position:absolute;top:0;right:0;bottom:0;width:300px;margin:0}
+  .cprev-in{position:sticky;top:20px;padding-top:12px}
+  .cprev-tog{pointer-events:none;cursor:default;border:0;background:transparent;padding:0 2px 8px;min-height:0}
+  .cprev-tog::after{display:none}
+  .cprev-b{display:grid}
+}
 /* 접는 칸(수업 정보·세부 설정) */
 .cform > details.cfold{margin-top:var(--sp-4)}
 /* 저장 버튼 줄: 긴 화면에서도 늘 보이게 아래에 붙인다 */
@@ -2197,8 +2249,8 @@ function stepMeta(r, st){
 }
 /* 질문 유형 표시 */
 function qtypeChip(k){ const q = QTYPES[k]; return q ? `<span class="chip">${ic(q.mark, "sm")}${esc(q.l)}</span>` : "" }
-function qtypeHelp(label = "질문 유형이 헷갈리나요?"){
-  return `<details class="help"><summary>${ic("bulb", "sm")} ${esc(label)}</summary><div class="help-body">${
+function qtypeHelp(label = "질문 유형이 헷갈리나요?", pill = false){
+  return `<details class="help${pill ? " helpcta" : ""}"><summary>${ic("bulb", "sm")} ${esc(label)}</summary><div class="help-body">${
     Object.values(QTYPES).map(q=>`<p>${esc(q.check)} → <b>${ic(q.mark, "sm")} ${esc(q.short)}</b><br><span class="muted small">예: ${esc(q.ex)}</span></p>`).join("")}</div></details>`;
 }
 
@@ -2856,7 +2908,8 @@ function radios(key, k, options, {label, colors=0, icons}={}){
     const colored = i < colors;
     const style = colored ? `style="--c:var(--${SC[i%4]});--cs:var(--${SC[i%4]}-soft)"` : "";
     const shp = colored ? `<span class="shp" aria-hidden="true">${(icons && icons[i]) || ic(SHAPES[i%4], "sm")}</span>` : "";
-    return `<label class="choice" ${style}><input type="radio" name="${esc(key+"-"+k)}" data-form="${esc(key)}" data-k="${esc(k)}" value="${esc(v)}" ${cur===v?"checked":""}><span>${shp}${oi}${esc(l)}</span></label>`;
+    const tip = typeof o === "object" && o.tip ? ` title="${esc(o.tip)}"` : "";
+    return `<label class="choice" ${style}${tip}><input type="radio" name="${esc(key+"-"+k)}" data-form="${esc(key)}" data-k="${esc(k)}" value="${esc(v)}" ${cur===v?"checked":""}><span>${shp}${oi}${esc(l)}</span></label>`;
   }).join("") + `</div>`;
 }
 function checks(key, k, options, {label}={}){
@@ -3071,6 +3124,8 @@ function render(){
   renderModal();
   document.querySelectorAll(".qstep textarea").forEach(growTa);
   document.querySelectorAll(".cform > .foot").forEach(fitFoot);
+  document.body.classList.toggle("v-create", !!document.querySelector(".cform"));
+  buildCstep();
   afterRender();
   mqFit();
 }
@@ -6010,7 +6065,7 @@ function teacherCard(r, p, ps, nav){
    ========================================================= */
 /* 🔄 새 버전 알림: 배포 때마다 APP_VERSION과 version.json의 v를 같은 값으로 올린다.
    GitHub Pages는 화면을 10분쯤 기억하므로, 옛 화면이면 아래쪽에 ‘새로고침’ 띠를 띄우고 주소를 바꿔 새로 받는다 */
-const APP_VERSION = "2026-11-10f";
+const APP_VERSION = "2026-11-10g";
 async function checkVersion(){
   if(!/^https?:$/.test(location.protocol)) return;
   try{
@@ -8290,6 +8345,75 @@ function fitFoot(el, fromRO){
   if(!fromRO) FOOT_RO?.observe(el);
   cf.style.paddingBottom = getComputedStyle(el).position === "fixed" ? Math.ceil(el.getBoundingClientRect().height + 24) + "px" : "";
 }
+/* 질문 유형: 고른 유형의 뜻을 칩 아래에 한 줄로 */
+function qtypeDesc(f){
+  const q = QTYPES[f.qtype];
+  return `<p class="hint qt-d" id="c-qtd">${q ? `${ic(q.mark, "sm")} <span><b>${esc(q.short)}</b> — ${esc(q.d)}</span>` : f.qtype === "student" ? `<span>학생이 질문을 만들 때 유형을 직접 골라요.</span>` : `<span>유형을 정하지 않으면 학생이 질문을 자유롭게 만들어요.</span>`}</p>`;
+}
+/* 새 활동 화면: ① 단계 막대(바로 가기 · 꼭 적을 칸 표시) ② 학생에게 보이는 모습 미리보기 */
+function createStepState(f){
+  const t = TEMPLATES[f.template], d = roomFromForm(f);
+  return {
+    goal: false,
+    topic: (f.template !== "notes" && !d.prompt) || (t.stances.length > 0 && f.template !== "live" && d.stances.length < 2),
+    char: f.template === "chat" && !d.persona?.name,
+    stepq: stepQOn(f) && !qsOf(f).some(x => String(x.q || "").trim()),
+  };
+}
+function buildCstep(){
+  const bar = document.getElementById("cstep"); if(!bar) return;
+  const f = createForm(), st = createStepState(f);
+  const cards = [...document.querySelectorAll(".cform > .card[data-cs]")].filter(c => c.querySelector("h3 .sn"));
+  const sig = cards.map(c => { const k = c.dataset.cs; return k + (k in st ? (st[k] ? "!" : "+") : "") }).join("|");
+  const sd = document.querySelector(".side"), top = sd && matchMedia("(max-width:960px)").matches ? Math.round(sd.getBoundingClientRect().height) : 0;   // 좁은 화면에서는 위쪽 앱 막대 아래에 붙인다
+  bar.style.top = top + "px";
+  if(bar.dataset.sig === sig) return;
+  bar.dataset.sig = sig;
+  bar.innerHTML = cards.map(c => { const k = c.dataset.cs, s = k in st ? (st[k] ? "need" : "ok") : "", l = c.dataset.sl;
+    return `<button type="button" data-a="cs-go" data-v="${esc(k)}" aria-label="${esc(l)}${s === "need" ? " (꼭 적어야 해요)" : s === "ok" ? " (적었어요)" : ""}"><span class="n" aria-hidden="true">${esc(c.querySelector("h3 .sn").textContent)}</span>${esc(l)}${s ? `<span class="st ${s}" aria-hidden="true">${s === "ok" ? "✓" : "!"}</span>` : ""}</button>` }).join("");
+  cstepMark();
+}
+function cstepMark(){
+  const bar = document.getElementById("cstep"); if(!bar) return;
+  const line = bar.getBoundingClientRect().bottom + 24;
+  let cur = null;
+  document.querySelectorAll(".cform > .card[data-cs]").forEach(c => { if(c.querySelector("h3 .sn") && c.getBoundingClientRect().top <= line) cur = c.dataset.cs });
+  bar.querySelectorAll("button").forEach(b => { if(b.dataset.v === cur) b.setAttribute("aria-current", "step"); else b.removeAttribute("aria-current") });
+}
+let CS_RAF = 0;
+window.addEventListener("scroll", () => { if(CS_RAF || !document.getElementById("cstep")) return; CS_RAF = requestAnimationFrame(() => { CS_RAF = 0; cstepMark() }) }, {passive:true});
+function createPreviewHTML(f){
+  let d; try{ d = roomFromForm(f) }catch(e){ return "" }
+  const g = goalOf(f), strip = x => String(x || "").replace(/<[^>]*>/g, " ").replace(/&nbsp;/g, " ").replace(/\s+/g, " ").trim();
+  const prompt = (d.prompt || "").trim(), intro = (f.intro || "").trim(), ctx = strip(f.context), nImg = (f.ctxImgs || []).length;
+  let body = "";
+  try{
+    if(f.template === "notes") body = `<div class="cp-box">${ic("camera", "sm")} 사진을 ${d.noteCfg?.maxPages || 3}장까지 올려요${d.noteCfg?.memoQ ? ` · 한 줄 메모: ${esc(d.noteCfg.memoQ)}` : ""}</div>`;
+    else if(f.template === "live") body = `<div class="cp-box">${ic("messages", "sm")} 링크나 QR로 들어와 청중 판정단으로 시작해요. 토론이 시작되면 실시간 채팅으로 참여해요.</div>`;
+    else if(f.template === "chat") body = `<div class="cp-box">${ic("masks-theater", "sm")} ${esc(d.persona?.name || "대화 상대")}와(과) 대화해요${d.persona?.maxTurns ? ` · 최대 ${esc(String(d.persona.maxTurns))}번` : ""}</div>`;
+    else{
+      const fl = effFields(d).slice(0, 4).map(x => sField(d, x).q).filter(Boolean);
+      body = (d.stances.length ? `<div><div class="small muted" style="margin-bottom:4px">내 입장은?</div><div class="cp-chips">${d.stances.map(x => stanceChip(d, x)).join("")}</div></div>` : "")
+        + (fl.length ? `<div class="cp-fl">${fl.map(q => `<div class="cp-f"><span>${esc(q)}</span><i aria-hidden="true"></i></div>`).join("")}</div>` : "");
+    }
+  }catch(e){}
+  let flow = "";
+  if(f.template !== "notes" && f.template !== "live"){ try{ const n = stepsOf(d).length, est = estMinutes(d); flow = `<div class="cp-flow">${ic("clock", "sm")} ${n}단계 · 약 ${est.join("~")}분</div>` }catch(e){} }
+  return `<div class="cp"><div class="cp-k">${ic(g.icon, "sm")} ${esc(g.l)}</div>
+    <h4 class="${d.title && (f.title || prompt || f.template === "notes") ? "" : "cp-mute"}">${esc(d.title || "활동 이름")}</h4>
+    ${intro ? `<p class="small muted" style="margin:0">${esc(intro)}</p>` : ""}
+    <p class="cp-q${prompt ? "" : " cp-mute"}">${esc(prompt || "여기에 핵심 질문이 보여요")}</p>
+    ${ctx || nImg ? `<div class="cp-box">${ic("notes", "sm")} 자료 ${esc(ctx.slice(0, 70))}${ctx.length > 70 ? "…" : ""}${nImg ? ` · 사진 ${nImg}장` : ""}</div>` : ""}
+    ${body}${flow}</div>
+    <button class="linkbtn small cprev-more" type="button" data-a="preview-form">${ic("eye", "sm")} 전체 화면으로 미리보기</button>`;
+}
+let CR_RAF = 0;
+function createRefreshSoon(){ if(CR_RAF) return; CR_RAF = requestAnimationFrame(() => { CR_RAF = 0; createRefresh() }) }
+function createRefresh(){
+  const box = document.querySelector(".cprev-b"); if(!box) return;
+  box.innerHTML = createPreviewHTML(createForm());
+  buildCstep();
+}
 /* 글이 길어지면 상자가 같이 늘어난다 (field-sizing을 못 쓰는 브라우저용) */
 function growTa(el){ if(!el || CSS.supports("field-sizing", "content")) return; el.style.height = "auto"; el.style.height = el.scrollHeight + 2 + "px" }
 function stepQHTML(f, locked){
@@ -8343,11 +8467,14 @@ function aiSugHTML(f){
   if(st?.loading) list = `<p class="aisug-wait" role="status">${ic("wand")} ${deb ? "토론 논제" : "생각 질문"}를 만드는 중…</p>`;
   else if(st?.items) list = `<div class="aisug-list" role="list">${st.items.map((x, i) => `<button type="button" class="aisug-item" role="listitem" data-a="ai-pick" data-i="${i}"><b>${esc(x.q)}</b>${x.a && x.b && f.template === "debate2" ? `<span class="st">${esc(x.a)} ${ic("arrows-left-right", "sm")} ${esc(x.b)}</span>` : ""}${x.why ? `<span>${esc(x.why)}</span>` : ""}</button>`).join("")}</div>
     <p class="hint">눌러서 넣은 뒤 우리 반에 맞게 고쳐 쓰세요.${st.demo ? " (체험 모드라 정해진 예시를 보여 줘요)" : ""} <button class="linkbtn" type="button" data-a="ai-suggest">${ic("refresh", "sm")} 다시 추천</button></p>`;
-  return `<div class="q wide aisug"><label for="c-kw">${ic("key", "sm")} 키워드 <span class="opt">쉼표로 여러 개 · 과목·학년도 함께 참고해요</span></label>
-    <div class="aisug-row"><input type="text" id="c-kw" data-form="create" data-k="aiKw" maxlength="100" autocomplete="off" value="${esc(f.aiKw || "")}" placeholder="${deb ? "예: 콜럼버스, 신항로 개척, 원주민" : f.template === "relay" ? "예: 3·1 운동, 민족 자결주의" : "예: 일제 강점기, 철도, 식민지 근대화"}">
-      <button class="btn wand" type="button" data-a="ai-suggest" ${st?.loading ? "disabled" : ""}>${ic("wand")} ${deb ? "토론 논제" : "생각 질문"} 추천 받기</button></div>
+  const what = deb ? "토론 논제" : "생각 질문", open = S.advOpen?.ai ?? !!st;
+  return `<details class="wide aisug" data-keep="ai" ${open ? "open" : ""}><summary>${ic("wand", "sm")} AI로 ${what} 추천받기 <span class="opt">키워드를 적거나, 비워 두면 위에 쓴 주제로 만들어 줘요</span></summary>
+    <div class="aisug-body">
+    <div><label for="c-kw" class="small" style="font-weight:600">${ic("key", "sm")} 키워드 <span class="opt">(선택 · 쉼표로 여러 개 · 과목·학년도 함께 참고해요)</span></label>
+    <div class="aisug-row" style="margin-top:6px"><input type="text" id="c-kw" data-form="create" data-k="aiKw" maxlength="100" autocomplete="off" value="${esc(f.aiKw || "")}" placeholder="${deb ? "예: 콜럼버스, 신항로 개척, 원주민" : f.template === "relay" ? "예: 3·1 운동, 민족 자결주의" : "예: 일제 강점기, 철도, 식민지 근대화"}">
+      <button class="btn wand" type="button" data-a="ai-suggest" ${st?.loading ? "disabled" : ""}>${ic("wand")} ${what} 추천 받기</button></div></div>
     ${list}
-    <p class="hint">${aiLive() ? `구글 AI(Gemini)가 만들어요. AI에게는 키워드·과목·학년만 보내요. <button class="linkbtn" type="button" data-a="ai-setup">${ic("settings", "sm")} AI 연결 설정</button>` : `체험·미리보기에서는 예시 추천을 보여 줘요. 실제로는 <button class="linkbtn" type="button" data-a="ai-setup">구글 AI 스튜디오 키</button>를 한 번 넣으면 돼요.`}</p></div>`;
+    <p class="aisug-note">${aiLive() ? `${ic("lock", "sm")} 키워드·주제·과목·학년만 구글 AI(Gemini)에 보내요 · <button class="linkbtn" type="button" data-a="ai-setup">${ic("settings", "sm")} AI 연결 설정</button>` : `체험·미리보기에서는 예시 추천을 보여 줘요 · <button class="linkbtn" type="button" data-a="ai-setup">구글 AI 스튜디오 키 연결</button>`}</p></div></details>`;
 }
 const DEMO_SUG = {
   debate:[{q:"콜럼버스의 날을 ‘원주민의 날’로 바꿔야 할까?", a:"바꿔야 한다", b:"그대로 둬야 한다", why:"기념과 역사 평가의 관계를 따져 봐요"},
@@ -8608,7 +8735,7 @@ function charAvatar(img, name, cls = ""){
 }
 function chatCharHTML(f, N){
   const req = `<span class="req" title="꼭 적어야 해요" aria-label="필수">*</span>`, img = f.personaImg || "";
-  return `<div class="card cset-card" style="margin-top:16px"><h3>${N()} 캐릭터 설정 <span class="opt vis">${ic("eye", "sm")} 학생에게 보여요</span></h3>
+  return `<div class="card cset-card" data-cs="char" data-sl="캐릭터" style="margin-top:16px"><h3>${N()} 캐릭터 설정 <span class="opt vis">${ic("eye", "sm")} 학생에게 보여요</span></h3>
     <div class="cset">
       <div class="cimg">${charAvatar(img, f.personaName, "xl")}
         <label class="btn sm">${ic("photo", "sm")} ${img ? "사진 바꾸기" : "사진 올리기"}<input type="file" accept="image/*" data-avatar-file hidden></label>
@@ -8650,7 +8777,7 @@ function chatPromptHTML(f, N){
   const req = `<span class="req" title="꼭 적어야 해요" aria-label="필수">*</span>`;
   const sel = (id, k, opts, ph, l, def = "") => `<select id="${id}" data-form="create" data-k="${k}"${bad(l)}>${ph ? `<option value="">${ph}</option>` : ""}${opts.map(([v, t]) => `<option value="${esc(v)}" ${String(f[k] || def) === String(v) ? "selected" : ""}>${esc(t)}</option>`).join("")}</select>`;
   const facts = (f.personaFacts || "").trim();
-  let h = `<div class="card pguide" id="pguide" style="margin-top:16px"><div class="pg-head"><h3>${N()} AI 프롬프트 <span class="opt vis">${ic("lock", "sm")} 학생에게 보이지 않아요</span></h3>
+  let h = `<div class="card pguide" id="pguide" data-cs="cprompt" data-sl="AI 지시문" style="margin-top:16px"><div class="pg-head"><h3>${N()} AI 프롬프트 <span class="opt vis">${ic("lock", "sm")} 학생에게 보이지 않아요</span></h3>
     <div class="seg" role="group" aria-label="프롬프트 만드는 방법"><button type="button" data-a="pg-mode" data-v="gen" aria-pressed="${mode === "gen"}">${ic("wand", "sm")} Gemini로 작성</button><button type="button" data-a="pg-mode" data-v="direct" aria-pressed="${mode === "direct"}">${ic("pencil", "sm")} 직접 작성</button></div></div>
     <p class="hint pg-state">${applied ? `${ic("circle-check", "sm")} 이 활동에 프롬프트가 적용되어 있어요(${applied.length.toLocaleString()}자). 활동을 저장하면 학생 대화에 쓰여요.${mode === "gen" ? " ‘직접 작성’에서 보고 고칠 수 있어요." : ""}` : "프롬프트가 없으면 캐릭터 설정과 대화 주제만으로 대화해요. 프롬프트를 넣으면 대화 방식·단계·마무리 피드백까지 정할 수 있어요."}</p>
     ${facts ? `<div class="pg-legacy">${ic("books", "sm")} 예전에 넣은 ‘AI용 인물 자료’(${facts.length.toLocaleString()}자)가 있어요. AI가 계속 참고해요.
@@ -8733,7 +8860,7 @@ function viewCreate(){
     notes:["학생에게 보일 안내", "예: " + NOTES_PROMPT + " (비워 두면 이 문장으로 보여요)"],
     live:["토론 논제", "예: 대한민국 임시 정부는 독립운동에 큰 성과를 거두었다."]};
   const [promptLabel, promptPh] = PROMPT_LP[f.template] || PROMPT_LP.debate2;
-  const qopts = (relay ? [{k:"student", l:"학생이 고르기"}] : [{k:"", l:"고르지 않음"}]).concat(Object.entries(QTYPES).map(([k,v]) => ({k, l:v.short, ic:v.mark})));
+  const qopts = (relay ? [{k:"student", l:"학생이 고르기"}] : [{k:"", l:"고르지 않음"}]).concat(Object.entries(QTYPES).map(([k,v]) => ({k, l:v.short, ic:v.mark, tip:v.d})));
   const etBoxes = EVIDENCE_TYPES.map(e => `<label class="choice"><input type="checkbox" data-form="create" data-k="evidenceTypes" data-multi value="${esc(e)}" ${(f.evidenceTypes||[]).includes(e)?"checked":""}><span>${esc(e)}</span></label>`).join("");
   const hasReason = tool.fields.some(x=>x.k==="reason");
   const stg = !f.meet || f.reveal === "teacher" ? 1 : (f.change || f.revise) ? 3 : 2;        // 지금 설정이 실제로 거치는 단계 수
@@ -8748,10 +8875,11 @@ function viewCreate(){
     <p class="muted small" style="margin-top:6px">활동 유형·깊이·세부 설정을 불러와요. 논제와 자료는 그대로 남아요.</p></div>`;
 
   let no = 0; const N = () => `<span class="sn">${CIRC[no++]}</span>`;   // 단계 번호 (보이는 칸만 차례로)
+  h += `<nav class="cstep" id="cstep" aria-label="만들기 단계"></nav>`;     // 단계 막대: 그린 뒤 buildCstep()이 채운다
   h += `<div class="card ctop" style="margin-top:16px"><div class="form-grid">
     <div class="q"><label for="c-title">활동 이름 <span class="opt">(선택 · 비워 두면 핵심 질문으로 정해져요)</span></label><input type="text" id="c-title" data-form="create" data-k="title" maxlength="60" placeholder="예: 누구를 위한 근대화였을까" value="${esc(f.title||"")}"></div>
     <div class="q"><label for="c-intro">활동 소개 <span class="opt">(선택 · 학생에게 보여요)</span></label><input type="text" id="c-intro" data-form="create" data-k="intro" maxlength="120" placeholder="예: 친구와 생각을 나누고 내 생각을 다시 돌아봐요." value="${esc(f.intro||"")}"></div></div></div>
-  <div class="card" style="margin-top:16px"><h3>${N()} 어떤 활동을 할까요?<span class="req" title="꼭 적어야 해요" aria-label="필수">*</span></h3>${lockWrap(locked, `
+  <div class="card" data-cs="goal" data-sl="활동" style="margin-top:16px"><h3>${N()} 어떤 활동을 할까요?<span class="req" title="꼭 적어야 해요" aria-label="필수">*</span></h3>${lockWrap(locked, `
     <p class="hint gtip">활동을 고르면 아래 칸이 그 활동에 맞게 바뀌어요.</p>
     <div class="types gtypes" role="group" aria-label="활동">${GOALS.map(g => `<button type="button" class="tcard gcard" data-a="goal" data-v="${g.k}" aria-pressed="${g.k===goal.k}"><span class="gc-ic" aria-hidden="true">${ic(g.icon, "lg")}</span><span class="gc-t"><b>${esc(g.l)}${g.beta ? `<span class="beta" title="시험 중인 기능이에요. AI 답이 틀릴 수 있어요.">Beta</span>` : ""}</b><span>${esc(g.d)}</span></span><span class="gc-ck" aria-hidden="true"></span></button>`).join("")}</div>
     ${goal.k === "compare" ? `<h3 style="font-size:15px;margin:16px 0 8px">어떤 방식으로 토론할까요?</h3>
@@ -8760,7 +8888,7 @@ function viewCreate(){
       <div class="types" role="group" aria-label="${esc(goal.l)} 방식">${goal.t.map(k => { const v = TEMPLATES[k]; return `<button type="button" class="tcard" data-a="tpl" data-v="${k}" aria-pressed="${k===f.template}"><b>${ic(v.modeIcon, "lg")} ${esc(v.modeLabel || v.mode)}</b>${v.modeWho ? `<span class="mwho">${esc(v.modeWho)}</span>` : ""}<span>${esc(v.modeDesc)}</span></button>` }).join("")}</div>` : ""}`)}</div>
 
   ${isChat ? chatCharHTML(f, N) : ""}
-  <div class="card" style="margin-top:16px"><h3>${N()} ${isChat ? `무엇에 대해 대화할까요? <span class="opt vis">${ic("eye", "sm")} 대화 주제와 자료 · 학생에게 보여요</span>` : `무엇에 대해 생각할까요? <span class="opt">핵심 질문과 자료</span>`}</h3><div class="form-grid">
+  <div class="card" data-cs="topic" data-sl="주제·자료" style="margin-top:16px"><h3>${N()} ${isChat ? `무엇에 대해 대화할까요? <span class="opt vis">${ic("eye", "sm")} 대화 주제와 자료 · 학생에게 보여요</span>` : `무엇에 대해 생각할까요? <span class="opt">핵심 질문과 자료</span>`}</h3><div class="form-grid">
     <div class="q wide"><label for="c-prompt">${stepQOn(f) ? `${ic("target", "sm")} 핵심 질문 · ` : ""}${promptLabel}${isNoteT ? "" : `<span class="req" title="꼭 적어야 해요" aria-label="필수">*</span>`}</label>${ta("create","prompt",{rows:2, ph:promptPh, id:"c-prompt"})}</div>
     ${aiSugHTML(f)}
     ${isNoteT ? `<section class="wide subpanel" aria-labelledby="np-h"><h4 id="np-h">${ic("camera", "sm")} 사진 제출 설정</h4>
@@ -8788,7 +8916,7 @@ function viewCreate(){
       <div class="q"><label for="c-notemin">판정 전 청중 의견 최소 개수</label><select id="c-notemin" data-form="create" data-k="noteMin">${[[0, "필수 아님"], [1, "1개 이상 (기본)"], [2, "2개 이상"]].map(([n, l]) => `<option value="${n}" ${String(f.noteMin ?? "1") === String(n) ? "selected" : ""}>${l}</option>`).join("")}</select>
         <p class="hint">판정단이 질문이나 생각을 이만큼 남겨야 판정(최종 투표)을 낼 수 있어요. 토론 중·종료 후에 쓸 수 있고, 모두가 실시간으로 볼 수 있어요.</p></div>
       </div></section>` : ""}
-    ${(f.template==="inquiry" || relay) ? `<div class="wide">${lockWrap(locked, `<fieldset class="q"><legend style="font-size:15px">질문 유형은 무엇인가요? <span class="opt">(선택)</span></legend>${radios("create","qtype",qopts,{label:"질문 유형"})}${qtypeHelp("질문 유형 설명 보기")}</fieldset>`)}</div>` : ""}
+    ${(f.template==="inquiry" || relay) ? `<div class="wide">${lockWrap(locked, `<fieldset class="q"><legend style="font-size:15px">질문 유형은 무엇인가요? <span class="opt">(선택)</span></legend>${radios("create","qtype",qopts,{label:"질문 유형"})}${qtypeDesc(f)}${qtypeHelp("세 가지 질문 유형 비교해 보기", true)}</fieldset>`)}</div>` : ""}
     ${t.stances.length && !isLiveT ? `<div class="wide">${lockWrap(locked, `<fieldset class="q"><legend style="font-size:15px">입장<span class="req" title="꼭 적어야 해요" aria-label="필수">*</span> <span class="opt">(2개 이상 · 이름을 바꿀 수 있어요)</span></legend>
       <div class="form-grid" style="gap:8px">${Array.from({length:f.nst||t.stances.length}, (_,i) => `<div class="stance-ins"><span aria-hidden="true" style="color:var(--${SC[i%4]})">${stanceIcon(null, i)}</span><input type="text" id="c-st${i}" data-form="create" data-k="st${i}" maxlength="30" aria-label="입장 ${i+1}" value="${esc(f["st"+i]||"")}"></div>`).join("")}</div>
       <div class="row stance-pm" style="margin-top:8px"><span class="muted small">입장 ${f.nst||t.stances.length}개 (2~4개)</span>
@@ -8800,10 +8928,10 @@ function viewCreate(){
   </div></div>
   ${isChat ? chatPromptHTML(f, N) : ""}
 
-  ${stepQOn(f) ? `<div class="card stepq-card" style="margin-top:16px"><h3>${N()} 어떤 질문을 따라 생각할까요?<span class="req" title="꼭 적어야 해요" aria-label="필수">*</span> <span class="opt">단계별 질문 · 1개 이상</span></h3>${stepQHTML(f, locked)}</div>` : ""}
+  ${stepQOn(f) ? `<div class="card stepq-card" data-cs="stepq" data-sl="단계 질문" style="margin-top:16px"><h3>${N()} 어떤 질문을 따라 생각할까요?<span class="req" title="꼭 적어야 해요" aria-label="필수">*</span> <span class="opt">단계별 질문 · 1개 이상</span></h3>${stepQHTML(f, locked)}</div>` : ""}
   ${isNoteT || isLiveT ? `<style>.depth-card,.preview-steps,details[data-cfold]{display:none!important}
 </style>` : ""}
-  <div class="card depth-card" style="margin-top:16px"><h3>${isNoteT || isLiveT ? "" : N()} 생각을 어디까지 이어 갈까요? <span class="opt">생각 → 만남 → 변화</span></h3>${lockWrap(locked, `
+  <div class="card depth-card" data-cs="depth" data-sl="깊이" style="margin-top:16px"><h3>${isNoteT || isLiveT ? "" : N()} 생각을 어디까지 이어 갈까요? <span class="opt">생각 → 만남 → 변화</span></h3>${lockWrap(locked, `
     <div class="depths" role="group" aria-label="생각 깊이">${Object.entries(DEPTHS).filter(([k]) => !(NO_DEEP.includes(f.template) && k === "deep")).map(([k,d])=>{
       const est = d.stages === stg ? estMinutes(preview) : (() => { const g = {...f}; applyDepth(k, g); return estMinutes(roomFromForm(g)) })();   // 아래 ‘학생은 이렇게 활동해요’와 같은 계산
       return `<button type="button" class="depth" data-a="depth" data-v="${k}" aria-pressed="${d.stages === stg}">
@@ -8846,7 +8974,7 @@ function viewCreate(){
   h += lockWrap(locked, adv) + `</div></details>`;
   h += (() => { const usedG = editR ? new Set(allPostsOf(editR.id).map(p => p.groupId).filter(Boolean)) : new Set(), lockC = locked && !!courseOf(editR?.courseId);
     const sel = courseSel(f), multi = !editR || isDraft, list = S.courses.filter(x => !x.archived || sel.includes(x.id));
-    return `<div class="card" style="margin-top:16px"><h3>${N()} 누구와, 언제까지 할까요?</h3>
+    return `<div class="card" data-cs="who" data-sl="대상·마감" style="margin-top:16px"><h3>${N()} 누구와, 언제까지 할까요?</h3>
       ${S.courses.length ? `<div class="q"><span class="qlabel">과목 <span class="opt">${multi ? "(여러 개 고를 수 있어요 · 과목마다 같은 활동이 하나씩 만들어져요)" : "(한 과목)"}</span></span>
         <div class="cpick" role="group" aria-label="과목">${list.map(x => `<button type="button" class="cchip" data-a="c-course" data-v="${esc(x.id)}" aria-pressed="${sel.includes(x.id)}" ${lockC ? "disabled" : ""}>${courseIcon(x, "sm")} ${esc(x.title)}${x.archived ? " (보관)" : ""}</button>`).join("")}
           <button type="button" class="cchip none" data-a="c-course" data-v="" aria-pressed="${!sel.length}" ${lockC ? "disabled" : ""}>과목 없이 (링크 하나로 사용)</button></div>
@@ -8865,6 +8993,7 @@ function viewCreate(){
       <div class="q"><label for="c-stage">수업 단계</label><select id="c-stage" data-form="create" data-k="stage"><option value="">선택 안 함</option>${["도입","전개","정리","과제"].map(g=>`<option ${f.stage===g?"selected":""}>${g}</option>`).join("")}</select></div>
       <div class="q wide"><label for="c-memo">${ic("notes", "sm")} 교사용 메모 <span class="opt">(학생에게 보이지 않아요)</span></label>${ta("create","memo",{rows:2, ph:"예: 다음 시간 토론 전에 활용", id:"c-memo"})}</div>
     </div></div></details>`;   // 수업 정보(학년·단원·메모): 학생 활동에 영향이 없는 기록이라 맨 아래
+  h += `<aside class="cprev${S.cprevOpen ? " open" : ""}" aria-label="학생 화면 미리보기"><div class="cprev-in"><button type="button" class="cprev-tog" data-a="cprev-tog">${ic("eye", "sm")} 학생에게는 이렇게 보여요</button><div class="cprev-b">${createPreviewHTML(f)}</div></div></aside>`;
   if(S.tplNaming) h += `<div class="setup" style="margin-top:16px"><b>${ic("device-floppy")} 내 템플릿으로 저장</b><p class="small">활동 유형·깊이·세부 설정을 저장해 두고 다음에 불러올 수 있어요.</p>
     <div class="row"><input type="text" id="tpl-name" maxlength="30" placeholder="예: 한국사 토론 기본형" aria-label="템플릿 이름"><button class="btn sm pri" type="button" data-a="tpl-save">저장</button><button class="btn sm" type="button" data-a="tpl-cancel">취소</button></div></div>`;
   h += `<div class="foot"><div class="row"><button class="btn" type="button" data-a="preview-form">${ic("eye")} 학생 화면 미리보기</button>
@@ -8920,6 +9049,7 @@ document.addEventListener("input", e => {
   if(!el.dataset.form || el.type==="checkbox" || el.type==="radio" || el.tagName==="SELECT") return;
   if(el.isContentEditable && !el.textContent.trim() && !el.querySelector("li")) el.innerHTML = "";   // 지우고 나면 안내 문구가 다시 보이게
   const {key} = onFormValue(el);
+  if(key === "create") createRefreshSoon();                       // 단계 막대 표시와 학생 화면 미리보기를 바로 갱신
   if(el.classList?.contains("bad") && el.value?.trim()){ el.classList.remove("bad"); el.removeAttribute("aria-invalid") }
   if(key === "create" && el.dataset.k === "memoQ"){          // 질문을 적으면 ‘필수’를 고를 수 있게
     const has = !!el.value.trim(), on = document.querySelector('.memoreq input[value="on"]'), hh = document.getElementById("c-mreq-h");
@@ -9482,9 +9612,10 @@ async function act(a, b){
     }
     case "ai-key-del": { if(!aiLive()) return; await rpcSafe("ai_key_set", {p_key:""}); toast("키를 지웠어요."); S.aiStatus = undefined; await loadAiStatus(); return }
     case "ai-suggest": {
-      const f = createForm(), kw = (f.aiKw || "").trim() || (f.title || "").trim();
+      const f = createForm(), plain = x => String(x || "").replace(/<[^>]*>/g, " ").replace(/&nbsp;/g, " ").replace(/\s+/g, " ").trim();
+      const kw = (f.aiKw || "").trim() || plain(f.prompt).slice(0, 200) || (f.title || "").trim();      // 키워드를 비워 두면 위에 쓴 주제로 추천
       if(!AI_SUG_T.includes(f.template)) return;
-      if(!kw){ toast("키워드를 한두 개 적어 주세요. 예: 콜럼버스, 원주민"); document.getElementById("c-kw")?.focus(); return }
+      if(!kw){ toast("위에 주제를 먼저 적거나, 키워드를 한두 개 적어 주세요. 예: 콜럼버스, 원주민"); S.advOpen = {...(S.advOpen || {}), ai:true}; (document.getElementById("c-prompt") || document.getElementById("c-kw"))?.focus(); return }
       S.aiSug = {t:f.template, loading:true}; render();
       const res = await aiSuggest({kind:f.template, keywords:kw, subject:(f.subject || courseOf(f.courseId)?.subject || "").trim(), grade:f.grade || "", qtype:f.template === "inquiry" ? (f.qtype || "") : ""});
       if(res.items?.length) S.aiSug = {t:f.template, items:res.items, demo:res.demo};
@@ -9962,6 +10093,13 @@ async function act(a, b){
       break;
     }
     case "preview-exit": exitPreview(); break;
+    case "cprev-tog": S.cprevOpen = !S.cprevOpen; break;
+    case "cs-go": {
+      const c = document.querySelector(`.cform > .card[data-cs="${b.dataset.v}"]`); if(!c) return;
+      const bar = document.getElementById("cstep"), off = bar ? (parseFloat(bar.style.top) || 0) + bar.offsetHeight + 8 : 8;
+      window.scrollTo({top:c.getBoundingClientRect().top + window.scrollY - off, behavior:matchMedia("(prefers-reduced-motion:reduce)").matches ? "auto" : "smooth"});
+      return;
+    }
     case "present": S.view = "present"; S.roomId = b.dataset.id; S.pmode = b.dataset.mode || S.pmode; if(b.dataset.mode === "thoughts") S.pidx = 0; scrollTo(0,0); break;
     case "present-exit": S.view = "room"; break;
     case "fullscreen": { try{ const q = document.documentElement.requestFullscreen?.(); q?.catch?.(()=>toast("이 화면에서는 전체 화면을 쓸 수 없어요.")) }catch(e){ toast("이 화면에서는 전체 화면을 쓸 수 없어요.") } return }

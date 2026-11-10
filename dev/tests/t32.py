@@ -13,7 +13,7 @@ async def main():
     await T.click('[data-a=create]'); await W(T)
     print('debate placeholder:', await T.get_attribute('#c-prompt','placeholder'))
     print('aisug shown:', bool(await T.query_selector('.aisug')), '| btn:', await T.text_content('[data-a=ai-suggest]'))
-    await T.click('[data-a=ai-suggest]'); await W(T); print('empty kw toast:', await T.text_content('#toast'))
+    await T.evaluate('document.querySelectorAll("details.aisug").forEach(d=>d.open=true)'); await T.click('[data-a=ai-suggest]'); await W(T); print('empty kw toast:', await T.text_content('#toast'))
     await T.fill('#c-kw','콜럼버스, 원주민'); await T.press('#c-kw','Enter'); await W(T,500)
     print('no key -> modal:', await T.evaluate('S.modal?.type'), '| toast:', await T.text_content('#toast'))
     print('guide link:', await T.get_attribute('.aiguide a','href'), '| status:', (await T.inner_text('#modal')).count('아직 연결되지'))
@@ -30,13 +30,13 @@ async def main():
     # inquiry
     await T.click('[data-a=goal][data-v=question]'); await W(T)
     print('inquiry placeholder:', await T.get_attribute('#c-prompt','placeholder'))
-    await T.click('details.help summary >> text=질문 유형 설명 보기'); await W(T)
+    await T.click('details.help summary >> text=세 가지 질문 유형 비교해 보기'); await W(T)
     print('qtype ex:', await T.eval_on_selector_all('.help-body .muted.small','e=>e.map(x=>x.textContent)'))
     # chat template has no aisug
     await T.click('[data-a=goal][data-v=chat]'); await W(T); print('chat aisug:', bool(await T.query_selector('.aisug')))
     # bad key path
     await T.evaluate('localStorage.setItem("__aikey","BADKEY_123456789012345")')
-    await T.click('[data-a=goal][data-v=compare]'); await W(T); await T.click('[data-a=ai-suggest]'); await W(T,500)
+    await T.click('[data-a=goal][data-v=compare]'); await W(T); await T.evaluate('document.querySelectorAll("details.aisug").forEach(d=>d.open=true)'); await T.click('[data-a=ai-suggest]'); await W(T,500)
     print('bad key:', await T.evaluate('S.modal?.type'), await T.text_content('#toast'))
     await T.click('[data-a=ai-key-del]'); await W(T,400); print('after del:', await T.evaluate('S.aiStatus'))
     print('errors', errs); await b.close()
