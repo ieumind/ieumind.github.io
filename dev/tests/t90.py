@@ -74,7 +74,7 @@ async def main():
     mid=await T.get_attribute('#lv-msgs .lvm:not(.del) [data-a=lv-del]','data-v')
     await T.click(f'[data-a=lv-del][data-v="{mid}"]'); await W(T,500); await W(B,900)
     ok('교사가 메시지를 지우면 학생 화면에서 사라짐', '민주 공화제' not in await B.inner_text('#lv-msgs') and '민주 공화제' not in await C.inner_text('#lv-msgs'))
-    nid=await T.get_attribute('#lv-notelist [data-a=lv-note-del]','data-v'); await T.click(f'[data-a=lv-note-del][data-v="{nid}"]'); await W(T,500); await W(A,900)
+    nid=await T.get_attribute('#lv-notelist [data-a=lv-note-del]','data-v'); await T.click(f'[data-a=lv-note-del][data-v="{nid}"]'); await W(T,300); await T.click(f'[data-a=lv-note-del-yes][data-v="{nid}"]'); await W(T,500); await W(A,900)
     ok('교사가 의견을 지우면 모두에게서 사라짐', '연통제' not in await A.inner_text('#lv-notelist') and '연통제' not in await C.inner_text('#lv-notelist'))
     await C.wait_for_timeout(3000); await C.fill('#lv-note','선언과 실제 성과를 나눠서 보면 좋겠어요.'); await C.click('[data-a=lv-note-send]'); await W(C,700)
     # 제한
