@@ -30,7 +30,7 @@ async def main():
     await T.click('[data-a=pick-tool][data-v=causeEffect]'); await W(T); print('causeEffect qs:', await T.eval_on_selector_all('[data-qf=q]','e=>e.map(x=>x.value)'))
     await T.click('[data-a=q-custom]'); await W(T)
     qs=['철도는 어디와 어디를 이었나요?','그 철도로 무엇이 옮겨졌나요?','그 결과 누가 이익을 얻었나요?']
-    await T.fill('[data-qi="0"][data-qf=q]',qs[0]); await T.fill('[data-qi="1"][data-qf=q]',qs[1]); await T.click('[data-a=q-add]'); await W(T); await T.fill('[data-qi="2"][data-qf=q]',qs[2]); await T.fill('[data-qi="0"][data-qf=h]','지도 자료를 보세요')
+    await T.fill('[data-qi="0"][data-qf=q]',qs[0]); await T.fill('[data-qi="1"][data-qf=q]',qs[1]); await T.click('[data-a=q-add]'); await W(T); await T.fill('[data-qi="2"][data-qf=q]',qs[2]); (await T.click('[data-a=qh-add][data-i="0"]')) if await T.query_selector('[data-a=qh-add][data-i="0"]') else None; await W(T); await T.fill('[data-qi="0"][data-qf=h]','지도 자료를 보세요')
     await T.click('[data-a=q-add]'); await W(T); await T.click('[data-a=q-del][data-i="3"]'); await W(T)
     await T.click('[data-a=q-move][data-i="1"][data-d="-1"]'); await W(T); print('after move:', await T.eval_on_selector_all('[data-qf=q]','e=>e.map(x=>x.value)'))
     await T.click('[data-a=q-move][data-i="0"][data-d="1"]'); await W(T)

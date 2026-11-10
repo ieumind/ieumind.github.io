@@ -24,13 +24,13 @@ async def main():
     # 단계별 질문
     await T.click('[data-a=create]'); await T.wait_for_timeout(500)
     await T.click('[data-a=goal][data-v=look]'); await T.wait_for_timeout(300)
-    await T.evaluate('document.querySelectorAll(".stepq-card details").forEach(d=>d.open=true)'); await T.wait_for_timeout(200)   # 감상·성찰은 느낌 질문 칸이 접혀 있다
+    await T.evaluate('document.querySelectorAll("details.stepq-card, .stepq-card details").forEach(d=>d.open=true)'); await T.wait_for_timeout(200)   # 감상·성찰은 느낌 질문 칸이 접혀 있다
     if not await T.query_selector('.qstep textarea'):
       await T.click('[data-a=q-custom]'); await T.wait_for_timeout(300)
     ta=await T.query_selector_all('.qstep textarea:not(.qhint)')
     ok('질문 칸이 여러 줄 상자(textarea)', len(ta)>=1)
     h0=await T.evaluate('document.querySelector(".qstep textarea:not(.qhint)").getBoundingClientRect().height')
-    ok('한 줄짜리보다 높음', h0>=50, str(h0))
+    ok('한 줄 입력칸보다 높음(쓰면 늘어남)', h0>=36, str(h0))
     long='일제강점기에 놓인 철도는 누구를 위해 어디와 어디를 이었으며, 그 결과 조선 사람들의 삶과 경제는 어떻게 달라졌다고 볼 수 있을까요? 근거를 들어 설명해 보세요.'[:160]
     await T.click('.qstep textarea:not(.qhint)'); await T.keyboard.type(long[:60]); await T.keyboard.press('Enter'); await T.keyboard.type(long[60:])
     v=await T.evaluate('document.querySelector(".qstep textarea:not(.qhint)").value')

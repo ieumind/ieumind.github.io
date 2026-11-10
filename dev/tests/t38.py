@@ -17,11 +17,11 @@ async def main():
       await T.evaluate('document.querySelectorAll("details.cfold").forEach(d=>d.open=true)'); await T.wait_for_timeout(150)
       await T.click(f'[data-a=depth][data-v={d}]'); await W(T)
       print(d, 'pressed', await pressed(), '| stages', await stages(), '| adv', await secs())
-    print('tools:', await T.eval_on_selector_all('.toolchip b','e=>e.map(x=>x.textContent)'))
+    print('tools:', await T.eval_on_selector_all('.qfr-c','e=>e.map(x=>x.textContent.trim())'))
     print('react opts:', await T.eval_on_selector_all('#c-react option','e=>e.map(x=>x.textContent)'), '| end:', await T.eval_on_selector_all('#c-end option','e=>e.map(x=>x.textContent)'))
     print('reveal opts:', await T.eval_on_selector_all('#c-reveal option','e=>e.map(x=>x.textContent)'))
     await T.click('#c-initial'); await W(T); print('initial on:', await T.evaluate('S.form.create.initial'), '| stages', await stages())
-    await T.click('.toolchip >> text=비교하기'); await W(T); print('tool:', await T.evaluate('S.form.create.tool'), '| adv still open:', await T.evaluate('document.querySelector("details[data-keep=adv]").open'))
+    await T.click('.qfr-c >> text=비교하기'); await W(T); print('tool:', await T.evaluate('S.form.create.tool'), '| adv still open:', await T.evaluate('document.querySelector("details[data-keep=adv]").open'))
     await T.select_option('#c-end','both'); await W(T); print('end both stages', await stages())
     await T.screenshot(path='/tmp/claude-0/smoke/mob/create_new.png', full_page=True)
     # change to normal keeps consistent
