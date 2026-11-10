@@ -37,6 +37,22 @@ async def main():
     ok('찾는 중에도 입력칸 포커스 유지', await T.evaluate('document.activeElement && document.activeElement.id')=='lv-memq')
     await T.fill('#lv-memq',''); await W(T,200)
     await T.screenshot(path='/tmp/claude-0/scr/mem_on.png')
+    # 나다은이 다른 앱으로: 10초 유예 뒤 ‘다른 화면’
+    ok('학생 안내: 선생님이 볼 수 있어요', '누가 지금 토론 화면을 보고 있는지' in await B.locator('.lvh-note').inner_text())
+    HIDE="Object.defineProperty(document,'visibilityState',{get:()=>'hidden',configurable:true}); document.dispatchEvent(new Event('visibilitychange'))"
+    SHOW="Object.defineProperty(document,'visibilityState',{get:()=>'visible',configurable:true}); document.dispatchEvent(new Event('visibilitychange'))"
+    await B.evaluate(HIDE); await W(T,4000)
+    ok('잠깐(4초)은 아직 보는 중', await T.locator('.lvmem .lvmdot.away').count()==0)
+    await W(T,9000)
+    li=await T.locator('.lvmem li', has_text='나다은').inner_text()
+    ok('10초 넘으면 다른 화면(노란 점)', await T.locator('.lvmem .lvmdot.away').count()==1 and '다른 화면' in li, li)
+    ok('제목 줄: 접속 3 · 다른 화면 1', '다른 화면 1' in await T.locator('#lv-presn').inner_text() and '접속 3 / 3명' in await T.locator('#lv-presn').inner_text())
+    await T.click('[data-a=lv-memf][data-v=away]'); await W(T,200)
+    ok('다른 화면만 보기', await T.locator('.lvmem li').count()==1 and '나다은' in await T.locator('.lvmem').inner_text())
+    await T.locator('.lvmemd').screenshot(path='/tmp/claude-0/scr/mem_away.png')
+    await T.click('[data-a=lv-memf][data-v=all]'); await W(T,200)
+    await B.evaluate(SHOW); await W(T,2500)
+    ok('돌아오면 바로 보는 중', await T.locator('.lvmem .lvmdot.away').count()==0 and await T.locator('.lvmem .lvmdot.on').count()==3)
     # 박서준 창을 닫으면: 20초 유예 뒤 끊김
     await C.close(); await W(T,8000)
     ok('잠깐은 아직 초록(유예)', await T.locator('.lvmem .lvmdot.on').count()==3)

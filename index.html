@@ -1998,7 +1998,7 @@ details.help.helpcta > summary:hover{border-color:var(--accent)}
 .lvmf-c{border:1px solid var(--line);background:var(--surface);color:var(--fg);border-radius:999px;font:inherit;font-size:12.5px;padding:2px 9px;cursor:pointer}
 .lvmf-c b{font-weight:700;margin-left:2px}.lvmf-c[aria-pressed="true"]{background:var(--fg);border-color:var(--fg);color:var(--surface)}
 .lvmf-c.off b{color:var(--s2)}.lvmf-c.off[aria-pressed="true"] b{color:inherit}
-.lvmdot{flex:0 0 auto;width:9px;height:9px;border-radius:50%;background:var(--line);display:inline-block}.lvmdot.on{background:#2e9d5b}.lvmdot.off{background:#a3a9ad}
+.lvmdot{flex:0 0 auto;width:9px;height:9px;border-radius:50%;background:var(--line);display:inline-block}.lvmdot.on{background:#2e9d5b}.lvmdot.off{background:#a3a9ad}.lvmdot.away{background:#e0a100}.lvm-away{color:#a86f00}.lvmf-c.away b{color:#a86f00}
 .lvpres-s{display:inline-flex;align-items:center;gap:5px;font-weight:600}.lvpres-s.some{color:var(--fg)}
 .lvm-off{color:var(--s2)}
 .lvmemd .lvmem li{flex-wrap:nowrap;padding:5px 8px;gap:8px;border-left-width:3px;border-radius:8px}
@@ -4136,7 +4136,7 @@ function liveHeadHTML(r, hint){
       <div class="lvh-cell"><span class="lvh-k">내 역할</span>${me ? `<span class="lvme ${esc(t || "none")}">${ic("user", "sm")} <b>${esc(me.nick)}</b> · ${esc(roleL(r, t))}</span>` : `<span class="small muted">들어가는 중…</span>`}</div>
       <div class="lvh-cell"><span class="lvh-k">참여</span><span class="lvh-v"><b class="pro">${esc(teamL(r, "pro"))} ${c.pro}/${N}</b> · <b class="con">${esc(teamL(r, "con"))} ${c.con}/${N}</b> · 판정단 ${c.jury}</span></div>
     </div>
-    <p class="small muted lvh-note">${ic("lock", "sm")} 친구들에게는 닉네임만 보이고, 실제 이름은 선생님만 알아요.</p></section>`;
+    <p class="small muted lvh-note">${ic("lock", "sm")} 친구들에게는 닉네임만 보이고, 실제 이름은 선생님만 알아요. ${ic("eye", "sm")} 선생님은 누가 지금 토론 화면을 보고 있는지 알 수 있어요.</p></section>`;
 }
 /* 💡 청중 의견: 판정단이 토론 중·토론 뒤에 남기는 질문/생각. 토론 채팅과 따로 두고, 방의 모든 사람이 실시간으로 본다 */
 const NOTE_TGT = {all:"모두에게", pro:"", con:""};
@@ -4382,33 +4382,35 @@ function liveRecHTML(r){
     </article>`).join("") : `<p class="muted">해당하는 학생이 없어요.</p>`}</div>`;
 }
 /* 교사: 참여 학생 목록 (한 줄 · 거르기 · 찾기 · 연결 상태) */
+const LV_AWAY = 10000;                                                    // 다른 화면(앱·탭)으로 이만큼 넘게 가 있어야 ‘다른 화면’
 const LV_GRACE = 20000;                                                   // 이만큼 안 보여야 ‘끊김’ (휴대폰 화면 꺼짐·앱 전환으로 잠깐 끊기는 것은 넘긴다)
 function livePresOf(r, k){                                                // "on" | "off" | null(아직 모름)
   const L = lv(r); if(!L.pres?.ok) return null;                           // 실시간 연결이 한 번도 안 됐으면 점을 그리지 않는다(모두 회색으로 잘못 보이지 않게)
-  if(L.pres.on.has(k)) return "on";
+  if(L.pres.on.has(k)){ const a = L.pres.away.get(k); return a && Date.now() - a >= LV_AWAY ? "away" : "on" }
   const gone = L.pres.gone.get(k) ?? L.pres.since;
   return Date.now() - gone < LV_GRACE ? "on" : "off";
 }
 function livePresSum(r){
   const L = lv(r); if(!L.pres?.ok || !L.members.size) return "";
-  const ms = [...L.members.values()], on = ms.filter(m => livePresOf(r, m.mkey) === "on").length;
-  return `<span class="lvpres-s${on < ms.length ? " some" : ""}"><span class="lvmdot on" aria-hidden="true"></span>접속 ${on} / ${ms.length}명</span>`;
+  const ms = [...L.members.values()], st = ms.map(m => livePresOf(r, m.mkey)), on = st.filter(x => x !== "off").length, aw = st.filter(x => x === "away").length;
+  return `<span class="lvpres-s${on < ms.length ? " some" : ""}"><span class="lvmdot on" aria-hidden="true"></span>접속 ${on} / ${ms.length}명${aw ? ` <span class="lvm-away">· 다른 화면 ${aw}</span>` : ""}</span>`;
 }
+const lvFor = t => { const sec = Math.max(0, Math.floor((Date.now() - t) / 1000)); return sec < 60 ? `${sec}초째` : `${Math.floor(sec / 60)}분째` };
 const lvAgo = t => { const m = Math.floor((Date.now() - t) / 60000); return m < 1 ? "방금" : m < 60 ? `${m}분 전` : `${Math.floor(m / 60)}시간 전` };
 function liveMemListHTML(r){
   const L = lv(r), ord = {pro:0, con:1, jury:2}, f = S.lvMemF || "all", q = String(S.lvMemQ || "").trim().toLowerCase();
   const all = [...L.members.values()].sort((a, b) => (ord[a.team] ?? 3) - (ord[b.team] ?? 3) || String(a.real_name).localeCompare(String(b.real_name), "ko"));
   if(!all.length) return `<p class="muted small">아직 들어온 학생이 없어요. 학생에게 링크나 QR을 나눠 주세요.</p>`;
-  const st = m => livePresOf(r, m.mkey), cnt = {all:all.length, pro:0, con:0, jury:0, none:0, off:0};
-  all.forEach(m => { cnt[m.team || "none"]++; if(st(m) === "off") cnt.off++ });
-  const chips = [["all", "전체"], ["pro", teamL(r, "pro")], ["con", teamL(r, "con")], ["jury", "판정단"], ["none", "대기"], ...(L.pres?.ok ? [["off", "끊김"]] : [])].filter(([k]) => k === "all" || cnt[k] || f === k);
-  const list = all.filter(m => (f === "all" || (f === "off" ? st(m) === "off" : (m.team || "none") === f)) && (!q || String(m.real_name).toLowerCase().includes(q) || String(m.nick).toLowerCase().includes(q)));
+  const st = m => livePresOf(r, m.mkey), cnt = {all:all.length, pro:0, con:0, jury:0, none:0, away:0, off:0};
+  all.forEach(m => { cnt[m.team || "none"]++; const p = st(m); if(p === "off") cnt.off++; if(p === "away") cnt.away++ });
+  const chips = [["all", "전체"], ["pro", teamL(r, "pro")], ["con", teamL(r, "con")], ["jury", "판정단"], ["none", "대기"], ...(L.pres?.ok ? [["away", "다른 화면"], ["off", "끊김"]] : [])].filter(([k]) => k === "all" || cnt[k] || f === k);
+  const list = all.filter(m => (f === "all" || (f === "off" || f === "away" ? st(m) === f : (m.team || "none") === f)) && (!q || String(m.real_name).toLowerCase().includes(q) || String(m.nick).toLowerCase().includes(q)));
   const short = {pro:teamL(r, "pro").slice(0, 1), con:teamL(r, "con").slice(0, 1), jury:"판"};
   return `<div class="lvmf" role="group" aria-label="학생 거르기">${chips.map(([k, l]) => `<button type="button" class="lvmf-c ${k}" data-a="lv-memf" data-v="${k}" aria-pressed="${f === k}">${esc(l)} <b>${cnt[k]}</b></button>`).join("")}</div>
     ${list.length ? `<ul class="lvmem">${list.map(m => { const p = st(m), gone = L.pres?.gone.get(m.mkey);
       return `<li class="${m.team || "none"}${m.muted ? " muted" : ""}">
-      ${p ? `<span class="lvmdot ${p}" role="img" aria-label="${p === "on" ? "연결됨" : "연결 끊김"}" title="${p === "on" ? "연결됨" : gone ? `연결 끊김 · ${lvAgo(gone)}` : "연결 안 됨"}"></span>` : ""}
-      <div class="lvmem-n"><b>${esc(m.real_name)}</b><span class="small muted">${esc(m.nick)}${m.nick_set ? " · 직접" : ""}${p === "off" ? ` · <span class="lvm-off">${gone ? `끊김 ${lvAgo(gone)}` : "접속 안 함"}</span>` : ""}</span></div>
+      ${p ? `<span class="lvmdot ${p}" role="img" aria-label="${p === "on" ? "토론 화면 보는 중" : p === "away" ? "다른 화면" : "연결 끊김"}" title="${p === "on" ? "토론 화면 보는 중" : p === "away" ? `다른 화면 · ${lvFor(L.pres.away.get(m.mkey))}` : gone ? `연결 끊김 · ${lvAgo(gone)}` : "연결 안 됨"}"></span>` : ""}
+      <div class="lvmem-n"><b>${esc(m.real_name)}</b><span class="small muted">${esc(m.nick)}${m.nick_set ? " · 직접" : ""}${p === "off" ? ` · <span class="lvm-off">${gone ? `끊김 ${lvAgo(gone)}` : "접속 안 함"}</span>` : p === "away" ? ` · <span class="lvm-away">다른 화면 ${lvFor(L.pres.away.get(m.mkey))}</span>` : ""}</span></div>
       <span class="seg3 lvseg lvseg-s" role="group" aria-label="${esc(m.real_name)} 역할">${["pro", "con", "jury"].map(v => `<button type="button" data-a="lv-team" data-k="${esc(m.mkey)}" data-v="${v}" aria-pressed="${m.team === v}" title="${esc(v === "jury" ? "청중 판정단" : teamL(r, v) + "팀")}" aria-label="${esc(v === "jury" ? "청중 판정단" : teamL(r, v) + "팀")}">${esc(short[v])}</button>`).join("")}</span>
       ${m.team === "jury" ? `<span class="lvmute-x" aria-hidden="true"></span>` : `<button class="lvmute" type="button" data-a="lv-mute" data-k="${esc(m.mkey)}" aria-pressed="${!!m.muted}" title="${m.muted ? "채팅 제한 중 · 눌러서 풀기" : "채팅 허용 중 · 눌러서 잠시 막기"}" aria-label="${m.muted ? "채팅 제한 풀기" : "채팅 잠시 막기"}">${ic(m.muted ? "lock" : "message-circle", "sm")}</button>`}
       ${lvNickCustom(r) && m.nick_set ? `<button class="lvmute" type="button" data-a="lv-nick-reset" data-k="${esc(m.mkey)}" title="부적절한 닉네임을 자동 닉네임으로 되돌리기" aria-label="닉네임 되돌리기">${ic("rotate-clockwise", "sm")}</button>` : ""}</li>` }).join("")}</ul>`
@@ -4418,21 +4420,30 @@ function liveMemRepaint(r){
   const w = document.getElementById("lv-memwrap"); if(w){ const sc = w.querySelector(".lvmem")?.scrollTop || 0; w.innerHTML = liveMemListHTML(r); const u = w.querySelector(".lvmem"); if(u) u.scrollTop = sc }
   const n = document.getElementById("lv-presn"); if(n) n.innerHTML = livePresSum(r);
 }
+/* 학생: 화면이 숨겨지면(홈·다른 앱·다른 탭) away로 알린다. 다시 보이면 바로 되돌린다 */
+function livePresTrack(L){
+  if(!L?.pch || isTeacher()) return;
+  const away = document.visibilityState === "hidden";
+  if(away && !L.awaySince) L.awaySince = Date.now(); if(!away) L.awaySince = 0;
+  try{ const p = L.pch.track(away ? {at:Date.now(), away:true, since:L.awaySince} : {at:Date.now()}); p?.catch?.(() => {}) }catch(e){}
+}
+document.addEventListener("visibilitychange", () => { const r = room(); if(r && isLive(r)) livePresTrack(lv(r)) });
 /* 연결 상태: 같은 방 이름의 presence 채널. 학생은 내부 번호(mkey)만 싣고, 교사는 보기만 한다 */
 function livePres(r){
   const L = lv(r), T = isTeacher() && !S.preview; if(L.pch || !liveRemote()) return;
   const key = T ? "t-" + Math.random().toString(36).slice(2, 8) : L.me?.mkey; if(!key) return;
-  if(T) L.pres = {on:new Set(), gone:new Map(), since:Date.now()};
+  if(T) L.pres = {on:new Set(), gone:new Map(), away:new Map(), since:Date.now()};
   try{
     L.pch = SB.channel("lvp-" + r.id, {config:{presence:{key}}})
       .on("presence", {event:"sync"}, () => {
         if(!T || !L.pres) return;
-        const now = new Set(Object.keys(L.pch.presenceState() || {}).filter(k => !k.startsWith("t-")));
+        const ps = L.pch.presenceState() || {}, now = new Set(Object.keys(ps).filter(k => !k.startsWith("t-")));
+        now.forEach(k => { const x = (ps[k] || []).find(v => v && v.away) ; if(x) L.pres.away.set(k, +x.since || Date.now()); else L.pres.away.delete(k) });
         L.pres.on.forEach(k => { if(!now.has(k)) L.pres.gone.set(k, Date.now()) });
         if(!L.pres.ok){ L.pres.ok = true; L.pres.since = Date.now() }
         L.pres.on = now; liveMemRepaint(r);
       })
-      .subscribe(st => { if(st === "SUBSCRIBED" && !T) L.pch.track({at:Date.now()}).catch?.(() => {}) });
+      .subscribe(st => { if(st === "SUBSCRIBED" && !T) livePresTrack(L) });
   }catch(e){ L.pch = null }
   if(T && !L.presT) L.presT = setInterval(() => { if(room()?.id !== r.id || !document.getElementById("lv-memwrap")) return; liveMemRepaint(r) }, 5000);   // 20초 유예가 지나면 회색으로
 }
@@ -6598,7 +6609,7 @@ function teacherCard(r, p, ps, nav){
    ========================================================= */
 /* 🔄 새 버전 알림: 배포 때마다 APP_VERSION과 version.json의 v를 같은 값으로 올린다.
    GitHub Pages는 화면을 10분쯤 기억하므로, 옛 화면이면 아래쪽에 ‘새로고침’ 띠를 띄우고 주소를 바꿔 새로 받는다 */
-const APP_VERSION = "2026-11-10w";
+const APP_VERSION = "2026-11-10x";
 async function checkVersion(){
   if(!/^https?:$/.test(location.protocol)) return;
   try{
