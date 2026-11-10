@@ -230,7 +230,23 @@
       list: async (prefix) => { const st=JSON.parse(localStorage.getItem("__sbstore")||"{}"), seen=new Map(); Object.keys(st).filter(k=>k.startsWith(prefix+"/")).forEach(k=>{ const rest=k.slice(prefix.length+1).split("/"); seen.set(rest[0], rest.length>1 ? null : "f") }); return {data:[...seen].map(([name,id])=>({name,id})),error:null} },
       remove: async (paths) => { const st=JSON.parse(localStorage.getItem("__sbstore")||"{}"); paths.forEach(p=>{ const sid=p.split("/")[1]; if(isT || mySids().includes(sid)) delete st[p] }); localStorage.setItem("__sbstore",JSON.stringify(st)); window.__sbLog.push("remove:"+paths.length); return {error:null} }
     })},
-    channel(){ const subs=[]; const c={ on(type,f,cb){ subs.push([f,cb]); return c }, subscribe(sc){ ch.push((ev,row)=>{ for(const [f,cb] of subs){ if(f.event!==ev && f.event!=="*") continue;
+    channel(name, opts){
+      if(String(name||"").startsWith("lvp-")){       // presence: 같은 이름 채널끼리 localStorage로 접속 상태 공유 (1초마다 신호, 4초 넘게 없으면 빠짐)
+        const key=opts?.config?.presence?.key||"anon", PK="__pres", syncs=[]; let me=null, hb=null;
+        const read=()=>{ try{ return JSON.parse(localStorage.getItem(PK)||"{}") }catch(e){ return {} } };
+        const write=o=>localStorage.setItem(PK, JSON.stringify(o));
+        const beat=()=>{ if(!me) return; const o=read(); o[name]=o[name]||{}; o[name][key]={...me, t:Date.now()}; write(o) };
+        const fire=()=>syncs.forEach(f=>f());
+        const pc={ on(type,f,cb){ if(type==="presence") syncs.push(cb); return pc },
+          presenceState(){ const o=read()[name]||{}, now=Date.now(), st={}; for(const k in o) if(now-o[k].t<4000) st[k]=[o[k]]; return st },
+          track(pl){ me=pl||{}; beat(); return Promise.resolve("ok") },
+          untrack(){ me=null; const o=read(); if(o[name]) delete o[name][key]; write(o); return Promise.resolve("ok") },
+          subscribe(sc){ hb=setInterval(()=>{ beat(); fire() }, 1000); window.addEventListener("storage", e=>{ if(e.key===PK) fire() }); if(sc) setTimeout(()=>{ sc("SUBSCRIBED"); fire() }, 10); return pc },
+          unsubscribe(){ clearInterval(hb) } };
+        window.__presStop = () => { clearInterval(hb); me=null };
+        return pc;
+      }
+      const subs=[]; const c={ on(type,f,cb){ subs.push([f,cb]); return c }, subscribe(sc){ ch.push((ev,row)=>{ for(const [f,cb] of subs){ if(f.event!==ev && f.event!=="*") continue;
           if(row.table){ if(f.table!==row.table) continue; if(f.filter && f.filter!=="room_id=eq."+row.room_id) continue; if(!lvCanRead(row)) continue; const x={...row}; delete x.table; if(!isT) delete x.real_name; cb({new:x}); continue }
           if(f.table && f.table!=="docs") continue;
           if(f.filter && f.filter!=="col=eq."+row.col) continue; if(!canRead(row) && ev!=="DELETE") continue; cb(ev==="DELETE"?{old:row}:{new:{id:row.id,data:row.data,col:row.col}}) } }); if(sc) setTimeout(()=>sc("SUBSCRIBED"), 10); return c } }; return c }

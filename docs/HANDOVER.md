@@ -6,6 +6,12 @@
 
 ---
 
+## 2026-11-10w — 실시간 토론(교사): 참여 학생 목록 한 줄 · 거르기 · 찾기 · 연결 상태
+- 목록을 `liveMemListHTML(r)`로 뽑고 `#lv-memwrap`만 다시 그린다(`liveMemRepaint`). 한 줄(약 44px): 연결 점 · 실명/닉네임 · 역할 세그(찬|반|판, data-a/data-v 그대로) · 채팅 제한 아이콘(`lv-mute`) · 닉네임 되돌리기 아이콘(`lv-nick-reset`). 위에 찾기 칸(`#lv-memq`, `S.lvMemQ`, 입력 중 포커스 유지)과 거르기 칩(`lv-memf`: 전체/찬성/반대/판정단/대기/끊김, `S.lvMemF`).
+- **연결 상태**: Supabase Realtime presence 채널 `lvp-<roomId>`(postgres_changes용 채널과 따로, 이름 고정). 학생은 key=mkey로 `track({at})`(실명 없음), 교사는 key `t-…`로 보기만. `presence sync` → `L.pres.on`, 빠지면 `L.pres.gone` 시각. **20초 유예**(`LV_GRACE`) 뒤에야 회색·‘끊김 n분 전’, 5초마다 다시 그림. 첫 sync가 오기 전(`L.pres.ok` 거짓)에는 점·접속 수를 아예 안 그린다 — presence가 막힌 환경에서 모두 회색으로 잘못 보이지 않게. 제목 줄 ‘접속 n / 전체’(`#lv-presn`).
+- **실제 서버에서 presence가 되는지는 확인 못 함**(mock만). Realtime 설정이 ‘private channel만’이면 안 될 수 있다 → 그때는 점이 안 보이고 나머지는 그대로 동작.
+- mock: `channel("lvp-…", {config:{presence:{key}}})`를 localStorage `__pres`로 흉내(1초 신호, 4초 넘으면 빠짐). 테스트 t104.
+
 ## 2026-11-10v — 실시간 토론: 진행 4칸 막대
 - `liveFlowHTML(r)`: ① 대기실 → ② 토론 → ③ 투표·판정(판정단 없으면 ‘투표’) → ④ 결과. 상태는 5개(wait/live/ended/vote/result)지만 `ended`는 칸을 따로 두지 않고 ②에 ✓, ③에 ‘곧 시작’(사용자 결정: 4칸). 토론 중이면 ② 칸에 깜빡이는 점 + LIVE. `aria-label="토론 진행 4단계 중 N단계 · …"`.
 - 학생 머리 카드 ‘진행’ 칸의 상태 칩(`liveStateChip`)과 교사 조작 줄의 상태 칩을 이 막대로 바꿈. 토론 단계(입론·반론·최종 변론)는 그대로 막대 아래에. 교사 버튼 글자 ‘다음: ③ 투표 · 판정 시작’, ‘다음: ④ 판정 마감 · 결과 공개’. 520px 이하는 지금 칸만 글자, 나머지는 숫자만.
