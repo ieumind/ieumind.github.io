@@ -31,7 +31,7 @@ async def main():
     await T.click(f'[data-a=lv-team][data-k="{mk["김가온"]}"][data-v=con]'); await W(T,500); await W(K,1100)
     nk=await K.evaluate(ME); ok('교사가 지정하면 학생에게 반영·닉네임 새로 부여', nk['team']=='con' and nk['nick']=='반대01', str(nk))
     await T.click('[data-a=lv-state][data-v=live]'); await W(T,500); await W(K,1100); await W(C,300)
-    ok('휴대폰 토론방: 탭 2개 표시(채팅·청중 의견)', await K.locator('.lvtabs').is_visible() and await K.locator('.lvtab').count()==2)
+    ok('휴대폰 토론방: 탭 3개 표시(채팅·청중 의견·현황)', await K.locator('.lvtabs').is_visible() and await K.locator('.lvtab').count()==3)
     ok('휴대폰: 채팅 탭이 기본, 청중 의견은 숨김', await K.locator('.lvchat').is_visible() and not await K.locator('.lvnotes').is_visible())
     for i in range(14):
       await K.evaluate(f'(()=>{{const L=lv(S.rooms.find(r=>r.id==="{rid}"));const id=1000+{i};L.msgs.set(id,{{id,mkey:"x",nick:"찬성"+{i},team:{i}%2?"pro":"con",body:"긴 메시지 ".repeat(8),deleted:false,created_at:new Date().toISOString()}})}})()')
