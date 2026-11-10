@@ -6,6 +6,9 @@
 
 ---
 
+## 2026-11-10zc — 진행 바 라벨 겹침 방어
+- 사용자 폰에서 "투표·판정" 끝이 다음 연결선에 가려짐. Chromium 280~510px 스윕으로는 재현 안 됨(iOS 글꼴 폭 차이 추정) → li를 `flex:0 0 auto`로 고정(줄어들지 않게), 라벨 `padding-right:6px`, 연결선 바깥 여백 확대로 방어. t107에 진행 바 겹침 검사 추가.
+
 ## 2026-11-10zb — 한글 단어 중간 줄바꿈(글자 잘림) 전역 수정
 - 원인: body에 word-break가 없어 한글이 글자 단위로 끊김(예: "판정 마/감"). `body{word-break:keep-all;overflow-wrap:break-word}`로 어절 단위 줄바꿈. `overflow-wrap:anywhere`는 flex 안에서 칩이 쪼개져 쓰지 않음.
 - 부작용 방지: `.mtools>*{min-width:0}`(목록 필터 줄이 grid에서 폭을 밀던 문제).

@@ -31,6 +31,9 @@ document.querySelectorAll('button,a,label,li,p,span,b,strong,h1,h2,h3,h4,legend,
   }});
 return out}"""
 async def scan(pg,tag):
+  ov=await pg.evaluate("""()=>{const o=[];document.querySelectorAll('.lvflow').forEach(f=>{const li=[...f.children];li.forEach((e,i)=>{const rg=document.createRange();rg.selectNodeContents(e);let mx=0;[...rg.getClientRects()].forEach(q=>{mx=Math.max(mx,q.right)});const r=e.getBoundingClientRect();if(mx>r.right+1)o.push('글자가 칸 밖으로 '+Math.round(mx-r.right)+'px: '+e.innerText.trim());const n=li[i+1];if(n){const nr=n.getBoundingClientRect();if(Math.abs(nr.top-r.top)<8&&mx>nr.left+1)o.push('다음 칸(연결선)과 겹침: '+e.innerText.trim())}})});return o}""")
+  for x in ov: print('   ',tag,x)
+  ok(f'{tag}: 진행 바 겹침 없음', not ov)
   r=await pg.evaluate(SCAN)
   for x in r: print('   ',tag,x)
   ok(f'{tag}: 잘림/단어 끊김 없음', len(r)==0, len(r))
