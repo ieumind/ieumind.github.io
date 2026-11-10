@@ -6,7 +6,7 @@ fails=[]
 def ok(n,c,x=''):
   print(('PASS ' if c else 'FAIL ')+n,x)
   if not c: fails.append(n)
-SET='''(()=>{S.name="김가온";S.myNames=new Set(["김가온"]);S.rooms=S.rooms.filter(r=>r.id!=="rt");S.rooms.push({id:"rt",title:"t",year:"1학년",template:"debate2",stances:["찬성","반대"],status:"open",createdAt:Date.now(),timer:{dur:3000,endsAt:Date.now()+2500,left:null,at:Date.now()}});S.roomId="rt";S.view="room";render()})()'''
+SET='''(()=>{S.name="김가온";S.myNames=new Set(["김가온"]);S.rooms=S.rooms.filter(r=>r.id!=="rt");S.rooms.push({id:"rt",title:"t",year:"1학년",template:"debate2",stances:["찬성","반대"],status:"open",createdAt:Date.now(),timer:{dur:3000,endsAt:Date.now()+2500,left:null,at:Date.now()}});S.roomId="rt";S.view="room";localStorage.setItem("ieum_linkrooms",'["rt"]');render()})()'''
 LOG='''window.__plays=[];const _p=HTMLMediaElement.prototype.play;HTMLMediaElement.prototype.play=function(){window.__plays.push({muted:this.muted,t:this.currentTime});return _p.apply(this,arguments)};'''
 async def main():
   async with async_playwright() as p:
