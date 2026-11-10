@@ -50,6 +50,8 @@ async def main():
     ok('교사 채팅에도 구분선', await T.locator('#lv-msgs .lvdiv').count()==2)
     # 5) 토론 중에는 고른 값이 잠김 표시
     await W(C,800)
+    ok('진행 막대: 토론 = 2단계 LIVE, 대기실 ✓', await A.locator('.lvhead2 .lvflow li.done').count()==1 and 'LIVE' in await A.locator('.lvhead2 .lvflow li.on').inner_text())
+    await A.screenshot(path='/tmp/claude-0/scr/flow_live.png', clip={'x':240,'y':150,'width':1040,'height':330})
     ok('토론 중: 토론 전 생각 잠김 표시(청중 의견 제목 옆)', '찬성 쪽' in (await C.locator('.lvn-head .lvn-hd').first.inner_text() if await C.locator('.lvn-head .lvn-hd').count() else '') and await C.locator('[data-a=lv-pre]').count()==0)
     ok('채팅 테두리: 판정단 회색·찬성 파랑', await C.locator('.lvchat.lvc-me.jury').count()==1 and await A.locator('.lvchat.lvc-me.pro').count()==1 and '나 · 찬성팀' in await A.locator('.lvc-mine').inner_text())
     ok('의견 카드 겹침 없음(.q 클래스 충돌 없음)', await C.locator('#lv-notelist li.q').count()==0)
@@ -94,13 +96,22 @@ async def main():
     await T.screenshot(path='/tmp/claude-0/shots/t103_T.png', full_page=True)
     # 5) 판정 → 결과: 생각 변화 (찬성 쪽 → 종합 반대 = 바뀜 1명)
     await A.set_viewport_size({'width':1280,'height':900})
-    await T.click('[data-a=lv-state][data-v=ended]'); await W(T,800); await T.click('[data-a=lv-state][data-v=vote]'); await W(T,900); await W(C,1500)
+    await T.click('[data-a=lv-state][data-v=ended]'); await W(T,800); await W(C,1500)
+    ok('진행 막대: 토론 종료 = ② ✓ + ③ 곧 시작', await C.locator('.lvflow li.done').count()==2 and '곧 시작' in await C.locator('.lvflow li.soon').inner_text())
+    await T.screenshot(path='/tmp/claude-0/scr/flow_teacher.png', clip={'x':240,'y':0,'width':1040,'height':420})
+    ok('교사 다음 버튼: ③ 투표', '③' in await T.locator('[data-a=lv-state][data-v=vote]').inner_text())
+    await T.click('[data-a=lv-state][data-v=vote]'); await W(T,900); await W(C,1500)
+    ok('진행 막대: 투표·판정 = 3단계', '4단계 중 3단계' in (await C.locator('.lvflow').first.get_attribute('aria-label')) and '투표·판정' in await C.locator('.lvflow li.on').first.inner_text())
     ok('판정 화면에 토론 전 내 생각', '토론 전 내 생각은' in await C.locator('.lvcard').filter(has_text='판정').first.inner_text())
     await C.evaluate('(()=>{const f=F("lvj:"+room().id); Object.assign(f,{c1:"con",c2:"con",c3:"pro",c4:"con",reason:"반대팀이 질문에 근거를 들어 답했어요."})})()'); await C.click('[data-a=lv-judge]'); await W(C,900)
     await T.click('[data-a=lv-state][data-v=result]'); await W(T,1200); await W(C,2000)
     sh=await C.locator('#lv-sum').inner_text() if await C.locator('#lv-sum').count() else ''
     ok('돌아보기: 판정단의 생각 변화', '판정단의 생각 변화' in sh and '생각이 바뀐 판정단 1명' in sh, sh.replace('\n',' | ')[:400])
     ok('교사 요약에도', '생각이 바뀐 판정단 1명' in await T.locator('#lv-sum').inner_text())
+    # 진행 4칸
+    fl=await C.locator('.lvflow').first.get_attribute('aria-label')
+    ok('진행 막대: 결과 = 4단계 중 4단계', '4단계 중 4단계' in fl and await C.locator('.lvflow li.done').count()==3, fl)
+    ok('교사 조작 줄에도 진행 막대', await T.locator('.lvctl .lvflow').count()==1)
     # 4) 세특용 학생별 기록
     ok('학생에게는 기록 버튼 없음', await C.locator('[data-a=lv-rec]').count()==0 and await A.locator('[data-a=lv-rec]').count()==0)
     await T.click('[data-a=lv-rec]'); await W(T,600)

@@ -67,7 +67,7 @@ async def main():
     await D.click('#lv-msgs [data-a=lv-del] >> nth=0'); await W(D,300); ok('체험: 메시지 지우기', await D.locator('#lv-msgs .lvm.del').count()==1)
     await D.click('#lv-notelist [data-a=lv-note-del] >> nth=0'); await W(D,300); ok('체험: 의견 지우기', await D.locator('#lv-notelist .lvn.del').count()==1)
     await D.click('[data-a=lv-state][data-v=ended]'); await W(D,300); await D.click('[data-a=lv-state][data-v=vote]'); await W(D,300)
-    ok('체험: 종료 → 투표 시작', '투표 중' in await D.inner_text('.lvctl'))
+    ok('체험: 종료 → 투표 시작', '3단계' in (await D.locator('.lvctl .lvflow').get_attribute('aria-label')))
     await D.click('[data-a=lv-state][data-v=result]'); await W(D,300); ok('체험: 결과 공개', '결과' in await D.inner_text('.lvctl'))
     await D.screenshot(path='/tmp/claude-0/lv_demo.png', full_page=True)
     ok('페이지 오류 없음', not errs, str(errs[:3]))

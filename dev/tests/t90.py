@@ -50,7 +50,7 @@ async def main():
     await W(T,800)
     # 시작
     await T.click('[data-a=lv-state][data-v=live]'); await W(T,500); await W(A,1000); await W(C,900)
-    ok('시작하면 대기실 → 토론방으로 화면 전환', await A.locator('.lvlobby').count()==0 and await A.locator('#lv-in').count()==1 and 'LIVE' in await A.inner_text('.lvst') and await C.locator('.lvlobby').count()==0)
+    ok('시작하면 대기실 → 토론방으로 화면 전환', await A.locator('.lvlobby').count()==0 and await A.locator('#lv-in').count()==1 and 'LIVE' in await A.inner_text('.lvflow li.on') and await C.locator('.lvlobby').count()==0)
     ok('판정단은 입력창 없음·청중 의견 쓰기 칸 있음', await C.locator('#lv-in').count()==0 and await C.locator('#lv-note').count()==1)
     ok('찬반 학생은 의견 쓰기 칸 없음(읽기만)', await A.locator('#lv-note').count()==0 and await A.locator('#lv-notelist').count()==1)
     await A.fill('#lv-in','임시 헌장 제1조가 민주 공화제를 선언했어요.'); await A.keyboard.press('Enter'); await W(A,600)
