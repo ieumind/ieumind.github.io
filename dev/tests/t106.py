@@ -45,16 +45,12 @@ async def main():
     for t in ['삭제할 질문 하나','삭제할 질문 둘']:
         sel=f'#lv-notelist .lvn:has-text("{t}")'
         await T.click(sel+' [data-a=lv-note-del]'); await W(T,300); await T.click(sel+' [data-a=lv-note-del-yes]'); await W(T,700)
-    ok('삭제 2개는 한 줄로 묶임', await T.locator('#lv-notelist .lvn.lvn-dg').count()==1 and '삭제된 의견 2개' in await T.locator('#lv-notelist .lvn-dg').inner_text())
-    ok('접힌 상태: 개별 삭제 줄 없음', await T.locator('#lv-notelist .lvn-dg li').count()==0)
-    await T.click('[data-a=lv-ndel-t]'); await W(T,300)
-    ok('펼치면 2줄', await T.locator('#lv-notelist .lvn-dg li').count()==2)
-    await T.click('[data-a=lv-ndel-t]'); await W(T,300)
+    ok('삭제한 의견은 목록에서 사라짐', await T.locator('#lv-notelist .lvn').count()==3 and await T.locator('#lv-notelist .lvn.del').count()==0 and '삭제된' not in await T.locator('#lv-notelist').inner_text())
     # 거르기
     await T.click('[data-a=lv-nf][data-v=t]'); await W(T,300)
-    ok('생각만 보기', await T.locator('#lv-notelist .lvn:not(.del)').count()==1 and await T.locator('#lv-notelist .lvn-dg').count()==0)
+    ok('생각만 보기', await T.locator('#lv-notelist .lvn').count()==1)
     await T.click('[data-a=lv-nf][data-v=q]'); await W(T,300)
-    ok('질문만 보기', await T.locator('#lv-notelist .lvn:not(.del)').count()==2)
+    ok('질문만 보기', await T.locator('#lv-notelist .lvn').count()==2)
     # 반대팀이 첫 질문에 답하면 ‘채팅 답 없는 질문’ 줄어듦
     await B.click('#lv-qpin [data-a=lv-qans] >> nth=0'); await W(B,300); await B.fill('#lv-in','새로 뽑을 수 있었어요.'); await B.click('[data-a=lv-send]'); await W(B,1000); await W(T,1500)
     await T.click('[data-a=lv-nf][data-v=open]'); await W(T,300)
