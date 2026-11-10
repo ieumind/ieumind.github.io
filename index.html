@@ -2715,6 +2715,13 @@ const dueChip = r => !r?.dueAt ? "" : pastDue(r) ? `<span class="chip due over">
   : `<span class="chip due${r.dueAt - Date.now() < 864e5 ? " soon" : ""}">${ic("alarm", "sm")} ${esc(fmtDue(r.dueAt))}까지</span>`;
 const statusChip = r => `<span class="chip st-${statusOf(r)}" title="${STATUS[statusOf(r)].d}">${STATUS[statusOf(r)].l}</span>`;
 const visibleToStudents = r => ["open","closed"].includes(statusOf(r));
+/* 과목 없는 활동은 ‘링크 전용’: 로그인한 학생의 활동 목록·알림에는 올리지 않고, 링크·QR로 연 적이 있거나 내 글이 있을 때만 보인다
+   (서버는 예전 호환 때문에 읽기를 막지 않는다. 화면에서만 가리는 것) */
+const LINKROOM_KEY = "ieum_linkrooms";
+const linkRooms = () => { try{ return new Set(JSON.parse(lsGet(LINKROOM_KEY) || "[]")) }catch(e){ return new Set() } };
+const rememberLinkRoom = id => { const s = linkRooms(); if(s.has(id)) return; s.add(id); lsSet(LINKROOM_KEY, JSON.stringify([...s].slice(-200))) };
+const linkOnlyHidden = r => S.mode === "supa" && !Auth.teacher && !r.courseId && !linkRooms().has(r.id) && !myPost(r) && !(S.view === "room" && S.roomId === r.id);   // 지금 열어 둔 활동은 목록 여부와 상관없이 그대로
+const listedToStudents = r => visibleToStudents(r) && !linkOnlyHidden(r);
 const tnote = r => S.tnotes.find(x => x.id === r.id) || {};             // 교사만 읽는 메모·명단
 
 /* ---- 수업(Course) · 그룹(Group) · 배포(Assignment) ----
@@ -2821,7 +2828,7 @@ function meFor(roomId){
 }
 const myPost = r => S.name ? S.posts.find(p => p.roomId === r.id && isMe(p.author)) : null;
 const postId = r => "p-" + r.id + "-" + hash(S.name);
-const roomsSorted = () => [...S.rooms].filter(r => isTeacher() || (visibleToStudents(r) && (!S.course || r.courseId === S.course))).sort((a,b)=> String(a.year||"").localeCompare(String(b.year||"")) || (a.createdAt||0)-(b.createdAt||0));
+const roomsSorted = () => [...S.rooms].filter(r => isTeacher() || (listedToStudents(r) && (!S.course || r.courseId === S.course))).sort((a,b)=> String(a.year||"").localeCompare(String(b.year||"")) || (a.createdAt||0)-(b.createdAt||0));
 /* 입장 글자가 방 설정과 정확히 같지 않아도(선생님이 입장 이름을 고친 뒤 등) 가장 비슷한 입장을 찾아 같은 모양·색을 보여 준다 */
 const stNorm = s => String(s||"").replace(/[^0-9A-Za-z가-힣]/g, "");
 const stBig = s => { const a = new Set(); for(let i = 0; i < s.length - 1; i++) a.add(s.slice(i, i + 2)); return a };
@@ -3325,7 +3332,7 @@ function applyHash(){
     S.hashRoom = ""; return;
   }
   const [rid, gid] = h.split("/"), r = S.rooms.find(x => x.id === rid);   // 활동 링크: #활동id[/그룹id] (예전 링크 그대로)
-  if(r){ S.view = "room"; S.roomId = r.id; if(gid && r.courseId) setMyGroup(r.courseId, gid) }
+  if(r){ S.view = "room"; S.roomId = r.id; if(gid && r.courseId) setMyGroup(r.courseId, gid); if(!Auth.teacher && !r.courseId) rememberLinkRoom(r.id) }
   else if(S.mode === "supa" && !Auth.teacher && rid && !S.guestProbed?.has(rid)) guestProbe(rid);   // 아직 못 보는 활동이면 ‘이름만 넣고 들어오는 활동’인지 확인
   S.hashRoom = "";
 }
@@ -3404,7 +3411,7 @@ function bellItems(){
   }).filter(x => x.n).sort((a, b) => b.at - a.at).slice(0, 8);
 }
 function stuBell(){
-  const all = [...S.rooms].filter(visibleToStudents).map(forMe).filter(r => !r._ready && !r._notAssigned && statusOf(r) !== "archived" && !courseOf(r.courseId)?.archived);
+  const all = [...S.rooms].filter(listedToStudents).map(forMe).filter(r => !r._ready && !r._notAssigned && statusOf(r) !== "archived" && !courseOf(r.courseId)?.archived);
   const rs = all.filter(isNewRoom), ns = S.courses.filter(c => !c.archived).flatMap(c => noticesOf(c).filter(isNewNotice).map(n => ({n, c})));
   const un = S.mode === "supa" ? inboxOf().filter(msgPending).length : 0;
   return {rs, ns, un, tot:rs.length + ns.length + un};
@@ -3714,7 +3721,7 @@ function viewHome(){
   if(crs && !myGroup(crs.id) && groupsOf(crs).length > 1) return (isTeacher() ? "" : `<button class="linkbtn back" type="button" data-a="dash-back">${ic("arrow-left", "sm")} 내 과목</button>`) + `<div class="home-head"><div><div class="eyebrow">학생 화면</div><h1>${courseIcon(crs, "lg")} ${esc(crs.title)}</h1></div></div>` + groupPickHTML(crs, null);
   if(crs && !myGroup(crs.id) && groupsOf(crs).length === 1) setMyGroup(crs.id, groupsOf(crs)[0].id);
   if(!isTeacher()){                                                    // 학생: 과목 대시보드 (목록 ↔ 과목 하나)
-    const all = [...S.rooms].filter(visibleToStudents).map(forMe).filter(r => !r._ready && !r._notAssigned && statusOf(r) !== "archived" && !courseOf(r.courseId)?.archived);   // 보관한 과목의 활동은 목록에서 뺀다 (내 생각 기록에는 남는다)
+    const all = [...S.rooms].filter(listedToStudents).map(forMe).filter(r => !r._ready && !r._notAssigned && statusOf(r) !== "archived" && !courseOf(r.courseId)?.archived);   // 보관한 과목의 활동은 목록에서 뺀다 (내 생각 기록에는 남는다)
     return viewHomeStudent(all);
   }
   let h = `<div class="home-head"><div><div class="eyebrow">${isTeacher()?"교사 화면":"학생 화면"}</div>
@@ -6643,7 +6650,7 @@ function teacherCard(r, p, ps, nav){
    ========================================================= */
 /* 🔄 새 버전 알림: 배포 때마다 APP_VERSION과 version.json의 v를 같은 값으로 올린다.
    GitHub Pages는 화면을 10분쯤 기억하므로, 옛 화면이면 아래쪽에 ‘새로고침’ 띠를 띄우고 주소를 바꿔 새로 받는다 */
-const APP_VERSION = "2026-11-10zc";
+const APP_VERSION = "2026-11-10zd";
 async function checkVersion(){
   if(!/^https?:$/.test(location.protocol)) return;
   try{
@@ -9519,7 +9526,7 @@ function viewCreate(){
         <div class="cpick" role="group" aria-label="과목">${list.map(x => `<button type="button" class="cchip" data-a="c-course" data-v="${esc(x.id)}" aria-pressed="${sel.includes(x.id)}" ${lockC ? "disabled" : ""}>${courseIcon(x, "sm")} ${esc(x.title)}${x.archived ? " (보관)" : ""}</button>`).join("")}
           <button type="button" class="cchip none" data-a="c-course" data-v="" aria-pressed="${!sel.length}" ${lockC ? "disabled" : ""}>과목 없이 (링크 하나로 사용)</button></div>
         ${lockC ? `<p class="hint">학생 응답이 있어 과목은 바꿀 수 없어요.</p>` : sel.length > 1 ? `<p class="hint">${ic("check", "sm")} ${sel.length}개 과목을 골랐어요. 저장하면 과목마다 같은 활동이 만들어지고, 결과는 과목별로 따로 모여요.</p>` : ""}</div>` : ""}
-      ${!sel.length && S.mode === "supa" ? `<p class="hint" style="margin-top:6px">${ic("users", "sm")} 과목 없이 만들면 학생이 링크·QR로 들어와 <b>개인 코드 없이 이름이나 닉네임만 적고</b> 바로 참여해요. (개인 코드로 들어온 학생은 그대로 학번·이름으로 보여요.)</p>` : ""}
+      ${!sel.length && S.mode === "supa" ? `<p class="hint" style="margin-top:6px">${ic("users", "sm")} 과목 없이 만들면 학생이 링크·QR로 들어와 <b>개인 코드 없이 이름이나 닉네임만 적고</b> 바로 참여해요. (개인 코드로 들어온 학생은 그대로 학번·이름으로 보여요.) <b>학생 활동 목록에는 뜨지 않고</b>, 링크·QR로 연 학생에게만 보여요.</p>` : ""}
       ${(!editR || isDraft) && canPush() && courseOf(f.courseId) ? `<div class="feat c-notify" style="margin-top:12px"><label><input type="checkbox" data-form="create" data-k="notify" ${f.notify === false ? "" : "checked"}><span>${ic("bell", "sm")} 공개할 때 학생 앱에 알림 보내기 <span class="opt">— 고른 과목(그룹) 학생에게</span></span></label></div>` : ""}
       <div class="form-grid" style="margin-top:12px"><div class="q"><label for="c-due">마감 <span class="opt">(선택)</span></label><input type="datetime-local" id="c-due" data-form="create" data-k="dueAt" value="${esc(f.dueAt||"")}">
         <p class="hint">이 시각에 저절로 마감돼요.${f.dueAt ? ` <button class="linkbtn" type="button" data-a="due-clear">지우기</button>` : ""}</p></div></div>
