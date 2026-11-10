@@ -17,7 +17,8 @@ async def main():
     # 3. 고르지 않은 칸의 빈 동그라미는 숨김
     vis = await T.evaluate('[...document.querySelectorAll(".gcard")].map(g=>[g.getAttribute("aria-pressed"), getComputedStyle(g.querySelector(".gc-ck")).visibility])')
     ok('선택 안 한 칸은 빈 동그라미 없음', all(v=='hidden' for a,v in vis if a=='false'))
-    ok('고른 칸은 체크 보임', any(v=='visible' for a,v in vis if a=='true'))
+    ok('고른 칸은 체크 보임(넓은 화면)', any(v=='visible' for a,v in vis if a=='true'))
+    ok('위치 표시(내 과목 › 새 활동)', '새 활동' in await T.locator('.crumb').inner_text())
     # 1단계(11-10h): 활동 유형 7개가 넓은 화면에서 한 줄, 고른 유형 설명은 아래 한 줄
     tops = await T.evaluate('[...new Set([...document.querySelectorAll(".gcard")].map(g=>Math.round(g.getBoundingClientRect().top)))].length')
     ok('활동 유형 7개가 한 줄', tops==1, tops)
