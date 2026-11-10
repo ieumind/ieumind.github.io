@@ -51,7 +51,7 @@ async def main():
     await T.evaluate("(()=>{const r=room(); r.liveCfg={...(r.liveCfg||{}),nickMode:'custom'}; const L=lv(r); for(const m of L.members.values()){ m.nick_set=true; if(m.real_name==='나다은') m.nick='아주긴닉네임김찬성' } liveMemRepaint(r)})()")
     for vw in [1280, 1024, 1440]:
         await T.set_viewport_size({'width':vw,'height':900}); await W(T,300); await T.evaluate('liveMemRepaint(room())'); await W(T,100)
-        bad=await T.evaluate("""[...document.querySelectorAll('.lvmem li')].filter(li=>{const R=li.getBoundingClientRect(); return [...li.querySelectorAll('button,.lvseg-s')].some(b=>b.getBoundingClientRect().right>R.right+1)}).map(li=>li.innerText.replace(/\n/g,' '))""")
+        bad=await T.evaluate("""[...document.querySelectorAll('.lvmem li')].filter(li=>{const R=li.getBoundingClientRect(); return [...li.querySelectorAll('button,.lvseg-s')].some(b=>b.getBoundingClientRect().right>R.right+1)}).map(li=>li.innerText.split(String.fromCharCode(10)).join(' '))""")
         ok(f'목록 줄 넘침 없음({vw}px)', not bad, bad)
     st=await T.locator('.lvmem li', has_text='나다은').locator('.lvmem-n .small').inner_text()
     ok('상태 글자가 닉네임보다 앞', st.startswith('다른 화면'), st)
