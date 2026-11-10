@@ -2005,7 +2005,9 @@ details.help.helpcta > summary:hover{border-color:var(--accent)}
 .lvmemd .lvmem{gap:3px}.lvmemd .lvmem-n{flex:1 1 auto;min-width:0;flex-direction:column;line-height:1.3}.lvmemd .lvmem-n b{font-size:14px}.lvmemd .lvmem-n .small{font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .lvseg-s button{min-width:30px;padding:3px 7px;font-size:12.5px}
 .lvmute{flex:0 0 auto;width:30px;height:30px;display:inline-grid;place-items:center;border:1px solid var(--line);border-radius:8px;background:var(--surface);color:var(--muted);cursor:pointer;padding:0}
-.lvmute[aria-pressed="true"]{background:var(--s2);border-color:var(--s2);color:#fff}.lvmute-x{flex:0 0 30px}
+.lvmute[aria-pressed="true"]{background:var(--s2);border-color:var(--s2);color:#fff}
+.lvm-act{flex:0 0 auto;display:flex;gap:4px;min-width:30px;justify-content:flex-end}
+.lvmemd .lvmem li > .lvseg-s{flex:0 0 auto}.lvmemd .lvmem li > .lvmdot{flex:0 0 9px}
 .lvtabs{display:none;gap:6px;margin:12px 0 6px}
 .lvtab{flex:1;display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:44px;border:1px solid var(--line);border-radius:10px;background:var(--surface);color:var(--fg);font:inherit;cursor:pointer}
 .lvtab[aria-pressed="true"]{background:var(--ink);color:#fff;border-color:var(--ink)}
@@ -4410,10 +4412,10 @@ function liveMemListHTML(r){
     ${list.length ? `<ul class="lvmem">${list.map(m => { const p = st(m), gone = L.pres?.gone.get(m.mkey);
       return `<li class="${m.team || "none"}${m.muted ? " muted" : ""}">
       ${p ? `<span class="lvmdot ${p}" role="img" aria-label="${p === "on" ? "토론 화면 보는 중" : p === "away" ? "다른 화면" : "연결 끊김"}" title="${p === "on" ? "토론 화면 보는 중" : p === "away" ? `다른 화면 · ${lvFor(L.pres.away.get(m.mkey))}` : gone ? `연결 끊김 · ${lvAgo(gone)}` : "연결 안 됨"}"></span>` : ""}
-      <div class="lvmem-n"><b>${esc(m.real_name)}</b><span class="small muted">${esc(m.nick)}${m.nick_set ? " · 직접" : ""}${p === "off" ? ` · <span class="lvm-off">${gone ? `끊김 ${lvAgo(gone)}` : "접속 안 함"}</span>` : p === "away" ? ` · <span class="lvm-away">다른 화면 ${lvFor(L.pres.away.get(m.mkey))}</span>` : ""}</span></div>
+      <div class="lvmem-n"><b>${esc(m.real_name)}</b><span class="small muted">${p === "off" ? `<span class="lvm-off">${gone ? `${lvAgo(gone)} 끊김` : "접속 안 함"}</span> · ` : p === "away" ? `<span class="lvm-away">다른 화면 ${lvFor(L.pres.away.get(m.mkey))}</span> · ` : ""}${esc(m.nick)}</span></div>
       <span class="seg3 lvseg lvseg-s" role="group" aria-label="${esc(m.real_name)} 역할">${["pro", "con", "jury"].map(v => `<button type="button" data-a="lv-team" data-k="${esc(m.mkey)}" data-v="${v}" aria-pressed="${m.team === v}" title="${esc(v === "jury" ? "청중 판정단" : teamL(r, v) + "팀")}" aria-label="${esc(v === "jury" ? "청중 판정단" : teamL(r, v) + "팀")}">${esc(short[v])}</button>`).join("")}</span>
-      ${m.team === "jury" ? `<span class="lvmute-x" aria-hidden="true"></span>` : `<button class="lvmute" type="button" data-a="lv-mute" data-k="${esc(m.mkey)}" aria-pressed="${!!m.muted}" title="${m.muted ? "채팅 제한 중 · 눌러서 풀기" : "채팅 허용 중 · 눌러서 잠시 막기"}" aria-label="${m.muted ? "채팅 제한 풀기" : "채팅 잠시 막기"}">${ic(m.muted ? "lock" : "message-circle", "sm")}</button>`}
-      ${lvNickCustom(r) && m.nick_set ? `<button class="lvmute" type="button" data-a="lv-nick-reset" data-k="${esc(m.mkey)}" title="부적절한 닉네임을 자동 닉네임으로 되돌리기" aria-label="닉네임 되돌리기">${ic("rotate-clockwise", "sm")}</button>` : ""}</li>` }).join("")}</ul>`
+      <span class="lvm-act">${m.team === "jury" ? "" : `<button class="lvmute" type="button" data-a="lv-mute" data-k="${esc(m.mkey)}" aria-pressed="${!!m.muted}" title="${m.muted ? "채팅 제한 중 · 눌러서 풀기" : "채팅 허용 중 · 눌러서 잠시 막기"}" aria-label="${m.muted ? "채팅 제한 풀기" : "채팅 잠시 막기"}">${ic(m.muted ? "lock" : "message-circle", "sm")}</button>`}
+      ${lvNickCustom(r) && m.nick_set ? `<button class="lvmute" type="button" data-a="lv-nick-reset" data-k="${esc(m.mkey)}" title="부적절한 닉네임을 자동 닉네임으로 되돌리기" aria-label="닉네임 되돌리기">${ic("rotate-clockwise", "sm")}</button>` : ""}</span></li>` }).join("")}</ul>`
       : `<p class="muted small">${q ? "찾는 학생이 없어요." : "해당하는 학생이 없어요."}</p>`}`;
 }
 function liveMemRepaint(r){
@@ -6612,7 +6614,7 @@ function teacherCard(r, p, ps, nav){
    ========================================================= */
 /* 🔄 새 버전 알림: 배포 때마다 APP_VERSION과 version.json의 v를 같은 값으로 올린다.
    GitHub Pages는 화면을 10분쯤 기억하므로, 옛 화면이면 아래쪽에 ‘새로고침’ 띠를 띄우고 주소를 바꿔 새로 받는다 */
-const APP_VERSION = "2026-11-10x";
+const APP_VERSION = "2026-11-10y";
 async function checkVersion(){
   if(!/^https?:$/.test(location.protocol)) return;
   try{

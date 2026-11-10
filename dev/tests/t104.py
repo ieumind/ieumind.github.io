@@ -47,6 +47,16 @@ async def main():
     li=await T.locator('.lvmem li', has_text='나다은').inner_text()
     ok('10초 넘으면 다른 화면(노란 점)', await T.locator('.lvmem .lvmdot.away').count()==1 and '다른 화면' in li, li)
     ok('제목 줄: 접속 3 · 다른 화면 1', '다른 화면 1' in await T.locator('#lv-presn').inner_text() and '접속 3 / 3명' in await T.locator('#lv-presn').inner_text())
+    # 넘침 검사: 판정단 + 직접 닉네임(되돌리기 버튼) + 다른 화면, 좁은 칸
+    await T.evaluate("(()=>{const r=room(); r.liveCfg={...(r.liveCfg||{}),nickMode:'custom'}; const L=lv(r); for(const m of L.members.values()){ m.nick_set=true; if(m.real_name==='나다은') m.nick='아주긴닉네임김찬성' } liveMemRepaint(r)})()")
+    for vw in [1280, 1024, 1440]:
+        await T.set_viewport_size({'width':vw,'height':900}); await W(T,300); await T.evaluate('liveMemRepaint(room())'); await W(T,100)
+        bad=await T.evaluate("""[...document.querySelectorAll('.lvmem li')].filter(li=>{const R=li.getBoundingClientRect(); return [...li.querySelectorAll('button,.lvseg-s')].some(b=>b.getBoundingClientRect().right>R.right+1)}).map(li=>li.innerText.replace(/\n/g,' '))""")
+        ok(f'목록 줄 넘침 없음({vw}px)', not bad, bad)
+    st=await T.locator('.lvmem li', has_text='나다은').locator('.lvmem-n .small').inner_text()
+    ok('상태 글자가 닉네임보다 앞', st.startswith('다른 화면'), st)
+    await T.set_viewport_size({'width':1280,'height':900}); await W(T,300)
+    await T.locator('.lvmemd').screenshot(path='/tmp/claude-0/scr/mem_fit.png')
     await T.click('[data-a=lv-memf][data-v=away]'); await W(T,200)
     ok('다른 화면만 보기', await T.locator('.lvmem li').count()==1 and '나다은' in await T.locator('.lvmem').inner_text())
     await T.locator('.lvmemd').screenshot(path='/tmp/claude-0/scr/mem_away.png')
