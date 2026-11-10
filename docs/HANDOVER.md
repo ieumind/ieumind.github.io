@@ -6,6 +6,14 @@
 
 ---
 
+## 2026-11-10o — 실시간 토론 ④ 반박 인용 · 좋은 근거 (서버 변경 있음)
+- 서버(`supabase/live_marks.sql`, 운영 DB에 마이그레이션 `live_marks_reply`로 적용함): `debate_msgs.reply_to`, 새 표 `debate_marks`(판정단 표시, 본인·교사만 읽기, 1인 30개), `debate_send(p_room, p_body, p_reply default null)`(예전 2개 인자 호출도 됨), `debate_mark(p_room, p_msg, p_on)`, `debate_mark_sum(p_room)`(교사는 언제나, 학생은 결과 공개 뒤), `debate_purge`에 marks 삭제 추가, realtime에 debate_marks 추가.
+- 화면: 토론자는 남의 메시지에 ‘이 말에 반박’ → 입력칸 위 인용 띠(`.lvreply`, ✕로 취소) → 보낸 메시지에 인용줄(`.lvm-q`, 누르면 원래 메시지로 이동·반짝). 판정단은 메시지마다 ‘좋은 근거’ 켜고 끄기(`.lvmark`), 판정 화면에 ‘내가 표시한 발언’ 목록(`liveMyMarksHTML`). 개수(`.lvm-n2`)는 교사에게만(⑤에서 결과 공개 뒤 학생에게).
+- 현황 패널(사용자 의견 반영): 발언 수 막대·팀별 발언 개수는 없앴다(많이 말한 쪽이 이기는 것처럼 읽혀서). 팀별 ‘말한 토론자 n / 전체’와 판정단 의견 수만.
+- 태블릿: 채팅과 의견·현황을 나란히 보이는 기준을 899px → 740px로 내려 태블릿 세로(820px 등)도 나란히. 휴대폰(≤739px)만 탭.
+- 버그 수정 2개: ① `liveLoad`가 두 번 선언돼 있어 나중(예전) 것이 이겨서, 다시 들어오면 청중 의견 목록·판정 c4·nick_set을 불러오지 않았다 → 예전 것 삭제. ② 실시간 구독이 잡은 예전 방 객체로 다시 그려 진행 상태가 낡아 보일 수 있었다 → `liveRefresh`에서 지금 방(`room()`)을 쓴다.
+- 목(mock.js)에 debate_mark·debate_mark_sum·reply_to 흉내 추가. t102에 ④ 검사.
+
 ## 2026-11-10n — 실시간 토론 ③ 판정단·현황 패널
 - 학생 토론방 오른쪽(`.lvside`)에 청중 의견 아래 **토론 현황**(`liveStatHTML`, `#lv-stat`): 팀별 발언 수 균형 막대, 아직 말하지 않은 토론자 수(팀별, 이름 없이), 판정단 수·의견 수. 새 메시지·의견이 오면 이 칸만 다시 그린다.
 - 휴대폰(≤899px) 탭: 토론 채팅 / 청중 의견 / 현황 (`L.tab` = chat|notes|stat).

@@ -17,7 +17,7 @@
   const ch=[]; window.__sbLog=[];
   const notify=(ev,row)=>ch.forEach(c=>c(ev,row));
   window.addEventListener("storage",e=>{ if(e.key===KEY){ const old=D; D=JSON.parse(e.newValue); for(const k in D.docs) if(JSON.stringify(D.docs[k])!==JSON.stringify(old.docs[k])) notify(old.docs[k]?"UPDATE":"INSERT",D.docs[k]); for(const k in old.docs) if(!D.docs[k]) notify("DELETE",{col:old.docs[k].col,id:old.docs[k].id});
-    for(const t of ["debate_members","debate_msgs","debate_votes","debate_jury","debate_notes"]){ const a=((old.live||{})[t]||[]), b=((D.live||{})[t]||[]), key=r=>["debate_msgs","debate_notes","debate_jury"].includes(t)?r.id:r.room_id+"|"+r.mkey;
+    for(const t of ["debate_members","debate_msgs","debate_votes","debate_jury","debate_notes","debate_marks"]){ const a=((old.live||{})[t]||[]), b=((D.live||{})[t]||[]), key=r=>["debate_msgs","debate_notes","debate_jury"].includes(t)?r.id:t==="debate_marks"?r.room_id+"|"+r.mkey+"|"+r.msg_id:r.room_id+"|"+r.mkey;
       const om=new Map(a.map(r=>[key(r),JSON.stringify(r)])); b.forEach(r=>{ const o=om.get(key(r)); if(o===undefined) notify("INSERT",{...r,table:t}); else if(o!==JSON.stringify(r)) notify("UPDATE",{...r,table:t}) }) } }});
   const courseOk = (cid, t) => { const c = cid && D.docs["courses/"+cid]; if(!c || !Array.isArray(c.data.members)) return true; return c.data.members.includes(sidFor(t || tidOf(c))) };
   const roomOk = rid => { const r = D.docs["rooms/"+rid]; return !r || courseOk(r.data.courseId, tidOf(r)) };
@@ -34,7 +34,7 @@
   const guestWrite = r => !isT && ["posts","replies"].includes(r.col) && !!r.data.roomId && gIn(r.data.roomId) && roomFree(r.data.roomId) && r.data.author===gNick(r.data.roomId) && !["teacher","class"].includes(r.data.kind||"");
   const canRead = r => canRead0(r) || guestRead(r);
   /* 💬 실시간 토론(debate_*) 흉내: 서버 함수·권한 규칙을 그대로 따라 한다 */
-  const LVD = () => { D.live = D.live || {debate_members:[], debate_msgs:[], debate_votes:[], debate_jury:[], debate_notes:[], seq:0}; D.live.debate_jury = D.live.debate_jury || []; D.live.debate_notes = D.live.debate_notes || []; return D.live };
+  const LVD = () => { D.live = D.live || {debate_members:[], debate_msgs:[], debate_votes:[], debate_jury:[], debate_notes:[], seq:0}; D.live.debate_jury = D.live.debate_jury || []; D.live.debate_notes = D.live.debate_notes || []; D.live.debate_marks = D.live.debate_marks || []; return D.live };
   const lvRoom = rid => { const r = D.docs["rooms/"+rid]; return r && r.data.template==="live" ? r : null };
   const lvKey = rid => { const r = lvRoom(rid); if(!r || isT) return null; const sid = sidFor(tidOf(r)); if(sid && roomOk(rid)) return "s:"+sid; if(gIn(rid) && roomFree(rid)) return "g:"+uid; return null };
   const lvMember = rid => LVD().debate_members.find(m => m.room_id===rid && m.mkey===lvKey(rid));
@@ -118,8 +118,18 @@
           const b = String(p.p_body||"").trim(); if(!b) return no("empty"); if(b.length > 200) return no("long");
           const now = Date.now(), mine = L.debate_msgs.filter(x => x.room_id===rid && x.mkey===m.mkey);
           if(mine.some(x => now - Date.parse(x.created_at) < 3000)) return no("fast"); if(mine.filter(x => now - Date.parse(x.created_at) < 60000).length >= 10) return no("many");
-          const row = {id:++L.seq, room_id:rid, tid:m.tid, mkey:m.mkey, nick:m.nick, team:m.team, body:b, deleted:false, created_at:new Date().toISOString()};
+          const rp = p.p_reply != null && L.debate_msgs.some(x => x.id===p.p_reply && x.room_id===rid && !x.deleted) ? p.p_reply : null;
+          const row = {id:++L.seq, room_id:rid, tid:m.tid, mkey:m.mkey, nick:m.nick, team:m.team, body:b, deleted:false, created_at:new Date().toISOString(), reply_to:rp};
           L.debate_msgs.push(row); lvSave("debate_msgs", row, "INSERT"); window.__sbLog.push("debate_send"); return {data:{ok:true, id:row.id}, error:null} }
+        if(fn==="debate_mark"){ if(!r) return no("denied"); const m = lvMember(rid); if(!m || m.team!=="jury") return no("denied"); if(!["live","ended","vote"].includes(lvState(r))) return no("closed");
+          if(!L.debate_msgs.some(x => x.id===p.p_msg && x.room_id===rid && !x.deleted)) return no("bad");
+          const has = L.debate_marks.find(x => x.room_id===rid && x.mkey===m.mkey && x.msg_id===p.p_msg);
+          if(p.p_on){ if(L.debate_marks.filter(x => x.room_id===rid && x.mkey===m.mkey).length >= 30) return no("many"); if(!has){ const row = {room_id:rid, tid:m.tid, mkey:m.mkey, msg_id:p.p_msg, created_at:new Date().toISOString()}; L.debate_marks.push(row); lvSave("debate_marks", row, "INSERT") } }
+          else if(has){ L.debate_marks.splice(L.debate_marks.indexOf(has), 1); save() }
+          window.__sbLog.push("debate_mark:"+p.p_msg+":"+p.p_on); return {data:{ok:true}, error:null} }
+        if(fn==="debate_mark_sum"){ if(!r) return {data:null, error:null}; const ok = (isT && tidOf(r)===uid) || (lvState(r)==="result" && !!lvMember(rid)); if(!ok) return {data:null, error:null};
+          const n = {}; L.debate_marks.filter(x => x.room_id===rid && L.debate_msgs.some(g => g.id===x.msg_id && !g.deleted)).forEach(x => n[x.msg_id] = (n[x.msg_id]||0)+1);
+          return {data:Object.entries(n).map(([id, c]) => ({id:+id, n:c})).sort((a,b) => b.n-a.n || a.id-b.id), error:null} }
         if(fn==="debate_vote"){ if(!r) return no("denied"); const m = lvMember(rid); if(!m) return no("denied"); if(m.team==="jury") return no("jury"); if(L.debate_members.some(x => x.room_id===rid && x.team==="jury")) return no("byjury"); if(((r.data.live||{}).state||"wait") !== "vote") return no("closed");
           if(!["pro","con"].includes(p.p_choice)) return no("bad"); if(L.debate_votes.some(v => v.room_id===rid && v.mkey===m.mkey)) return no("dup");
           const row = {room_id:rid, mkey:m.mkey, tid:m.tid, choice:p.p_choice, created_at:new Date().toISOString()}; L.debate_votes.push(row); lvSave("debate_votes", row, "INSERT"); return {data:{ok:true}, error:null} }
