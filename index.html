@@ -1676,6 +1676,29 @@ input[type=datetime-local]{border-radius:var(--r)}
 .cform .pguide .tcard{background:var(--surface)}
 /* 새 활동 화면: 고른 칸만 체크 · AI 추천 접이 · 단계 막대 · 학생 화면 미리보기 */
 .gcard:not([aria-pressed="true"]) .gc-ck{visibility:hidden}
+/* 활동 유형: 한 줄 칩 카드 (설명은 고른 유형 아래 한 줄로) */
+.gtypes{grid-template-columns:repeat(7,minmax(0,1fr));gap:8px}
+.gcard{position:relative;grid-template-columns:1fr;justify-items:center;align-items:start;text-align:center;gap:8px;min-height:0;padding:14px 6px 12px}
+.gcard .gc-ic{width:40px;height:40px}
+.gcard .gc-t{justify-items:center}
+.gcard{align-content:start}
+.gcard .gc-t,.gcard .gc-t b{text-align:center}
+.gcard .gc-t b{display:block;font-size:14.5px;line-height:1.35;word-break:keep-all}
+.gcard .gc-t b .beta{display:inline-block;margin:3px 0 0 2px}
+.gcard .gc-t > span:not(.beta){display:none}
+.gcard .gc-ck{position:absolute;top:6px;right:6px;width:18px;height:18px}
+.gsel-d{display:flex;align-items:flex-start;gap:8px;margin:12px 0 0;padding:10px 14px;border-radius:var(--r-lg);background:var(--accent-soft);color:var(--fg);font-size:14.5px;line-height:1.55;word-break:keep-all}
+.gsel-d b{font-weight:700}
+.gsel-d > .ti{color:var(--accent);flex:0 0 auto;margin-top:3px}
+@media (max-width:1100px){ .gtypes{grid-template-columns:repeat(4,minmax(0,1fr))} }
+@media (max-width:700px){
+  .gtypes{grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}
+  .gcard,.cform .gtypes .gcard{grid-template-columns:1fr;align-items:start;padding:10px 2px 8px;gap:6px}
+  .gcard .gc-t b .beta{font-size:10.5px;padding:0 5px}
+  .gcard .gc-ic{width:34px;height:34px}
+  .gcard .gc-t b{font-size:13px}
+  .gsel-d{font-size:14px;padding:9px 12px}
+}
 .cform details.aisug{display:block;padding:0;background:transparent;border:1px dashed var(--line);border-radius:var(--r-lg)}
 .cform details.aisug[open]{background:var(--sunk);border:1px solid transparent}
 details.aisug > summary{list-style:none;cursor:pointer;display:flex;flex-wrap:wrap;align-items:center;gap:2px 8px;padding:12px 16px;min-height:48px;font-weight:600;font-size:15px;color:var(--fg)}
@@ -6065,7 +6088,7 @@ function teacherCard(r, p, ps, nav){
    ========================================================= */
 /* 🔄 새 버전 알림: 배포 때마다 APP_VERSION과 version.json의 v를 같은 값으로 올린다.
    GitHub Pages는 화면을 10분쯤 기억하므로, 옛 화면이면 아래쪽에 ‘새로고침’ 띠를 띄우고 주소를 바꿔 새로 받는다 */
-const APP_VERSION = "2026-11-10g";
+const APP_VERSION = "2026-11-10h";
 async function checkVersion(){
   if(!/^https?:$/.test(location.protocol)) return;
   try{
@@ -8881,7 +8904,8 @@ function viewCreate(){
     <div class="q"><label for="c-intro">활동 소개 <span class="opt">(선택 · 학생에게 보여요)</span></label><input type="text" id="c-intro" data-form="create" data-k="intro" maxlength="120" placeholder="예: 친구와 생각을 나누고 내 생각을 다시 돌아봐요." value="${esc(f.intro||"")}"></div></div></div>
   <div class="card" data-cs="goal" data-sl="활동" style="margin-top:16px"><h3>${N()} 어떤 활동을 할까요?<span class="req" title="꼭 적어야 해요" aria-label="필수">*</span></h3>${lockWrap(locked, `
     <p class="hint gtip">활동을 고르면 아래 칸이 그 활동에 맞게 바뀌어요.</p>
-    <div class="types gtypes" role="group" aria-label="활동">${GOALS.map(g => `<button type="button" class="tcard gcard" data-a="goal" data-v="${g.k}" aria-pressed="${g.k===goal.k}"><span class="gc-ic" aria-hidden="true">${ic(g.icon, "lg")}</span><span class="gc-t"><b>${esc(g.l)}${g.beta ? `<span class="beta" title="시험 중인 기능이에요. AI 답이 틀릴 수 있어요.">Beta</span>` : ""}</b><span>${esc(g.d)}</span></span><span class="gc-ck" aria-hidden="true"></span></button>`).join("")}</div>
+    <div class="types gtypes" role="group" aria-label="활동">${GOALS.map(g => `<button type="button" class="tcard gcard" data-a="goal" data-v="${g.k}" aria-pressed="${g.k===goal.k}" title="${esc(g.d)}"><span class="gc-ic" aria-hidden="true">${ic(g.icon, "lg")}</span><span class="gc-t"><b>${esc(g.l)}${g.beta ? `<span class="beta" title="시험 중인 기능이에요. AI 답이 틀릴 수 있어요.">Beta</span>` : ""}</b><span>${esc(g.d)}</span></span><span class="gc-ck" aria-hidden="true"></span></button>`).join("")}</div>
+    <p class="gsel-d" id="c-gsel">${ic(goal.icon, "sm")}<span><b>${esc(goal.l)}</b> — ${esc(goal.d)}${goal.beta ? " 시험 중인 기능이라 AI 답이 틀릴 수 있어요." : ""}</span></p>
     ${goal.k === "compare" ? `<h3 style="font-size:15px;margin:16px 0 8px">어떤 방식으로 토론할까요?</h3>
       <div class="types" role="group" aria-label="토론 방식">${[["debate2", "일반 토론", "scale", "입장을 정해 글을 쓰고, 친구 글을 읽고 생각의 변화를 기록해요."], ["live", "실시간 토론 채팅", "messages", TEMPLATES.live.modeDesc]].map(([k, l, icn, d]) => `<button type="button" class="tcard" data-a="tpl" data-v="${k}" aria-pressed="${k === "live" ? f.template === "live" : f.template !== "live"}"><b>${ic(icn, "lg")} ${esc(l)}</b><span>${esc(d)}</span></button>`).join("")}</div>` : ""}
     ${goal.t.length > 1 && !goal.hideModes ? `<h3 style="font-size:15px;margin:16px 0 8px">${esc(goal.q || "어떤 방식으로 할까요?")}</h3>

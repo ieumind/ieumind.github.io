@@ -18,6 +18,10 @@ async def main():
     vis = await T.evaluate('[...document.querySelectorAll(".gcard")].map(g=>[g.getAttribute("aria-pressed"), getComputedStyle(g.querySelector(".gc-ck")).visibility])')
     ok('선택 안 한 칸은 빈 동그라미 없음', all(v=='hidden' for a,v in vis if a=='false'))
     ok('고른 칸은 체크 보임', any(v=='visible' for a,v in vis if a=='true'))
+    # 1단계(11-10h): 활동 유형 7개가 넓은 화면에서 한 줄, 고른 유형 설명은 아래 한 줄
+    tops = await T.evaluate('[...new Set([...document.querySelectorAll(".gcard")].map(g=>Math.round(g.getBoundingClientRect().top)))].length')
+    ok('활동 유형 7개가 한 줄', tops==1, tops)
+    ok('고른 유형 설명 한 줄', '질문 활동' in await T.locator('#c-gsel').inner_text())
     # 4. AI 박스는 접혀 있고, 주제 입력칸이 먼저
     ok('AI 추천 박스는 접혀 있음', await T.evaluate('!document.querySelector("details.aisug").open'))
     ok('주제 입력칸이 AI 박스보다 위', await T.evaluate('document.getElementById("c-prompt").compareDocumentPosition(document.querySelector("details.aisug")) & Node.DOCUMENT_POSITION_FOLLOWING'))
