@@ -73,6 +73,18 @@ async def main():
     await C.reload(); await W(C,1800)
     ok('새로고침해도 내 표시 유지', await C.locator(f'#lvm-{mid} .lvmark.on').count()==1)
     ok('새로고침 뒤 청중 의견 목록도 불러옴(예전 중복 함수 버그)', await C.locator('#lv-notelist .lvn').count()>=1, await C.locator('#lv-notelist .lvn').count())
+    # ⑤ 토론 돌아보기: 교사는 종료 뒤부터, 학생은 결과 공개 때 — 좋은 근거 상위·말한 토론자·반박 수·내 발언
+    ok('교사: 종료 뒤 요약 카드', await T.locator('#lv-sum').count()==1 and '좋은 근거 1' in await T.locator('#lv-sum').inner_text())
+    ok('학생: 결과 공개 전에는 요약 없음', await A.locator('#lv-sum').count()==0)
+    await T.click('[data-a=lv-state][data-v=vote]'); await W(T,900); await T.click('[data-a=lv-state][data-v=result]'); await W(T,1200)
+    await W(A,1800); await W(C,800)
+    sm=await A.locator('#lv-sum').inner_text() if await A.locator('#lv-sum').count() else ''
+    ok('학생: 결과 공개 뒤 요약 카드', bool(sm), sm[:80])
+    ok('요약: 말한 토론자·반박·의견 숫자', '2 / 2명' in sm and '1번' in sm and '1개' in sm, sm.replace('\n',' | ')[:300])
+    ok('요약: 판정단이 꼽은 좋은 근거(개수 공개)', '좋은 근거 1' in sm and '반민특위는 꼭 필요했어요' in sm)
+    ok('토론자: 내 발언과 좋은 근거로 꼽힌 수', '좋은 근거로 꼽힌 발언 1개' in sm, sm)
+    ok('판정단은 ‘내 발언’ 없음', await C.locator('#lv-sum').count()==1 and '내 발언' not in await C.locator('#lv-sum').inner_text())
+    ok('성찰로 이동 버튼', await A.locator('[data-a=lv-to-ref]').count()==1 and await A.locator('#lv-ref').count()==1)
     ok('에러 없음', not errs, errs)
     await b.close()
   print('FAILS',fails); raise SystemExit(1 if fails else 0)

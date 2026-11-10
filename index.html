@@ -1966,7 +1966,7 @@ details.help.helpcta > summary:hover{border-color:var(--accent)}
 .lvtabn{min-width:18px;padding:0 5px;border-radius:999px;background:var(--s2);color:#fff;font-size:11.5px;line-height:18px;text-align:center}
 .lvduo{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);gap:12px;align-items:start}
 .lvduo .lvchat{margin-top:12px}.lvduo .lvnotes{margin-top:12px}
-.lvside{display:grid;gap:12px;align-content:start;min-width:0;margin-top:12px}
+.lvduo > .lvside{display:grid;gap:12px;align-content:start;min-width:0;margin-top:12px}   /* 교사 화면 .lvside(아래)와 이름이 같아 학생 토론방 안으로만 */
 @media (max-width:739px){   /* 휴대폰: 채팅 / 청중 의견 / 현황 탭. 태블릿(세로 포함)은 나란히 */
   .lvtabs{display:flex}.lvduo{grid-template-columns:1fr}
   .lvduo[data-tab="chat"] .lvside{display:none}.lvduo[data-tab="notes"] .lvchat,.lvduo[data-tab="notes"] .lvstat{display:none}.lvduo[data-tab="stat"] .lvchat,.lvduo[data-tab="stat"] .lvnotes{display:none}.lvduo .lvchat,.lvduo .lvnotes,.lvduo .lvside{margin-top:0}
@@ -2001,6 +2001,18 @@ details.help.helpcta > summary:hover{border-color:var(--accent)}
 .lvmymk li{padding:6px 10px;border-radius:8px;background:var(--surface);border-left:3px solid var(--s1);font-size:13.5px}.lvmymk li.con{border-left-color:var(--s2)}
 .lvmymk li p{margin:2px 0 0;line-height:1.5}
 .lvmymk-e{margin:6px 0 4px}
+.lvsum{display:grid;gap:10px}
+.lvsum h3{display:flex;align-items:center;gap:6px}
+.lvsum h4{margin:6px 0 0;font-size:14.5px;display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.lvsum-lead{margin:0;font-size:17px;font-weight:700;line-height:1.5;word-break:keep-all}
+.lvsum-k{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.lvsum-k > div{display:grid;gap:2px;padding:10px 12px;border-radius:12px;background:var(--bg);border:1px solid var(--line)}
+.lvsum-k b{font-size:18px}.lvsum-k span{font-size:12.5px;color:var(--muted)}
+.lvsum-l{list-style:none;margin:0;padding:0;display:grid;gap:6px}
+.lvsum-l li{padding:8px 12px;border-radius:10px;border-left:4px solid var(--s1);background:color-mix(in srgb,var(--s1-soft) 60%,var(--surface))}
+.lvsum-l li.con{border-left-color:var(--s2);background:color-mix(in srgb,var(--s2-soft) 60%,var(--surface))}
+.lvsum-l p{margin:4px 0 0;font-size:14.5px;line-height:1.55;white-space:pre-wrap;overflow-wrap:anywhere}
+.lvsum-h{display:flex;flex-wrap:wrap;align-items:center;gap:6px}
 .lvnotes{border:1px solid var(--line);border-radius:12px;background:var(--surface);display:flex;flex-direction:column;overflow:hidden}
 .lvnotelist{list-style:none;margin:0;padding:10px;display:flex;flex-direction:column;gap:8px;overflow-y:auto;min-height:140px;max-height:min(46vh,440px);background:var(--bg)}
 .lvn{padding:8px 10px;border-radius:10px;background:var(--surface);border-left:3px solid var(--muted)}.lvn.q{border-left-color:var(--warn)}.lvn.mine{outline:1px solid var(--line)}.lvn.del{background:transparent;border-left-color:transparent}
@@ -3925,6 +3937,24 @@ function liveMyMarksHTML(r){
   if(!ids.length) return `<p class="small muted lvmymk-e">${ic("circle-check", "sm")} 토론 중에 ‘좋은 근거’로 표시한 발언이 여기 모여요. 판정 이유를 쓸 때 참고하세요.</p>`;
   return `<div class="lvmymk"><h4>${ic("circle-check", "sm")} 내가 ‘좋은 근거’로 표시한 발언 <span class="muted small">${ids.length}개</span></h4><ul>${ids.map(id => { const m = L.msgs.get(id); return `<li class="${m.team === "con" ? "con" : "pro"}"><b>${esc(m.nick)}</b> <span class="lvtag ${m.team === "con" ? "con" : "pro"}">${esc(teamL(r, m.team))}</span><p>${esc(m.body)}</p></li>` }).join("")}</ul></div>`;
 }
+/* 🏁 토론 돌아보기: 결과 한 줄 · 참여 숫자 · 판정단이 꼽은 좋은 근거 · (토론자) 내 발언 → 성찰로 */
+function liveSummaryHTML(r, forTeacher){
+  const L = lv(r), ms = lvMsgs(r).filter(m => !m.deleted), N = L.markN || new Map(), R = L.result;
+  const ppl = forTeacher ? [...L.members.values()] : L.roster, deb = ppl.filter(x => x.team === "pro" || x.team === "con");
+  const spoke = new Set(ms.map(m => m.nick)), said = deb.filter(x => spoke.has(x.nick)).length;
+  const rebut = ms.filter(m => m.reply_to != null).length, notes = [...L.notes.values()].filter(x => !x.deleted).length;
+  const top = ms.filter(m => N.get(+m.id)).sort((a, b) => N.get(+b.id) - N.get(+a.id) || a.id - b.id).slice(0, 5);
+  const lead = !R ? "" : !(R.pro + R.con) ? "투표한 사람이 없었어요" : R.pro === R.con ? `두 팀이 같은 표를 받았어요 (${R.pro} : ${R.con})` : `${esc(teamL(r, R.pro > R.con ? "pro" : "con"))}팀의 주장이 더 설득력 있었다는 표가 많았어요 (${esc(teamL(r, "pro"))} ${R.pro} : ${esc(teamL(r, "con"))} ${R.con})`;
+  const msgLi = m => `<li class="${m.team === "con" ? "con" : "pro"}"><div class="lvsum-h"><b>${esc(m.nick)}</b><span class="lvtag ${m.team === "con" ? "con" : "pro"}">${esc(teamL(r, m.team))}</span>${N.get(+m.id) ? `<span class="lvm-n2">${ic("circle-check", "sm")} 좋은 근거 ${N.get(+m.id)}</span>` : ""}</div><p>${esc(m.body)}</p></li>`;
+  const me = !forTeacher && L.me && ["pro", "con"].includes(L.me.team) ? ms.filter(m => m.mkey === L.me.mkey) : null;
+  return `<section class="card lvcard lvsum" id="lv-sum"><h3>${ic("chart-bar")} 토론 돌아보기</h3>
+    ${lead ? `<p class="lvsum-lead">${lead}</p><p class="small muted">투표는 토론을 돌아보기 위한 참고예요. 역사적 정답이나 절대적인 승패를 뜻하지 않아요.</p>` : ""}
+    <div class="lvsum-k"><div><b>${said} / ${deb.length}명</b><span>말한 토론자</span></div><div><b>${rebut}번</b><span>주고받은 반박</span></div><div><b>${notes}개</b><span>판정단 의견</span></div></div>
+    <h4>${ic("circle-check", "sm")} 판정단이 꼽은 좋은 근거</h4>
+    ${top.length ? `<ul class="lvsum-l">${top.map(msgLi).join("")}</ul>` : `<p class="small muted">판정단이 ‘좋은 근거’로 표시한 발언이 없어요.</p>`}
+    ${me ? `<h4>${ic("user", "sm")} 내 발언 <span class="muted small">${me.length}개 · 좋은 근거로 꼽힌 발언 ${me.filter(m => N.get(+m.id)).length}개</span></h4>${me.length ? `<ul class="lvsum-l">${me.map(msgLi).join("")}</ul>` : `<p class="small muted">이번 토론에서는 발언하지 않았어요.</p>`}` : ""}
+    ${forTeacher ? "" : `<div class="row end"><button class="btn sm" type="button" data-a="lv-to-ref">${ic("plant-2", "sm")} 이 내용을 보며 성찰 쓰기 ${ic("arrow-down", "sm")}</button></div>`}</section>`;
+}
 function liveJudgeHTML(r){
   const L = lv(r), j = L.myJudge, key = "lvj:" + r.id, f = F(key, () => ({c1:"", c2:"", c3:"", c4:"", reason:""}));
   const opt = [{k:"pro", l:`${teamL(r, "pro")}팀 우세`}, {k:"con", l:`${teamL(r, "con")}팀 우세`}];
@@ -4067,7 +4097,8 @@ function viewLiveStudent(r){
   if(s === "vote" && L.rosterFor !== r.live?.at){ L.rosterFor = r.live?.at; liveRoster(r) }
   if(s === "vote") h += jury ? liveJudgeHTML(r) : liveHasJury(r) ? `<section class="card lvcard"><h3>${ic("scale")} 청중 판정단이 판정하는 중이에요</h3><p class="muted small">청중 판정단의 판정이 최종 투표예요. 결과는 선생님이 공개할 때 볼 수 있어요.</p></section>` : liveVoteHTML(r);
   if(s === "result"){
-    if(L.resFor !== r.live?.at){ L.resFor = r.live?.at; L.result = null; liveResult(r).then(() => liveRefresh(r)) }   // 결과가 공개되면 그때 받아 온다
+    if(L.resFor !== r.live?.at){ L.resFor = r.live?.at; L.result = null; Promise.all([liveResult(r), liveMarkSum(r)]).then(() => liveRefresh(r)) }   // 결과가 공개되면 그때 받아 온다
+    h += liveSummaryHTML(r, false);
     h += `<section class="card lvcard"><h3>${ic("chart-bar")} 최종 투표 결과</h3>${liveResultHTML(r)}</section>`;
     if(jury && L.myJudge) h += liveJudgeHTML(r);
     if(L.result?.jury?.n) h += `<section class="card lvcard"><h3>${ic("scale")} 청중 판정 결과</h3>${liveJuryHTML(r)}</section>`;
@@ -4090,14 +4121,14 @@ function liveReflectHTML(r, p){
   const RQ = lvRq(lv(r).me?.team === "jury" || p?.live?.team === "jury"), key = "lvref:" + r.id, fb = p ? repliesOf(p.id).filter(x => x.kind === "teacher") : [];
   if(submitted(p) && !S.lvEdit){
     const b = p.body || {}, d = DEGREES.find(x => x.k === p.change?.degree);
-    return `<section class="card lvcard"><h3>${ic("plant-2")} 나의 토론 성찰 <span class="chip">${ic("check", "sm")} 제출 완료</span></h3>
+    return `<section class="card lvcard" id="lv-ref"><h3>${ic("plant-2")} 나의 토론 성찰 <span class="chip">${ic("check", "sm")} 제출 완료</span></h3>
       ${RQ.map(([k, q], i) => `<div class="lvra"><div class="eyebrow">${i + 1}. ${esc(q)}</div><p class="txt">${esc(b[k] || "")}</p></div>`).join("")}
       ${d ? `<p><span class="chip">${esc(d.l)}</span></p>` : ""}
       ${fb.length ? `<div class="lvfb">${fb.map(x => `<p>${ic("chalkboard-teacher", "sm")} <b>선생님</b> ${esc(x.text)}</p>`).join("")}</div>` : ""}
       ${r.open !== false ? `<div class="row end"><button class="btn sm" type="button" data-a="lv-ref-edit">${ic("pencil", "sm")} 고치기</button></div>` : ""}</section>`;
   }
   const f = F(key, () => ({before:p?.body?.before || "", persuasive:p?.body?.persuasive || "", after:p?.body?.after || "", degree:p?.change?.degree || ""}));
-  return `<section class="card lvcard"><h3>${ic("plant-2")} 토론 성찰</h3><p class="muted small">토론을 돌아보며 세 질문에 답해 주세요. 내가 쓴 메시지와 함께 내 활동 기록에 남아요. (선생님만 볼 수 있어요)</p>
+  return `<section class="card lvcard" id="lv-ref"><h3>${ic("plant-2")} 토론 성찰</h3><p class="muted small">토론을 돌아보며 세 질문에 답해 주세요. 내가 쓴 메시지와 함께 내 활동 기록에 남아요. (선생님만 볼 수 있어요)</p>
     ${RQ.map(([k, q], i) => `<div class="q"><label for="${key}-${k}">${i + 1}. ${esc(q)}</label>${ta(key, k, {rows:3, id:`${key}-${k}`})}</div>`).join("")}
     <fieldset class="q"><legend class="small">생각은 얼마나 달라졌나요?</legend>${radios(key, "degree", DEGREES.map(x => ({k:x.k, l:x.l})), {label:"생각이 달라진 정도"})}</fieldset>
     <div class="row end">${S.lvEdit ? `<button class="btn" type="button" data-a="lv-ref-cancel">취소</button>` : ""}<button class="btn pri" type="button" data-a="lv-ref-save">${ic("check")} 성찰 제출하기</button></div></section>`;
@@ -4117,6 +4148,7 @@ function viewLiveTeacher(r){
   let h = `<section class="lvctl"><div class="lvctl-l">${liveStateChip(r)}<span class="small muted">${esc(s === "wait" ? "학생들이 대기실에서 역할을 고르고 있어요. 시작하면 학생 화면이 토론방으로 바뀌어요." : LIVE_ST[s].d.replace("골라 주세요", "고르는 중이에요").replace("남겨 주세요", "남기는 단계예요"))}</span></div><div class="lvctl-r">${ctl}</div></section>`;
   h += liveKpis(r);
   if(liveRemote() && L.joined && !L.loaded) h += `<p class="who">토론 기록을 불러오는 중…</p>`;
+  if(["ended", "vote", "result"].includes(s)) h += liveSummaryHTML(r, true);
   const ord = {pro:0, con:1, jury:2};
   const mem = [...L.members.values()].sort((a, b) => (ord[a.team] ?? 3) - (ord[b.team] ?? 3) || String(a.real_name).localeCompare(String(b.real_name), "ko"));
   const memHTML = mem.length ? `<ul class="lvmem">${mem.map(m => `<li class="${m.team || "none"}${m.muted ? " muted" : ""}"><div class="lvmem-n"><b>${esc(m.real_name)}</b><span class="small muted">${esc(m.nick)}${m.nick_set ? " · 직접 정함" : ""}</span></div>
@@ -6242,7 +6274,7 @@ function teacherCard(r, p, ps, nav){
    ========================================================= */
 /* 🔄 새 버전 알림: 배포 때마다 APP_VERSION과 version.json의 v를 같은 값으로 올린다.
    GitHub Pages는 화면을 10분쯤 기억하므로, 옛 화면이면 아래쪽에 ‘새로고침’ 띠를 띄우고 주소를 바꿔 새로 받는다 */
-const APP_VERSION = "2026-11-10o";
+const APP_VERSION = "2026-11-10p";
 async function checkVersion(){
   if(!/^https?:$/.test(location.protocol)) return;
   try{
@@ -9518,6 +9550,7 @@ async function act(a, b){
     case "join-open": S.modal = {type:"join"}; break;
     /* ---- 💬 실시간 토론 채팅 ---- */
     case "lv-send": if(r && isLive(r)) await liveSend(r); return;
+    case "lv-to-ref": { document.getElementById("lv-ref")?.scrollIntoView({block:"start", behavior:matchMedia("(prefers-reduced-motion:reduce)").matches ? "auto" : "smooth"}); return }
     case "lv-reply": if(r && isLive(r)){ const L = lv(r); L.replyTo = b.dataset.v ? +b.dataset.v : null; if(L.tab !== "chat") L.tab = "chat"; liveRender(); document.getElementById("lv-in")?.focus() } return;
     case "lv-mark": if(r && isLive(r)) await liveMark(r, +b.dataset.v); return;
     case "lv-jump": { const el = document.getElementById("lvm-" + b.dataset.v); if(el){ el.scrollIntoView({block:"center", behavior:matchMedia("(prefers-reduced-motion:reduce)").matches ? "auto" : "smooth"}); el.classList.add("flash"); setTimeout(() => el.classList.remove("flash"), 1600) } else toast("원래 메시지를 찾을 수 없어요."); return }

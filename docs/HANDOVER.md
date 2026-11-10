@@ -6,6 +6,12 @@
 
 ---
 
+## 2026-11-10p — 실시간 토론 ⑤ 토론 돌아보기 (결과 요약)
+- `liveSummaryHTML(r, forTeacher)`(`#lv-sum`): 투표 결과 한 줄(0표면 ‘투표한 사람이 없었어요’) · 숫자 3칸(말한 토론자 n/전체 · 주고받은 반박 수=`reply_to` 있는 메시지 · 판정단 의견 수) · 판정단이 꼽은 좋은 근거 상위 5개(개수 포함) · 토론자는 ‘내 발언’(좋은 근거로 꼽힌 수) · ‘이 내용을 보며 성찰 쓰기’(`lv-to-ref` → `#lv-ref`).
+- 학생: 결과 공개(result) 때 맨 위에(그때 `debate_mark_sum`도 받아 온다). 교사: 토론 종료·투표·결과 상태에서 채팅 위에.
+- `.lvside` 이름이 교사 화면 옆 칸과 겹쳐(③에서) 교사 옆 칸이 12px 내려가 있던 것 → 학생 규칙을 `.lvduo > .lvside`로 좁힘.
+- 실시간 토론 개편 ①~⑤ 끝. 실제 서버·여러 기기로는 아직 확인하지 못함.
+
 ## 2026-11-10o — 실시간 토론 ④ 반박 인용 · 좋은 근거 (서버 변경 있음)
 - 서버(`supabase/live_marks.sql`, 운영 DB에 마이그레이션 `live_marks_reply`로 적용함): `debate_msgs.reply_to`, 새 표 `debate_marks`(판정단 표시, 본인·교사만 읽기, 1인 30개), `debate_send(p_room, p_body, p_reply default null)`(예전 2개 인자 호출도 됨), `debate_mark(p_room, p_msg, p_on)`, `debate_mark_sum(p_room)`(교사는 언제나, 학생은 결과 공개 뒤), `debate_purge`에 marks 삭제 추가, realtime에 debate_marks 추가.
 - 화면: 토론자는 남의 메시지에 ‘이 말에 반박’ → 입력칸 위 인용 띠(`.lvreply`, ✕로 취소) → 보낸 메시지에 인용줄(`.lvm-q`, 누르면 원래 메시지로 이동·반짝). 판정단은 메시지마다 ‘좋은 근거’ 켜고 끄기(`.lvmark`), 판정 화면에 ‘내가 표시한 발언’ 목록(`liveMyMarksHTML`). 개수(`.lvm-n2`)는 교사에게만(⑤에서 결과 공개 뒤 학생에게).
