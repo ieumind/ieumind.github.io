@@ -1993,6 +1993,19 @@ details.help.helpcta > summary:hover{border-color:var(--accent)}
 .lvflow .lvdot{margin:0}
 .lvctl-l .lvflow{margin:0 10px 0 0}
 @media (max-width:520px){.lvflow li:not(.on):not([aria-current]) .lvf-l{display:none}.lvflow li + li::before{flex-basis:10px;margin:0 4px}}
+.lvmq{margin:0 0 6px}.lvmq input{width:100%;font-size:14px;padding:6px 10px;min-height:34px}
+.lvmf{display:flex;flex-wrap:wrap;gap:4px;margin:0 0 6px}
+.lvmf-c{border:1px solid var(--line);background:var(--surface);color:var(--fg);border-radius:999px;font:inherit;font-size:12.5px;padding:2px 9px;cursor:pointer}
+.lvmf-c b{font-weight:700;margin-left:2px}.lvmf-c[aria-pressed="true"]{background:var(--fg);border-color:var(--fg);color:var(--surface)}
+.lvmf-c.off b{color:var(--s2)}.lvmf-c.off[aria-pressed="true"] b{color:inherit}
+.lvmdot{flex:0 0 auto;width:9px;height:9px;border-radius:50%;background:var(--line);display:inline-block}.lvmdot.on{background:#2e9d5b}.lvmdot.off{background:#a3a9ad}
+.lvpres-s{display:inline-flex;align-items:center;gap:5px;font-weight:600}.lvpres-s.some{color:var(--fg)}
+.lvm-off{color:var(--s2)}
+.lvmemd .lvmem li{flex-wrap:nowrap;padding:5px 8px;gap:8px;border-left-width:3px;border-radius:8px}
+.lvmemd .lvmem{gap:3px}.lvmemd .lvmem-n{flex:1 1 auto;min-width:0;flex-direction:column;line-height:1.3}.lvmemd .lvmem-n b{font-size:14px}.lvmemd .lvmem-n .small{font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lvseg-s button{min-width:30px;padding:3px 7px;font-size:12.5px}
+.lvmute{flex:0 0 auto;width:30px;height:30px;display:inline-grid;place-items:center;border:1px solid var(--line);border-radius:8px;background:var(--surface);color:var(--muted);cursor:pointer;padding:0}
+.lvmute[aria-pressed="true"]{background:var(--s2);border-color:var(--s2);color:#fff}.lvmute-x{flex:0 0 30px}
 .lvtabs{display:none;gap:6px;margin:12px 0 6px}
 .lvtab{flex:1;display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:44px;border:1px solid var(--line);border-radius:10px;background:var(--surface);color:var(--fg);font:inherit;cursor:pointer}
 .lvtab[aria-pressed="true"]{background:var(--ink);color:#fff;border-color:var(--ink)}
@@ -2665,7 +2678,7 @@ const isTeacher = () => Auth.teacher && S.role === "teacher";                   
 const TEACHER_ACTS = new Set(["att-open","att-close","att-cell","att-day","att-fill","att-deldate","att-adddate","att-month-days","att-csv","att-send","pg-facts","avatar-del","pg-mode","pg-type","pg-gen","pg-copy","pg-apply","msg-kind","sc-iadd","sc-idel","sc-paste","sc-ins","sc-tpl-reset","sc-export","msg-open","msg-tab","msg-all","msg-none","msg-cls","msg-send","msg-del","msg-withdraw","msg-repush","note-share","c-course","tname-open","tname-later","tname-save","q-custom","q-add","q-del","q-move","course-archive","courses-more","courses-arch","port-student","port-open","stu-close","stu-nav","tmr-start","tmr-add","tmr-pause","tmr-resume","tmr-stop","note-files","note-memoreq","ctx-img-del","lv-state","lv-team","lv-mute","lv-jhide","lv-note-del","lv-nick-reset","lv-del","lv-auto","qfb","qfb-close","fb-chip","pick-tool","mem-open","mem-cls","mem-all","mem-none","course-gsplit","ai-setup","ai-key-save","ai-key-del","ai-suggest","ai-pick","tadmin-open","tadmin-block","tadmin-tab","fbadmin-done","notice-add","notice-del","note-filter","note-req","note-req-send","note-req-cancel","nudge-open","nudge-all","nudge-clear","acct-del-open","acct-del-yes","create","edit-room","dup","dup-list","del","del-yes","del-ask","del-room","status","toggle","save-feedback","class-fb","pin","pin-move","pin-clear",
   "present","present-exit","pmode","pnav","pq","pper","pnames","prand","fullscreen","export","export-go","save-tset","tpl-save-open","tpl-save","tpl-cancel","use-tpl","create-save","draft-save","publish-draft","discard-form",
   "preview","preview-form","preview-home","qr","copy-link","save-share","mcourse","course-new","course-edit","course-gadd","course-gdel","course-save","course-del","course-del-yes",
-  "roster-open","roster-add","roster-reissue","roster-del","roster-print","rprint-back","rprint-go","lv-rec","lv-rec-f","lv-rec-csv","gsel","asg-add-open","asg-add-cancel","asg-add","asg-st","racts","mview","sview","sfilter","sgo","snav","ttab","mfilter","open-student","goal","tpl","st-add","st-del","depth"]);
+  "roster-open","roster-add","roster-reissue","roster-del","roster-print","rprint-back","rprint-go","lv-rec","lv-rec-f","lv-rec-csv","lv-memf","gsel","asg-add-open","asg-add-cancel","asg-add","asg-st","racts","mview","sview","sfilter","sgo","snav","ttab","mfilter","open-student","goal","tpl","st-add","st-del","depth"]);
 // TODO: 실제 배포 시 교사 인증 및 권한 검증 필요
 //   지금은 화면(S.role)과 저장소 규칙(rooms·tnotes·ttemplates·config는 편집자만 쓰기)으로 나눠 두었다.
 //   학생 응답(posts·replies)은 참여자 누구나 쓸 수 있으므로, 실제 서비스에서는 서버에서 작성자·교사 권한을 확인해야 한다.
@@ -3882,7 +3895,7 @@ async function liveLoad(r){
   await liveMarkSum(r); await liveShift(r);
   if(!T) await liveRoster(r);
   if(T || liveSt(r) === "result") await liveResult(r);
-  L.loaded = true; liveRefresh(r);
+  L.loaded = true; liveRefresh(r); livePres(r);
 }
 function liveSub(r){
   const L = lv(r); if(L.ch || !liveRemote()) return;
@@ -4306,19 +4319,13 @@ function viewLiveTeacher(r){
   if(liveRemote() && L.joined && !L.loaded) h += `<p class="who">토론 기록을 불러오는 중…</p>`;
   if(["ended", "vote", "result"].includes(s)) h += liveSummaryHTML(r, true);
   if(s !== "wait" && L.members.size) h += `<section class="lvrecbar"><div><b>${ic("file-text", "sm")} 학생별 토론 기록</b><span class="small muted">세특·관찰 기록용 · 실명, 역할, 발언, 반박, 판정, 성찰을 한 사람씩 모아요.</span></div><button class="btn" type="button" data-a="lv-rec">${ic("list-details", "sm")} 기록 보기 · 내보내기</button></section>`;
-  const ord = {pro:0, con:1, jury:2};
-  const mem = [...L.members.values()].sort((a, b) => (ord[a.team] ?? 3) - (ord[b.team] ?? 3) || String(a.real_name).localeCompare(String(b.real_name), "ko"));
-  const memHTML = mem.length ? `<ul class="lvmem">${mem.map(m => `<li class="${m.team || "none"}${m.muted ? " muted" : ""}"><div class="lvmem-n"><b>${esc(m.real_name)}</b><span class="small muted">${esc(m.nick)}${m.nick_set ? " · 직접 정함" : ""}</span></div>
-      <span class="seg3 lvseg" role="group" aria-label="${esc(m.real_name)} 역할">${[["pro", teamL(r, "pro")], ["con", teamL(r, "con")], ["jury", "판정단"]].map(([v, l]) => `<button type="button" data-a="lv-team" data-k="${esc(m.mkey)}" data-v="${v}" aria-pressed="${m.team === v}">${esc(l)}</button>`).join("")}</span>
-      ${m.team === "jury" ? `<span class="small muted lvjrole">${ic("scale", "sm")} 관전 · 의견 · 판정</span>` : `<button class="btn sm lvmute" type="button" data-a="lv-mute" data-k="${esc(m.mkey)}" aria-pressed="${!!m.muted}" title="${m.muted ? "채팅 제한 풀기" : "이 학생의 채팅을 잠시 막기"}">${ic(m.muted ? "lock" : "message-circle", "sm")} ${m.muted ? "제한 중" : "채팅 허용"}</button>`}
-      ${lvNickCustom(r) && m.nick_set ? `<button class="linkbtn small" type="button" data-a="lv-nick-reset" data-k="${esc(m.mkey)}" title="부적절한 닉네임을 자동 닉네임으로 되돌리기">닉네임 되돌리기</button>` : ""}</li>`).join("")}</ul>`
-    : `<p class="muted small">아직 들어온 학생이 없어요. 학생에게 링크나 QR을 나눠 주세요.</p>`;
   const canFill = s === "wait" && c.jury > 0 && (c.pro < N || c.con < N);
   h += `<div class="lvgrid"><section class="lvchat tv" aria-label="실시간 채팅"><div class="lvchat-h"><b>${ic("messages", "sm")} 실시간 채팅</b><span class="small muted">메시지 옆 ${ic("trash", "sm")}로 지우면 학생 화면에서도 바로 사라져요.</span></div>
       <ol class="lvmsgs" id="lv-msgs" aria-live="polite">${liveMsgsHTML(r)}</ol><button type="button" class="lvnew" id="lv-newmsg" data-a="lv-bottom" hidden>${ic("arrow-down", "sm")} 새 메시지</button></section>
-    <aside class="lvside"><details class="lvmemd" data-keep="lvmem" ${(S.advOpen?.lvmem ?? !matchMedia("(max-width:700px)").matches) ? "open" : ""}><summary><b>${ic("users", "sm")} 참여 학생 ${c.n}명</b><span class="small muted">실명 ↔ 닉네임 · 역할 · 선생님만 보여요</span></summary>
+    <aside class="lvside"><details class="lvmemd" data-keep="lvmem" ${(S.advOpen?.lvmem ?? !matchMedia("(max-width:700px)").matches) ? "open" : ""}><summary><b>${ic("users", "sm")} 참여 학생 ${c.n}명</b><span class="small" id="lv-presn">${livePresSum(r)}</span><span class="small muted">실명 ↔ 닉네임 · 역할 · 선생님만 보여요</span></summary>
       <p class="small muted lvmode">역할: ${lvSelfMove(r) ? `학생이 대기실에서 직접 옮겨요(찬성·반대 각 ${N}명까지). 여기서도 바로 바꿀 수 있어요.` : "선생님만 정해요. 학생 이름 옆 버튼으로 정해 주세요."} 닉네임: <b>${lvNickCustom(r) ? "학생이 직접 정함" : "자동(찬성01…)"}</b>${canFill ? ` <button class="linkbtn" type="button" data-a="lv-auto">${ic("arrows-shuffle", "sm")} 판정단에서 무작위로 팀 채우기</button>` : ""}</p>
-      ${memHTML}</details>
+      ${c.n ? `<div class="lvmq"><label class="sr" for="lv-memq">학생 찾기</label><input id="lv-memq" type="search" placeholder="이름·닉네임 찾기" value="${esc(S.lvMemQ || "")}" autocomplete="off"></div>` : ""}
+      <div id="lv-memwrap">${liveMemListHTML(r)}</div></details>
       <section class="card lvcard lvnotes tv">${liveNotesPanel(r, false).replace('class="lvnotes"', 'class="lvnotes tvn"')}</section>
       ${s === "vote" || s === "result" ? `<section class="card lvcard"><h3>${ic("chart-bar")} 최종 투표 ${s === "vote" ? "현황 (학생에게는 아직 비공개)" : "결과"}</h3>${liveResultHTML(r, true)}</section>` : ""}
       ${(s === "vote" || s === "result") && c.jury ? `<section class="card lvcard"><h3>${ic("scale")} 청중 판정 ${s === "vote" ? "현황 (학생에게는 아직 비공개)" : "결과"}</h3>${liveJuryHTML(r, true)}</section>` : ""}</aside></div>`;
@@ -4373,6 +4380,61 @@ function liveRecHTML(r){
         ${x.msgs.length ? `<p class="lr-s"><b>발언 전체</b></p><ul>${x.msgs.map(g => `<li>${g.reply_to ? `<span class="lr-t">반박</span> ` : g.reply_note ? `<span class="lr-t">답</span> ` : ""}${esc(g.body)}</li>`).join("")}</ul>` : `<p class="lr-s muted">토론 중 쓴 발언이 없어요.</p>`}`}
       ${x.ref ? `<div class="lr-ref"><p class="lr-s"><b>성찰</b>${x.deg ? ` <span class="lr-t">${esc(x.deg)}</span>` : ""}</p>${x.ref.map(([q, a], i) => `<p class="small"><span class="muted">${CIRC[i]} ${esc(q)}</span><br>${esc(a)}</p>`).join("")}${x.fb.map(t => `<p class="small"><span class="muted">선생님 피드백</span> ${esc(t)}</p>`).join("")}</div>` : `<p class="lr-s muted">성찰을 아직 내지 않았어요.</p>`}
     </article>`).join("") : `<p class="muted">해당하는 학생이 없어요.</p>`}</div>`;
+}
+/* 교사: 참여 학생 목록 (한 줄 · 거르기 · 찾기 · 연결 상태) */
+const LV_GRACE = 20000;                                                   // 이만큼 안 보여야 ‘끊김’ (휴대폰 화면 꺼짐·앱 전환으로 잠깐 끊기는 것은 넘긴다)
+function livePresOf(r, k){                                                // "on" | "off" | null(아직 모름)
+  const L = lv(r); if(!L.pres?.ok) return null;                           // 실시간 연결이 한 번도 안 됐으면 점을 그리지 않는다(모두 회색으로 잘못 보이지 않게)
+  if(L.pres.on.has(k)) return "on";
+  const gone = L.pres.gone.get(k) ?? L.pres.since;
+  return Date.now() - gone < LV_GRACE ? "on" : "off";
+}
+function livePresSum(r){
+  const L = lv(r); if(!L.pres?.ok || !L.members.size) return "";
+  const ms = [...L.members.values()], on = ms.filter(m => livePresOf(r, m.mkey) === "on").length;
+  return `<span class="lvpres-s${on < ms.length ? " some" : ""}"><span class="lvmdot on" aria-hidden="true"></span>접속 ${on} / ${ms.length}명</span>`;
+}
+const lvAgo = t => { const m = Math.floor((Date.now() - t) / 60000); return m < 1 ? "방금" : m < 60 ? `${m}분 전` : `${Math.floor(m / 60)}시간 전` };
+function liveMemListHTML(r){
+  const L = lv(r), ord = {pro:0, con:1, jury:2}, f = S.lvMemF || "all", q = String(S.lvMemQ || "").trim().toLowerCase();
+  const all = [...L.members.values()].sort((a, b) => (ord[a.team] ?? 3) - (ord[b.team] ?? 3) || String(a.real_name).localeCompare(String(b.real_name), "ko"));
+  if(!all.length) return `<p class="muted small">아직 들어온 학생이 없어요. 학생에게 링크나 QR을 나눠 주세요.</p>`;
+  const st = m => livePresOf(r, m.mkey), cnt = {all:all.length, pro:0, con:0, jury:0, none:0, off:0};
+  all.forEach(m => { cnt[m.team || "none"]++; if(st(m) === "off") cnt.off++ });
+  const chips = [["all", "전체"], ["pro", teamL(r, "pro")], ["con", teamL(r, "con")], ["jury", "판정단"], ["none", "대기"], ...(L.pres?.ok ? [["off", "끊김"]] : [])].filter(([k]) => k === "all" || cnt[k] || f === k);
+  const list = all.filter(m => (f === "all" || (f === "off" ? st(m) === "off" : (m.team || "none") === f)) && (!q || String(m.real_name).toLowerCase().includes(q) || String(m.nick).toLowerCase().includes(q)));
+  const short = {pro:teamL(r, "pro").slice(0, 1), con:teamL(r, "con").slice(0, 1), jury:"판"};
+  return `<div class="lvmf" role="group" aria-label="학생 거르기">${chips.map(([k, l]) => `<button type="button" class="lvmf-c ${k}" data-a="lv-memf" data-v="${k}" aria-pressed="${f === k}">${esc(l)} <b>${cnt[k]}</b></button>`).join("")}</div>
+    ${list.length ? `<ul class="lvmem">${list.map(m => { const p = st(m), gone = L.pres?.gone.get(m.mkey);
+      return `<li class="${m.team || "none"}${m.muted ? " muted" : ""}">
+      ${p ? `<span class="lvmdot ${p}" role="img" aria-label="${p === "on" ? "연결됨" : "연결 끊김"}" title="${p === "on" ? "연결됨" : gone ? `연결 끊김 · ${lvAgo(gone)}` : "연결 안 됨"}"></span>` : ""}
+      <div class="lvmem-n"><b>${esc(m.real_name)}</b><span class="small muted">${esc(m.nick)}${m.nick_set ? " · 직접" : ""}${p === "off" ? ` · <span class="lvm-off">${gone ? `끊김 ${lvAgo(gone)}` : "접속 안 함"}</span>` : ""}</span></div>
+      <span class="seg3 lvseg lvseg-s" role="group" aria-label="${esc(m.real_name)} 역할">${["pro", "con", "jury"].map(v => `<button type="button" data-a="lv-team" data-k="${esc(m.mkey)}" data-v="${v}" aria-pressed="${m.team === v}" title="${esc(v === "jury" ? "청중 판정단" : teamL(r, v) + "팀")}" aria-label="${esc(v === "jury" ? "청중 판정단" : teamL(r, v) + "팀")}">${esc(short[v])}</button>`).join("")}</span>
+      ${m.team === "jury" ? `<span class="lvmute-x" aria-hidden="true"></span>` : `<button class="lvmute" type="button" data-a="lv-mute" data-k="${esc(m.mkey)}" aria-pressed="${!!m.muted}" title="${m.muted ? "채팅 제한 중 · 눌러서 풀기" : "채팅 허용 중 · 눌러서 잠시 막기"}" aria-label="${m.muted ? "채팅 제한 풀기" : "채팅 잠시 막기"}">${ic(m.muted ? "lock" : "message-circle", "sm")}</button>`}
+      ${lvNickCustom(r) && m.nick_set ? `<button class="lvmute" type="button" data-a="lv-nick-reset" data-k="${esc(m.mkey)}" title="부적절한 닉네임을 자동 닉네임으로 되돌리기" aria-label="닉네임 되돌리기">${ic("rotate-clockwise", "sm")}</button>` : ""}</li>` }).join("")}</ul>`
+      : `<p class="muted small">${q ? "찾는 학생이 없어요." : "해당하는 학생이 없어요."}</p>`}`;
+}
+function liveMemRepaint(r){
+  const w = document.getElementById("lv-memwrap"); if(w){ const sc = w.querySelector(".lvmem")?.scrollTop || 0; w.innerHTML = liveMemListHTML(r); const u = w.querySelector(".lvmem"); if(u) u.scrollTop = sc }
+  const n = document.getElementById("lv-presn"); if(n) n.innerHTML = livePresSum(r);
+}
+/* 연결 상태: 같은 방 이름의 presence 채널. 학생은 내부 번호(mkey)만 싣고, 교사는 보기만 한다 */
+function livePres(r){
+  const L = lv(r), T = isTeacher() && !S.preview; if(L.pch || !liveRemote()) return;
+  const key = T ? "t-" + Math.random().toString(36).slice(2, 8) : L.me?.mkey; if(!key) return;
+  if(T) L.pres = {on:new Set(), gone:new Map(), since:Date.now()};
+  try{
+    L.pch = SB.channel("lvp-" + r.id, {config:{presence:{key}}})
+      .on("presence", {event:"sync"}, () => {
+        if(!T || !L.pres) return;
+        const now = new Set(Object.keys(L.pch.presenceState() || {}).filter(k => !k.startsWith("t-")));
+        L.pres.on.forEach(k => { if(!now.has(k)) L.pres.gone.set(k, Date.now()) });
+        if(!L.pres.ok){ L.pres.ok = true; L.pres.since = Date.now() }
+        L.pres.on = now; liveMemRepaint(r);
+      })
+      .subscribe(st => { if(st === "SUBSCRIBED" && !T) L.pch.track({at:Date.now()}).catch?.(() => {}) });
+  }catch(e){ L.pch = null }
+  if(T && !L.presT) L.presT = setInterval(() => { if(room()?.id !== r.id || !document.getElementById("lv-memwrap")) return; liveMemRepaint(r) }, 5000);   // 20초 유예가 지나면 회색으로
 }
 function liveRefList(r){
   const ps = postsOf(r.id).filter(p => submitted(p)).sort((a, b) => (b.submittedAt || 0) - (a.submittedAt || 0));
@@ -6536,7 +6598,7 @@ function teacherCard(r, p, ps, nav){
    ========================================================= */
 /* 🔄 새 버전 알림: 배포 때마다 APP_VERSION과 version.json의 v를 같은 값으로 올린다.
    GitHub Pages는 화면을 10분쯤 기억하므로, 옛 화면이면 아래쪽에 ‘새로고침’ 띠를 띄우고 주소를 바꿔 새로 받는다 */
-const APP_VERSION = "2026-11-10v";
+const APP_VERSION = "2026-11-10w";
 async function checkVersion(){
   if(!/^https?:$/.test(location.protocol)) return;
   try{
@@ -9504,6 +9566,7 @@ document.addEventListener("input", e => {
   if(el.id === "roster-q"){ S.rosterQ = el.value; const box = el.closest(".modal"); if(box){ const at = el.selectionStart; render(); const n = document.getElementById("roster-q"); if(n){ n.focus(); n.setSelectionRange(at, at) } } return }
   if(el.id === "n-q"){ S.nq = el.value; const at = el.selectionStart; render(); const n = document.getElementById("n-q"); if(n){ n.focus(); n.setSelectionRange(at, at) } return }
   if(el.id === "msg-q"){ MSGF().q = el.value; msgRefresh(true); return }
+  if(el.id === "lv-memq"){ S.lvMemQ = el.value; const rr = room(); if(rr) liveMemRepaint(rr); return }
   if(el.id === "at-intro"){ attF().intro = el.value; attRefresh(); return }
   if(el.dataset.atAsk !== undefined){ attF().ask[+el.dataset.atAsk] = el.value; return }
   if(el.dataset.attNote !== undefined){ attNoteSet(el.dataset.attNote, el.value); return }
@@ -9842,6 +9905,7 @@ async function act(a, b){
     case "lv-ref-edit": S.lvEdit = true; break;
     case "lv-ref-cancel": S.lvEdit = false; if(r) dropForm("lvref:" + r.id); break;
     case "lv-state": if(r && isLive(r)) await liveSetState(r, b.dataset.v); return;
+    case "lv-memf": if(r && isLive(r)){ S.lvMemF = b.dataset.v; liveMemRepaint(r) } return;
     case "lv-rec": if(r && isLive(r)){ S.lvRecF = "all"; S.modal = {type:"lvrec"} } break;
     case "lv-rec-f": S.lvRecF = b.dataset.v; break;
     case "lv-rec-csv": if(r && isLive(r)) await liveRecSave(r); return;
