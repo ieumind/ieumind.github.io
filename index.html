@@ -1979,6 +1979,20 @@ details.help.helpcta > summary:hover{border-color:var(--accent)}
 .lvncomp{gap:6px}.lvncomp .lvnrow .lvseg button{padding-top:4px;padding-bottom:4px}
 .lvchat.lvc-me{border-width:2px}.lvchat.lvc-me.pro{border-color:color-mix(in srgb,var(--s1) 70%,var(--line))}.lvchat.lvc-me.con{border-color:color-mix(in srgb,var(--s2) 70%,var(--line))}.lvchat.lvc-me.jury{border-color:color-mix(in srgb,var(--muted) 55%,var(--line))}
 .lvc-mine{display:inline-flex;align-items:center;gap:3px;margin-left:6px;padding:1px 8px;border-radius:999px;font-size:11.5px;font-weight:700;color:#fff;background:var(--muted)}.lvsides .lvc-mine.lvc-pro{color:#fff;background:var(--s1)}.lvsides .lvc-mine.lvc-con{color:#fff;background:var(--s2)}
+.lvflow{list-style:none;margin:2px 0 4px;padding:0;display:flex;align-items:center;gap:0;flex-wrap:nowrap;min-width:0}
+.lvflow li{display:flex;align-items:center;gap:5px;font-size:13px;color:var(--muted);white-space:nowrap;min-width:0}
+.lvflow li + li::before{content:"";flex:0 0 14px;height:2px;margin:0 6px;border-radius:2px;background:var(--line)}
+.lvflow li.done + li::before{background:var(--accent)}
+.lvf-n{flex:0 0 auto;width:20px;height:20px;border-radius:50%;display:inline-grid;place-items:center;font-size:11.5px;font-weight:700;border:1.5px solid var(--line);background:var(--surface)}
+.lvf-n .ic,.lvf-n svg{width:13px;height:13px}
+.lvflow li.done{color:var(--fg)}.lvflow li.done .lvf-n{background:var(--accent);border-color:var(--accent);color:#fff}
+.lvflow li.on{color:var(--fg);font-weight:700}.lvflow li.on .lvf-n{border-color:var(--accent);color:var(--accent);box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 18%,transparent)}
+.lvflow li.live .lvf-n{color:var(--s2);border-color:var(--s2);box-shadow:0 0 0 3px color-mix(in srgb,var(--s2) 18%,transparent)}
+.lvflow li.live em{font-style:normal;font-size:10.5px;font-weight:800;color:#fff;background:var(--s2);border-radius:999px;padding:0 6px;margin-left:2px;letter-spacing:.03em}
+.lvflow li.soon em{font-style:normal;font-size:11px;color:var(--accent);font-weight:600}
+.lvflow .lvdot{margin:0}
+.lvctl-l .lvflow{margin:0 10px 0 0}
+@media (max-width:520px){.lvflow li:not(.on):not([aria-current]) .lvf-l{display:none}.lvflow li + li::before{flex-basis:10px;margin:0 4px}}
 .lvtabs{display:none;gap:6px;margin:12px 0 6px}
 .lvtab{flex:1;display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:44px;border:1px solid var(--line);border-radius:10px;background:var(--surface);color:var(--fg);font:inherit;cursor:pointer}
 .lvtab[aria-pressed="true"]{background:var(--ink);color:#fff;border-color:var(--ink)}
@@ -3995,6 +4009,17 @@ function liveMsgsHTML(r){
       ${quote}<p class="lvm-b">${esc(m.body)}</p>${acts ? `<div class="lvm-acts">${acts}</div>` : ""}</li>`;
   })()).join("") + hist.slice(hi).map(div).join("");
 }
+/* 진행 4칸: 대기실 → 토론 → 투표·판정 → 결과. ‘토론 종료’는 ②를 끝낸 채 ③을 기다리는 상태로 보여 준다 */
+function liveFlowHTML(r){
+  const s = liveSt(r), jury = liveCount(r).jury > 0;
+  const steps = [["wait", "대기실"], ["live", "토론"], ["vote", jury ? "투표·판정" : "투표"], ["result", "결과"]];
+  const cur = {wait:0, live:1, ended:1, vote:2, result:3}[s] ?? 0, endedNow = s === "ended";
+  const li = ([k, l], i) => {
+    const done = i < cur || (endedNow && i === 1), on = i === cur && !done, soon = endedNow && i === 2;
+    return `<li class="${done ? "done" : on ? "on" : soon ? "soon" : ""}${on && s === "live" ? " live" : ""}"${on || (endedNow && i === 1) ? ` aria-current="step"` : ""}><span class="lvf-n">${done ? ic("check", "sm") : on && s === "live" ? `<span class="lvdot" aria-hidden="true"></span>` : i + 1}</span><span class="lvf-l">${esc(l)}${soon ? ` <em>곧 시작</em>` : ""}${on && s === "live" ? ` <em>LIVE</em>` : ""}</span></li>`;
+  };
+  return `<ol class="lvflow" aria-label="토론 진행 4단계 중 ${cur + 1}단계 · ${esc(steps[cur][1])}${endedNow ? " 끝남" : ""}">${steps.map(li).join("")}</ol>`;
+}
 function liveStateChip(r){
   const s = liveSt(r);
   return `<span class="lvst ${s}">${s === "live" ? `<span class="lvdot" aria-hidden="true"></span>` : ic(LIVE_ST[s].ic, "sm")} ${LIVE_ST[s].l}</span>`;
@@ -4094,7 +4119,7 @@ function liveHeadHTML(r, hint){
     <div class="lvh-ic" aria-hidden="true">${ic("messages", "lg")}</div>
     <div class="lvh-main">${showTitle ? `<div class="eyebrow">${esc(r.title)}</div>` : ""}<h1><span class="sr">논제: </span>${esc(q)}</h1>${r.intro ? `<p class="muted lvh-intro">${esc(r.intro)}</p>` : ""}</div>
     <div class="lvh-cells">
-      <div class="lvh-cell"><span class="lvh-k">진행</span><span class="lvh-st">${liveStateChip(r)}</span>${s === "live" ? liveRoundSteps(r) : ""}<span class="lvh-v small">${esc(s === "live" && liveRound(r) ? liveRound(r).d : hint)}</span></div>
+      <div class="lvh-cell"><span class="lvh-k">진행</span>${liveFlowHTML(r)}${s === "live" ? liveRoundSteps(r) : ""}<span class="lvh-v small">${esc(s === "live" && liveRound(r) ? liveRound(r).d : hint)}</span></div>
       <div class="lvh-cell"><span class="lvh-k">내 역할</span>${me ? `<span class="lvme ${esc(t || "none")}">${ic("user", "sm")} <b>${esc(me.nick)}</b> · ${esc(roleL(r, t))}</span>` : `<span class="small muted">들어가는 중…</span>`}</div>
       <div class="lvh-cell"><span class="lvh-k">참여</span><span class="lvh-v"><b class="pro">${esc(teamL(r, "pro"))} ${c.pro}/${N}</b> · <b class="con">${esc(teamL(r, "con"))} ${c.con}/${N}</b> · 판정단 ${c.jury}</span></div>
     </div>
@@ -4266,10 +4291,10 @@ function viewLiveTeacher(r){
   const btn = (v, label, icn, pri) => `<button class="btn${pri ? " pri" : ""}" type="button" data-a="lv-state" data-v="${v}">${ic(icn)} ${label}</button>`;
   const ctl = s === "wait" ? btn("live", "토론 시작", "player-play", 1)
     : s === "live" ? btn("ended", "토론 종료", "player-stop", 1)
-    : s === "ended" ? btn("vote", c.jury ? "최종 투표 · 판정 시작" : "최종 투표 시작", "chart-bar", 1) + btn("live", "토론 다시 열기", "player-play")
-    : s === "vote" ? btn("result", c.jury ? "투표 · 판정 마감 · 결과 공개" : "투표 종료 · 결과 공개", "check", 1) + btn("ended", "투표 취소", "x")
+    : s === "ended" ? btn("vote", `다음: ③ ${c.jury ? "투표 · 판정 시작" : "투표 시작"}`, "chart-bar", 1) + btn("live", "토론 다시 열기", "player-play")
+    : s === "vote" ? btn("result", `다음: ④ ${c.jury ? "판정 마감 · 결과 공개" : "결과 공개"}`, "check", 1) + btn("ended", "투표 취소", "x")
     : btn("vote", "투표 다시 열기", "chart-bar");
-  let h = liveConnHTML(r) + `<section class="lvctl"><div class="lvctl-l">${liveStateChip(r)}<span class="small muted">${esc(s === "wait" ? "학생들이 대기실에서 역할을 고르고 있어요. 시작하면 학생 화면이 토론방으로 바뀌어요." : LIVE_ST[s].d.replace("골라 주세요", "고르는 중이에요").replace("남겨 주세요", "남기는 단계예요"))}</span></div><div class="lvctl-r">${ctl}</div></section>`;
+  let h = liveConnHTML(r) + `<section class="lvctl"><div class="lvctl-l">${liveFlowHTML(r)}<span class="small muted lvctl-d">${esc(s === "wait" ? "학생들이 대기실에서 역할을 고르고 있어요. 시작하면 학생 화면이 토론방으로 바뀌어요." : LIVE_ST[s].d.replace("골라 주세요", "고르는 중이에요").replace("남겨 주세요", "남기는 단계예요"))}</span></div><div class="lvctl-r">${ctl}</div></section>`;
   if(s === "live"){
     const cur = r.live?.round || "", ci = LIVE_ROUNDS.findIndex(x => x.k === cur), nxt = LIVE_ROUNDS[ci + 1]?.k, tmrOn = S.lvRoundTmr ?? true;
     h += `<section class="lvrounds" aria-label="토론 단계"><span class="lvr-k">${ic("stairs", "sm")} 토론 단계</span>
@@ -6511,7 +6536,7 @@ function teacherCard(r, p, ps, nav){
    ========================================================= */
 /* 🔄 새 버전 알림: 배포 때마다 APP_VERSION과 version.json의 v를 같은 값으로 올린다.
    GitHub Pages는 화면을 10분쯤 기억하므로, 옛 화면이면 아래쪽에 ‘새로고침’ 띠를 띄우고 주소를 바꿔 새로 받는다 */
-const APP_VERSION = "2026-11-10u";
+const APP_VERSION = "2026-11-10v";
 async function checkVersion(){
   if(!/^https?:$/.test(location.protocol)) return;
   try{
