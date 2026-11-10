@@ -92,7 +92,7 @@
 
 /* ---------- 기본 ---------- */
 *{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--f-body);font-size:16px;line-height:1.65}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--f-body);font-size:16px;line-height:1.65;word-break:keep-all;overflow-wrap:break-word}
 button,input,textarea,select{font:inherit;color:inherit}
 :focus-visible{outline:3px solid var(--accent);outline-offset:2px}
 h1,h2,h3{text-wrap:balance;word-break:keep-all;overflow-wrap:break-word;margin:0}
@@ -552,7 +552,7 @@ details.cfold > div{padding:2px 20px 16px;display:grid;gap:12px}
 .stance-ins span{font-size:20px}
 
 /* ---------- 교사: 내 활동 ---------- */
-.mtools{display:grid;gap:10px;margin-bottom:16px}
+.mtools{display:grid;gap:10px;margin-bottom:16px}.mtools>*{min-width:0}
 .mtools input[type=search]{width:100%;border:1px solid var(--line);background:var(--paper);border-radius:10px;padding:10px 14px;font-size:16px}
 .mfilters{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
 .mfilters button{border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:5px 12px;min-height:36px;font-size:14px;cursor:pointer}
@@ -6642,7 +6642,7 @@ function teacherCard(r, p, ps, nav){
    ========================================================= */
 /* 🔄 새 버전 알림: 배포 때마다 APP_VERSION과 version.json의 v를 같은 값으로 올린다.
    GitHub Pages는 화면을 10분쯤 기억하므로, 옛 화면이면 아래쪽에 ‘새로고침’ 띠를 띄우고 주소를 바꿔 새로 받는다 */
-const APP_VERSION = "2026-11-10za";
+const APP_VERSION = "2026-11-10zb";
 async function checkVersion(){
   if(!/^https?:$/.test(location.protocol)) return;
   try{
