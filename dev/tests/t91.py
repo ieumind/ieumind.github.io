@@ -65,7 +65,7 @@ async def main():
     await D.goto('file:///tmp/claude-0/smoke/pdemo.html?demo=1'); await W(D,800); await D.evaluate('S.tour=null; act("open",{dataset:{id:"demo-live"}})'); await W(D,700)
     ok('체험: 예시 학생 8명(판정단 2)·메시지 6개·의견 2개', '8' in await D.inner_text('#lv-kpis') and await D.locator('#lv-msgs .lvm').count()==6 and await D.locator('#lv-notelist .lvn').count()==2 and '찬성01' in await D.inner_text('.lvmem'))
     await D.click('#lv-msgs [data-a=lv-del] >> nth=0'); await W(D,300); ok('체험: 메시지 지우기', await D.locator('#lv-msgs .lvm.del').count()==1)
-    await D.click('#lv-notelist [data-a=lv-note-del] >> nth=0'); await W(D,300); await D.click('#lv-notelist [data-a=lv-note-del-yes]'); await W(D,300); ok('체험: 의견 지우기', await D.locator('#lv-notelist .lvn.del').count()==1)
+    await D.click('#lv-notelist [data-a=lv-note-del] >> nth=0'); await W(D,300); await D.click('#lv-notelist [data-a=lv-note-del-yes]'); await W(D,300); ok('체험: 의견 지우기', await D.locator('#lv-notelist .lvn').count()==1)
     await D.click('[data-a=lv-state][data-v=ended]'); await W(D,300); await D.click('[data-a=lv-state][data-v=vote]'); await W(D,300)
     ok('체험: 종료 → 투표 시작', '3단계' in (await D.locator('.lvctl .lvflow').get_attribute('aria-label')))
     await D.click('[data-a=lv-state][data-v=result]'); await W(D,300); ok('체험: 결과 공개', '결과' in await D.inner_text('.lvctl'))

@@ -2015,7 +2015,7 @@ details.help.helpcta > summary:hover{border-color:var(--accent)}
 .lvn-rn::before{content:"· "}
 .lvn-noans{margin:3px 0 0;font-size:12px}
 .lvn-ask{display:inline-flex;align-items:center;gap:4px;margin-left:auto}.lvn-ask .btn{min-height:28px;padding:2px 10px}.lvn-yes{background:var(--s2);border-color:var(--s2);color:#fff}
-.lvn.lvn-dg{padding:4px 8px;background:transparent;border-left-color:transparent}.lvn-dg ul{list-style:none;margin:2px 0 0;padding:0 0 0 18px;display:grid;gap:2px}.lvn-dg .linkbtn{display:inline-flex;align-items:center;gap:4px}
+
 .lvtabs{display:none;gap:6px;margin:12px 0 6px}
 .lvtab{flex:1;display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:44px;border:1px solid var(--line);border-radius:10px;background:var(--surface);color:var(--fg);font:inherit;cursor:pointer}
 .lvtab[aria-pressed="true"]{background:var(--ink);color:#fff;border-color:var(--ink)}
@@ -2688,7 +2688,7 @@ const isTeacher = () => Auth.teacher && S.role === "teacher";                   
 const TEACHER_ACTS = new Set(["att-open","att-close","att-cell","att-day","att-fill","att-deldate","att-adddate","att-month-days","att-csv","att-send","pg-facts","avatar-del","pg-mode","pg-type","pg-gen","pg-copy","pg-apply","msg-kind","sc-iadd","sc-idel","sc-paste","sc-ins","sc-tpl-reset","sc-export","msg-open","msg-tab","msg-all","msg-none","msg-cls","msg-send","msg-del","msg-withdraw","msg-repush","note-share","c-course","tname-open","tname-later","tname-save","q-custom","q-add","q-del","q-move","course-archive","courses-more","courses-arch","port-student","port-open","stu-close","stu-nav","tmr-start","tmr-add","tmr-pause","tmr-resume","tmr-stop","note-files","note-memoreq","ctx-img-del","lv-state","lv-team","lv-mute","lv-jhide","lv-note-del","lv-nick-reset","lv-del","lv-auto","qfb","qfb-close","fb-chip","pick-tool","mem-open","mem-cls","mem-all","mem-none","course-gsplit","ai-setup","ai-key-save","ai-key-del","ai-suggest","ai-pick","tadmin-open","tadmin-block","tadmin-tab","fbadmin-done","notice-add","notice-del","note-filter","note-req","note-req-send","note-req-cancel","nudge-open","nudge-all","nudge-clear","acct-del-open","acct-del-yes","create","edit-room","dup","dup-list","del","del-yes","del-ask","del-room","status","toggle","save-feedback","class-fb","pin","pin-move","pin-clear",
   "present","present-exit","pmode","pnav","pq","pper","pnames","prand","fullscreen","export","export-go","save-tset","tpl-save-open","tpl-save","tpl-cancel","use-tpl","create-save","draft-save","publish-draft","discard-form",
   "preview","preview-form","preview-home","qr","copy-link","save-share","mcourse","course-new","course-edit","course-gadd","course-gdel","course-save","course-del","course-del-yes",
-  "roster-open","roster-add","roster-reissue","roster-del","roster-print","rprint-back","rprint-go","lv-rec","lv-rec-f","lv-rec-csv","lv-memf","lv-note-del","lv-note-del-no","lv-note-del-yes","lv-nf","lv-ndel-t","gsel","asg-add-open","asg-add-cancel","asg-add","asg-st","racts","mview","sview","sfilter","sgo","snav","ttab","mfilter","open-student","goal","tpl","st-add","st-del","depth"]);
+  "roster-open","roster-add","roster-reissue","roster-del","roster-print","rprint-back","rprint-go","lv-rec","lv-rec-f","lv-rec-csv","lv-memf","lv-note-del","lv-note-del-no","lv-note-del-yes","lv-nf","gsel","asg-add-open","asg-add-cancel","asg-add","asg-st","racts","mview","sview","sfilter","sgo","snav","ttab","mfilter","open-student","goal","tpl","st-add","st-del","depth"]);
 // TODO: 실제 배포 시 교사 인증 및 권한 검증 필요
 //   지금은 화면(S.role)과 저장소 규칙(rooms·tnotes·ttemplates·config는 편집자만 쓰기)으로 나눠 두었다.
 //   학생 응답(posts·replies)은 참여자 누구나 쓸 수 있으므로, 실제 서비스에서는 서버에서 작성자·교사 권한을 확인해야 한다.
@@ -4175,21 +4175,16 @@ function liveNoteFilterHTML(r){
 }
 function liveNotesHTML(r){
   const L = lv(r), T = isTeacher() && !S.preview, f = T ? (S.lvNF || "all") : "all";
-  const sorted = [...L.notes.values()].sort((a, b) => a.id - b.id).filter(x => T || !x.deleted);
-  const list = sorted.filter(x => f === "all" || (x.deleted ? false : f === "q" ? x.kind === "q" : f === "t" ? x.kind !== "q" : liveNoteIsOpenQ(r, x)));
+  const sorted = [...L.notes.values()].sort((a, b) => a.id - b.id).filter(x => !x.deleted);
+  const list = sorted.filter(x => f === "all" || (f === "q" ? x.kind === "q" : f === "t" ? x.kind !== "q" : liveNoteIsOpenQ(r, x)));
   if(!list.length) return `<li class="lv-empty">${f !== "all" ? "이 조건에 맞는 의견이 없어요." : "아직 의견이 없어요. 청중 판정단이 토론을 보며 질문이나 생각을 남겨요."}</li>`;
-  const out = []; let gone = [];
-  const flush = () => { if(!gone.length) return; const open = !!S.lvNDelOpen;
-    out.push(`<li class="lvn del lvn-dg"><button type="button" class="linkbtn small" data-a="lv-ndel-t" aria-expanded="${open}">${ic("trash", "sm")} 삭제된 의견 ${gone.length}개 ${open ? "접기" : "펼치기"}</button>${open ? `<ul>${gone.map(x => `<li class="small muted">${esc(x.nick)}의 의견을 지웠어요.</li>`).join("")}</ul>` : ""}</li>`); gone = [] };
+  const out = [];
   list.forEach(x => {
-    if(x.deleted){ gone.push(x); return }
-    flush();
     const mine = !T && L.me && x.mkey === L.me.mkey, ans = x.kind === "q" ? lvMsgs(r).filter(m => +m.reply_note === +x.id && !m.deleted) : [], real = T ? L.members.get(x.mkey)?.real_name : "", ask = T && String(L.ndelAsk) === String(x.id);
     out.push(`<li class="lvn ${x.kind === "q" ? "lvn-q" : "lvn-t"}${mine ? " mine" : ""}" data-nid="${esc(String(x.id))}"><div class="lvn-h"><b class="lvm-n">${esc(x.nick)}</b>${real ? `<span class="lvn-rn small muted">${esc(real)}</span>` : ""}<span class="lvtag jury">${x.kind === "q" ? "질문" : "생각"}</span><span class="small muted">${esc(noteTgtL(r, x.target))}</span>${mine ? `<span class="small muted">나</span>` : ""}<time class="small muted" datetime="${esc(x.created_at)}">${lvTime(x.created_at)}</time>
       ${T ? (ask ? `<span class="lvn-ask small">지울까요? <button type="button" class="btn sm lvn-yes" data-a="lv-note-del-yes" data-v="${esc(String(x.id))}">지우기</button><button type="button" class="btn sm" data-a="lv-note-del-no">취소</button></span>` : `<button type="button" class="lvm-del" data-a="lv-note-del" data-v="${esc(String(x.id))}" title="이 의견 지우기" aria-label="${esc(x.nick)}의 의견 지우기">${ic("trash", "sm")}</button>`) : ""}</div>
       <p class="lvm-b">${esc(x.body)}</p>${ans.length ? `<p class="lvn-ans small">${ic("circle-check", "sm")} ${[...new Set(ans.map(m => teamL(r, m.team) + "팀"))].map(esc).join("·")}이 답했어요 · ${ans.length}개</p>` : T && x.kind === "q" ? `<p class="small muted lvn-noans">채팅으로 온 답 없음</p>` : ""}</li>`);
   });
-  flush();
   return out.join("");
 }
 function liveNotesPanel(r, canWrite){
@@ -6647,7 +6642,7 @@ function teacherCard(r, p, ps, nav){
    ========================================================= */
 /* 🔄 새 버전 알림: 배포 때마다 APP_VERSION과 version.json의 v를 같은 값으로 올린다.
    GitHub Pages는 화면을 10분쯤 기억하므로, 옛 화면이면 아래쪽에 ‘새로고침’ 띠를 띄우고 주소를 바꿔 새로 받는다 */
-const APP_VERSION = "2026-11-10z";
+const APP_VERSION = "2026-11-10za";
 async function checkVersion(){
   if(!/^https?:$/.test(location.protocol)) return;
   try{
@@ -9949,7 +9944,6 @@ async function act(a, b){
     case "lv-note-del-no": if(r && isLive(r)){ lv(r).ndelAsk = null; liveRefresh(r, "note") } return;
     case "lv-note-del-yes": if(r && isLive(r)){ lv(r).ndelAsk = null; await liveNoteDel(r, b.dataset.v) } return;
     case "lv-nf": if(r && isLive(r)){ S.lvNF = b.dataset.v; liveRefresh(r, "note") } return;
-    case "lv-ndel-t": if(r && isLive(r)){ S.lvNDelOpen = !S.lvNDelOpen; liveRefresh(r, "note") } return;
     case "lv-nick-reset": if(r && isLive(r)) await liveNickReset(r, b.dataset.k); return;
     case "lv-jhide": if(r && isLive(r)) await liveJHide(r, b.dataset.v); return;
     case "lv-retry": if(r && isLive(r)){ const L = lv(r); L.err = null; L.joined = false; L.joining = false; liveJoin(r) } break;
