@@ -14,6 +14,7 @@ async def main():
     await T.click('details[data-keep=adv] > summary'); await W(T)
     secs=lambda: T.eval_on_selector_all('.cf-sec h4','e=>e.map(x=>x.textContent)')
     for d in ['quick','normal','deep']:
+      await T.evaluate('document.querySelectorAll("details.cfold").forEach(d=>d.open=true)'); await T.wait_for_timeout(150)
       await T.click(f'[data-a=depth][data-v={d}]'); await W(T)
       print(d, 'pressed', await pressed(), '| stages', await stages(), '| adv', await secs())
     print('tools:', await T.eval_on_selector_all('.toolchip b','e=>e.map(x=>x.textContent)'))
@@ -24,6 +25,7 @@ async def main():
     await T.select_option('#c-end','both'); await W(T); print('end both stages', await stages())
     await T.screenshot(path='/tmp/claude-0/smoke/mob/create_new.png', full_page=True)
     # change to normal keeps consistent
+    await T.evaluate('document.querySelectorAll("details.cfold").forEach(d=>d.open=true)'); await T.wait_for_timeout(150)
     await T.click('[data-a=depth][data-v=normal]'); await W(T); print('normal again stages', await stages(), '| f', await T.evaluate('[S.form.create.change,S.form.create.revise,S.form.create.initial]'))
     await T.fill('#c-prompt','물질은 왜 상태가 바뀔까?'); await T.click('[data-a=create-save]'); await W(T,600)
     rid=await T.evaluate('S.roomId'); r=[v['data'] for v in (await T.evaluate('JSON.parse(localStorage.getItem("__sbmock"))'))['docs'].values() if v['id']==rid][0]

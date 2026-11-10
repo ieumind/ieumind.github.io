@@ -15,9 +15,11 @@ async def main():
     # essay depth
     await T.click('.thead [data-a=create]'); await W(T); await T.click('[data-a=goal][data-v=write]'); await W(T)
     for d in ['quick','normal','deep']:
+      await T.evaluate('document.querySelectorAll("details.cfold").forEach(d=>d.open=true)'); await T.wait_for_timeout(150)
       await T.click(f'[data-a=depth][data-v={d}]'); await W(T)
       print('essay', d, '->', await T.evaluate('[...document.querySelectorAll(".depth")].filter(x=>x.getAttribute("aria-pressed")==="true").map(x=>x.dataset.v).join()'), await T.evaluate('S.form.create.reveal'))
     await T.click('[data-a=goal][data-v=compare]'); await W(T)
+    await T.evaluate('document.querySelectorAll("details.cfold").forEach(d=>d.open=true)'); await T.wait_for_timeout(150)
     await T.fill('#c-prompt','콜럼버스의 날을 원주민의 날로 바꿔야 할까?'); await T.fill('#c-title','콜럼버스 토론')
     await T.click('[data-a=create-save]'); await W(T,700); rid=await T.evaluate('S.roomId')
     st=await T.evaluate(f'S.rooms.find(r=>r.id==="{rid}").stances')
