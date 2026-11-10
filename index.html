@@ -1908,6 +1908,30 @@ details.help.helpcta > summary:hover{border-color:var(--accent)}
 /* 🚪 대기실 · 💡 청중 의견 */
 .pushmk{color:var(--pri,#2563eb);vertical-align:middle;white-space:nowrap}
 .lvroles{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:12px 0}
+.lvmine{display:flex;flex-wrap:wrap;align-items:center;gap:4px 12px;margin:4px 0 12px;padding:12px 16px;border-radius:12px;background:var(--sunk);border:1px solid var(--line)}
+.lvmine-k{font-size:12.5px;font-weight:700;color:var(--muted)}
+.lvmine > b{font-size:18px}
+.lvmine-n{font-size:14px;color:var(--muted)}.lvmine-n b{color:var(--fg)}
+.lvmine.pro{background:var(--s1-soft);border-color:transparent}.lvmine.pro > b{color:var(--s1)}
+.lvmine.con{background:var(--s2-soft);border-color:transparent}.lvmine.con > b{color:var(--s2)}
+.lvlead{margin:10px 0 0}
+.lvslots{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:12px 0 0}
+.lvslot{display:flex;flex-direction:column;border:2px solid var(--line);border-radius:14px;background:var(--surface);overflow:hidden}
+.lvslot.pro{border-top:4px solid var(--s1)}.lvslot.con{border-top:4px solid var(--s2)}.lvslot.jury{border-top:4px solid var(--muted)}
+.lvslot.me.pro{border-color:var(--s1)}.lvslot.me.con{border-color:var(--s2)}.lvslot.me.jury{border-color:var(--muted)}
+.lvslot .lvrole{border:0;border-radius:0;min-height:72px;background:transparent}
+.lvslot .lvrole:not(:disabled):hover{background:var(--sunk)}
+.lvslot .lvrole.pro[aria-pressed="true"],.lvslot .lvrole.con[aria-pressed="true"],.lvslot .lvrole.jury[aria-pressed="true"]{background:transparent;border:0}
+.lvslot.me.pro{background:var(--s1-soft)}.lvslot.me.con{background:var(--s2-soft)}.lvslot.me.jury{background:var(--sunk)}
+.lvslot.me .lr-l li:not(.me){background:var(--surface)}
+.lvslot.pro .lvrole b{color:var(--s1)}.lvslot.con .lvrole b{color:var(--s2)}
+.lvslot .lvrole:disabled{opacity:1;cursor:default}
+.lvslot .lvrole .lr-act{font-size:12.5px;font-weight:600;color:var(--accent);margin-top:2px}
+.lvslot .lvrole:disabled .lr-act{color:var(--muted)}
+.lr-l{list-style:none;margin:0;padding:0 10px 12px;display:flex;flex-direction:column;gap:4px;min-height:40px}
+.lr-l li{padding:5px 10px;border-radius:8px;background:var(--bg);font-size:14px;overflow-wrap:anywhere}
+.lr-l li.me{outline:2px solid var(--accent);font-weight:600}
+.lr-l li.lr-empty{background:transparent;color:var(--muted);font-size:13px;text-align:center}
 .lvrole{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;padding:12px 8px;min-height:64px;border-radius:12px;border:2px solid var(--line);background:var(--surface);color:var(--fg);font:inherit;cursor:pointer;text-align:center}
 .lvrole b{font-size:15px}.lvrole:disabled{opacity:.5;cursor:not-allowed}
 .lvrole.pro[aria-pressed="true"]{border-color:var(--s1);background:var(--s1-soft);color:var(--s1)}
@@ -1937,6 +1961,8 @@ details.help.helpcta > summary:hover{border-color:var(--accent)}
   .lvtabs{display:flex}.lvduo{grid-template-columns:1fr}
   .lvduo[data-tab="chat"] .lvnotes{display:none}.lvduo[data-tab="notes"] .lvchat{display:none}.lvduo .lvchat,.lvduo .lvnotes{margin-top:0}
   .lvroster{grid-template-columns:1fr}
+  .lvslots{grid-template-columns:1fr}
+  .lvslot{flex-direction:row;align-items:stretch}.lvslot .lvrole{flex:0 0 42%;min-height:64px}.lvslot .lr-l{flex:1;padding:10px 10px 10px 0;justify-content:center}
 }
 .lvchat{position:relative;border:1px solid var(--line);border-radius:12px;background:var(--surface);margin-top:12px;display:flex;flex-direction:column;overflow:hidden}
 .lvchat.on{border-color:color-mix(in srgb,var(--s2) 45%,var(--line))}
@@ -3663,8 +3689,8 @@ async function liveRoster(r){
 }
 function liveRosterPaint(r){
   if(S.view !== "room" || room()?.id !== r.id) return;
-  const a = document.getElementById("lv-roles"), b = document.getElementById("lv-roster");
-  if(a) a.outerHTML = liveRolesHTML(r); if(b) b.outerHTML = liveRosterHTML(r);
+  const b = document.getElementById("lv-roster"), m = document.getElementById("lv-mine");
+  if(b) b.outerHTML = liveRosterHTML(r); if(m) m.outerHTML = liveMineHTML(r);
 }
 function liveRosterPoll(r){
   const L = lv(r); if(L.poll || !liveRemote() || isTeacher()) return;
@@ -3893,16 +3919,20 @@ function liveNotesPanel(r, canWrite){
     <ol class="lvnotelist" id="lv-notelist" aria-live="polite">${liveNotesHTML(r)}</ol>${comp}</section>`;
 }
 
-/* 🚪 대기실(학생): 모두 청중 판정단으로 시작해서, 찬성·반대 자리(팀당 최대 N명)로 옮길 수 있다 */
-function liveRolesHTML(r){
-  const L = lv(r), me = L.me, N = lvN(r), c = liveRosterBox(r), can = lvSelfMove(r) && !S.preview;
-  const btn = (t, l, cnt, full) => `<button type="button" class="lvrole ${t}" data-a="lv-move" data-v="${t}" aria-pressed="${me?.team === t}" ${!can || full || L.moving ? "disabled" : ""}><b>${esc(l)}</b><span class="small">${cnt}</span></button>`;
-  return `<div class="lvroles" id="lv-roles" role="group" aria-label="역할 고르기">${btn("pro", `${teamL(r, "pro")}팀`, `${c.pro} / ${N}명`, c.pro >= N && me?.team !== "pro")}${btn("con", `${teamL(r, "con")}팀`, `${c.con} / ${N}명`, c.con >= N && me?.team !== "con")}${btn("jury", "청중 판정단", `${c.jury}명`, false)}</div>`;
+/* 🚪 대기실(학생): 모두 청중 판정단으로 시작해서, 찬성·반대 자리(팀당 최대 N명)로 옮길 수 있다.
+   역할 카드 3개 안에 바로 그 역할의 닉네임 목록 (예전의 아래 명단 칸과 겹치던 것을 하나로) */
+function liveMineHTML(r){
+  const me = lv(r).me, t = me?.team || "";
+  return `<div class="lvmine ${esc(t || "none")}" id="lv-mine"><span class="lvmine-k">내 자리</span><b>${esc(roleL(r, t))}</b>${me?.nick ? `<span class="lvmine-n">닉네임 <b>${esc(me.nick)}</b></span>` : ""}</div>`;
 }
 function liveRosterHTML(r){
-  const L = lv(r), me = L.me, by = t => L.roster.filter(x => x.team === t).sort((a, b) => String(a.nick).localeCompare(String(b.nick), "ko"));
-  const col = (t, l) => `<div class="lvcol ${t}"><h4>${esc(l)} <span class="muted small">${by(t).length}</span></h4><ul>${by(t).map(x => `<li class="${me && x.nick === me.nick ? "me" : ""}">${esc(x.nick)}${me && x.nick === me.nick ? ` <span class="small muted">나</span>` : ""}</li>`).join("") || `<li class="muted small">아직 없어요</li>`}</ul></div>`;
-  return `<div class="lvroster" id="lv-roster">${col("pro", `${teamL(r, "pro")}팀`)}${col("con", `${teamL(r, "con")}팀`)}${col("jury", "청중 판정단")}</div>`;
+  const L = lv(r), me = L.me, N = lvN(r), c = liveRosterBox(r), can = lvSelfMove(r) && !S.preview;
+  const by = t => L.roster.filter(x => x.team === t).sort((a, b) => String(a.nick).localeCompare(String(b.nick), "ko"));
+  const slot = (t, l, cnt, full) => { const mine = me?.team === t;
+    const act = mine ? `${ic("check", "sm")} 지금 내 자리` : !can ? "" : full ? "자리가 다 찼어요" : "이 자리로 옮기기";
+    return `<div class="lvslot ${t}${mine ? " me" : ""}"><button type="button" class="lvrole ${t}" data-a="lv-move" data-v="${t}" aria-pressed="${mine}" ${!can || full || L.moving ? "disabled" : ""}><b>${esc(l)}</b><span class="small">${cnt}</span>${act ? `<span class="lr-act">${act}</span>` : ""}</button>
+      <ul class="lr-l">${by(t).map(x => `<li class="${me && x.nick === me.nick ? "me" : ""}">${esc(x.nick)}${me && x.nick === me.nick ? ` <span class="small muted">나</span>` : ""}</li>`).join("") || `<li class="lr-empty">아직 없어요</li>`}</ul></div>` };
+  return `<div class="lvslots" id="lv-roster" role="group" aria-label="역할과 참여자">${slot("pro", `${teamL(r, "pro")}팀`, `${c.pro} / ${N}명`, c.pro >= N && me?.team !== "pro")}${slot("con", `${teamL(r, "con")}팀`, `${c.con} / ${N}명`, c.con >= N && me?.team !== "con")}${slot("jury", "청중 판정단", `${c.jury}명`, false)}</div>`;
 }
 function liveLobbyHTML(r){
   const L = lv(r), me = L.me, N = lvN(r), custom = lvNickCustom(r);
@@ -3911,8 +3941,9 @@ function liveLobbyHTML(r){
       <p class="hint">실제 이름은 닉네임으로 쓸 수 없어요. 친구에게는 닉네임만 보여요.</p></div>`
     : `<p class="small muted lvnickauto">${ic("user", "sm")} 닉네임은 역할에 따라 자동으로 정해져요. (예: ${esc(teamL(r, "pro"))}01 · ${esc(teamL(r, "con"))}01 · 판정단01)</p>`;
   return `<section class="card lvcard lvlobby"><h3>${ic("users")} 토론 대기실</h3>
-    <p class="muted small">처음에는 모두 <b>청중 판정단</b>이에요. ${lvSelfMove(r) ? `토론에 직접 참여하고 싶다면 <b>${esc(teamL(r, "pro"))}팀</b>이나 <b>${esc(teamL(r, "con"))}팀</b> 자리로 옮겨 보세요. 각 팀 ${N}명까지예요.` : "선생님이 역할을 정해 줘요. 기다려 주세요."} 청중 판정단은 토론을 지켜보고 질문이나 생각을 남긴 뒤 판정해요.</p>
-    ${liveRolesHTML(r)}${nick}${liveRosterHTML(r)}
+    ${liveMineHTML(r)}${nick}
+    <p class="muted small lvlead">처음에는 모두 <b>청중 판정단</b>이에요. ${lvSelfMove(r) ? `토론에 직접 참여하려면 <b>${esc(teamL(r, "pro"))}팀</b>이나 <b>${esc(teamL(r, "con"))}팀</b> 카드를 눌러 옮겨요. 각 팀 ${N}명까지예요.` : "선생님이 역할을 정해 줘요. 기다려 주세요."} 청중 판정단은 토론을 지켜보며 질문이나 생각을 남긴 뒤 판정해요.</p>
+    ${liveRosterHTML(r)}
     <p class="lvwait small">${ic("hourglass", "sm")} 선생님이 토론을 시작하면 이 화면이 토론방으로 바뀌어요.</p></section>`;
 }
 /* 토론방(학생): 토론 채팅 + 청중 의견. 넓은 화면은 나란히, 좁은 화면은 탭으로 */
@@ -6119,7 +6150,7 @@ function teacherCard(r, p, ps, nav){
    ========================================================= */
 /* 🔄 새 버전 알림: 배포 때마다 APP_VERSION과 version.json의 v를 같은 값으로 올린다.
    GitHub Pages는 화면을 10분쯤 기억하므로, 옛 화면이면 아래쪽에 ‘새로고침’ 띠를 띄우고 주소를 바꿔 새로 받는다 */
-const APP_VERSION = "2026-11-10k";
+const APP_VERSION = "2026-11-10l";
 async function checkVersion(){
   if(!/^https?:$/.test(location.protocol)) return;
   try{
