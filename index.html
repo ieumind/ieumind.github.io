@@ -6650,7 +6650,7 @@ function teacherCard(r, p, ps, nav){
    ========================================================= */
 /* 🔄 새 버전 알림: 배포 때마다 APP_VERSION과 version.json의 v를 같은 값으로 올린다.
    GitHub Pages는 화면을 10분쯤 기억하므로, 옛 화면이면 아래쪽에 ‘새로고침’ 띠를 띄우고 주소를 바꿔 새로 받는다 */
-const APP_VERSION = "2026-11-10zd";
+const APP_VERSION = "2026-11-10ze";
 async function checkVersion(){
   if(!/^https?:$/.test(location.protocol)) return;
   try{
@@ -8999,8 +8999,6 @@ function createRefreshSoon(){ if(CR_RAF) return; CR_RAF = requestAnimationFrame(
 function createRefresh(){
   const box = document.querySelector(".cprev-b"); if(!box) return;
   box.innerHTML = createPreviewHTML(createForm());
-  const ts = document.getElementById("c-title-sum"), tt = (createForm().title || "").trim();
-  if(ts) ts.textContent = tt ? "‘" + tt + "’" : "비워 두면 핵심 질문으로 정해져요";
   buildCstep();
 }
 /* 글이 길어지면 상자가 같이 늘어난다 (field-sizing을 못 쓰는 브라우저용) */
@@ -9465,6 +9463,10 @@ function viewCreate(){
 
   let no = 0; const N = () => `<span class="sn">${CIRC[no++]}</span>`;   // 단계 번호 (보이는 칸만 차례로)
   h += `<nav class="cstep" id="cstep" aria-label="만들기 단계"></nav>`;     // 단계 막대: 그린 뒤 buildCstep()이 채운다
+  h += `<div class="card ctitle-card" data-cs="title" data-sl="이름·소개" style="margin-top:16px"><h3>${N()} 활동 이름·소개 <span class="opt">(선택 · 비워 두면 핵심 질문으로 정해져요)</span></h3>
+    <div class="form-grid">
+    <div class="q"><label for="c-title">활동 이름</label><input type="text" id="c-title" data-form="create" data-k="title" maxlength="60" placeholder="예: 누구를 위한 근대화였을까" value="${esc(f.title||"")}"></div>
+    <div class="q"><label for="c-intro">활동 소개 <span class="opt">(학생에게 보여요)</span></label><input type="text" id="c-intro" data-form="create" data-k="intro" maxlength="120" placeholder="예: 친구와 생각을 나누고 내 생각을 다시 돌아봐요." value="${esc(f.intro||"")}"></div></div></div>`;
   h += `<div class="card" data-cs="goal" data-sl="활동" style="margin-top:16px"><h3>${N()} 어떤 활동을 할까요?<span class="req" title="꼭 적어야 해요" aria-label="필수">*</span></h3>${lockWrap(locked, `
     <p class="hint gtip">활동을 고르면 아래 칸이 그 활동에 맞게 바뀌어요.</p>
     <div class="types gtypes" role="group" aria-label="활동">${GOALS.map(g => `<button type="button" class="tcard gcard" data-a="goal" data-v="${g.k}" aria-pressed="${g.k===goal.k}" title="${esc(g.d)}"><span class="gc-ic" aria-hidden="true">${ic(g.icon, "lg")}</span><span class="gc-t"><b>${esc(g.l)}${g.beta ? `<span class="beta" title="시험 중인 기능이에요. AI 답이 틀릴 수 있어요.">Beta</span>` : ""}</b><span>${esc(g.d)}</span></span><span class="gc-ck" aria-hidden="true"></span></button>`).join("")}</div>
@@ -9532,11 +9534,8 @@ function viewCreate(){
         <p class="hint">이 시각에 저절로 마감돼요.${f.dueAt ? ` <button class="linkbtn" type="button" data-a="due-clear">지우기</button>` : ""}</p></div></div>
       ${sel.map(cid => gschedHTML(courseOf(cid), f, usedG)).join("")}</div>` })();   // 누구와·언제까지: 필수 칸(주제) 바로 다음
   const depthNow = (Object.values(DEPTHS).find(d => d.stages === stg) || {}).label || "";
-  const titleNow = (f.title || "").trim();
   h += `<section class="cmore" data-cs="more" data-sl="더 설정하기"><h3 class="cmore-h">${ic("adjustments", "sm")} 더 설정하기 <span class="opt">(선택) 건드리지 않아도 알맞게 정해져 있어요</span></h3>
-  <details class="cfold" data-keep="title" ${(S.advOpen?.title ?? !!editR) ? "open" : ""}><summary>${ic("tag", "sm")} 활동 이름·소개 <span class="opt" id="c-title-sum">${titleNow ? esc("‘" + titleNow + "’") : "비워 두면 핵심 질문으로 정해져요"}</span></summary><div><div class="form-grid">
-    <div class="q"><label for="c-title">활동 이름 <span class="opt">(선택 · 비워 두면 핵심 질문으로 정해져요)</span></label><input type="text" id="c-title" data-form="create" data-k="title" maxlength="60" placeholder="예: 누구를 위한 근대화였을까" value="${esc(f.title||"")}"></div>
-    <div class="q"><label for="c-intro">활동 소개 <span class="opt">(선택 · 학생에게 보여요)</span></label><input type="text" id="c-intro" data-form="create" data-k="intro" maxlength="120" placeholder="예: 친구와 생각을 나누고 내 생각을 다시 돌아봐요." value="${esc(f.intro||"")}"></div></div></div></details>
+
     <details class="cfold depth-card" data-keep="depth" ${S.advOpen?.depth ? "open" : ""}><summary>${ic("stairs", "sm")} 생각을 어디까지 이어 갈까요? <span class="opt">지금: ${esc(depthNow)} · ${stepsOf(preview).length}단계 · 약 ${estMinutes(preview).join("~")}분</span></summary><div>${lockWrap(locked, `
     <div class="depths" role="group" aria-label="생각 깊이">${Object.entries(DEPTHS).filter(([k]) => !(NO_DEEP.includes(f.template) && k === "deep")).map(([k,d])=>{
       const est = d.stages === stg ? estMinutes(preview) : (() => { const g = {...f}; applyDepth(k, g); return estMinutes(roomFromForm(g)) })();   // 아래 ‘학생은 이렇게 활동해요’와 같은 계산
