@@ -1925,12 +1925,12 @@ details.help.helpcta > summary:hover{border-color:var(--accent)}
 /* 🚪 대기실 · 💡 청중 의견 */
 .pushmk{color:var(--pri,#2563eb);vertical-align:middle;white-space:nowrap}
 .lvroles{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:12px 0}
-.lvmine{display:flex;flex-wrap:wrap;align-items:center;gap:4px 12px;margin:4px 0 12px;padding:12px 16px;border-radius:12px;background:var(--sunk);border:1px solid var(--line)}
-.lvmine-k{font-size:12.5px;font-weight:700;color:var(--muted)}
-.lvmine > b{font-size:18px}
-.lvmine-n{font-size:14px;color:var(--muted)}.lvmine-n b{color:var(--fg)}
-.lvmine.pro{background:var(--s1-soft);border-color:transparent}.lvmine.pro > b{color:var(--s1)}
-.lvmine.con{background:var(--s2-soft);border-color:transparent}.lvmine.con > b{color:var(--s2)}
+.lvseat{display:flex;flex-wrap:wrap;align-items:center;gap:4px 12px;margin:4px 0 12px;padding:12px 16px;border-radius:12px;background:var(--sunk);border:1px solid var(--line)}
+.lvseat-k{font-size:12.5px;font-weight:700;color:var(--muted)}
+.lvseat > b{font-size:18px}
+.lvseat-n{font-size:14px;color:var(--muted)}.lvseat-n b{color:var(--fg)}
+.lvseat.pro{background:var(--s1-soft);border-color:transparent}.lvseat.pro > b{color:var(--s1)}
+.lvseat.con{background:var(--s2-soft);border-color:transparent}.lvseat.con > b{color:var(--s2)}
 .lvlead{margin:10px 0 0}
 .lvslots{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:12px 0 0}
 .lvslot{display:flex;flex-direction:column;border:2px solid var(--line);border-radius:14px;background:var(--surface);overflow:hidden}
@@ -4043,7 +4043,7 @@ function liveStatHTML(r){
    역할 카드 3개 안에 바로 그 역할의 닉네임 목록 (예전의 아래 명단 칸과 겹치던 것을 하나로) */
 function liveMineHTML(r){
   const me = lv(r).me, t = me?.team || "";
-  return `<div class="lvmine ${esc(t || "none")}" id="lv-mine"><span class="lvmine-k">내 자리</span><b>${esc(roleL(r, t))}</b>${me?.nick ? `<span class="lvmine-n">닉네임 <b>${esc(me.nick)}</b></span>` : ""}</div>`;
+  return `<div class="lvseat ${esc(t || "none")}" id="lv-mine"><span class="lvseat-k">내 자리</span><b>${esc(roleL(r, t))}</b>${me?.nick ? `<span class="lvseat-n">닉네임 <b>${esc(me.nick)}</b></span>` : ""}</div>`;
 }
 function liveRosterHTML(r){
   const L = lv(r), me = L.me, N = lvN(r), c = liveRosterBox(r), can = lvSelfMove(r) && !S.preview;
@@ -6274,7 +6274,7 @@ function teacherCard(r, p, ps, nav){
    ========================================================= */
 /* 🔄 새 버전 알림: 배포 때마다 APP_VERSION과 version.json의 v를 같은 값으로 올린다.
    GitHub Pages는 화면을 10분쯤 기억하므로, 옛 화면이면 아래쪽에 ‘새로고침’ 띠를 띄우고 주소를 바꿔 새로 받는다 */
-const APP_VERSION = "2026-11-10p";
+const APP_VERSION = "2026-11-10q";
 async function checkVersion(){
   if(!/^https?:$/.test(location.protocol)) return;
   try{
