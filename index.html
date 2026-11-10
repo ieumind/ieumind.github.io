@@ -316,6 +316,10 @@ input[type=number]{max-width:140px}
 .choice input:checked + span::before{content:"";width:13px;height:13px;background:currentColor;-webkit-mask:var(--ti-check) center/contain no-repeat;mask:var(--ti-check) center/contain no-repeat}
 .choice input:focus-visible + span{outline:3px solid var(--accent);outline-offset:2px}
 .choice .shp{font-size:11px}
+.choices:has(input[name="create-qtype"]){display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}
+.choices:has(input[name="create-qtype"]) .choice{display:flex}
+.choices:has(input[name="create-qtype"]) .choice > span{width:100%;justify-content:center;white-space:nowrap}
+@media (min-width:641px){ .choices:has(input[name="create-qtype"]){grid-template-columns:repeat(4,minmax(0,1fr))} }
 
 /* 작성 상태 (압박 없이) */
 .status{display:flex;flex-wrap:wrap;align-items:center;gap:6px 12px;font-size:15px;color:var(--muted)}
@@ -1747,7 +1751,12 @@ details.aisug[open] > summary::after{content:"접기"}
 .aisug-body{display:grid;gap:8px;padding:0 16px 16px}
 .btn.wand{background:var(--surface);color:var(--s4);border:1px solid var(--s4);font-weight:600}
 .btn.wand:hover:not(:disabled){background:var(--s4);color:#fff}
-.aisug-note{display:flex;flex-wrap:wrap;align-items:center;gap:2px 6px;margin:0;font-size:13px;color:var(--muted);line-height:1.6}
+.aisug-note{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:6px 12px;margin:0;font-size:13px;color:var(--muted);line-height:1.6}
+.aisug-note > span{flex:1 1 220px;min-width:0}
+.aisug-body > .hint{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:6px 12px;margin:0}
+.aisug-body > .hint > span{flex:1 1 200px;min-width:0}
+.aisug .linkbtn{flex:none;display:inline-flex;align-items:center;gap:4px;min-height:36px;padding:4px 14px;border:1px solid var(--line);border-radius:999px;background:var(--surface);color:var(--fg);font-size:13px;font-weight:600;text-decoration:none;white-space:nowrap}
+.aisug .linkbtn:hover{border-color:var(--accent);color:var(--accent)}
 details.help.helpcta > summary{border:1px solid var(--line);border-radius:999px;padding:4px 14px 4px 10px;color:var(--fg);background:var(--surface);min-height:36px}
 details.help.helpcta > summary:hover{border-color:var(--accent)}
 .qt-d{display:flex;align-items:flex-start;gap:6px;margin:8px 0 0}
@@ -1814,11 +1823,9 @@ details.help.helpcta > summary:hover{border-color:var(--accent)}
   .cform{padding-bottom:calc(168px + env(safe-area-inset-bottom,0px))}
   .cform > .foot{position:fixed;left:0;right:0;bottom:0;z-index:29;margin:0;padding:var(--sp-2) 16px calc(var(--sp-3) + env(safe-area-inset-bottom,0px));box-shadow:0 -4px 16px rgba(0,0,0,.08)}
   .cform > .foot::after,.qbar:not([hidden])::after{content:"";position:absolute;left:0;right:0;top:100%;height:400px;background:inherit;pointer-events:none}
-  .cform > .foot > .row{width:100%}
-  .cform > .foot > .row:first-child{flex-wrap:nowrap;gap:12px}
-  .cform > .foot > .row:first-child .btn{min-height:36px;padding:4px 10px;font-size:14px}
-  .cform > .foot > .row:first-child .linkbtn{font-size:13px;white-space:nowrap}
-  .cform > .foot > .row:last-child{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.4fr)}
+  .cform > .foot > .row{width:100%;display:grid;grid-auto-flow:column;grid-auto-columns:minmax(0,1fr);gap:8px}      /* 위·아래 줄 모두 같은 폭으로 나눠 칸이 맞는다 (버튼이 하나면 꽉 차게) */
+  .cform > .foot .btn,.cform > .foot .linkbtn{min-height:44px;padding:4px 10px;font-size:14px;display:inline-flex;align-items:center;justify-content:center;gap:6px;white-space:nowrap}
+  .cform > .foot .linkbtn{border:1px solid var(--line);border-radius:var(--r);background:var(--surface);color:var(--fg);text-decoration:none}   /* ‘내 템플릿으로 저장’도 버튼 모양으로 */
   .cform > .foot .btn.pri{width:auto}
 }
 
@@ -2396,9 +2403,9 @@ const TEMPLATES = {
   inquiry:{icon:"help-circle", label:"질문 활동", mode:"깊이 생각하기", modeLabel:"깊이 생각하기", modeIcon:"search", studentMode:true,
     modeWho:"선생님 질문 → 학생 답", modeDesc:"선생님이 던진 질문 하나에 모두가 답하고, 친구 답을 보며 생각을 깊게 해요.", desc:"하나의 질문을 붙잡고 내 생각을 깊게 펼쳐요. 질문에 대한 내 생각을 쓰고, 친구 생각을 보고 다시 생각해요.", flowSummary:"내 답 → 친구의 답 → 다시 생각",
     stances:[], reveal:"after", anonymous:false, tool:"claimEvidence", depth:"normal", qtype:"",   // 질문 유형은 선택
-    flow:["see","think","write","read","respond","reflect","revise"],
+    flow:["see","think","write","read","respond","dialog","reflect","revise"],
     phaseDefs:[{k:"see", l:"질문 보기", steps:["see"]}, {k:"think", l:"내 생각", steps:["think","write"]},
-               {k:"meet", l:"친구 생각", steps:["read","respond"]}, {k:"rethink", l:"다시 생각", steps:["reflect","revise"]}],
+               {k:"meet", l:"친구 생각", steps:["read","respond","dialog"]}, {k:"rethink", l:"다시 생각", steps:["reflect","revise"]}],
     labels:{claim:{q:"이 질문에 대한 내 생각은?", dl:"질문에 대한 내 생각"}},
     titles:{write:"이 질문에 대해 어떻게 생각하나요?"}},
   relay:{icon:"help-circle", label:"질문 활동", mode:"질문이음", modeLabel:"질문이음", modeIcon:"link", studentMode:true,
@@ -2505,6 +2512,7 @@ const STEP = {
   take:   {ic:"link", s:"친구 질문에 답하기",     t:"이어받아 답하기", title:"친구의 질문을 이어받아 보세요", desc:"마음이 가는 질문 하나를 골라 ‘이 질문 이어받기’를 누르세요."},
   back:   {ic:"mailbox", s:"친구의 답 보기",  t:"답 확인·반응", title:"친구들이 내 질문에 답했어요", desc:"친구의 생각을 읽고, 내 생각이 어떻게 움직였는지 골라 보세요."},
   develop:{ic:"leaf", s:"질문 키우기",       t:"질문 발전",   title:"질문을 한 단계 키워 볼까요?", desc:"친구의 답을 보고 새로 궁금해진 것을 질문으로 적어요. 넘어가도 괜찮아요."},
+  dialog: {ic:"messages", s:"질문 주고받기",   t:"문답",       title:"친구와 질문을 주고받아 볼까요?", desc:"친구 생각에 질문 하나를 보내고, 나에게 온 질문에 답해 보세요. 짧아도 괜찮아요."},
   chat:   {ic:"masks-theater", s:"인물과 대화",       t:"AI 대화",     title:"인물에게 물어볼까요?", desc:"궁금한 것을 물어보고, 대답을 듣고 또 물어보세요. 다 됐으면 ‘대화 마치기’를 눌러요."},
   record: {ic:"compass", s:"나의 생각 흐름",    t:"사고 과정",   title:"나의 생각 흐름", desc:"내가 어떻게 생각을 키워 왔는지 한눈에 볼 수 있어요."}
 };
@@ -2910,6 +2918,7 @@ function featuresOf(r){
   if(r.reveal === "teacher"){ f.meet = false; f.readMission = [] }   // 친구 글을 못 보면 만남 단계도 없다
   if(f.feedback === undefined) f.feedback = true;
   f.deep = depthOf(r) === "deep";
+  f.dialog = !!f.dialog && r.template === "inquiry" && f.deep && !!f.meet;   // 문답(질문 주고받기): 깊이 생각하기 ③에서, 새로 만든 활동만
   f.predict = !!f.predict;        // 예측하고 확인하기 (선택 기능)
   f.develop = !!f.develop;        // 질문이음: 기본 깊이에서도 질문 키우기
   return f;
@@ -2960,7 +2969,8 @@ function stepsOf(r){
     write:   true,
     counter: f.counter,
     read:    f.meet,
-    respond: f.meet && f.rebuttal && f.deep,     // 일반 활동은 친구 생각 만나기 안에서 한마디로 끝난다
+    respond: f.meet && f.rebuttal && f.deep && !f.dialog,     // 일반 활동은 친구 생각 만나기 안에서 한마디로 끝난다 (문답이 켜지면 ‘답하기’ 대신 문답)
+    dialog:  f.dialog,
     reflect: f.change || !!r.revisit || f.predict,
     revise:  f.revise,
     see:     true,
@@ -3001,6 +3011,7 @@ function stepDone(r, p, st){
     case "take":    return myRepliesIn(r,["answer"],p.author).length > 0;
     case "back":    return Object.keys(p.reactions||{}).length > 0;
     case "develop": return (p.questions||[]).length > 1 || !!p.developSkipped;
+    case "dialog":  return !!p.dialogDone;
     case "compose": return !!p.essay?.text;
     case "feedback": return repliesOf(p.id).some(x => x.kind==="teacher") || !!p.feedbackSkipped;
     case "chat":    return !!p.chat?.done;
@@ -3008,7 +3019,7 @@ function stepDone(r, p, st){
   }
 }
 function stepState(r, p, st){
-  if(["read","respond","reflect","revise","take","back","develop","feedback"].includes(st) && !submitted(p)) return "locked";
+  if(["read","respond","dialog","reflect","revise","take","back","develop","feedback"].includes(st) && !submitted(p)) return "locked";
   if((st==="counter" || st==="compose" || st==="why") && !stepDone(r,p,"write")) return "locked";
   if(st==="write" && stepsOf(r).includes("chat") && !stepDone(r,p,"chat") && !submitted(p)) return "locked";   // 대화를 마친 뒤 정리
   if(st==="develop" && stepsOf(r).includes("back") && !stepDone(r,p,"back")) return "locked";
@@ -4963,7 +4974,7 @@ function viewRoomStudent(r){
   h += classFeedbackHTML(r);
   const open = r.open!==false;
   const views = {chat:stepChat, think:stepThink, write:(r,p,o) => stepWrite(r,p,o, isSplit(r) ? 0 : undefined), why:(r,p,o) => stepWrite(r,p,o,1), counter:stepCounter, read:stepRead, respond:stepRespond, reflect:stepReflect, revise:stepRevise, record:stepRecord,
-                 ask:stepAsk, take:stepTake, back:stepBack, develop:stepDevelop, see:stepSee, compose:stepCompose, feedback:stepFeedback};
+                 ask:stepAsk, take:stepTake, back:stepBack, develop:stepDevelop, see:stepSee, compose:stepCompose, feedback:stepFeedback, dialog:stepDialog};
   h += `<div class="stage" id="stage">${views[sel](r, p, open)}</div>`;
   if(sel !== "record" && submitted(p)) h += `<div class="row end" style="margin-top:14px"><button class="linkbtn" type="button" data-a="step" data-v="record">나의 생각 흐름 보기</button></div>`;
   if(!submitted(p) && !["read","respond","take","back"].includes(sel)) h += writeMapHTML(r);   // 쓰는 동안: 흐린 게시판·생각 지도
@@ -5626,7 +5637,7 @@ function previewText(r, p){
 }
 /* 내가 볼 수 있는 답글: 예전 읽기 메모는 글쓴이와 선생님만 */
 function visibleReplies(p){
-  return repliesOf(p.id).filter(x => x.kind !== "note" || isTeacher() || isMe(p.author) || isMe(x.author));
+  return repliesOf(p.id).filter(x => x.kind !== "dq" && x.kind !== "da" && (x.kind !== "note" || isTeacher() || isMe(p.author) || isMe(x.author)));   // 문답(dq·da)은 문답 단계에서만
 }
 function replyHTML(r, x, ps){
   const who = x.kind === "teacher" ? "선생님" : displayName(r, x.author, ps);
@@ -5689,11 +5700,11 @@ function readCard(r, p, mine, ps, {pickable=true}={}){
   if(!pickable){                                                     // 게시판에서 펼친 글: 하트 · 댓글
     h += wallActs(r, p, {open:true});
     if(open && (!isTeacher() || S.preview) && S.name){
-      if(p !== mine && f.deep && f.rebuttal && f.meet) h += `<div class="row" style="margin-top:8px"><button class="btn sm" type="button" data-a="go-respond" data-id="${esc(p.id)}">이 생각에 답해보기 ${ic("arrow-right")}</button></div>`;
+      if(p !== mine && f.deep && f.rebuttal && f.meet) h += `<div class="row" style="margin-top:8px"><button class="btn sm" type="button" data-a="go-respond" data-id="${esc(p.id)}">${f.dialog ? "이 생각에 질문해보기" : "이 생각에 답해보기"} ${ic("arrow-right")}</button></div>`;
       h += commentBox(r, p, mine);
     }
   }else if(open && p !== mine && mine?.readAt){                       // 한마디를 남긴 뒤에는 다른 친구 글에도 자유롭게 한마디 더 (선택)
-    if(f.deep && f.rebuttal && f.meet) h += `<div class="row" style="margin-top:8px"><button class="btn sm" type="button" data-a="go-respond" data-id="${esc(p.id)}">이 생각에 답해보기 ${ic("arrow-right")}</button></div>`;
+    if(f.deep && f.rebuttal && f.meet) h += `<div class="row" style="margin-top:8px"><button class="btn sm" type="button" data-a="go-respond" data-id="${esc(p.id)}">${f.dialog ? "이 생각에 질문해보기" : "이 생각에 답해보기"} ${ic("arrow-right")}</button></div>`;
     else if(f.comment) h += commentForm(r, p, "한마디 더 남기기 (선택)");
   }
   return h + `<div class="row end" style="margin-top:10px"><button class="linkbtn" type="button" data-a="close-post">접기</button></div></article>`;
@@ -5824,7 +5835,7 @@ function stepRead(r, p, open){
   const diffName = diffPost ? displayName(r, diffPost.author, ps) : "";
   const hasSt = (r.stances||[]).length > 0;
   let h = p?.readAt ? "" : `<div class="card"><p><b>${ic("message-circle")} 친구 생각을 읽고, 마음에 남는 글에 댓글로 한마디 남겨 보세요.</b></p>
-    <p class="muted small" style="margin-top:4px">${hasSt ? "나와 다른 입장의 글이면 더 좋아요. " : ""}글 아래 ‘댓글 추가’를 누르면 돼요.${f.deep && f.rebuttal ? " 댓글에는 이유를 함께 적어요. 다음 단계에서 한 글을 골라 더 자세히 답해요." : f.rebuttal ? " 댓글에 이유를 함께 적어 남기면 이 단계를 마쳐요." : " 한마디를 남기면 이 단계를 마쳐요."}</p></div>`;
+    <p class="muted small" style="margin-top:4px">${hasSt ? "나와 다른 입장의 글이면 더 좋아요. " : ""}글 아래 ‘댓글 추가’를 누르면 돼요.${f.deep && f.rebuttal ? (f.dialog ? " 댓글에는 이유를 함께 적어요. 다음 단계에서 친구와 질문을 주고받아요." : " 댓글에는 이유를 함께 적어요. 다음 단계에서 한 글을 골라 더 자세히 답해요.") : f.rebuttal ? " 댓글에 이유를 함께 적어 남기면 이 단계를 마쳐요." : " 한마디를 남기면 이 단계를 마쳐요."}</p></div>`;
   const card = x => readCard(r, x, p, ps, {pickable:false});
   if(hasSt) h += stanceMap(r, ps, card);
   else if(!others.length) h += `<div class="empty">아직 다른 친구의 글이 없어요. 잠시 뒤 다시 와 보세요.</div>`;
@@ -5902,6 +5913,105 @@ function stepRespond(r, p, open){
   else h += `<div class="wall">${targets.map(x=>respondCard(r,x,ps)).join("")}</div>`;
   if(n || p?.respondSkipped) h += nextBtn(r);
   else if(open && S.canWrite) h += `<div class="next"><button class="btn" type="button" data-a="skip-respond">지금은 넘어가기 ${ic("arrow-right")}</button></div>`;
+  return h;
+}
+
+/* ---- 함께 생각하기 · 질문 주고받기 (깊이 생각하기 ③: 하브루타식 문답) ----
+   저장: 새 컬렉션 없이 replies에 둔다. 질문 kind "dq"(postId = 질문을 받는 친구 글, qk = 짝 열쇠, qt = 질문 종류),
+   답 kind "da"(postId = 내 글, qk). 친구 글 아래 댓글 목록에는 보이지 않는다(visibleReplies에서 뺌).
+   보낼 친구는 받은 질문이 적은 글부터, 같으면 나에게 이미 질문한 친구는 뒤로 하여 자동으로 정한다. 질문은 한 번(1회전), 마칠 때 p.dialogDone */
+const DIALOG_QTYPES = [
+  {k:"mean",    l:"뜻 묻기",      starters:[{show:"네가 말한 ___는 무슨 뜻이야?", ins:"네가 말한 "}]},
+  {k:"why",     l:"이유 묻기",    starters:[{show:"왜 ___라고 생각했어?", ins:"왜 "}]},
+  {k:"example", l:"예시 묻기",    starters:[{show:"예를 들면 ___ 같은 경우일까?", ins:"예를 들면 "}]},
+  {k:"ifnot",   l:"반대 경우 묻기", starters:[{show:"만약 ___라면 어떻게 될까?", ins:"만약 "}]}
+];
+const dqLabel = k => DIALOG_QTYPES.find(x => x.k === k)?.l || "";
+function dialogOf(r, p){
+  const all = S.replies.filter(x => x.roomId === r.id && (x.kind === "dq" || x.kind === "da"));
+  const sent = all.find(x => x.kind === "dq" && x.author === p.author) || null;                 // 내가 보낸 질문
+  const target = sent ? S.posts.find(x => x.id === sent.postId) || null : null;
+  const answered = sent ? all.find(x => x.kind === "da" && x.qk === sent.qk) || null : null;    // 내 질문에 온 답
+  const got = all.filter(x => x.kind === "dq" && x.postId === p.id).sort((a,b) => (a.createdAt||0)-(b.createdAt||0))
+    .map(q => ({q, a:all.find(x => x.kind === "da" && x.qk === q.qk && x.author === p.author) || null}));   // 나에게 온 질문과 내 답
+  return {sent, target, answered, got};
+}
+function dialogTarget(r, p){
+  const d = dialogOf(r, p);
+  if(d.target) return d.target;
+  const others = postsOf(r.id).filter(x => !isMe(x.author) && x.author !== p.author);
+  if(!others.length) return null;
+  const cnt = id => S.replies.filter(x => x.roomId === r.id && x.kind === "dq" && x.postId === id).length;
+  const hash = s => { let n = 0; for(const c of s) n = (n * 31 + c.charCodeAt(0)) % 9973; return n };
+  const asked = x => S.replies.some(y => y.roomId === r.id && y.kind === "dq" && y.author === x.author && y.postId === p.id);   // 이미 나에게 질문한 친구는 뒤로 (서로 묻는 짝보다 고리 모양으로 고르게)
+  return others.map(x => ({x, c:cnt(x.id), m:asked(x) ? 1 : 0, h:hash(String(p.id) + String(x.id))})).sort((a, b) => a.c - b.c || a.m - b.m || a.h - b.h)[0].x;
+}
+function dialogQCard(r, q, ps){
+  return `<div class="reply"><div class="rh"><b>${esc(displayName(r, q.author, ps))}</b>${q.qt ? `<span class="chip">${esc(dqLabel(q.qt))}</span>` : ""}<span>${fmt(q.createdAt)}</span></div><p>${esc(q.text)}</p></div>`;
+}
+function dialogACard(r, a, ps){
+  return `<div class="reply"><div class="rh"><b>${esc(displayName(r, a.author, ps))}</b><span>답</span><span>${fmt(a.createdAt)}</span></div><p>${esc(a.text)}</p></div>`;
+}
+function stepDialog(r, p, open){
+  const ps = postsOf(r.id), d = dialogOf(r, p), can = open && S.canWrite, key = "dlg:" + r.id;
+  let h = "";
+  // 1) 친구에게 질문하기
+  h += `<div class="card"><div class="eyebrow">${ic("message-circle", "sm")} 친구에게 질문하기</div>`;
+  const t = dialogTarget(r, p);
+  if(d.sent){
+    h += `<div class="q"><span class="hint">${esc(displayName(r, d.target?.author || "", ps))}의 생각</span>${d.target ? `<p class="quote">${esc(previewText(r, d.target))}</p>` : ""}</div>
+      ${dialogQCard(r, d.sent, ps)}
+      ${d.answered ? dialogACard(r, d.answered, ps) : `<p class="muted small">아직 답을 기다리고 있어요. 다음 단계로 넘어가도, 답이 오면 ‘나의 생각 흐름’에서 볼 수 있어요.</p>`}`;
+  }else if(!t){
+    h += `<div class="empty">아직 질문을 보낼 친구 글이 없어요. 잠시 뒤 다시 와 보세요.</div>`;
+  }else if(!can){
+    h += open ? readonlyNote() : closedNote();
+  }else{
+    F(key, () => ({text:"", qt:""}));
+    h += `<div class="q"><span class="hint">${esc(displayName(r, t.author, ps))}의 생각</span>${fieldsHTML(r, finalBody(t), {evidenceType:t.evidenceType})}</div>
+      <fieldset class="q"><legend>어떤 질문일까요? <span class="opt">(선택)</span></legend>${radios(key, "qt", DIALOG_QTYPES, {label:"질문 종류"})}</fieldset>
+      ${question(key, "text", {q:"친구에게 묻고 싶은 것은?", rows:2, ph:"질문을 한 문장으로 적어 보세요.", tip:"비판하려는 질문이 아니라, 더 알고 싶어서 묻는 질문이면 좋아요.",
+         starters:DIALOG_QTYPES.flatMap(x => x.starters)})}
+      <div class="foot"><span></span><button class="btn pri" type="button" data-a="save-dq">질문 보내기</button></div>`;
+  }
+  h += `</div>`;
+  // 2) 나에게 온 질문
+  h += `<div class="card"><div class="eyebrow">${ic("mailbox", "sm")} 나에게 온 질문${d.got.length ? ` · ${d.got.length}개` : ""}</div>`;
+  if(!d.got.length) h += `<p class="muted small">아직 나에게 온 질문이 없어요. 친구가 보내면 여기에 나타나요.</p>`;
+  d.got.forEach(({q, a}) => {
+    h += `<div class="q">${dialogQCard(r, q, ps)}`;
+    if(a) h += dialogACard(r, a, ps);
+    else if(can){
+      const k2 = "dla:" + q.qk; F(k2, () => ({text:""}));
+      h += question(k2, "text", {q:"이 질문에 답해 볼까요?", rows:3, tip:"짧아도 괜찮아요. 내 생각과 그 이유를 함께 적어 보세요.",
+        starters:[{show:"내 생각에는 ___이다. 왜냐하면 ___ 때문이다.", ins:"내 생각에는 "},{show:"질문을 받고 보니 ___라는 점도 있었다.", ins:"질문을 받고 보니 "}]})
+        + `<div class="row end"><button class="btn sm pri" type="button" data-a="save-da" data-qk="${esc(q.qk)}">답하기</button></div>`;
+    }
+    h += `</div>`;
+  });
+  h += `</div>`;
+  // 3) 마치기
+  if(p?.dialogDone) h += nextBtn(r);
+  else if(can){
+    const left = d.got.filter(x => !x.a).length;
+    h += d.sent
+      ? `<div class="next">${left ? `<p class="muted small">아직 답하지 않은 질문이 ${left}개 있어요. 지금 마쳐도 나중에 다시 와서 답할 수 있어요.</p>` : ""}<button class="btn pri" type="button" data-a="dialog-done">질문 주고받기 마치기 ${ic("arrow-right")}</button></div>`
+      : `<div class="next"><button class="btn" type="button" data-a="dialog-skip">지금은 넘어가기 ${ic("arrow-right")}</button></div>`;
+  }
+  return h;
+}
+/* 생각 흐름·교사 화면: 주고받은 질문 한눈에 */
+function dialogFlowHTML(r, p, ps){
+  const d = dialogOf(r, p), line = (lbl, body) => `<div class="sub"><span class="muted">${lbl} · </span>${esc(body)}</div>`;
+  let h = "";
+  if(d.sent){
+    h += line(`보낸 질문 → ${esc(displayName(r, d.target?.author || "", ps))}${d.sent.qt ? ` (${esc(dqLabel(d.sent.qt))})` : ""}`, d.sent.text);
+    h += d.answered ? line("받은 답", d.answered.text) : `<div class="sub muted">아직 답이 오지 않았어요.</div>`;
+  }
+  d.got.forEach(({q, a}) => {
+    h += line(`받은 질문 · ${esc(displayName(r, q.author, ps))}${q.qt ? ` (${esc(dqLabel(q.qt))})` : ""}`, q.text);
+    h += a ? line("내 답", a.text) : `<div class="sub muted">아직 답하지 않았어요.</div>`;
+  });
   return h;
 }
 
@@ -5996,7 +6106,7 @@ function stepRevise(r, p, open){
    학습 나눔·실시간 토론은 자기만의 흐름이라 정해진 문구를 쓴다 */
 const FLOW_WORDS = {
   debate2:{write:"처음 입장", read:"친구의 생각"}, debateN:{write:"처음 입장", read:"친구의 생각"},
-  inquiry:{write:"내 답", read:"친구의 답", reflect:"다시 생각"},
+  inquiry:{write:"내 답", read:"친구의 답", dialog:"질문 주고받기", reflect:"다시 생각"},
   essay:{think:"처음 생각", write:"근거", revise:"수정한 생각"},
   reflect:{write:"내 생각", read:"친구 생각"}, predict:{think:"예측", write:"내 생각", read:"친구 생각"},
   sketch:{write:"키워드 스케치", read:"친구 스케치"}, draw:{write:"손으로 그리기", read:"친구 그림"},
@@ -6053,6 +6163,8 @@ function thinkFlow(r, p){
   }
   // 내가 한 답
   if(myReplies.length) h += node("bulb", L("친구 생각을 읽고 내가 발견한 점","작성한 댓글"), `<div class="sub muted">${myReplies.length}개</div><div class="replies">${replyHTML(r,myReplies[myReplies.length-1],ps)}</div>`);
+  // 문답(질문 주고받기)
+  if(featuresOf(r).dialog){ const dh = dialogFlowHTML(r, p, ps); if(dh) h += node("messages", L("친구와 주고받은 질문","문답"), dh) }
   // 받은 반응과 피드백
   const got = reps.filter(x=>x.kind==="rebuttal"||x.kind==="comment"||x.kind==="note");
   if(got.length) h += node("message-circle", L("친구들이 남긴 댓글","받은 댓글"), `<div class="sub muted">${got.length}개</div><div class="replies">${got.slice(-2).map(x=>replyHTML(r,x,ps)).join("")}</div>`);
@@ -6416,6 +6528,7 @@ function tabOverview(r, st){
   if(f.counter || counterOn(r)) rows.push(["예상 반론", all.filter(p=>counterOf(p)).length]);
   if(f.meet && !isRelay(r)) rows.push(["친구 생각 만나기", all.filter(p=>readDone(r,p)).length]);
   if(f.meet && f.comment && !isRelay(r)) rows.push([f.rebuttal ? "근거 댓글 작성" : "친구 글에 한마디", new Set(S.replies.filter(x=>x.roomId===r.id && (x.kind==="rebuttal"||x.kind==="comment")).map(x=>x.author)).size]);
+  if(f.dialog) rows.push(["문답: 질문 보내기", new Set(S.replies.filter(x=>x.roomId===r.id && x.kind==="dq").map(x=>x.author)).size], ["문답: 답하기", new Set(S.replies.filter(x=>x.roomId===r.id && x.kind==="da").map(x=>x.author)).size]);
   if(f.change && !isRelay(r)) rows.push(["생각 변화 기록", all.filter(p=>p.change).length]);
   if(isEssay(r)) rows.push(["글쓰기", all.filter(p=>p.essay?.text).length]);
   if(f.revise && !isRelay(r)) rows.push(["최종 수정", all.filter(p=>p.revision).length]);
@@ -6715,7 +6828,7 @@ function teacherCard(r, p, ps, nav){
    ========================================================= */
 /* 🔄 새 버전 알림: 배포 때마다 APP_VERSION과 version.json의 v를 같은 값으로 올린다.
    GitHub Pages는 화면을 10분쯤 기억하므로, 옛 화면이면 아래쪽에 ‘새로고침’ 띠를 띄우고 주소를 바꿔 새로 받는다 */
-const APP_VERSION = "2026-11-10zj";
+const APP_VERSION = "2026-11-11a";
 async function checkVersion(){
   if(!/^https?:$/.test(location.protocol)) return;
   try{
@@ -8060,7 +8173,7 @@ const koCmp = (a, b) => String(a).localeCompare(String(b), "ko");
 const eul = w => { const c = String(w).trim().slice(-1).charCodeAt(0); return c >= 0xAC00 && c <= 0xD7A3 ? ((c-0xAC00)%28 ? "을" : "를") : "를" };
 
 /* 학생 카드·표에 보일 단계 표시: 이 활동에 실제로 있는 단계만 */
-const MARK_L = {chat:"AI 대화", think:"처음 생각", why:"이유", counter:"예상 반론", read:"친구 생각", respond:"답하기", revise:"다시 쓰기", compose:"글쓰기",
+const MARK_L = {chat:"AI 대화", think:"처음 생각", why:"이유", counter:"예상 반론", read:"친구 생각", respond:"답하기", dialog:"문답", revise:"다시 쓰기", compose:"글쓰기",
                 ask:"질문", take:"이어받아 답", back:"답 확인", develop:"질문 키우기"};
 function marksOf(r){
   const fields = effFields(r), f = featuresOf(r), out = [];
@@ -8210,7 +8323,7 @@ function queuePanel(r){
 }
 
 /* ---- 개요: 지금 수업에서 볼 것 · 입장 분포 · 참여/완료 · 교사 확인 필요 ---- */
-const NEXT_HINT = {read:"이제 친구 생각을 살펴보도록 안내하기 좋습니다.", respond:"이제 친구 생각에 답하도록 안내하기 좋습니다.", reflect:"이제 생각의 변화를 적도록 안내하기 좋습니다.",
+const NEXT_HINT = {read:"이제 친구 생각을 살펴보도록 안내하기 좋습니다.", respond:"이제 친구 생각에 답하도록 안내하기 좋습니다.", dialog:"이제 친구 생각에 질문을 보내고, 받은 질문에 답하도록 안내하기 좋습니다.", reflect:"이제 생각의 변화를 적도록 안내하기 좋습니다.",
   revise:"이제 글을 다시 다듬도록 안내하기 좋습니다.", counter:"이제 다른 생각을 예상해 보도록 안내하기 좋습니다.", why:"이제 이유를 쓰도록 안내하기 좋습니다.",
   compose:"이제 글쓰기로 넘어가도록 안내하기 좋습니다.", take:"이제 친구 질문을 이어받도록 안내하기 좋습니다.", back:"이제 내 질문에 달린 답을 확인하도록 안내하기 좋습니다.",
   develop:"이제 질문을 한 단계 키워 보도록 안내하기 좋습니다.", feedback:"이제 개인 피드백을 보내면 학생들이 확인하고 다음 단계로 갈 수 있습니다."};
@@ -8267,7 +8380,7 @@ function checkCard(r, st){
 }
 
 /* ---- 활동 만들기: 단계 미리보기의 예상 시간 (단계 수로 어림) ---- */
-const STEP_MIN = {chat:10, think:3, write:7, why:4, counter:4, read:5, respond:5, reflect:4, revise:6, see:1, compose:10, feedback:3, ask:3, take:5, back:3, develop:3};
+const STEP_MIN = {chat:10, think:3, write:7, why:4, counter:4, read:5, respond:5, dialog:7, reflect:4, revise:6, see:1, compose:10, feedback:3, ask:3, take:5, back:3, develop:3};
 function estMinutes(r){
   const sum = stepsOf(r).reduce((a,s) => a + (s==="write" && depthOf(r)==="quick" ? 5 : (STEP_MIN[s]||3)), 0);
   const r5 = x => Math.max(5, Math.round(x/5)*5), lo = r5(sum); let hi = r5(sum*1.4); if(hi <= lo) hi = lo + 5;
@@ -8609,7 +8722,7 @@ function formFromRoom(r){
     stances:(r.stances||[]).join(", "), nst:(r.stances||[]).length,
     initial:f.initial, predict:f.predict, evidenceType:f.evidenceType, evidenceTypes:f.evidenceTypes, warrant:f.warrant, counter:f.counter,
     meet:f.meet, missionDeep:f.readMission.length>0, comment:f.comment, rebuttal:f.rebuttal, change:f.change, feedback:f.feedback,
-    revise:f.revise, terms:!!f.terms, develop:!!f.develop, counterMode:r.features?.counterMode || "opt"};
+    revise:f.revise, terms:!!f.terms, develop:!!f.develop, dialog:!!f.dialog, counterMode:r.features?.counterMode || "opt"};
   (r.stances||[]).forEach((x,i) => form["st"+i] = x);
   form.courseId = courseOf(r.courseId) ? r.courseId : ""; form.groups = asgIds(r);
   return form;
@@ -8646,6 +8759,11 @@ function exportRows(r){
     col.push(["예상 반론", p => { const c = counterOf(p); return c ? `${c.objection}${c.response?` → ${c.response}`:""}` : "" }]);
     col.push(["고른 친구 생각", p => { const d = ps.find(x=>x.id===p.meet?.diffPostId); return d ? `${d.author}: ${previewText(r,d)}` : "" }]);
     col.push(["친구에게 남긴 댓글", p => S.replies.filter(x=>x.roomId===r.id && x.author===p.author && (x.kind==="rebuttal"||x.kind==="comment")).map(x=>x.text+(x.evidence?` (이유: ${x.evidence})`:"")).join("\n")]);
+    if(featuresOf(r).dialog){
+      col.push(["보낸 질문", p => { const d = dialogOf(r, p); return d.sent ? d.sent.text : "" }]);
+      col.push(["받은 답", p => { const d = dialogOf(r, p); return d.answered ? d.answered.text : "" }]);
+      col.push(["받은 질문과 내 답", p => dialogOf(r, p).got.map(({q, a}) => `${q.text}${a ? ` → ${a.text}` : ""}`).join("\n")]);
+    }
     col.push(["받은 댓글 수", p => { const n = repliesOf(p.id).filter(x=>x.kind==="rebuttal"||x.kind==="comment").length; return n ? String(n) : "" }]);
     col.push(["생각의 변화", p => p.change ? (DEGREES.find(d=>d.k===p.change.degree)?.l||"") : ""]);
     if(hasSt) col.push(["지금 입장", p => p.change?.nowStance || ""]);
@@ -8896,6 +9014,7 @@ function applyDepth(k, f = F("create")){
     minChars: String(TOOLS[t.tool]?.only ? t.minChars : t.minChars && k !== "quick" ? t.minChars : (t.tool==="free" || t.tool==="feel" ? Math.min(d.minChars, 40) : d.minChars)),
     evidenceTypes: f.evidenceTypes || [...EVIDENCE_TYPES]
   });
+  f.dialog = f.template === "inquiry" && k === "deep";                                                       // 깊이 생각하기 ③: 친구 생각에 ‘답하기’ 대신 문답(질문 주고받기)
   if(f.template === "reflect") Object.assign(f, {evidenceType:false, warrant:false, missionDeep:k === "deep"});   // 감상·성찰: 근거 유형·근거 설명은 논술의 도구. ③에서만 ‘비슷한/다른 느낌’ 임무
 }
 /* 활동 유형은 입장·공개 방식·사고 도구·기본 깊이를 정한다 */
@@ -8943,13 +9062,14 @@ function roomFromForm(f){
       warrant:!!f.warrant, counter:!!f.counter && f.depth==="deep", meet:!!f.meet,
       readMission: f.meet && f.missionDeep ? (f.template === "reflect" ? ["same","diff"] : ["new","best","diff"]) : [],
       change:!!f.change, feedback:!!f.feedback, revise:!!f.revise, terms:!!f.terms, develop:!!f.develop,
+      dialog: f.template === "inquiry" && f.depth === "deep" && !!f.dialog && !!f.meet,
       counterMode: ["off","req"].includes(f.counterMode) ? f.counterMode : "opt"
     }
   };
 }
 /* 고급 설정: 비슷한 옵션을 하나로 묶은 선택 (안쪽 저장 값은 그대로) */
 /* 학생 단계 → 생각(0)·만남(1)·변화(2) */
-const STAGE_OF = {see:0, chat:0, think:0, write:0, why:0, counter:0, ask:0, compose:0, read:1, respond:1, take:1, back:1, feedback:-1, reflect:2, revise:2, develop:2};   // feedback(선생님 피드백)은 따로 표시
+const STAGE_OF = {see:0, chat:0, think:0, write:0, why:0, counter:0, ask:0, compose:0, read:1, respond:1, dialog:1, take:1, back:1, feedback:-1, reflect:2, revise:2, develop:2};   // feedback(선생님 피드백)은 따로 표시
 /* 작성 방법: 고를 수 있는 것만 (반론–재반론·생각의 변화·예측–이유는 깊이·세부 설정과 겹쳐 목록에서 뺐다. 예전 활동은 그대로 동작) */
 const TOOL_PICK = ["claimEvidence", "compare", "causeEffect", "source", "problem"];      // 국어·사회·과학·윤리 어디서나 쓰는 5가지 + 직접 만들기 (생각과 이유·자유롭게는 ‘생각과 근거’·‘직접 만들기’로 합침)
 /* 🪜 단계별 질문: 핵심 질문 아래에서 학생이 차례로 답하는 작은 질문들 (= 작성 칸 fields[].q)
@@ -9131,7 +9251,7 @@ function aiSugHTML(f){
   let list = "";
   if(st?.loading) list = `<p class="aisug-wait" role="status">${ic("wand")} ${deb ? "토론 논제" : "생각 질문"}를 만드는 중…</p>`;
   else if(st?.items) list = `<div class="aisug-list" role="list">${st.items.map((x, i) => `<button type="button" class="aisug-item" role="listitem" data-a="ai-pick" data-i="${i}"><b>${esc(x.q)}</b>${x.a && x.b && f.template === "debate2" ? `<span class="st">${esc(x.a)} ${ic("arrows-left-right", "sm")} ${esc(x.b)}</span>` : ""}${x.why ? `<span>${esc(x.why)}</span>` : ""}</button>`).join("")}</div>
-    <p class="hint">눌러서 넣은 뒤 우리 반에 맞게 고쳐 쓰세요.${st.demo ? " (체험 모드라 정해진 예시를 보여 줘요)" : ""} <button class="linkbtn" type="button" data-a="ai-suggest">${ic("refresh", "sm")} 다시 추천</button></p>`;
+    <p class="hint"><span>눌러서 넣은 뒤 우리 반에 맞게 고쳐 쓰세요.${st.demo ? " (체험 모드라 정해진 예시를 보여 줘요)" : ""}</span> <button class="linkbtn" type="button" data-a="ai-suggest">${ic("refresh", "sm")} 다시 추천</button></p>`;
   const what = deb ? "토론 논제" : "생각 질문", open = S.advOpen?.ai ?? !!st;
   return `<details class="wide aisug" data-keep="ai" ${open ? "open" : ""}><summary>${ic("wand", "sm")} AI로 ${what} 추천받기 <span class="opt">키워드를 적거나, 비워 두면 위에 쓴 주제로 만들어 줘요</span></summary>
     <div class="aisug-body">
@@ -9139,7 +9259,7 @@ function aiSugHTML(f){
     <div class="aisug-row" style="margin-top:6px"><input type="text" id="c-kw" data-form="create" data-k="aiKw" maxlength="100" autocomplete="off" value="${esc(f.aiKw || "")}" placeholder="${deb ? "예: 콜럼버스, 신항로 개척, 원주민" : f.template === "relay" ? "예: 3·1 운동, 민족 자결주의" : "예: 일제 강점기, 철도, 식민지 근대화"}">
       <button class="btn wand" type="button" data-a="ai-suggest" ${st?.loading ? "disabled" : ""}>${ic("wand")} ${what} 추천 받기</button></div></div>
     ${list}
-    <p class="aisug-note">${aiLive() ? `${ic("lock", "sm")} 키워드·주제·과목·학년만 구글 AI(Gemini)에 보내요 · <button class="linkbtn" type="button" data-a="ai-setup">${ic("settings", "sm")} AI 연결 설정</button>` : `체험·미리보기에서는 예시 추천을 보여 줘요 · <button class="linkbtn" type="button" data-a="ai-setup">구글 AI 스튜디오 키 연결</button>`}</p></div></details>`;
+    <p class="aisug-note">${aiLive() ? `<span>${ic("lock", "sm")} 키워드·주제·과목·학년만 구글 AI(Gemini)에 보내요</span><button class="linkbtn" type="button" data-a="ai-setup">${ic("settings", "sm")} AI 연결 설정</button>` : `<span>체험·미리보기에서는 예시 추천을 보여 줘요</span><button class="linkbtn" type="button" data-a="ai-setup">구글 AI 스튜디오 키 연결</button>`}</p></div></details>`;
 }
 const DEMO_SUG = {
   debate:[{q:"콜럼버스의 날을 ‘원주민의 날’로 바꿔야 할까?", a:"바꿔야 한다", b:"그대로 둬야 한다", why:"기념과 역사 평가의 관계를 따져 봐요"},
@@ -9985,7 +10105,7 @@ async function act(a, b){
     case "stu-close": S.view = "home"; S.mcourse = S.stu?.c || S.mcourse; scrollTo(0,0); break;
     case "stu-nav": { const ns = stuNames(S.stu.c), i = ns.indexOf(S.stu.v) + (+b.dataset.d || 0); if(ns[i]){ S.stu.v = ns[i]; Object.assign(mmapS(), {sel:null, page:0}); scrollTo(0,0) } break }
     case "port-open": S.modal = null; S.view = "room"; S.roomId = b.dataset.id; S.ttab = "students"; S.openPost = b.dataset.v; S.gsel = ""; scrollTo(0,0); break;
-    case "go-respond": goStep(r, "respond"); S.openPost = b.dataset.id; break;
+    case "go-respond": goStep(r, featuresOf(r).dialog ? "dialog" : "respond"); S.openPost = featuresOf(r).dialog ? null : b.dataset.id; break;
     case "starter": insertStarter(b); if(b.dataset.eg != null && b.closest(".wguide")) egStep(Number(b.dataset.eg) + 1); return;
     case "eg-step": egStep(Number(b.dataset.v)); return;
 
@@ -10904,6 +11024,27 @@ async function act(a, b){
       if(ok){ dropForm("rn:"+id); toast("덧붙였어요.") }
       break;
     }
+    /* ---- 문답(질문 주고받기) ---- */
+    case "save-dq": {
+      const t = dialogTarget(r, p), f = F("dlg:"+r.id), text = (f.text||"").trim();
+      if(!t){ toast("질문을 보낼 친구 글이 아직 없어요."); return }
+      if(dialogOf(r, p).sent){ toast("이미 질문을 보냈어요."); return }
+      if(!text){ toast("친구에게 보낼 질문을 한 문장 적어 볼까요?"); return }
+      b.disabled = true;
+      const ok = await addReply({roomId:r.id, postId:t.id, author:meFor(r.id), kind:"dq", qt:f.qt||"", text, qk:"d" + Date.now().toString(36) + Math.random().toString(36).slice(2, 6), createdAt:Date.now()});
+      if(ok){ dropForm("dlg:"+r.id); toast("질문을 보냈어요.") } else b.disabled = false;
+      break;
+    }
+    case "save-da": {
+      const qk = b.dataset.qk, f = F("dla:"+qk), text = (f.text||"").trim();
+      if(!text){ toast("답을 한두 문장 적어 볼까요?"); return }
+      b.disabled = true;
+      const ok = await addReply({roomId:r.id, postId:p.id, author:meFor(r.id), kind:"da", qk, text, createdAt:Date.now()});
+      if(ok){ dropForm("dla:"+qk); toast("답을 보냈어요.") } else b.disabled = false;
+      break;
+    }
+    case "dialog-done": { const ok = await savePost(r, {dialogDone:true}); if(ok) goNext(r); break }
+    case "dialog-skip": { const ok = await savePost(r, {dialogDone:true, dialogSkipped:true}); if(ok) goNext(r); break }
     case "dev-open": F("dev:"+r.id)._open = true; break;
     case "dev-skip": { const ok = await savePost(r, {developSkipped:true}); if(ok){ dropForm("dev:"+r.id); goNext(r) } break }
     case "develop-save": {
