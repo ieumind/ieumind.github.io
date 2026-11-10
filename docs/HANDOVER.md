@@ -6,6 +6,12 @@
 
 ---
 
+## 2026-11-10x — 실시간 토론: ‘다른 화면’ 상태 (보는 중 / 다른 화면 / 끊김)
+- 학생: `visibilitychange`로 화면이 숨겨지면(홈·다른 앱·다른 탭) presence를 `track({away:true, since})`로 바꾸고, 다시 보이면 `track({at})`로 되돌린다(`livePresTrack`). 교사: sync 때 payload의 away를 `L.pres.away`에 두고, **10초**(`LV_AWAY`) 넘게 away면 노란 점·‘다른 화면 n초째’. 접속 수에는 포함(연결은 돼 있으니), 제목 줄에 ‘· 다른 화면 n’, 거르기 칩 ‘다른 화면’.
+- 한계: 화면 분할·PC 창 겹침·다른 기기는 못 잡는다. 지금 상태만 보여 주고 **기록·CSV에는 남기지 않는다**(사용자와 합의). 학생 머리 카드 안내에 ‘선생님은 누가 지금 토론 화면을 보고 있는지 알 수 있어요.’
+- 실제 휴대폰에서 숨김 직후 track이 서버까지 가는지는 확인 못 함(mock). 못 가면 연결이 끊겨 20초 뒤 ‘끊김’으로 보인다.
+- **Supabase 무료 요금제 한도**(프로젝트 plan=free 확인): 동시 연결 200, 메시지 초당 100, presence 초당 20·한 사람 30초에 5번, 채널 입장 초당 100. 그래서 학생 presence `track`은 7초에 한 번까지(그사이 바뀐 것은 마지막 상태로 합침, `L.presAt/presTm`), 첫 track은 0~3초 흩뜨림. 메시지 한도는 30명 수업에서 빠듯할 수 있다(한 메시지가 약 31명에게 전달). 넘으면 Supabase가 잠깐 끊고 자동 재연결 → 앱이 `liveLoad`로 메움. 실제 부하는 확인 못 함.
+
 ## 2026-11-10w — 실시간 토론(교사): 참여 학생 목록 한 줄 · 거르기 · 찾기 · 연결 상태
 - 목록을 `liveMemListHTML(r)`로 뽑고 `#lv-memwrap`만 다시 그린다(`liveMemRepaint`). 한 줄(약 44px): 연결 점 · 실명/닉네임 · 역할 세그(찬|반|판, data-a/data-v 그대로) · 채팅 제한 아이콘(`lv-mute`) · 닉네임 되돌리기 아이콘(`lv-nick-reset`). 위에 찾기 칸(`#lv-memq`, `S.lvMemQ`, 입력 중 포커스 유지)과 거르기 칩(`lv-memf`: 전체/찬성/반대/판정단/대기/끊김, `S.lvMemF`).
 - **연결 상태**: Supabase Realtime presence 채널 `lvp-<roomId>`(postgres_changes용 채널과 따로, 이름 고정). 학생은 key=mkey로 `track({at})`(실명 없음), 교사는 key `t-…`로 보기만. `presence sync` → `L.pres.on`, 빠지면 `L.pres.gone` 시각. **20초 유예**(`LV_GRACE`) 뒤에야 회색·‘끊김 n분 전’, 5초마다 다시 그림. 첫 sync가 오기 전(`L.pres.ok` 거짓)에는 점·접속 수를 아예 안 그린다 — presence가 막힌 환경에서 모두 회색으로 잘못 보이지 않게. 제목 줄 ‘접속 n / 전체’(`#lv-presn`).
