@@ -287,13 +287,16 @@ details.help summary::-webkit-details-marker{display:none}
 details.help[open] summary{margin-bottom:6px}
 .help-body{background:var(--help);border:1px solid var(--help-line);border-radius:8px;padding:10px 12px;display:grid;gap:8px;font-size:14.5px}
 .starters{display:flex;flex-wrap:wrap;gap:6px}
-.wguide{background:var(--help);border:1px solid var(--help-line);border-radius:10px;padding:12px 14px;margin:6px 0 12px;display:grid;gap:10px}
-.wguide .wg-h{display:grid;gap:2px}.wguide .wg-h b{font-size:15px}
-.wguide .wg-list{list-style:none;margin:0;padding:0;display:grid;gap:10px}
-.wguide .wg-list li{display:flex;gap:10px;align-items:flex-start}
-.wguide .wg-n{flex:0 0 auto;width:22px;height:22px;border-radius:50%;background:var(--accent);color:#fff;font-size:12px;font-weight:700;display:inline-grid;place-items:center;margin-top:2px}
-.wguide .wg-list b{font-size:14.5px}.wguide .wg-list p{margin:2px 0 6px;font-size:13.5px;color:var(--muted)}
-.wguide .wg-check summary{cursor:pointer;font-size:14px;color:var(--muted)}.wguide .wg-check ul{margin:6px 0 0;padding-left:18px;font-size:14px;display:grid;gap:3px}
+.wguide{background:var(--help);border:1px solid var(--help-line);border-radius:10px;padding:10px 12px;margin:6px 0 10px;display:grid;gap:8px}
+.wguide .wg-h{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:4px 10px}.wguide .wg-h b{font-size:15px}
+.wguide .wg-load{font-size:13.5px;min-height:32px}
+.wguide .wg-tabs{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:5px}
+.wguide .wg-t{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;border:1px solid var(--help-line);background:var(--surface);color:var(--fg);border-radius:10px;padding:5px 2px;min-height:48px;font:inherit;font-size:12.5px;line-height:1.2;cursor:pointer;white-space:nowrap;min-width:0}
+.wguide .wg-t[aria-selected="true"]{border-color:var(--accent);background:var(--accent);color:#fff;font-weight:600}
+.wguide .wg-n{flex:0 0 auto;width:20px;height:20px;border-radius:50%;background:var(--accent-soft);color:var(--accent);font-size:12px;font-weight:700;display:inline-grid;place-items:center}
+.wguide .wg-t[aria-selected="true"] .wg-n{background:#fff;color:var(--accent)}
+.wguide .wg-p{display:grid;gap:6px}.wguide .wg-p[hidden]{display:none}.wguide .wg-p p{margin:0;font-size:13.5px;color:var(--muted)}.wguide .wg-p p b{color:var(--fg);font-weight:600}
+.wg-check{margin-top:10px}.wg-check summary{cursor:pointer;font-size:14px;color:var(--muted)}.wg-check ul{margin:6px 0 0;padding-left:18px;font-size:14px;display:grid;gap:3px}
 .starter{border:1px dashed var(--help-line);background:var(--surface);border-radius:8px;padding:6px 10px;font-size:14px;cursor:pointer;text-align:left;min-height:38px;font-family:var(--f-display)}
 .starter:hover{border-style:solid}
 
@@ -6091,19 +6094,28 @@ function essayStatusHTML(r){
 }
 /* 논술 글쓰기 가이드: 막막하지 않게 ‘주장 → 근거 → 다른 생각 → 마무리’를 한 칸씩 채우듯 이어 쓰게 한다 (버튼을 누르면 쓰기 칸 끝에 문장 시작이 들어간다) */
 const ESSAY_GUIDE = [
-  {n:"1", t:"내 생각 (첫 문장)", d:"먼저 내 생각을 한 문장으로 말해요.", st:[{show:"나는 ___라고 생각한다.", ins:"나는 "}]},
-  {n:"2", t:"이유와 근거", d:"왜 그렇게 생각하는지 이유를 한두 가지 들어요. 자료나 수업에서 배운 내용을 넣으면 더 단단해져요.", st:[{show:"그 이유는 첫째, ___ 때문이다.", ins:"그 이유는 첫째, "},{show:"자료를 보면 ___ 점을 알 수 있다.", ins:"자료를 보면 "},{show:"수업에서 배운 ___을 생각하면", ins:"수업에서 배운 "}]},
-  {n:"3", t:"다른 생각도 짚기", d:"나와 다르게 생각하는 사람은 뭐라고 할까요? 한 번 짚고, 그래도 내 생각이 맞는 까닭을 써요.", st:[{show:"물론 ___라고 생각하는 사람도 있다. 하지만 ___.", ins:"물론 "}]},
-  {n:"4", t:"마무리", d:"처음 한 말을 다시 한 번 정리하고, 이 생각이 왜 중요한지 덧붙여요.", st:[{show:"따라서 나는 ___라고 생각한다.", ins:"따라서 나는 "},{show:"이 생각이 중요한 까닭은 ___ 때문이다.", ins:"이 생각이 중요한 까닭은 "}]}
+  {n:"1", tab:"내 생각", t:"내 생각 (첫 문장)", d:"먼저 내 생각을 한 문장으로 말해요.", st:[{show:"나는 ___라고 생각한다.", ins:"나는 "}]},
+  {n:"2", tab:"이유·근거", t:"이유와 근거", d:"왜 그렇게 생각하는지 이유를 한두 가지 들어요. 자료나 수업에서 배운 내용을 넣으면 더 단단해져요.", st:[{show:"그 이유는 첫째, ___ 때문이다.", ins:"그 이유는 첫째, "},{show:"자료를 보면 ___ 점을 알 수 있다.", ins:"자료를 보면 "},{show:"수업에서 배운 ___을 생각하면", ins:"수업에서 배운 "}]},
+  {n:"3", tab:"다른 생각", t:"다른 생각도 짚기", d:"나와 다르게 생각하는 사람은 뭐라고 할까요? 한 번 짚고, 그래도 내 생각이 맞는 까닭을 써요.", st:[{show:"물론 ___라고 생각하는 사람도 있다. 하지만 ___.", ins:"물론 "}]},
+  {n:"4", tab:"마무리", t:"마무리", d:"처음 한 말을 다시 한 번 정리하고, 이 생각이 왜 중요한지 덧붙여요.", st:[{show:"따라서 나는 ___라고 생각한다.", ins:"따라서 나는 "},{show:"이 생각이 중요한 까닭은 ___ 때문이다.", ins:"이 생각이 중요한 까닭은 "}]}
 ];
 const ESSAY_CHECK = ["내 생각이 첫 문장에 분명히 나오나요?", "이유(근거)가 한 가지 이상 있나요?", "자료나 수업에서 배운 내용을 한 번 들었나요?", "나와 다른 생각을 한 번 짚었나요?", "마지막에 내 생각을 다시 정리했나요?"];
 function essayGuideHTML(targetId, outline){
-  const btn = (x) => `<button type="button" class="starter" data-a="starter" data-target="${esc(targetId)}" data-text="${esc(x.ins)}">${esc(x.show)}</button>`;
+  /* 짧게: 탭 4개 중 한 칸만 펼친다. 문장 시작을 넣으면 다음 칸으로 넘어간다 (다시 그리지 않고 DOM에서만 바꾼다) */
+  const cur = Math.min(Math.max(Number(S.egStep) || 0, 0), ESSAY_GUIDE.length - 1);
+  const btn = (x, i) => `<button type="button" class="starter" data-a="starter" data-target="${esc(targetId)}" data-text="${esc(x.ins)}" data-eg="${i}">${esc(x.show)}</button>`;
   return `<div class="wguide" role="group" aria-label="글쓰기 가이드">
-    <div class="wg-h"><b>${ic("bulb", "sm")} 이렇게 써 보세요</b><span class="muted small">한 칸씩 채우듯 이어 쓰면 돼요. 순서는 바꿔도 괜찮아요.</span></div>
-    ${outline ? `<div class="wg-load"><button type="button" class="starter" data-a="starter" data-target="${esc(targetId)}" data-text="${esc(outline)}">${ic("file-text", "sm")} 위에 정리한 내용 불러오기</button></div>` : ""}
-    <ol class="wg-list">${ESSAY_GUIDE.map(g => `<li><span class="wg-n" aria-hidden="true">${g.n}</span><div><b>${esc(g.t)}</b><p>${esc(g.d)}</p><div class="starters">${g.st.map(btn).join("")}</div></div></li>`).join("")}</ol>
-    <details class="wg-check"><summary>${ic("circle-check", "sm")} 다 쓴 뒤 점검해 보기</summary><ul>${ESSAY_CHECK.map(c => `<li>${esc(c)}</li>`).join("")}</ul></details></div>`;
+    <div class="wg-h"><b>${ic("bulb", "sm")} 이렇게 써 보세요</b>${outline ? `<button type="button" class="linkbtn wg-load" data-a="starter" data-target="${esc(targetId)}" data-text="${esc(outline)}">${ic("file-text", "sm")} 정리한 내용 불러오기</button>` : ""}</div>
+    <div class="wg-tabs" role="tablist" aria-label="글의 차례">${ESSAY_GUIDE.map((g, i) => `<button type="button" role="tab" class="wg-t" data-a="eg-step" data-v="${i}" aria-selected="${i === cur}"><span class="wg-n" aria-hidden="true">${g.n}</span>${esc(g.tab)}</button>`).join("")}</div>
+    ${ESSAY_GUIDE.map((g, i) => `<div class="wg-p" role="tabpanel" data-eg-p="${i}"${i === cur ? "" : " hidden"}><p><b>${esc(g.t)}</b> · ${esc(g.d)}</p><div class="starters">${g.st.map(x => btn(x, i)).join("")}</div></div>`).join("")}</div>`;
+}
+function essayCheckHTML(){
+  return `<details class="wg-check"><summary>${ic("circle-check", "sm")} 다 쓴 뒤 점검해 보기</summary><ul>${ESSAY_CHECK.map(c => `<li>${esc(c)}</li>`).join("")}</ul></details>`;
+}
+function egStep(i){                                                     // 가이드 탭 바꾸기 (다시 그리지 않음)
+  const n = ESSAY_GUIDE.length; i = Math.min(Math.max(i, 0), n - 1); S.egStep = i;
+  document.querySelectorAll(".wguide .wg-t").forEach(t => t.setAttribute("aria-selected", String(Number(t.dataset.v) === i)));
+  document.querySelectorAll(".wguide .wg-p").forEach(p => { p.hidden = Number(p.dataset.egP) !== i });
 }
 function stepCompose(r, p, open){
   const editing = S.form[essayKey(r)]?._edit;
@@ -6119,7 +6131,8 @@ function stepCompose(r, p, open){
   return `<details class="card" open><summary style="cursor:pointer;font-weight:600">내가 정리한 생각과 근거</summary><div style="margin-top:10px">${fieldsHTML(r, b, {evidenceType:p?.evidenceType})}</div></details>
     <div class="card"><div class="q"><label for="${key}-text">한 편의 글로 써 보세요</label>
       ${essayGuideHTML(`${key}-text`, outline)}
-      ${ta(key,"text",{rows:12, rich:true})}</div>
+      ${ta(key,"text",{rows:12, rich:true})}
+      ${essayCheckHTML()}</div>
       <div class="foot">${essayStatusHTML(r)}<button class="btn pri" type="button" data-a="essay-save">글 보내기</button></div></div>`;
 }
 /* ---- 논술 · 피드백 보기 ---- */
@@ -6702,7 +6715,7 @@ function teacherCard(r, p, ps, nav){
    ========================================================= */
 /* 🔄 새 버전 알림: 배포 때마다 APP_VERSION과 version.json의 v를 같은 값으로 올린다.
    GitHub Pages는 화면을 10분쯤 기억하므로, 옛 화면이면 아래쪽에 ‘새로고침’ 띠를 띄우고 주소를 바꿔 새로 받는다 */
-const APP_VERSION = "2026-11-10zi";
+const APP_VERSION = "2026-11-10zj";
 async function checkVersion(){
   if(!/^https?:$/.test(location.protocol)) return;
   try{
@@ -9973,7 +9986,8 @@ async function act(a, b){
     case "stu-nav": { const ns = stuNames(S.stu.c), i = ns.indexOf(S.stu.v) + (+b.dataset.d || 0); if(ns[i]){ S.stu.v = ns[i]; Object.assign(mmapS(), {sel:null, page:0}); scrollTo(0,0) } break }
     case "port-open": S.modal = null; S.view = "room"; S.roomId = b.dataset.id; S.ttab = "students"; S.openPost = b.dataset.v; S.gsel = ""; scrollTo(0,0); break;
     case "go-respond": goStep(r, "respond"); S.openPost = b.dataset.id; break;
-    case "starter": insertStarter(b); return;
+    case "starter": insertStarter(b); if(b.dataset.eg != null && b.closest(".wguide")) egStep(Number(b.dataset.eg) + 1); return;
+    case "eg-step": egStep(Number(b.dataset.v)); return;
 
     /* ---- 이름 ---- */
     case "rename":
