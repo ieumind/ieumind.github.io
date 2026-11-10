@@ -119,8 +119,19 @@
           const now = Date.now(), mine = L.debate_msgs.filter(x => x.room_id===rid && x.mkey===m.mkey);
           if(mine.some(x => now - Date.parse(x.created_at) < 3000)) return no("fast"); if(mine.filter(x => now - Date.parse(x.created_at) < 60000).length >= 10) return no("many");
           const rp = p.p_reply != null && L.debate_msgs.some(x => x.id===p.p_reply && x.room_id===rid && !x.deleted) ? p.p_reply : null;
-          const row = {id:++L.seq, room_id:rid, tid:m.tid, mkey:m.mkey, nick:m.nick, team:m.team, body:b, deleted:false, created_at:new Date().toISOString(), reply_to:rp};
+          const rn = p.p_note != null && L.debate_notes.some(x => x.id===p.p_note && x.room_id===rid && !x.deleted && x.kind==="q" && (x.target==="all" || x.target===m.team)) ? p.p_note : null;
+          const row = {id:++L.seq, room_id:rid, tid:m.tid, mkey:m.mkey, nick:m.nick, team:m.team, body:b, deleted:false, created_at:new Date().toISOString(), reply_to:rp, reply_note:rn};
           L.debate_msgs.push(row); lvSave("debate_msgs", row, "INSERT"); window.__sbLog.push("debate_send"); return {data:{ok:true, id:row.id}, error:null} }
+        if(fn==="debate_pre"){ if(!r) return no("denied"); const m = lvMember(rid); if(!m) return no("denied"); if(p.p_choice==null) return {data:{ok:true, pre:m.pre||null}, error:null};
+          if(m.team!=="jury") return no("denied"); if(!["pro","con","none"].includes(p.p_choice)) return no("bad"); const st = lvState(r);
+          if(!["wait","live"].includes(st)) return no("closed"); if(st==="live" && m.pre) return no("locked");
+          m.pre = p.p_choice; lvSave("debate_members", m, "UPDATE"); return {data:{ok:true, pre:m.pre}, error:null} }
+        if(fn==="debate_shift"){ if(!r) return {data:null, error:null}; const ok = (isT && tidOf(r)===uid) || (lvState(r)==="result" && !!lvMember(rid)); if(!ok) return {data:null, error:null};
+          const js = L.debate_members.filter(x => x.room_id===rid && x.team==="jury"), jj = k => (L.debate_jury.find(x => x.room_id===rid && x.mkey===k)||{}).c4;
+          const c = f => js.filter(f).length;
+          return {data:{pre:{pro:c(x=>x.pre==="pro"), con:c(x=>x.pre==="con"), none:c(x=>x.pre==="none")}, post:{pro:c(x=>jj(x.mkey)==="pro"), con:c(x=>jj(x.mkey)==="con")},
+            changed:c(x=>["pro","con"].includes(x.pre) && ["pro","con"].includes(jj(x.mkey)) && jj(x.mkey)!==x.pre), kept:c(x=>["pro","con"].includes(x.pre) && jj(x.mkey)===x.pre),
+            decided:c(x=>x.pre==="none" && ["pro","con"].includes(jj(x.mkey))), both:c(x=>x.pre && jj(x.mkey))}, error:null} }
         if(fn==="debate_mark"){ if(!r) return no("denied"); const m = lvMember(rid); if(!m || m.team!=="jury") return no("denied"); if(!["live","ended","vote"].includes(lvState(r))) return no("closed");
           if(!L.debate_msgs.some(x => x.id===p.p_msg && x.room_id===rid && !x.deleted)) return no("bad");
           const has = L.debate_marks.find(x => x.room_id===rid && x.mkey===m.mkey && x.msg_id===p.p_msg);

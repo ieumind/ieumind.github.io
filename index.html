@@ -2027,6 +2027,22 @@ details.help.helpcta > summary:hover{border-color:var(--accent)}
 .lvnotice > .ti{flex:0 0 auto;margin-top:3px;color:var(--warn)}
 .lvconn{display:flex;align-items:flex-start;gap:8px;margin:12px 0 0;padding:12px 16px;border-radius:12px;background:color-mix(in srgb,#c0392b 12%,var(--surface));border:1px solid #c0392b;font-size:14.5px;line-height:1.55}
 .lvconn > .ti{flex:0 0 auto;margin-top:3px;color:#c0392b}
+.lvqpin{margin:0;padding:10px 12px;border-bottom:1px solid var(--line);background:var(--warn-soft)}
+.lvqpin-h{display:flex;align-items:center;gap:6px;font-size:13.5px}
+.lvqpin ul{list-style:none;margin:6px 0 0;padding:0;display:grid;gap:6px}
+.lvqpin li{display:flex;align-items:center;gap:8px;font-size:14px;line-height:1.5}
+.lvqpin li > span{flex:1;min-width:0;overflow-wrap:anywhere}
+.lvqpin li .btn{flex:0 0 auto}
+.lvm-q.jury{border-left-color:var(--warn);cursor:default}
+.lvreply.jury{border-left-color:var(--warn)}
+.lvn-ans{margin:4px 0 0;display:flex;align-items:center;gap:4px;color:var(--accent);font-weight:600}
+.lvpre{display:grid;gap:6px;margin:10px 0 0;padding:12px 14px;border:1px solid var(--line);border-radius:12px;background:var(--bg)}
+.lvpre > b{display:flex;align-items:center;gap:6px;font-size:14.5px}
+.lvpre-b{display:flex;flex-wrap:wrap;gap:6px}
+.lvpre-done{display:flex;flex-wrap:wrap;align-items:center;gap:4px;margin:8px 0 0}
+.lvnotes > .lvpre,.lvnotes > .lvpre-done{margin:10px 12px}
+.lvshift{display:flex;flex-wrap:wrap;align-items:center;gap:10px;padding:10px 12px;border-radius:12px;background:var(--bg);border:1px solid var(--line)}
+.lvshift > div{display:grid;gap:2px}.lvshift .pro{color:var(--s1)}.lvshift .con{color:var(--s2)}
 .lvsum{display:grid;gap:10px}
 .lvsum h3{display:flex;align-items:center;gap:6px}
 .lvsum h4{margin:6px 0 0;font-size:14.5px;display:flex;align-items:center;gap:6px;flex-wrap:wrap}
@@ -3807,7 +3823,7 @@ async function liveLoad(r){
   const T = isTeacher();
   try{
     for(let from = 0; ; from += 1000){                                   // 메시지는 서버 번호 순서로, 겹치면 하나로
-      const m = await SB.from("debate_msgs").select("id,mkey,nick,team,body,deleted,created_at,reply_to").eq("room_id", r.id).order("id", {ascending:true}).range(from, from + 999);
+      const m = await SB.from("debate_msgs").select("id,mkey,nick,team,body,deleted,created_at,reply_to,reply_note").eq("room_id", r.id).order("id", {ascending:true}).range(from, from + 999);
       if(m.error) break;
       m.data.forEach(x => L.msgs.set(x.id, x));
       if(m.data.length < 1000) break;
@@ -3823,9 +3839,10 @@ async function liveLoad(r){
     if(!v.error){ if(T) L.votes = v.data; else L.myVote = v.data.find(x => x.mkey === L.me?.mkey)?.choice || null }
     const jj = await SB.from("debate_jury").select("mkey,c1,c2,c3,c4,reason,created_at").eq("room_id", r.id);
     if(!jj.error){ if(T) L.jurors = jj.data; else L.myJudge = jj.data.find(x => x.mkey === L.me?.mkey) || null }
+    if(!T && L.me?.team === "jury"){ try{ const pr = await SB.rpc("debate_pre", {p_room:r.id, p_choice:null}); if(pr.data?.ok) L.myPre = pr.data.pre || null }catch(e){} }
     if(!T && L.me?.team === "jury"){ const mk = await SB.from("debate_marks").select("msg_id").eq("room_id", r.id); if(!mk.error) L.myMarks = new Set(mk.data.map(x => x.msg_id)) }
   }catch(e){}
-  await liveMarkSum(r);
+  await liveMarkSum(r); await liveShift(r);
   if(!T) await liveRoster(r);
   if(T || liveSt(r) === "result") await liveResult(r);
   L.loaded = true; liveRefresh(r);
@@ -3848,7 +3865,7 @@ function liveSub(r){
     .on("postgres_changes", {event:"INSERT", schema:"public", table:"debate_notes", filter:flt}, onNote)
     .on("postgres_changes", {event:"UPDATE", schema:"public", table:"debate_notes", filter:flt}, onNote)
     .on("postgres_changes", {event:"INSERT", schema:"public", table:"debate_marks", filter:flt}, () => { if(T) liveMarkSum(r).then(() => liveRefresh(r, "msg")) })
-    .on("postgres_changes", {event:"INSERT", schema:"public", table:"debate_jury", filter:flt}, p => { if(T){ if(p.new?.mkey && !L.jurors.some(v => v.mkey === p.new.mkey)) L.jurors.push(p.new); liveResult(r).then(() => liveRefresh(r)) } })
+    .on("postgres_changes", {event:"INSERT", schema:"public", table:"debate_jury", filter:flt}, p => { if(T){ if(p.new?.mkey && !L.jurors.some(v => v.mkey === p.new.mkey)) L.jurors.push(p.new); Promise.all([liveResult(r), liveShift(r)]).then(() => liveRefresh(r)) } })
     .subscribe(st => {
       if(st === "SUBSCRIBED"){ const was = L.conn === "lost"; L.conn = "ok"; if(L.loaded) liveLoad(r).then(() => { if(was){ toast("다시 연결됐어요. 그동안 올라온 메시지를 불러왔어요."); liveRender() } }) }   // 다시 연결되면 빠진 메시지를 채운다
       else if(["CHANNEL_ERROR", "TIMED_OUT", "CLOSED"].includes(st) && L.ch){ if(L.conn !== "lost"){ L.conn = "lost"; liveRender() } }
@@ -3902,6 +3919,7 @@ function liveRefresh(r, why, mine){
       const tn = document.getElementById("lv-tabn"); if(tn){ tn.textContent = String(lv(r).noteNew || 0); tn.hidden = !lv(r).noteNew }
       const mc = document.getElementById("lv-mynotes"); if(mc) mc.outerHTML = liveMyNotesHTML(r);
       const sp = document.getElementById("lv-stat"); if(sp) sp.outerHTML = liveStatHTML(r);
+      const qp = document.getElementById("lv-qpin"); if(qp) qp.outerHTML = liveQPinHTML(r);
       return;
     }
   }
@@ -3911,6 +3929,8 @@ function liveRefresh(r, why, mine){
     if(atEnd || mine) box.scrollTop = box.scrollHeight; else document.getElementById("lv-newmsg")?.removeAttribute("hidden");
     const sp = document.getElementById("lv-stat"); if(sp) sp.outerHTML = liveStatHTML(r);
     const c = document.getElementById("lv-kpis"); if(c) c.outerHTML = liveKpis(r);
+    const qp = document.getElementById("lv-qpin"); if(qp) qp.outerHTML = liveQPinHTML(r);
+    const nl = document.getElementById("lv-notelist"); if(nl) nl.innerHTML = liveNotesHTML(r);
     return;
   }
   liveRender();
@@ -3940,7 +3960,9 @@ function liveMsgsHTML(r){
     const mine = !T && L.me && m.mkey === L.me.mkey, real = T ? L.members.get(m.mkey)?.real_name : "";
     if(m.deleted) return `<li class="lvm del"><span class="small muted">${ic("trash", "sm")} ${esc(m.nick)}의 메시지를 지웠어요.</span></li>`;
     const q = m.reply_to != null ? L.msgs.get(+m.reply_to) : null, n = showN ? (L.markN?.get(+m.id) || 0) : 0, on = my.has(+m.id);
-    const quote = q ? `<button type="button" class="lvm-q ${q.team === "con" ? "con" : "pro"}" data-a="lv-jump" data-v="${esc(String(q.id))}" title="원래 메시지로 가기">${ic("arrow-back-up", "sm")} <b>${esc(q.nick)}</b> ${esc(q.deleted ? "(지운 메시지)" : String(q.body).slice(0, 60) + (String(q.body).length > 60 ? "…" : ""))}</button>` : "";
+    const qn = m.reply_note != null ? L.notes.get(+m.reply_note) : null;
+    const nq = qn ? `<div class="lvm-q jury">${ic("bulb", "sm")} <b>판정단 질문</b> ${esc(qn.deleted ? "(지운 질문)" : String(qn.body).slice(0, 60) + (String(qn.body).length > 60 ? "…" : ""))}</div>` : "";
+    const quote = nq + (q ? `<button type="button" class="lvm-q ${q.team === "con" ? "con" : "pro"}" data-a="lv-jump" data-v="${esc(String(q.id))}" title="원래 메시지로 가기">${ic("arrow-back-up", "sm")} <b>${esc(q.nick)}</b> ${esc(q.deleted ? "(지운 메시지)" : String(q.body).slice(0, 60) + (String(q.body).length > 60 ? "…" : ""))}</button>` : "");
     const acts = (canReply && !mine ? `<button type="button" class="lvm-act" data-a="lv-reply" data-v="${esc(String(m.id))}">${ic("arrow-back-up", "sm")} 이 말에 반박</button>` : "")
       + (canMark ? `<button type="button" class="lvm-act lvmark${on ? " on" : ""}" data-a="lv-mark" data-v="${esc(String(m.id))}" aria-pressed="${on}">${ic("circle-check", "sm")} 좋은 근거</button>` : "")
       + (n ? `<span class="lvm-n2" title="판정단이 ‘좋은 근거’로 표시한 수">${ic("circle-check", "sm")} 좋은 근거 ${n}</span>` : "");
@@ -4001,10 +4023,18 @@ function liveSummaryHTML(r, forTeacher){
   return `<section class="card lvcard lvsum" id="lv-sum"><h3>${ic("chart-bar")} 토론 돌아보기</h3>
     ${lead ? `<p class="lvsum-lead">${lead}</p><p class="small muted">투표는 토론을 돌아보기 위한 참고예요. 역사적 정답이나 절대적인 승패를 뜻하지 않아요.</p>` : ""}
     <div class="lvsum-k"><div><b>${said} / ${deb.length}명</b><span>말한 토론자</span></div><div><b>${rebut}번</b><span>주고받은 반박</span></div><div><b>${notes}개</b><span>판정단 의견</span></div></div>
+    ${liveShiftHTML(r)}
     <h4>${ic("circle-check", "sm")} 판정단이 꼽은 좋은 근거</h4>
     ${top.length ? `<ul class="lvsum-l">${top.map(msgLi).join("")}</ul>` : `<p class="small muted">판정단이 ‘좋은 근거’로 표시한 발언이 없어요.</p>`}
     ${me ? `<h4>${ic("user", "sm")} 내 발언 <span class="muted small">${me.length}개 · 좋은 근거로 꼽힌 발언 ${me.filter(m => N.get(+m.id)).length}개</span></h4>${me.length ? `<ul class="lvsum-l">${me.map(msgLi).join("")}</ul>` : `<p class="small muted">이번 토론에서는 발언하지 않았어요.</p>`}` : ""}
     ${forTeacher ? "" : `<div class="row end"><button class="btn sm" type="button" data-a="lv-to-ref">${ic("plant-2", "sm")} 이 내용을 보며 성찰 쓰기 ${ic("arrow-down", "sm")}</button></div>`}</section>`;
+}
+function liveShiftHTML(r){
+  const x = lv(r).shift; if(!x || !(x.both > 0)) return "";
+  const P = teamL(r, "pro"), C = teamL(r, "con");
+  return `<h4>${ic("scale", "sm")} 판정단의 생각 변화 <span class="muted small">토론 전 → 종합 판정</span></h4>
+    <div class="lvshift"><div><span class="small muted">토론 전</span><b><span class="pro">${esc(P)} ${x.pre.pro}</span> · <span class="con">${esc(C)} ${x.pre.con}</span> · 모름 ${x.pre.none}</b></div>${ic("arrow-right", "sm")}<div><span class="small muted">종합 판정</span><b><span class="pro">${esc(P)} ${x.post.pro}</span> · <span class="con">${esc(C)} ${x.post.con}</span></b></div></div>
+    <p class="small">${x.changed ? `생각이 바뀐 판정단 <b>${x.changed}명</b>` : "생각이 바뀐 판정단은 없었어요"} · 처음 생각을 지킨 판정단 ${x.kept}명${x.decided ? ` · 모르다가 정한 판정단 ${x.decided}명` : ""}</p>`;
 }
 function liveJudgeHTML(r){
   const L = lv(r), j = L.myJudge, key = "lvj:" + r.id, f = F(key, () => ({c1:"", c2:"", c3:"", c4:"", reason:""}));
@@ -4015,6 +4045,7 @@ function liveJudgeHTML(r){
     <div class="lvra"><div class="eyebrow">판정 이유</div><p class="txt">${esc(j.reason)}</p></div><p class="muted small">판정은 한 번만 낼 수 있어요. 결과는 선생님이 공개할 때 볼 수 있어요.</p></section>`;
   return `<section class="card lvcard lvjudge"><h3>${ic("scale")} 청중 판정 · 최종 투표</h3><p class="muted small">세 가지 기준으로 두 팀을 비교하고, 마지막으로 어느 팀의 주장이 더 설득력 있었는지 골라 주세요. 이 판정이 최종 투표예요. 한 번만 낼 수 있고, 결과는 선생님이 공개할 때까지 보이지 않아요.</p>
     ${need ? `<p class="lvnneed small ${short ? "bad" : ""}" id="lv-mynotes">${ic(short ? "alert-triangle" : "circle-check", "sm")} 청중 의견 <b>${have}</b>개 · 판정을 내려면 ${need}개 이상 필요해요${short ? ` <button class="linkbtn" type="button" data-a="lv-tab" data-v="notes">의견 쓰러 가기</button>` : ""}</p>` : ""}
+    ${L.myPre ? `<p class="lvpre-done small">${ic("scale", "sm")} 토론 전 내 생각은 <b>${esc(preL(r, L.myPre))}</b>이었어요. 마지막 ‘종합’에서 지금 생각을 골라 보세요.</p>` : ""}
     ${liveMyMarksHTML(r)}
     ${LIVE_CRIT.map(([k, l, ds], i) => `<fieldset class="q lvcrit"><legend><b>${i + 1}. ${esc(l)}</b></legend><ul class="small muted">${ds.map(d => `<li>${esc(d)}</li>`).join("")}</ul>${radios(key, k, opt, {label:l})}</fieldset>`).join("")}
     <fieldset class="q lvcrit"><legend><b>4. 종합 · 최종 투표</b></legend><ul class="small muted"><li>토론 전체를 보고 어느 팀의 주장이 더 설득력 있었나요?</li></ul>${radios(key, "c4", [{k:"pro", l:`${teamL(r, "pro")}팀의 주장이 더 설득력 있었다`}, {k:"con", l:`${teamL(r, "con")}팀의 주장이 더 설득력 있었다`}], {label:"종합"})}</fieldset>
@@ -4059,10 +4090,10 @@ function liveNotesHTML(r){
   if(!list.length) return `<li class="lv-empty">아직 의견이 없어요. 청중 판정단이 토론을 보며 질문이나 생각을 남겨요.</li>`;
   return list.map(x => {
     if(x.deleted) return `<li class="lvn del"><span class="small muted">${ic("trash", "sm")} ${esc(x.nick)}의 의견을 지웠어요.</span></li>`;
-    const mine = !T && L.me && x.mkey === L.me.mkey;
+    const mine = !T && L.me && x.mkey === L.me.mkey, ans = x.kind === "q" ? lvMsgs(r).filter(m => +m.reply_note === +x.id && !m.deleted) : [];
     return `<li class="lvn ${x.kind === "q" ? "q" : "t"}${mine ? " mine" : ""}" data-nid="${esc(String(x.id))}"><div class="lvn-h"><b class="lvm-n">${esc(x.nick)}</b><span class="lvtag jury">${x.kind === "q" ? "질문" : "생각"}</span><span class="small muted">${esc(noteTgtL(r, x.target))}</span>${mine ? `<span class="small muted">나</span>` : ""}<time class="small muted" datetime="${esc(x.created_at)}">${lvTime(x.created_at)}</time>
       ${T ? `<button type="button" class="lvm-del" data-a="lv-note-del" data-v="${esc(String(x.id))}" title="이 의견 지우기" aria-label="${esc(x.nick)}의 의견 지우기">${ic("trash", "sm")}</button>` : ""}</div>
-      <p class="lvm-b">${esc(x.body)}</p></li>`;
+      <p class="lvm-b">${esc(x.body)}</p>${ans.length ? `<p class="lvn-ans small">${ic("circle-check", "sm")} ${[...new Set(ans.map(m => teamL(r, m.team) + "팀"))].map(esc).join("·")}이 답했어요 · ${ans.length}개</p>` : ""}</li>`;
   }).join("");
 }
 function liveNotesPanel(r, canWrite){
@@ -4076,11 +4107,21 @@ function liveNotesPanel(r, canWrite){
       ${liveMyNotesHTML(r)}</div>`
     : canWrite && L.me?.muted ? `<p class="lvlock small">${ic("lock", "sm")} ${esc(LIVE_ERR.muted)}</p>`
     : canWrite ? `<p class="lvlock small">${ic("lock", "sm")} 토론이 시작되면 질문이나 생각을 남길 수 있어요.</p>` : "";
-  return `<section class="lvnotes" aria-label="청중 의견"><div class="lvchat-h"><b>${ic("bulb", "sm")} 청중 의견</b><span class="small muted">판정단의 질문과 생각 · 모두 볼 수 있어요</span></div>
+  return `<section class="lvnotes" aria-label="청중 의견">${canWrite ? livePreHTML(r) : ""}<div class="lvchat-h"><b>${ic("bulb", "sm")} 청중 의견</b><span class="small muted">판정단의 질문과 생각 · 모두 볼 수 있어요</span></div>
     <ol class="lvnotelist" id="lv-notelist" aria-live="polite">${liveNotesHTML(r)}</ol>${comp}</section>`;
 }
 
 /* 📊 토론 현황: 몇 명이 말했는지(팀별) · 판정단 의견 수. 발언 ‘개수’는 승패처럼 읽혀 보이지 않는다(교사 화면 숫자 칸에만) */
+/* ❓ 판정단 질문 고정: 우리 팀(또는 모두)에게 온 질문 중 아직 우리 팀이 답하지 않은 것 — 토론 중 토론자에게만 */
+function liveQPinHTML(r){
+  const L = lv(r), t = L.me?.team;
+  if(!["pro", "con"].includes(t) || liveSt(r) !== "live" || S.preview) return `<div id="lv-qpin" hidden></div>`;
+  const answered = new Set(lvMsgs(r).filter(m => m.reply_note != null && m.team === t && !m.deleted).map(m => +m.reply_note));
+  const qs = [...L.notes.values()].filter(x => !x.deleted && x.kind === "q" && (x.target === "all" || x.target === t) && !answered.has(+x.id)).sort((a, b) => a.id - b.id);
+  if(!qs.length) return `<div id="lv-qpin" hidden></div>`;
+  return `<div class="lvqpin" id="lv-qpin" role="region" aria-label="답하지 않은 판정단 질문"><b class="lvqpin-h">${ic("bulb", "sm")} 판정단이 우리 팀에 물었어요 <span class="small muted">${qs.length}개</span></b>
+    <ul>${qs.slice(-3).map(x => `<li><span><b>${esc(x.nick)}</b>${x.target === "all" ? ` <span class="small muted">모두에게</span>` : ""} ${esc(x.body)}</span><button type="button" class="btn sm" data-a="lv-qans" data-v="${esc(String(x.id))}">${ic("arrow-back-up", "sm")} 답하기</button></li>`).join("")}</ul></div>`;
+}
 function liveStatHTML(r){
   const L = lv(r), ms = lvMsgs(r).filter(m => !m.deleted), spoke = new Set(ms.map(m => m.nick));
   const deb = t => L.roster.filter(x => x.team === t), said = t => deb(t).filter(x => spoke.has(x.nick)).length;
@@ -4112,7 +4153,7 @@ function liveLobbyHTML(r){
       <p class="hint">실제 이름은 닉네임으로 쓸 수 없어요. 친구에게는 닉네임만 보여요.</p></div>`
     : `<p class="small muted lvnickauto">${ic("user", "sm")} 닉네임은 역할에 따라 자동으로 정해져요. (예: ${esc(teamL(r, "pro"))}01 · ${esc(teamL(r, "con"))}01 · 판정단01)</p>`;
   return `<section class="card lvcard lvlobby"><h3>${ic("users")} 토론 대기실</h3>
-    ${liveMineHTML(r)}${nick}
+    ${liveMineHTML(r)}${nick}${livePreHTML(r)}
     <p class="muted small lvlead">처음에는 모두 <b>청중 판정단</b>이에요. ${lvSelfMove(r) ? `토론에 직접 참여하려면 <b>${esc(teamL(r, "pro"))}팀</b>이나 <b>${esc(teamL(r, "con"))}팀</b> 카드를 눌러 옮겨요. 각 팀 ${N}명까지예요.` : "선생님이 역할을 정해 줘요. 기다려 주세요."} 청중 판정단은 토론을 지켜보며 질문이나 생각을 남긴 뒤 판정해요.</p>
     ${liveRosterHTML(r)}
     <p class="lvwait small">${ic("hourglass", "sm")} 선생님이 토론을 시작하면 이 화면이 토론방으로 바뀌어요.</p></section>`;
@@ -4124,8 +4165,10 @@ function liveDuoHTML(r){
   const why = S.preview ? "미리보기에서는 보낼 수 없어요." : jury ? (s === "live" ? "청중 판정단은 채팅을 읽기만 해요. ‘청중 의견’에 질문이나 생각을 남겨 주세요." : LIVE_ST[s].d) : s !== "live" ? LIVE_ST[s].d : !L.me?.team ? LIVE_ERR.noteam : L.me?.muted ? LIVE_ERR.muted : "";
   const chat = `<section class="lvchat${s === "live" ? " on" : ""}" aria-label="실시간 토론 채팅">
     <div class="lvsides" aria-hidden="true"><span class="pro">${ic("chevron-left", "sm")} ${esc(teamL(r, "pro"))}팀</span><b>${ic("messages", "sm")} 토론 채팅</b><span class="con">${esc(teamL(r, "con"))}팀 ${ic("chevron-right", "sm")}</span></div>
+    ${liveQPinHTML(r)}
     <ol class="lvmsgs" id="lv-msgs" aria-live="polite">${liveMsgsHTML(r)}</ol>
     <button type="button" class="lvnew" id="lv-newmsg" data-a="lv-bottom" hidden>${ic("arrow-down", "sm")} 새 메시지</button>
+    ${canWrite && L.replyNote && L.notes.get(L.replyNote) ? (q => `<div class="lvreply jury">${ic("bulb", "sm")}<span><b>${esc(q.nick)}</b>의 질문에 답하기 · ${esc(String(q.body).slice(0, 50))}${String(q.body).length > 50 ? "…" : ""}</span><button type="button" class="lvreply-x" data-a="lv-qans" data-v="" aria-label="답하기 취소">${ic("x", "sm")}</button></div>`)(L.notes.get(L.replyNote)) : ""}
     ${canWrite && L.replyTo && L.msgs.get(L.replyTo) ? (q => `<div class="lvreply ${q.team === "con" ? "con" : "pro"}">${ic("arrow-back-up", "sm")}<span><b>${esc(q.nick)}</b>의 말에 반박 · ${esc(String(q.body).slice(0, 50))}${String(q.body).length > 50 ? "…" : ""}</span><button type="button" class="lvreply-x" data-a="lv-reply" data-v="" aria-label="반박 취소">${ic("x", "sm")}</button></div>`)(L.msgs.get(L.replyTo)) : ""}
     <div class="lvcomp">${canWrite ? `<label class="sr" for="lv-in">메시지</label><textarea id="lv-in" rows="1" maxlength="${LIVE_MAX}" placeholder="${esc(liveRound(r)?.ph || "주장이나 반박을 적어 보세요")}" title="Enter로 보내기 · Shift+Enter로 줄 바꿈">${esc(LV_DRAFT[r.id] || "")}</textarea>
       <span class="lvcnt small muted" id="lv-cnt">${(LV_DRAFT[r.id] || "").length}/${LIVE_MAX}</span><button class="btn pri" type="button" data-a="lv-send" ${L.sending ? "disabled" : ""}>${ic("send")} <span class="lt">보내기</span></button>`
@@ -4148,7 +4191,7 @@ function viewLiveStudent(r){
   if(s === "vote" && L.rosterFor !== r.live?.at){ L.rosterFor = r.live?.at; liveRoster(r) }
   if(s === "vote") h += jury ? liveJudgeHTML(r) : liveHasJury(r) ? `<section class="card lvcard"><h3>${ic("scale")} 청중 판정단이 판정하는 중이에요</h3><p class="muted small">청중 판정단의 판정이 최종 투표예요. 결과는 선생님이 공개할 때 볼 수 있어요.</p></section>` : liveVoteHTML(r);
   if(s === "result"){
-    if(L.resFor !== r.live?.at){ L.resFor = r.live?.at; L.result = null; Promise.all([liveResult(r), liveMarkSum(r)]).then(() => liveRefresh(r)) }   // 결과가 공개되면 그때 받아 온다
+    if(L.resFor !== r.live?.at){ L.resFor = r.live?.at; L.result = null; Promise.all([liveResult(r), liveMarkSum(r), liveShift(r)]).then(() => liveRefresh(r)) }   // 결과가 공개되면 그때 받아 온다
     h += liveSummaryHTML(r, false);
     h += `<section class="card lvcard"><h3>${ic("chart-bar")} 최종 투표 결과</h3>${liveResultHTML(r)}</section>`;
     if(jury && L.myJudge) h += liveJudgeHTML(r);
@@ -4250,17 +4293,17 @@ async function liveSend(r){
   if(L.lastSend && Date.now() - L.lastSend < 3000){ toast(LIVE_ERR.fast); return }
   L.sending = true;
   if(liveRemote()){
-    const rp = L.replyTo && L.msgs.has(L.replyTo) ? L.replyTo : null;
-    let res; try{ res = await SB.rpc("debate_send", rp ? {p_room:r.id, p_body:body, p_reply:rp} : {p_room:r.id, p_body:body}) }catch(e){ res = {error:e} }
+    const rp = L.replyTo && L.msgs.has(L.replyTo) ? L.replyTo : null, rn = L.replyNote && L.notes.has(L.replyNote) ? L.replyNote : null;
+    let res; try{ res = await SB.rpc("debate_send", {p_room:r.id, p_body:body, ...(rp ? {p_reply:rp} : {}), ...(rn ? {p_note:rn} : {})}) }catch(e){ res = {error:e} }
     L.sending = false;
     if(res.error || !res.data?.ok){ toast(res.error ? "보내지 못했어요. 인터넷을 확인해 주세요." : (LIVE_ERR[res.data?.reason] || "보내지 못했어요.")); if(["closed", "noteam", "muted"].includes(res.data?.reason)) liveLoad(r); return }
-    if(!L.msgs.has(res.data.id)) L.msgs.set(res.data.id, {id:res.data.id, mkey:L.me.mkey, nick:L.me.nick, team:L.me.team, body, deleted:false, created_at:new Date().toISOString(), reply_to:rp});
+    if(!L.msgs.has(res.data.id)) L.msgs.set(res.data.id, {id:res.data.id, mkey:L.me.mkey, nick:L.me.nick, team:L.me.team, body, deleted:false, created_at:new Date().toISOString(), reply_to:rp, reply_note:rn});
   }else{
     L.sending = false;
     const id = Math.max(0, ...L.msgs.keys()) + 1;
-    L.msgs.set(id, {id, mkey:L.me?.mkey || "local:me", nick:L.me?.nick || "미리보기", team:L.me?.team || "pro", body, deleted:false, created_at:new Date().toISOString(), reply_to:L.replyTo || null});
+    L.msgs.set(id, {id, mkey:L.me?.mkey || "local:me", nick:L.me?.nick || "미리보기", team:L.me?.team || "pro", body, deleted:false, created_at:new Date().toISOString(), reply_to:L.replyTo || null, reply_note:L.replyNote || null});
   }
-  const hadReply = !!L.replyTo; L.replyTo = null;
+  const hadReply = !!(L.replyTo || L.replyNote); L.replyTo = null; L.replyNote = null;
   L.lastSend = Date.now(); LV_DRAFT[r.id] = "";
   const n = document.getElementById("lv-in"); if(n){ n.value = ""; n.style.height = ""; }
   const cn = document.getElementById("lv-cnt"); if(cn) cn.textContent = `0/${LIVE_MAX}`;
@@ -4274,7 +4317,7 @@ async function liveSetState(r, v){
   if(!ok) return;
   if(!liveRemote()) r.live = nx;
   toast({live:"토론을 시작했어요. 학생 화면이 토론방으로 바뀌었어요.", ended:"토론을 마쳤어요. 채팅이 잠겼어요.", vote:"최종 투표를 시작했어요.", result:"투표를 마치고 결과를 공개했어요."}[v] || "바꿨어요.");
-  if(v === "result" || v === "vote") liveResult(r).then(() => liveRefresh(r));
+  if(v === "result" || v === "vote") Promise.all([liveResult(r), liveShift(r)]).then(() => liveRefresh(r));
 }
 async function liveSetRound(r, k){
   if(liveSt(r) !== "live"){ toast("토론 중에만 단계를 바꿀 수 있어요."); return }
@@ -4306,6 +4349,31 @@ async function liveSetNotice(r, t){
   if(!ok) return false;
   if(!liveRemote()) Object.assign(r, patch);
   return true;
+}
+/* 🧭 판정단: 토론 전 내 생각 — 대기실에서는 바꿀 수 있고, 토론이 시작되면 아직 안 골랐을 때 한 번만 */
+const preL = (r, k) => k === "pro" ? `${teamL(r, "pro")} 쪽` : k === "con" ? `${teamL(r, "con")} 쪽` : k === "none" ? "아직 모르겠어요" : "";
+function livePreHTML(r){
+  const L = lv(r), s = liveSt(r); if(L.me?.team !== "jury" || S.preview || !["wait", "live"].includes(s)) return "";
+  const pre = L.myPre || null, locked = s === "live" && !!pre;
+  if(locked) return `<p class="lvpre-done small">${ic("circle-check", "sm")} 토론 전 내 생각: <b>${esc(preL(r, pre))}</b> <span class="muted">· 판정할 때 견줘 봐요</span></p>`;
+  return `<div class="lvpre" role="group" aria-label="토론 전 내 생각"><b>${ic("scale", "sm")} 토론을 보기 전, 지금 내 생각은?</b><span class="small muted">${s === "wait" ? "토론이 시작되기 전까지 바꿀 수 있어요." : "한 번 고르면 바꿀 수 없어요."} 끝나고 판정과 견줘 봐요.</span>
+    <div class="lvpre-b">${["pro", "con", "none"].map(k => `<button type="button" class="btn sm${pre === k ? " pri" : ""}" data-a="lv-pre" data-v="${k}" aria-pressed="${pre === k}" ${L.preSaving ? "disabled" : ""}>${esc(preL(r, k))}</button>`).join("")}</div></div>`;
+}
+async function liveSetPre(r, k){
+  const L = lv(r); if(L.preSaving) return;
+  if(!liveRemote()){ L.myPre = k; liveRender(); return }
+  L.preSaving = true; liveRender();
+  let res; try{ res = await SB.rpc("debate_pre", {p_room:r.id, p_choice:k}) }catch(e){ res = {error:e} }
+  L.preSaving = false;
+  if(res.error || !res.data?.ok) toast(res.error ? "저장하지 못했어요. 인터넷을 확인해 주세요." : res.data?.reason === "locked" ? "토론이 시작돼서 바꿀 수 없어요." : (LIVE_ERR[res.data?.reason] || "저장하지 못했어요."));
+  else L.myPre = res.data.pre;
+  liveRender();
+}
+async function liveShift(r){
+  const L = lv(r);
+  if(!liveRemote()) return;
+  if(!(isTeacher() || liveSt(r) === "result")) return;
+  try{ const {data} = await SB.rpc("debate_shift", {p_room:r.id}); if(data) L.shift = data }catch(e){}
 }
 async function liveMember(r, k, patch){
   const L = lv(r), m = L.members.get(k); if(!m) return;
@@ -6363,7 +6431,7 @@ function teacherCard(r, p, ps, nav){
    ========================================================= */
 /* 🔄 새 버전 알림: 배포 때마다 APP_VERSION과 version.json의 v를 같은 값으로 올린다.
    GitHub Pages는 화면을 10분쯤 기억하므로, 옛 화면이면 아래쪽에 ‘새로고침’ 띠를 띄우고 주소를 바꿔 새로 받는다 */
-const APP_VERSION = "2026-11-10r";
+const APP_VERSION = "2026-11-10s";
 async function checkVersion(){
   if(!/^https?:$/.test(location.protocol)) return;
   try{
@@ -9644,7 +9712,9 @@ async function act(a, b){
     case "lv-notice": if(r && isLive(r)){ const t = String(F("lvtn").t || "").trim().slice(0, 120); if(!t){ toast("공지할 말을 적어 주세요."); document.getElementById("lv-tn")?.focus(); return } if(await liveSetNotice(r, t)){ dropForm("lvtn"); toast("공지를 올렸어요. 학생 채팅 위에 보여요.") } } break;
     case "lv-notice-off": if(r && isLive(r) && await liveSetNotice(r, null)) toast("공지를 내렸어요."); break;
     case "lv-to-ref": { document.getElementById("lv-ref")?.scrollIntoView({block:"start", behavior:matchMedia("(prefers-reduced-motion:reduce)").matches ? "auto" : "smooth"}); return }
-    case "lv-reply": if(r && isLive(r)){ const L = lv(r); L.replyTo = b.dataset.v ? +b.dataset.v : null; if(L.tab !== "chat") L.tab = "chat"; liveRender(); document.getElementById("lv-in")?.focus() } return;
+    case "lv-pre": if(r && isLive(r)) await liveSetPre(r, b.dataset.v); return;
+    case "lv-qans": if(r && isLive(r)){ const L = lv(r); L.replyNote = b.dataset.v ? +b.dataset.v : null; L.replyTo = null; if(L.tab !== "chat") L.tab = "chat"; liveRender(); document.getElementById("lv-in")?.focus() } return;
+    case "lv-reply": if(r && isLive(r)){ const L = lv(r); L.replyTo = b.dataset.v ? +b.dataset.v : null; L.replyNote = null; if(L.tab !== "chat") L.tab = "chat"; liveRender(); document.getElementById("lv-in")?.focus() } return;
     case "lv-mark": if(r && isLive(r)) await liveMark(r, +b.dataset.v); return;
     case "lv-jump": { const el = document.getElementById("lvm-" + b.dataset.v); if(el){ el.scrollIntoView({block:"center", behavior:matchMedia("(prefers-reduced-motion:reduce)").matches ? "auto" : "smooth"}); el.classList.add("flash"); setTimeout(() => el.classList.remove("flash"), 1600) } else toast("원래 메시지를 찾을 수 없어요."); return }
     case "lv-vote": if(r && isLive(r)) await liveVote(r, b.dataset.v === "con" ? "con" : "pro"); return;
