@@ -24,6 +24,7 @@ async def main():
     # 단계별 질문
     await T.click('[data-a=create]'); await T.wait_for_timeout(500)
     await T.click('[data-a=goal][data-v=look]'); await T.wait_for_timeout(300)
+    await T.evaluate('document.querySelectorAll(".stepq-card details").forEach(d=>d.open=true)'); await T.wait_for_timeout(200)   # 감상·성찰은 느낌 질문 칸이 접혀 있다
     if not await T.query_selector('.qstep textarea'):
       await T.click('[data-a=q-custom]'); await T.wait_for_timeout(300)
     ta=await T.query_selector_all('.qstep textarea:not(.qhint)')

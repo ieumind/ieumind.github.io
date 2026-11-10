@@ -6681,7 +6681,7 @@ function teacherCard(r, p, ps, nav){
    ========================================================= */
 /* 🔄 새 버전 알림: 배포 때마다 APP_VERSION과 version.json의 v를 같은 값으로 올린다.
    GitHub Pages는 화면을 10분쯤 기억하므로, 옛 화면이면 아래쪽에 ‘새로고침’ 띠를 띄우고 주소를 바꿔 새로 받는다 */
-const APP_VERSION = "2026-11-10zg";
+const APP_VERSION = "2026-11-10zh";
 async function checkVersion(){
   if(!/^https?:$/.test(location.protocol)) return;
   try{
@@ -9037,15 +9037,16 @@ function createRefresh(){
 function growTa(el){ if(!el || CSS.supports("field-sizing", "content")) return; el.style.height = "auto"; el.style.height = el.scrollHeight + 2 + "px" }
 function stepQHTML(f, locked){
   const qs = qsOf(f), custom = f.qframe === "custom", cur = custom ? "custom" : (TOOLS[f.tool] && !TOOLS[f.tool].only ? f.tool : TEMPLATES[f.template]?.tool);
-  const frames = TOOL_PICK.map(k => `<button type="button" class="toolchip" data-a="pick-tool" data-v="${k}" aria-pressed="${!custom && (k === cur || (k === "claimEvidence" && (cur === "feel" || cur === "free")))}"><b>${esc(TOOL_NAME[k] || TOOLS[k].label)}</b><span>${TOOLS[k].fields.map(x => esc(x.l)).join(" · ")}</span></button>`).join("")
+  const refl = f.template === "reflect", MAXQ = refl ? 3 : 8;   // 감상·성찰: 느낌을 가볍게 묻는 틀 둘, 질문은 3개까지
+  const frames = (refl ? ["feel", "free"] : TOOL_PICK).map(k => `<button type="button" class="toolchip" data-a="pick-tool" data-v="${k}" aria-pressed="${!custom && (refl ? k === cur : (k === cur || (k === "claimEvidence" && (cur === "feel" || cur === "free"))))}"><b>${esc(refl && k === "feel" ? "느낌과 이유" : (TOOL_NAME[k] || TOOLS[k].label))}</b><span>${TOOLS[k].fields.map(x => esc(x.l)).join(" · ")}</span></button>`).join("")
     + `<button type="button" class="toolchip" data-a="q-custom" aria-pressed="${custom}"><b>${ic("pencil", "sm")} 직접 만들기</b><span>질문을 처음부터 적어요</span></button>`;
-  return lockWrap(locked, `<p class="hint" style="margin:-4px 0 10px">핵심 질문이 어렵다면, 학생이 차례로 답하며 다가가도록 작은 질문으로 나눠 주세요. 질문 틀을 고른 뒤 우리 수업에 맞게 고쳐 쓰면 돼요.</p>
+  return lockWrap(locked, `<p class="hint" style="margin:-4px 0 10px">${refl ? "활동이 끝난 뒤 학생이 마음을 돌아볼 질문이에요. 기본 두 질문(느낌 → 이유)만으로도 충분해요. 필요하면 우리 수업에 맞게 고쳐 쓰세요." : f.template === "essay" ? "논제가 크다면, 학생이 글을 쓰기 전에 차례로 답하며 근거를 모을 수 있도록 작은 질문으로 나눠 주세요. 질문 틀을 고른 뒤 우리 수업에 맞게 고쳐 쓰면 돼요." : "핵심 질문이 어렵다면, 학생이 차례로 답하며 다가가도록 작은 질문으로 나눠 주세요. 질문 틀을 고른 뒤 우리 수업에 맞게 고쳐 쓰면 돼요."}</p>
     <div class="tools" role="group" aria-label="질문 틀">${frames}</div>
     <ol class="qsteps">${qs.map((x, i) => `<li class="qstep"><span class="qn" aria-hidden="true">${i + 1}</span><div class="qbody">
         <textarea rows="2" data-qi="${i}" data-qf="q" maxlength="160" placeholder="${i === 0 ? "예: 철도는 어디와 어디를 이었나요?" : i === 1 ? "예: 그 철도로 무엇이 옮겨졌나요?" : "예: 그 결과 누가 이익을 얻었나요?"}" aria-label="단계별 질문 ${i + 1}">${esc(x.q || "")}</textarea>
         <textarea rows="1" class="qhint" data-qi="${i}" data-qf="h" maxlength="120" placeholder="도움말 (선택) · 예: 지도와 자료 2를 보세요" aria-label="질문 ${i + 1} 도움말">${esc(x.h || "")}</textarea></div>
       <span class="qctl"><button type="button" class="btn sm" data-a="q-move" data-i="${i}" data-d="-1" aria-label="위로" ${i === 0 ? "disabled" : ""}>${ic("chevron-up", "sm")}</button><button type="button" class="btn sm" data-a="q-move" data-i="${i}" data-d="1" aria-label="아래로" ${i === qs.length - 1 ? "disabled" : ""}>${ic("chevron-down", "sm")}</button><button type="button" class="btn sm" data-a="q-del" data-i="${i}" aria-label="질문 ${i + 1} 빼기" ${qs.length <= 1 ? "disabled" : ""}>${ic("x", "sm")}</button></span></li>`).join("")}</ol>
-    ${qs.length < 8 ? `<button type="button" class="btn sm" data-a="q-add">${ic("plus", "sm")} 질문 추가</button>` : `<span class="muted small">질문은 8개까지예요.</span>`}
+    ${qs.length < MAXQ ? `<button type="button" class="btn sm" data-a="q-add">${ic("plus", "sm")} 질문 추가</button>` : `<span class="muted small">질문은 ${MAXQ}개까지예요.</span>`}
     <p class="hint">학생은 핵심 질문을 맨 위에서 보고, 이 질문들에 차례로 답해요. 모든 질문에 답해야 제출할 수 있어요.</p>`);
 }
 const TOOL_NAME = {claimEvidence:"생각과 근거", feel:"생각과 이유", free:"자유롭게", compare:"비교하기", causeEffect:"원인과 결과", source:"자료 분석", problem:"문제 해결"};
@@ -9549,7 +9550,9 @@ function viewCreate(){
   </div></div>
   ${isChat ? chatPromptHTML(f, N) : ""}
 
-  ${stepQOn(f) ? `<div class="card stepq-card" data-cs="stepq" data-sl="단계 질문" style="margin-top:16px"><h3>${N()} 어떤 질문을 따라 생각할까요?<span class="req" title="꼭 적어야 해요" aria-label="필수">*</span> <span class="opt">단계별 질문 · 1개 이상</span></h3>${stepQHTML(f, locked)}</div>` : ""}
+  ${stepQOn(f) ? (f.template === "reflect"
+    ? `<div class="card stepq-card" data-cs="stepq" data-sl="느낌 질문" style="margin-top:16px"><details class="cfold" data-keep="stepq" ${S.advOpen?.stepq ? "open" : ""}><summary><h3 style="display:inline">${N()} 어떤 느낌을 물어볼까요? <span class="opt">(선택) 기본 질문 그대로 써도 돼요</span></h3></summary><div>${stepQHTML(f, locked)}</div></details></div>`
+    : `<div class="card stepq-card" data-cs="stepq" data-sl="단계 질문" style="margin-top:16px"><h3>${N()} ${f.template === "essay" ? "글을 쓰기 전에, 어떤 질문으로 생각을 모을까요?" : "어떤 질문을 따라 생각할까요?"}<span class="req" title="꼭 적어야 해요" aria-label="필수">*</span> <span class="opt">단계별 질문 · 1개 이상</span></h3>${stepQHTML(f, locked)}</div>`) : ""}
   ${isNoteT || isLiveT ? `<style>.depth-card,.preview-steps,details[data-cfold]{display:none!important}
 </style>` : ""}
 `;
@@ -10336,7 +10339,7 @@ async function act(a, b){
       saveFormsSoon(); break;
     }
     case "q-custom": { const f = F("create"); f.qframe = "custom"; f.tool = "free"; f.qs = [{k:"q1", q:"", h:""}, {k:"q2", q:"", h:""}]; saveFormsSoon(); setTimeout(() => document.querySelector('[data-qi="0"][data-qf="q"]')?.focus(), 0); break }
-    case "q-add": { const f = F("create"), qs = qsOf(f).map(x => ({...x})); let n = 1; while(qs.some(x => x.k === "q" + n)) n++;
+    case "q-add": { const f = F("create"), qs = qsOf(f).map(x => ({...x})); if(qs.length >= (f.template === "reflect" ? 3 : 8)) return; let n = 1; while(qs.some(x => x.k === "q" + n)) n++;
       qs.push({k:"q" + n, q:"", h:""}); f.qs = qs; saveFormsSoon(); setTimeout(() => document.querySelector(`[data-qi="${qs.length - 1}"][data-qf="q"]`)?.focus(), 0); break }
     case "q-del": { const f = F("create"), qs = qsOf(f).map(x => ({...x})); if(qs.length <= 1) return; qs.splice(Number(b.dataset.i), 1); f.qs = qs; saveFormsSoon(); break }
     case "q-move": { const f = F("create"), qs = qsOf(f).map(x => ({...x})), i = Number(b.dataset.i), j = i + Number(b.dataset.d); if(j < 0 || j >= qs.length) return;
