@@ -25,15 +25,15 @@ async def main():
     ok('고른 유형 설명 한 줄', '질문 활동' in await T.locator('#c-gsel').inner_text())
     # 2단계(11-10i): 필수(활동·주제·대상) 다음에 ‘더 설정하기’ — 활동 이름·깊이·세부 설정·수업 정보는 접혀 있음
     order = await T.evaluate('[...document.querySelectorAll(".cform > [data-cs]")].map(x=>x.dataset.cs).join(",")')
-    ok('순서: 활동→주제→(단계 질문)→대상→더 설정하기', order in ('goal,topic,stepq,who,more','goal,topic,who,more'), order)
+    ok('순서: 이름·소개→활동→주제→(단계 질문)→대상→더 설정하기', order in ('title,goal,topic,stepq,who,more','title,goal,topic,who,more'), order)
     folds = await T.evaluate('[...document.querySelectorAll(".cmore > details.cfold")].map(d=>d.dataset.keep+":"+d.open).join(",")')
-    ok('더 설정하기 안은 모두 접힘', folds=='title:false,depth:false,adv:false,info:false', folds)
+    ok('더 설정하기 안은 모두 접힘', folds=='depth:false,adv:false,info:false', folds)
     ok('단계 막대 끝에 더 설정하기', (await T.locator('#cstep button').last.inner_text()).strip().endswith('더 설정하기'))
     # 4. AI 박스는 접혀 있고, 주제 입력칸이 먼저
     ok('AI 추천 박스는 접혀 있음', await T.evaluate('!document.querySelector("details.aisug").open'))
     ok('주제 입력칸이 AI 박스보다 위', await T.evaluate('document.getElementById("c-prompt").compareDocumentPosition(document.querySelector("details.aisug")) & Node.DOCUMENT_POSITION_FOLLOWING'))
     # 8. 단계 막대: 처음엔 주제 칸이 비어 ‘!’, 쓰면 바로 ‘✓’ (다시 그리지 않고)
-    ok('단계 막대 5칸(번호 4 + 더 설정하기)', await T.locator('#cstep button').count()==5, await T.locator('#cstep button').count())
+    ok('단계 막대 6칸(번호 5 + 더 설정하기)', await T.locator('#cstep button').count()==6, await T.locator('#cstep button').count())
     ok('주제 비어 있으면 ! 표시', await T.locator('#cstep [data-v=topic] .st.need').count()==1)
     await T.fill('#c-prompt','3·1 운동에 대해 궁금한 것을 질문으로 만들어 보자.'); await W(250)
     ok('쓰면 바로 ✓', await T.locator('#cstep [data-v=topic] .st.ok').count()==1)
