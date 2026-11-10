@@ -4421,10 +4421,13 @@ function liveMemRepaint(r){
   const n = document.getElementById("lv-presn"); if(n) n.innerHTML = livePresSum(r);
 }
 /* 학생: 화면이 숨겨지면(홈·다른 앱·다른 탭) away로 알린다. 다시 보이면 바로 되돌린다 */
-function livePresTrack(L){
+function livePresTrack(L){            // Supabase 무료 요금제 한도(사람마다 30초에 presence 5번, 프로젝트 전체 초당 20번) 때문에 7초에 한 번까지만 보낸다
   if(!L?.pch || isTeacher()) return;
   const away = document.visibilityState === "hidden";
   if(away && !L.awaySince) L.awaySince = Date.now(); if(!away) L.awaySince = 0;
+  const wait = (L.presAt || 0) + 7000 - Date.now();
+  if(wait > 0){ if(!L.presTm) L.presTm = setTimeout(() => { L.presTm = 0; livePresTrack(L) }, wait); return }   // 그사이 바뀐 것은 마지막 상태로 한 번에
+  L.presAt = Date.now();
   try{ const p = L.pch.track(away ? {at:Date.now(), away:true, since:L.awaySince} : {at:Date.now()}); p?.catch?.(() => {}) }catch(e){}
 }
 document.addEventListener("visibilitychange", () => { const r = room(); if(r && isLive(r)) livePresTrack(lv(r)) });
@@ -4443,7 +4446,7 @@ function livePres(r){
         if(!L.pres.ok){ L.pres.ok = true; L.pres.since = Date.now() }
         L.pres.on = now; liveMemRepaint(r);
       })
-      .subscribe(st => { if(st === "SUBSCRIBED" && !T) livePresTrack(L) });
+      .subscribe(st => { if(st === "SUBSCRIBED" && !T) setTimeout(() => livePresTrack(L), Math.random() * 3000) });   // 30명이 한꺼번에 들어와도 몰리지 않게 0~3초 흩뜨린다
   }catch(e){ L.pch = null }
   if(T && !L.presT) L.presT = setInterval(() => { if(room()?.id !== r.id || !document.getElementById("lv-memwrap")) return; liveMemRepaint(r) }, 5000);   // 20초 유예가 지나면 회색으로
 }
