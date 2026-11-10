@@ -23,6 +23,7 @@ async def main():
     await T.click('[data-a=create]'); await W(T,400)
     print('order:', await T.evaluate('''[...document.querySelectorAll("#app .card > h3, .ctop label[for=c-title]")].map(x=>x.innerText.split("\\n")[0].trim().slice(0,24))'''))
     print('default qs:', await T.eval_on_selector_all('[data-qf=q]','e=>e.map(x=>x.value)'), '| adv has tool chips:', bool(await T.query_selector('details[data-adv] .toolchip')))
+    await T.evaluate('document.querySelectorAll("details.cfold").forEach(d=>d.open=true)'); await T.wait_for_timeout(150)
     await T.fill('#c-title','누구를 위한 근대화였을까'); await T.fill('#c-prompt','일제 강점기의 철도와 공장은 누구를 위한 근대화였을까?')
     await T.evaluate('act("tpl",{dataset:{v:"inquiry"}})') ; await W(T,300)
     print('inquiry default qs:', await T.eval_on_selector_all('[data-qf=q]','e=>e.map(x=>x.value)'))

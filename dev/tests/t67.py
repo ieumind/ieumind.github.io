@@ -26,6 +26,7 @@ async def main():
     await T.click('[data-a=course-save]'); await W(T,700)
     for t,pr in (('3·1 운동의 의미','3·1 운동이 주는 의미는?'),):
       await T.click('#topr [data-a=create]'); await W(T); await T.click('[data-a=goal][data-v=look]'); await W(T)
+      await T.evaluate('document.querySelectorAll("details.cfold").forEach(d=>d.open=true)'); await T.wait_for_timeout(150)
       if await T.query_selector('#c-title'): await T.fill('#c-title', t)
       await T.fill('#c-prompt', pr); await T.click('[data-a=create-save]'); await W(T,900); await T.evaluate('act("home",{dataset:{}})'); await W(T)
     # 학생
@@ -45,6 +46,7 @@ async def main():
     await S.click('[data-a=tb-bell]:visible'); await W(S)
     ok('벨: 새 소식 없으면 안내', '없어요' in await S.inner_text('.tb-pop')); await S.keyboard.press('Escape'); await W(S)
     await T.click('#topr [data-a=create]'); await W(T); await T.click('[data-a=goal][data-v=look]'); await W(T)
+    await T.evaluate('document.querySelectorAll("details.cfold").forEach(d=>d.open=true)'); await T.wait_for_timeout(150)
     await T.fill('#c-title','새로 올린 활동') if await T.query_selector('#c-title') else None
     await T.fill('#c-prompt','새 질문입니다'); await T.click('[data-a=create-save]'); await W(T,900)
     await S.reload(); await W(S,1500)

@@ -1722,6 +1722,11 @@ details.help.helpcta > summary:hover{border-color:var(--accent)}
 .cstep .st{font-size:12px;font-weight:700;line-height:1.4;border-radius:999px;padding:0 7px}
 .cstep .st.ok{color:var(--accent);background:var(--accent-soft)}
 .cstep .st.need{color:var(--danger,#c0392b);background:rgba(192,57,43,.12)}
+.cmore{margin-top:28px}
+.cmore-h{display:flex;flex-wrap:wrap;align-items:center;gap:4px 8px;font-size:16px;font-weight:700;line-height:1.4;margin:0;padding:0 4px;color:var(--fg)}
+.cmore-h .opt{font-size:13px;font-weight:400}
+.cmore > details.cfold{margin-top:10px}
+.cmore details.depth-card > div{gap:14px}
 .cprev{margin-top:16px}
 .cprev-tog{display:flex;width:100%;align-items:center;gap:8px;min-height:48px;padding:12px 18px;border:1px solid var(--line);border-radius:12px;background:var(--surface);color:var(--fg);font:inherit;font-weight:600;cursor:pointer;text-align:left}
 .cprev-tog::after{content:"펼치기";margin-left:auto;font-size:13px;color:var(--accent);background:var(--accent-soft);border-radius:999px;padding:4px 12px}
@@ -6088,7 +6093,7 @@ function teacherCard(r, p, ps, nav){
    ========================================================= */
 /* 🔄 새 버전 알림: 배포 때마다 APP_VERSION과 version.json의 v를 같은 값으로 올린다.
    GitHub Pages는 화면을 10분쯤 기억하므로, 옛 화면이면 아래쪽에 ‘새로고침’ 띠를 띄우고 주소를 바꿔 새로 받는다 */
-const APP_VERSION = "2026-11-10h";
+const APP_VERSION = "2026-11-10i";
 async function checkVersion(){
   if(!/^https?:$/.test(location.protocol)) return;
   try{
@@ -8386,21 +8391,21 @@ function createStepState(f){
 function buildCstep(){
   const bar = document.getElementById("cstep"); if(!bar) return;
   const f = createForm(), st = createStepState(f);
-  const cards = [...document.querySelectorAll(".cform > .card[data-cs]")].filter(c => c.querySelector("h3 .sn"));
+  const cards = [...document.querySelectorAll(".cform > [data-cs]")].filter(c => c.querySelector("h3 .sn") || c.dataset.cs === "more");
   const sig = cards.map(c => { const k = c.dataset.cs; return k + (k in st ? (st[k] ? "!" : "+") : "") }).join("|");
   const sd = document.querySelector(".side"), top = sd && matchMedia("(max-width:960px)").matches ? Math.round(sd.getBoundingClientRect().height) : 0;   // 좁은 화면에서는 위쪽 앱 막대 아래에 붙인다
   bar.style.top = top + "px";
   if(bar.dataset.sig === sig) return;
   bar.dataset.sig = sig;
   bar.innerHTML = cards.map(c => { const k = c.dataset.cs, s = k in st ? (st[k] ? "need" : "ok") : "", l = c.dataset.sl;
-    return `<button type="button" data-a="cs-go" data-v="${esc(k)}" aria-label="${esc(l)}${s === "need" ? " (꼭 적어야 해요)" : s === "ok" ? " (적었어요)" : ""}"><span class="n" aria-hidden="true">${esc(c.querySelector("h3 .sn").textContent)}</span>${esc(l)}${s ? `<span class="st ${s}" aria-hidden="true">${s === "ok" ? "✓" : "!"}</span>` : ""}</button>` }).join("");
+    return `<button type="button" data-a="cs-go" data-v="${esc(k)}" aria-label="${esc(l)}${s === "need" ? " (꼭 적어야 해요)" : s === "ok" ? " (적었어요)" : ""}">${c.querySelector("h3 .sn") ? `<span class="n" aria-hidden="true">${esc(c.querySelector("h3 .sn").textContent)}</span>` : ic("adjustments", "sm")}${esc(l)}${s ? `<span class="st ${s}" aria-hidden="true">${s === "ok" ? "✓" : "!"}</span>` : ""}</button>` }).join("");
   cstepMark();
 }
 function cstepMark(){
   const bar = document.getElementById("cstep"); if(!bar) return;
   const line = bar.getBoundingClientRect().bottom + 24;
   let cur = null;
-  document.querySelectorAll(".cform > .card[data-cs]").forEach(c => { if(c.querySelector("h3 .sn") && c.getBoundingClientRect().top <= line) cur = c.dataset.cs });
+  document.querySelectorAll(".cform > [data-cs]").forEach(c => { if((c.querySelector("h3 .sn") || c.dataset.cs === "more") && c.getBoundingClientRect().top <= line) cur = c.dataset.cs });
   bar.querySelectorAll("button").forEach(b => { if(b.dataset.v === cur) b.setAttribute("aria-current", "step"); else b.removeAttribute("aria-current") });
 }
 let CS_RAF = 0;
@@ -8435,6 +8440,8 @@ function createRefreshSoon(){ if(CR_RAF) return; CR_RAF = requestAnimationFrame(
 function createRefresh(){
   const box = document.querySelector(".cprev-b"); if(!box) return;
   box.innerHTML = createPreviewHTML(createForm());
+  const ts = document.getElementById("c-title-sum"), tt = (createForm().title || "").trim();
+  if(ts) ts.textContent = tt ? "‘" + tt + "’" : "비워 두면 핵심 질문으로 정해져요";
   buildCstep();
 }
 /* 글이 길어지면 상자가 같이 늘어난다 (field-sizing을 못 쓰는 브라우저용) */
@@ -8899,10 +8906,7 @@ function viewCreate(){
 
   let no = 0; const N = () => `<span class="sn">${CIRC[no++]}</span>`;   // 단계 번호 (보이는 칸만 차례로)
   h += `<nav class="cstep" id="cstep" aria-label="만들기 단계"></nav>`;     // 단계 막대: 그린 뒤 buildCstep()이 채운다
-  h += `<div class="card ctop" style="margin-top:16px"><div class="form-grid">
-    <div class="q"><label for="c-title">활동 이름 <span class="opt">(선택 · 비워 두면 핵심 질문으로 정해져요)</span></label><input type="text" id="c-title" data-form="create" data-k="title" maxlength="60" placeholder="예: 누구를 위한 근대화였을까" value="${esc(f.title||"")}"></div>
-    <div class="q"><label for="c-intro">활동 소개 <span class="opt">(선택 · 학생에게 보여요)</span></label><input type="text" id="c-intro" data-form="create" data-k="intro" maxlength="120" placeholder="예: 친구와 생각을 나누고 내 생각을 다시 돌아봐요." value="${esc(f.intro||"")}"></div></div></div>
-  <div class="card" data-cs="goal" data-sl="활동" style="margin-top:16px"><h3>${N()} 어떤 활동을 할까요?<span class="req" title="꼭 적어야 해요" aria-label="필수">*</span></h3>${lockWrap(locked, `
+  h += `<div class="card" data-cs="goal" data-sl="활동" style="margin-top:16px"><h3>${N()} 어떤 활동을 할까요?<span class="req" title="꼭 적어야 해요" aria-label="필수">*</span></h3>${lockWrap(locked, `
     <p class="hint gtip">활동을 고르면 아래 칸이 그 활동에 맞게 바뀌어요.</p>
     <div class="types gtypes" role="group" aria-label="활동">${GOALS.map(g => `<button type="button" class="tcard gcard" data-a="goal" data-v="${g.k}" aria-pressed="${g.k===goal.k}" title="${esc(g.d)}"><span class="gc-ic" aria-hidden="true">${ic(g.icon, "lg")}</span><span class="gc-t"><b>${esc(g.l)}${g.beta ? `<span class="beta" title="시험 중인 기능이에요. AI 답이 틀릴 수 있어요.">Beta</span>` : ""}</b><span>${esc(g.d)}</span></span><span class="gc-ck" aria-hidden="true"></span></button>`).join("")}</div>
     <p class="gsel-d" id="c-gsel">${ic(goal.icon, "sm")}<span><b>${esc(goal.l)}</b> — ${esc(goal.d)}${goal.beta ? " 시험 중인 기능이라 AI 답이 틀릴 수 있어요." : ""}</span></p>
@@ -8955,17 +8959,33 @@ function viewCreate(){
   ${stepQOn(f) ? `<div class="card stepq-card" data-cs="stepq" data-sl="단계 질문" style="margin-top:16px"><h3>${N()} 어떤 질문을 따라 생각할까요?<span class="req" title="꼭 적어야 해요" aria-label="필수">*</span> <span class="opt">단계별 질문 · 1개 이상</span></h3>${stepQHTML(f, locked)}</div>` : ""}
   ${isNoteT || isLiveT ? `<style>.depth-card,.preview-steps,details[data-cfold]{display:none!important}
 </style>` : ""}
-  <div class="card depth-card" data-cs="depth" data-sl="깊이" style="margin-top:16px"><h3>${isNoteT || isLiveT ? "" : N()} 생각을 어디까지 이어 갈까요? <span class="opt">생각 → 만남 → 변화</span></h3>${lockWrap(locked, `
+`;
+  h += (() => { const usedG = editR ? new Set(allPostsOf(editR.id).map(p => p.groupId).filter(Boolean)) : new Set(), lockC = locked && !!courseOf(editR?.courseId);
+    const sel = courseSel(f), multi = !editR || isDraft, list = S.courses.filter(x => !x.archived || sel.includes(x.id));
+    return `<div class="card" data-cs="who" data-sl="대상·마감" style="margin-top:16px"><h3>${N()} 누구와, 언제까지 할까요?</h3>
+      ${S.courses.length ? `<div class="q"><span class="qlabel">과목 <span class="opt">${multi ? "(여러 개 고를 수 있어요 · 과목마다 같은 활동이 하나씩 만들어져요)" : "(한 과목)"}</span></span>
+        <div class="cpick" role="group" aria-label="과목">${list.map(x => `<button type="button" class="cchip" data-a="c-course" data-v="${esc(x.id)}" aria-pressed="${sel.includes(x.id)}" ${lockC ? "disabled" : ""}>${courseIcon(x, "sm")} ${esc(x.title)}${x.archived ? " (보관)" : ""}</button>`).join("")}
+          <button type="button" class="cchip none" data-a="c-course" data-v="" aria-pressed="${!sel.length}" ${lockC ? "disabled" : ""}>과목 없이 (링크 하나로 사용)</button></div>
+        ${lockC ? `<p class="hint">학생 응답이 있어 과목은 바꿀 수 없어요.</p>` : sel.length > 1 ? `<p class="hint">${ic("check", "sm")} ${sel.length}개 과목을 골랐어요. 저장하면 과목마다 같은 활동이 만들어지고, 결과는 과목별로 따로 모여요.</p>` : ""}</div>` : ""}
+      ${!sel.length && S.mode === "supa" ? `<p class="hint" style="margin-top:6px">${ic("users", "sm")} 과목 없이 만들면 학생이 링크·QR로 들어와 <b>개인 코드 없이 이름이나 닉네임만 적고</b> 바로 참여해요. (개인 코드로 들어온 학생은 그대로 학번·이름으로 보여요.)</p>` : ""}
+      ${(!editR || isDraft) && canPush() && courseOf(f.courseId) ? `<div class="feat c-notify" style="margin-top:12px"><label><input type="checkbox" data-form="create" data-k="notify" ${f.notify === false ? "" : "checked"}><span>${ic("bell", "sm")} 공개할 때 학생 앱에 알림 보내기 <span class="opt">— 고른 과목(그룹) 학생에게</span></span></label></div>` : ""}
+      <div class="form-grid" style="margin-top:12px"><div class="q"><label for="c-due">마감 <span class="opt">(선택)</span></label><input type="datetime-local" id="c-due" data-form="create" data-k="dueAt" value="${esc(f.dueAt||"")}">
+        <p class="hint">이 시각에 저절로 마감돼요.${f.dueAt ? ` <button class="linkbtn" type="button" data-a="due-clear">지우기</button>` : ""}</p></div></div>
+      ${sel.map(cid => gschedHTML(courseOf(cid), f, usedG)).join("")}</div>` })();   // 누구와·언제까지: 필수 칸(주제) 바로 다음
+  const depthNow = (Object.values(DEPTHS).find(d => d.stages === stg) || {}).label || "";
+  const titleNow = (f.title || "").trim();
+  h += `<section class="cmore" data-cs="more" data-sl="더 설정하기"><h3 class="cmore-h">${ic("adjustments", "sm")} 더 설정하기 <span class="opt">(선택) 건드리지 않아도 알맞게 정해져 있어요</span></h3>
+  <details class="cfold" data-keep="title" ${(S.advOpen?.title ?? !!editR) ? "open" : ""}><summary>${ic("tag", "sm")} 활동 이름·소개 <span class="opt" id="c-title-sum">${titleNow ? esc("‘" + titleNow + "’") : "비워 두면 핵심 질문으로 정해져요"}</span></summary><div><div class="form-grid">
+    <div class="q"><label for="c-title">활동 이름 <span class="opt">(선택 · 비워 두면 핵심 질문으로 정해져요)</span></label><input type="text" id="c-title" data-form="create" data-k="title" maxlength="60" placeholder="예: 누구를 위한 근대화였을까" value="${esc(f.title||"")}"></div>
+    <div class="q"><label for="c-intro">활동 소개 <span class="opt">(선택 · 학생에게 보여요)</span></label><input type="text" id="c-intro" data-form="create" data-k="intro" maxlength="120" placeholder="예: 친구와 생각을 나누고 내 생각을 다시 돌아봐요." value="${esc(f.intro||"")}"></div></div></div></details>
+    <details class="cfold depth-card" data-keep="depth" ${S.advOpen?.depth ? "open" : ""}><summary>${ic("stairs", "sm")} 생각을 어디까지 이어 갈까요? <span class="opt">지금: ${esc(depthNow)} · ${stepsOf(preview).length}단계 · 약 ${estMinutes(preview).join("~")}분</span></summary><div>${lockWrap(locked, `
     <div class="depths" role="group" aria-label="생각 깊이">${Object.entries(DEPTHS).filter(([k]) => !(NO_DEEP.includes(f.template) && k === "deep")).map(([k,d])=>{
       const est = d.stages === stg ? estMinutes(preview) : (() => { const g = {...f}; applyDepth(k, g); return estMinutes(roomFromForm(g)) })();   // 아래 ‘학생은 이렇게 활동해요’와 같은 계산
       return `<button type="button" class="depth" data-a="depth" data-v="${k}" aria-pressed="${d.stages === stg}">
       <b><span class="dn" aria-hidden="true">${d.stages}</span>${esc(d.label)}</b><span class="fl">${esc(d.sum)}</span><span class="use">${ic("clock", "sm")} 약 ${est.join("~")}분</span></button>` }).join("")}</div>`)}
     <div class="preview-steps"><div class="pv-h"><span class="eyebrow">${ic("eye", "sm")} 학생은 이렇게 활동해요</span><span class="estline">${stepsOf(preview).length}단계 · 약 ${estMinutes(preview).join("~")}분</span></div>
     <div class="pv-stages">${STAGE_L.map((x, i) => { const ss = stepsOf(preview).filter(st => (STAGE_OF[st] ?? 0) === i);
-      return ss.length ? `<div class="pv-st"><b>${ic(["bubble","eye","refresh"][i], "sm")} ${x}</b><span>${ss.map(st => esc(stepMeta(preview, st).s)).join(" → ")}</span></div>` : "" }).join("")}${stepsOf(preview).includes("feedback") ? `<div class="pv-st"><b>${ic("chalkboard-teacher", "sm")} 선생님</b><span>${esc(stepMeta(preview, "feedback").s)}</span></div>` : ""}</div></div></div>
-
-
-
+      return ss.length ? `<div class="pv-st"><b>${ic(["bubble","eye","refresh"][i], "sm")} ${x}</b><span>${ss.map(st => esc(stepMeta(preview, st).s)).join(" → ")}</span></div>` : "" }).join("")}${stepsOf(preview).includes("feedback") ? `<div class="pv-st"><b>${ic("chalkboard-teacher", "sm")} 선생님</b><span>${esc(stepMeta(preview, "feedback").s)}</span></div>` : ""}</div></div></details>
   <details class="cfold" data-cfold data-keep="adv" ${S.advOpen?.adv ? "open" : ""}><summary>${ic("settings", "sm")} 세부 설정 <span class="opt">고르지 않아도 ‘생각을 어디까지’에 맞게 정해져 있어요</span></summary><div>`;
   let adv = "";
   const toolOpts = Object.entries(TOOLS).filter(([k,v]) => v.only ? v.only === f.template : (TOOL_PICK.includes(k) || k === f.tool));
@@ -8996,18 +9016,6 @@ function viewCreate(){
     adv += sec("adjustments", "그 밖에", `<div class="feat">${chk("feedback","교사 피드백 <span class='opt'>— 학생 글에 선생님이 한마디</span>")}${chk("anonymous","학생끼리는 익명으로 보이기 <span class='opt'>(선생님은 이름을 봐요)</span>")}</div>`);
   }
   h += lockWrap(locked, adv) + `</div></details>`;
-  h += (() => { const usedG = editR ? new Set(allPostsOf(editR.id).map(p => p.groupId).filter(Boolean)) : new Set(), lockC = locked && !!courseOf(editR?.courseId);
-    const sel = courseSel(f), multi = !editR || isDraft, list = S.courses.filter(x => !x.archived || sel.includes(x.id));
-    return `<div class="card" data-cs="who" data-sl="대상·마감" style="margin-top:16px"><h3>${N()} 누구와, 언제까지 할까요?</h3>
-      ${S.courses.length ? `<div class="q"><span class="qlabel">과목 <span class="opt">${multi ? "(여러 개 고를 수 있어요 · 과목마다 같은 활동이 하나씩 만들어져요)" : "(한 과목)"}</span></span>
-        <div class="cpick" role="group" aria-label="과목">${list.map(x => `<button type="button" class="cchip" data-a="c-course" data-v="${esc(x.id)}" aria-pressed="${sel.includes(x.id)}" ${lockC ? "disabled" : ""}>${courseIcon(x, "sm")} ${esc(x.title)}${x.archived ? " (보관)" : ""}</button>`).join("")}
-          <button type="button" class="cchip none" data-a="c-course" data-v="" aria-pressed="${!sel.length}" ${lockC ? "disabled" : ""}>과목 없이 (링크 하나로 사용)</button></div>
-        ${lockC ? `<p class="hint">학생 응답이 있어 과목은 바꿀 수 없어요.</p>` : sel.length > 1 ? `<p class="hint">${ic("check", "sm")} ${sel.length}개 과목을 골랐어요. 저장하면 과목마다 같은 활동이 만들어지고, 결과는 과목별로 따로 모여요.</p>` : ""}</div>` : ""}
-      ${!sel.length && S.mode === "supa" ? `<p class="hint" style="margin-top:6px">${ic("users", "sm")} 과목 없이 만들면 학생이 링크·QR로 들어와 <b>개인 코드 없이 이름이나 닉네임만 적고</b> 바로 참여해요. (개인 코드로 들어온 학생은 그대로 학번·이름으로 보여요.)</p>` : ""}
-      ${(!editR || isDraft) && canPush() && courseOf(f.courseId) ? `<div class="feat c-notify" style="margin-top:12px"><label><input type="checkbox" data-form="create" data-k="notify" ${f.notify === false ? "" : "checked"}><span>${ic("bell", "sm")} 공개할 때 학생 앱에 알림 보내기 <span class="opt">— 고른 과목(그룹) 학생에게</span></span></label></div>` : ""}
-      <div class="form-grid" style="margin-top:12px"><div class="q"><label for="c-due">마감 <span class="opt">(선택)</span></label><input type="datetime-local" id="c-due" data-form="create" data-k="dueAt" value="${esc(f.dueAt||"")}">
-        <p class="hint">이 시각에 저절로 마감돼요.${f.dueAt ? ` <button class="linkbtn" type="button" data-a="due-clear">지우기</button>` : ""}</p></div></div>
-      ${sel.map(cid => gschedHTML(courseOf(cid), f, usedG)).join("")}</div>` })();   // ⑤ 누구와·언제까지: 세부 설정(④ 바로 아래) 다음
   h += `  <details class="cfold" data-keep="info" ${(S.advOpen?.info ?? !!editR) ? "open" : ""}><summary>${ic("clipboard-list", "sm")} 수업 정보 <span class="opt">학년·단원·차시·교사용 메모</span></summary><div><div class="form-grid">
       <div class="q"><label for="c-grade">학년</label><select id="c-grade" data-form="create" data-k="grade"><option value="">선택 안 함</option>${GRADES.map(g=>`<option ${f.grade===g?"selected":""}>${g}</option>`).join("")}</select></div>
       <div class="q"><label for="c-subject">교과</label><input type="text" id="c-subject" data-form="create" data-k="subject" maxlength="20" value="${esc(f.subject||"")}" placeholder="예: 한국사, 국어, 통합사회"></div>
@@ -9017,6 +9025,7 @@ function viewCreate(){
       <div class="q"><label for="c-stage">수업 단계</label><select id="c-stage" data-form="create" data-k="stage"><option value="">선택 안 함</option>${["도입","전개","정리","과제"].map(g=>`<option ${f.stage===g?"selected":""}>${g}</option>`).join("")}</select></div>
       <div class="q wide"><label for="c-memo">${ic("notes", "sm")} 교사용 메모 <span class="opt">(학생에게 보이지 않아요)</span></label>${ta("create","memo",{rows:2, ph:"예: 다음 시간 토론 전에 활용", id:"c-memo"})}</div>
     </div></div></details>`;   // 수업 정보(학년·단원·메모): 학생 활동에 영향이 없는 기록이라 맨 아래
+  h += `</section>`;                                   // 더 설정하기 끝
   h += `<aside class="cprev${S.cprevOpen ? " open" : ""}" aria-label="학생 화면 미리보기"><div class="cprev-in"><button type="button" class="cprev-tog" data-a="cprev-tog">${ic("eye", "sm")} 학생에게는 이렇게 보여요</button><div class="cprev-b">${createPreviewHTML(f)}</div></div></aside>`;
   if(S.tplNaming) h += `<div class="setup" style="margin-top:16px"><b>${ic("device-floppy")} 내 템플릿으로 저장</b><p class="small">활동 유형·깊이·세부 설정을 저장해 두고 다음에 불러올 수 있어요.</p>
     <div class="row"><input type="text" id="tpl-name" maxlength="30" placeholder="예: 한국사 토론 기본형" aria-label="템플릿 이름"><button class="btn sm pri" type="button" data-a="tpl-save">저장</button><button class="btn sm" type="button" data-a="tpl-cancel">취소</button></div></div>`;
@@ -10119,7 +10128,7 @@ async function act(a, b){
     case "preview-exit": exitPreview(); break;
     case "cprev-tog": S.cprevOpen = !S.cprevOpen; break;
     case "cs-go": {
-      const c = document.querySelector(`.cform > .card[data-cs="${b.dataset.v}"]`); if(!c) return;
+      const c = document.querySelector(`.cform > [data-cs="${b.dataset.v}"]`); if(!c) return;
       const bar = document.getElementById("cstep"), off = bar ? (parseFloat(bar.style.top) || 0) + bar.offsetHeight + 8 : 8;
       window.scrollTo({top:c.getBoundingClientRect().top + window.scrollY - off, behavior:matchMedia("(prefers-reduced-motion:reduce)").matches ? "auto" : "smooth"});
       return;

@@ -24,6 +24,7 @@ async def main():
     # 교사: 자료 서식 글상자
     await T.click('#topr [data-a=create]'); await W(T); await T.click('[data-a=goal][data-v=look]'); await W(T)
     ok('자료 칸이 서식 글상자', await T.is_visible('#c-context.rte-ed') and await T.is_visible('.rte-bar'))
+    await T.evaluate('document.querySelectorAll("details.cfold").forEach(d=>d.open=true)'); await T.wait_for_timeout(150)
     await T.fill('#c-title','서식 활동') if await T.query_selector('#c-title') else None
     await T.fill('#c-prompt','서식 활동에 대한 내 생각은?')
     await T.click('#c-context'); await T.keyboard.type('중요: ')
