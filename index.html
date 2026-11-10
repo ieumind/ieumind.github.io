@@ -1979,7 +1979,7 @@ details.help.helpcta > summary:hover{border-color:var(--accent)}
 .lvncomp{gap:6px}.lvncomp .lvnrow .lvseg button{padding-top:4px;padding-bottom:4px}
 .lvchat.lvc-me{border-width:2px}.lvchat.lvc-me.pro{border-color:color-mix(in srgb,var(--s1) 70%,var(--line))}.lvchat.lvc-me.con{border-color:color-mix(in srgb,var(--s2) 70%,var(--line))}.lvchat.lvc-me.jury{border-color:color-mix(in srgb,var(--muted) 55%,var(--line))}
 .lvc-mine{display:inline-flex;align-items:center;gap:3px;margin-left:6px;padding:1px 8px;border-radius:999px;font-size:11.5px;font-weight:700;color:#fff;background:var(--muted)}.lvsides .lvc-mine.lvc-pro{color:#fff;background:var(--s1)}.lvsides .lvc-mine.lvc-con{color:#fff;background:var(--s2)}
-.lvflow{list-style:none;margin:2px 0 4px;padding:0;display:flex;align-items:center;gap:0;flex-wrap:nowrap;min-width:0}
+.lvflow{list-style:none;margin:2px 0 4px;padding:0;display:flex;align-items:center;gap:4px 0;flex-wrap:wrap;min-width:0}
 .lvflow li{display:flex;align-items:center;gap:5px;font-size:13px;color:var(--muted);white-space:nowrap;min-width:0}
 .lvflow li + li::before{content:"";flex:0 0 14px;height:2px;margin:0 6px;border-radius:2px;background:var(--line)}
 .lvflow li.done + li::before{background:var(--accent)}
@@ -4011,7 +4011,7 @@ function liveMsgsHTML(r){
 }
 /* 진행 4칸: 대기실 → 토론 → 투표·판정 → 결과. ‘토론 종료’는 ②를 끝낸 채 ③을 기다리는 상태로 보여 준다 */
 function liveFlowHTML(r){
-  const s = liveSt(r), jury = liveCount(r).jury > 0;
+  const s = liveSt(r), jury = liveCount(r).jury > 0 || liveRosterBox(r).jury > 0;
   const steps = [["wait", "대기실"], ["live", "토론"], ["vote", jury ? "투표·판정" : "투표"], ["result", "결과"]];
   const cur = {wait:0, live:1, ended:1, vote:2, result:3}[s] ?? 0, endedNow = s === "ended";
   const li = ([k, l], i) => {
