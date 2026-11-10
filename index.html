@@ -1695,6 +1695,7 @@ input[type=datetime-local]{border-radius:var(--r)}
   .gtypes{grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}
   .gcard,.cform .gtypes .gcard{grid-template-columns:1fr;align-items:start;padding:10px 2px 8px;gap:6px}
   .gcard .gc-t b .beta{font-size:10.5px;padding:0 5px}
+  .gcard .gc-ck{display:none}   /* 좁은 칸: 고른 칸은 아이콘이 채워져 보이므로 체크는 생략 (아이콘과 겹침) */
   .gcard .gc-ic{width:34px;height:34px}
   .gcard .gc-t b{font-size:13px}
   .gsel-d{font-size:14px;padding:9px 12px}
@@ -1722,6 +1723,15 @@ details.help.helpcta > summary:hover{border-color:var(--accent)}
 .cstep .st{font-size:12px;font-weight:700;line-height:1.4;border-radius:999px;padding:0 7px}
 .cstep .st.ok{color:var(--accent);background:var(--accent-soft)}
 .cstep .st.need{color:var(--danger,#c0392b);background:rgba(192,57,43,.12)}
+/* 새 활동 화면 3단계: 부드러운 카드 · 위치 표시 · 미리보기 패널 */
+.crumb{display:flex;align-items:center;flex-wrap:wrap;gap:6px;font-size:14px;color:var(--muted);margin-bottom:14px}
+.crumb .back{margin:0}
+.crumb > span[aria-current]{color:var(--fg);font-weight:600}
+.cform > .card{border-radius:16px;box-shadow:0 1px 2px rgba(16,40,38,.04),0 8px 24px rgba(16,40,38,.05)}
+.cmore > details.cfold{border-radius:14px}
+.cform .gcard{border-radius:14px}
+.cform .gcard[aria-pressed="true"] .gc-ic{background:var(--accent);color:var(--accent-ink)}
+.cform .foot .btn{min-height:46px;padding-inline:18px}
 .cmore{margin-top:28px}
 .cmore-h{display:flex;flex-wrap:wrap;align-items:center;gap:4px 8px;font-size:16px;font-weight:700;line-height:1.4;margin:0;padding:0 4px;color:var(--fg)}
 .cmore-h .opt{font-size:13px;font-weight:400}
@@ -1749,7 +1759,7 @@ details.help.helpcta > summary:hover{border-color:var(--accent)}
   body.v-create .wrap{max-width:1360px}
   .cform{max-width:none;position:relative;padding-right:328px}
   .cform > .cprev{position:absolute;top:0;right:0;bottom:0;width:300px;margin:0}
-  .cprev-in{position:sticky;top:20px;padding-top:12px}
+  .cprev-in{position:sticky;top:20px;margin-top:12px;background:var(--sunk);border-radius:16px;padding:14px}
   .cprev-tog{pointer-events:none;cursor:default;border:0;background:transparent;padding:0 2px 8px;min-height:0}
   .cprev-tog::after{display:none}
   .cprev-b{display:grid}
@@ -6093,7 +6103,7 @@ function teacherCard(r, p, ps, nav){
    ========================================================= */
 /* 🔄 새 버전 알림: 배포 때마다 APP_VERSION과 version.json의 v를 같은 값으로 올린다.
    GitHub Pages는 화면을 10분쯤 기억하므로, 옛 화면이면 아래쪽에 ‘새로고침’ 띠를 띄우고 주소를 바꿔 새로 받는다 */
-const APP_VERSION = "2026-11-10i";
+const APP_VERSION = "2026-11-10j";
 async function checkVersion(){
   if(!/^https?:$/.test(location.protocol)) return;
   try{
@@ -8896,7 +8906,7 @@ function viewCreate(){
   const stg = !f.meet || f.reveal === "teacher" ? 1 : (f.change || f.revise) ? 3 : 2;        // 지금 설정이 실제로 거치는 단계 수
   const GRADES = ["중1","중2","중3","고1","고2","고3"].concat(f.grade && !["중1","중2","중3","고1","고2","고3"].includes(f.grade) ? [f.grade] : []);   // 예전에 고른 값은 그대로 보여 준다
 
-  let h = `<button class="linkbtn back" type="button" data-a="home">${ic("arrow-left", "sm")} 내 과목</button>
+  let h = `<nav class="crumb" aria-label="현재 위치"><button class="linkbtn back" type="button" data-a="home">${ic("home", "sm")} 내 과목</button><span aria-hidden="true">›</span><span aria-current="page">${editR ? (isDraft ? "작성 중인 활동" : "활동 수정") : "새 활동"}</span></nav>
   <div class="home-head"><div><div class="eyebrow">교사 화면</div><h1>${editR ? (isDraft ? "작성 중인 활동" : "활동 수정") : "새 활동"}</h1>
     <p>${editR ? "저장된 내용을 불러왔어요. 고친 뒤 저장하세요." : "활동을 고르고 주제만 적으면 바로 만들 수 있어요. 쓰는 내용은 자동으로 이 기기에 저장돼요."}</p></div></div>`;
   if(locked) h += `<div class="notice lockinfo"><b>학생 응답 ${nResp}개가 있는 활동이에요.</b><span>활동 유형·입장·깊이·질문 유형·세부 설정처럼 응답과 연결된 구조는 바꿀 수 없어요. 제목·활동 소개·논제 문구·자료·수업 정보·교사용 메모는 고칠 수 있어요.</span>
