@@ -1960,6 +1960,17 @@ details.help.helpcta > summary:hover{border-color:var(--accent)}
 .lvcol.pro li{border-left-color:var(--s1)}.lvcol.con li{border-left-color:var(--s2)}.lvcol.jury li{border-left-color:var(--muted)}.lvcol li.me{outline:2px solid var(--accent)}
 .lvnickrow{display:flex;gap:8px}.lvnickrow input{flex:1;min-width:0;font-size:16px}
 .lvwait{margin:14px 0 0;color:var(--muted)}.lvnickauto{margin:6px 0}
+.lvrecbar{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px;margin:12px 0;padding:12px 14px;border:1px solid var(--line);border-radius:12px;background:var(--surface)}
+.lvrecbar>div{display:grid;gap:2px}
+.modal:has(.lvrec){max-width:860px}
+.rp-sheet.lvrec{display:grid;gap:10px;max-height:62vh}
+.lvrec-c{border:1px solid #ccc;border-radius:8px;padding:10px 12px;break-inside:avoid;display:grid;gap:6px;font-size:14px}
+.lvrec-c header{display:flex;flex-wrap:wrap;align-items:center;gap:8px}.lvrec-c header b{font-size:16px}
+.lvrec-c ul{margin:0;padding-left:18px;display:grid;gap:3px}.lvrec-c p{margin:0}
+.lr-k{display:flex;flex-wrap:wrap;gap:6px}.lr-kv{display:inline-flex;gap:5px;align-items:baseline;border:1px solid #ddd;border-radius:6px;padding:2px 8px;font-size:13px}.lr-kv span{color:#555}
+.lr-t{display:inline-block;font-size:11.5px;border:1px solid #bbb;border-radius:5px;padding:0 5px;color:#444}
+.lvrec-h{display:none;font-size:15px;margin:0 0 8px}.lr-s{font-size:13.5px}.lr-ref{border-top:1px dashed #ccc;padding-top:6px;display:grid;gap:4px}
+@media print{body:has(.rp-sheet.lvrec) .rp-sheet.lvrec{display:block}body:has(.rp-sheet.lvrec) .lvrec-h{display:block}body:has(.rp-sheet.lvrec) .lvrec-c{margin-bottom:8px}}
 .lvtabs{display:none;gap:6px;margin:12px 0 6px}
 .lvtab{flex:1;display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:44px;border:1px solid var(--line);border-radius:10px;background:var(--surface);color:var(--fg);font:inherit;cursor:pointer}
 .lvtab[aria-pressed="true"]{background:var(--ink);color:#fff;border-color:var(--ink)}
@@ -2628,7 +2639,7 @@ const isTeacher = () => Auth.teacher && S.role === "teacher";                   
 const TEACHER_ACTS = new Set(["att-open","att-close","att-cell","att-day","att-fill","att-deldate","att-adddate","att-month-days","att-csv","att-send","pg-facts","avatar-del","pg-mode","pg-type","pg-gen","pg-copy","pg-apply","msg-kind","sc-iadd","sc-idel","sc-paste","sc-ins","sc-tpl-reset","sc-export","msg-open","msg-tab","msg-all","msg-none","msg-cls","msg-send","msg-del","msg-withdraw","msg-repush","note-share","c-course","tname-open","tname-later","tname-save","q-custom","q-add","q-del","q-move","course-archive","courses-more","courses-arch","port-student","port-open","stu-close","stu-nav","tmr-start","tmr-add","tmr-pause","tmr-resume","tmr-stop","note-files","note-memoreq","ctx-img-del","lv-state","lv-team","lv-mute","lv-jhide","lv-note-del","lv-nick-reset","lv-del","lv-auto","qfb","qfb-close","fb-chip","pick-tool","mem-open","mem-cls","mem-all","mem-none","course-gsplit","ai-setup","ai-key-save","ai-key-del","ai-suggest","ai-pick","tadmin-open","tadmin-block","tadmin-tab","fbadmin-done","notice-add","notice-del","note-filter","note-req","note-req-send","note-req-cancel","nudge-open","nudge-all","nudge-clear","acct-del-open","acct-del-yes","create","edit-room","dup","dup-list","del","del-yes","del-ask","del-room","status","toggle","save-feedback","class-fb","pin","pin-move","pin-clear",
   "present","present-exit","pmode","pnav","pq","pper","pnames","prand","fullscreen","export","export-go","save-tset","tpl-save-open","tpl-save","tpl-cancel","use-tpl","create-save","draft-save","publish-draft","discard-form",
   "preview","preview-form","preview-home","qr","copy-link","save-share","mcourse","course-new","course-edit","course-gadd","course-gdel","course-save","course-del","course-del-yes",
-  "roster-open","roster-add","roster-reissue","roster-del","roster-print","rprint-back","rprint-go","gsel","asg-add-open","asg-add-cancel","asg-add","asg-st","racts","mview","sview","sfilter","sgo","snav","ttab","mfilter","open-student","goal","tpl","st-add","st-del","depth"]);
+  "roster-open","roster-add","roster-reissue","roster-del","roster-print","rprint-back","rprint-go","lv-rec","lv-rec-f","lv-rec-csv","gsel","asg-add-open","asg-add-cancel","asg-add","asg-st","racts","mview","sview","sfilter","sgo","snav","ttab","mfilter","open-student","goal","tpl","st-add","st-del","depth"]);
 // TODO: 실제 배포 시 교사 인증 및 권한 검증 필요
 //   지금은 화면(S.role)과 저장소 규칙(rooms·tnotes·ttemplates·config는 편집자만 쓰기)으로 나눠 두었다.
 //   학생 응답(posts·replies)은 참여자 누구나 쓸 수 있으므로, 실제 서비스에서는 서버에서 작성자·교사 권한을 확인해야 한다.
@@ -3830,7 +3841,7 @@ async function liveLoad(r){
     }
     const nt = await SB.from("debate_notes").select("id,mkey,nick,kind,target,body,deleted,created_at").eq("room_id", r.id).order("id", {ascending:true});
     if(!nt.error) nt.data.forEach(x => L.notes.set(x.id, x));
-    const mb = await SB.from("debate_members").select(T ? "mkey,nick,team,muted,real_name,joined_at,nick_set" : "mkey,nick,team,muted").eq("room_id", r.id);
+    const mb = await SB.from("debate_members").select(T ? "mkey,nick,team,muted,real_name,joined_at,nick_set,pre" : "mkey,nick,team,muted").eq("room_id", r.id);
     if(!mb.error){
       if(T) L.members = new Map(mb.data.map(x => [x.mkey, x]));
       else { const me = mb.data.find(x => x.mkey === L.me?.mkey); if(me && L.me) Object.assign(L.me, {team:me.team, muted:me.muted, nick:me.nick}) }
@@ -4250,6 +4261,7 @@ function viewLiveTeacher(r){
   h += liveKpis(r);
   if(liveRemote() && L.joined && !L.loaded) h += `<p class="who">토론 기록을 불러오는 중…</p>`;
   if(["ended", "vote", "result"].includes(s)) h += liveSummaryHTML(r, true);
+  if(s !== "wait" && L.members.size) h += `<section class="lvrecbar"><div><b>${ic("file-text", "sm")} 학생별 토론 기록</b><span class="small muted">세특·관찰 기록용 · 실명, 역할, 발언, 반박, 판정, 성찰을 한 사람씩 모아요.</span></div><button class="btn" type="button" data-a="lv-rec">${ic("list-details", "sm")} 기록 보기 · 내보내기</button></section>`;
   const ord = {pro:0, con:1, jury:2};
   const mem = [...L.members.values()].sort((a, b) => (ord[a.team] ?? 3) - (ord[b.team] ?? 3) || String(a.real_name).localeCompare(String(b.real_name), "ko"));
   const memHTML = mem.length ? `<ul class="lvmem">${mem.map(m => `<li class="${m.team || "none"}${m.muted ? " muted" : ""}"><div class="lvmem-n"><b>${esc(m.real_name)}</b><span class="small muted">${esc(m.nick)}${m.nick_set ? " · 직접 정함" : ""}</span></div>
@@ -4268,6 +4280,55 @@ function viewLiveTeacher(r){
       ${(s === "vote" || s === "result") && c.jury ? `<section class="card lvcard"><h3>${ic("scale")} 청중 판정 ${s === "vote" ? "현황 (학생에게는 아직 비공개)" : "결과"}</h3>${liveJuryHTML(r, true)}</section>` : ""}</aside></div>`;
   h += liveRefList(r);
   return h;
+}
+/* 세특용 학생별 토론 기록 (교사 전용) */
+const PRE_L = {pro:null, con:null, none:"아직 모름"};
+function liveRecRows(r){
+  const L = lv(r), ms = lvMsgs(r).filter(m => !m.deleted), notes = [...L.notes.values()].filter(n => !n.deleted), mk = L.markN || new Map();
+  const ps = postsOf(r.id).filter(p => submitted(p)), ord = {pro:0, con:1, jury:2};
+  return [...L.members.values()].map(m => {
+    const my = ms.filter(x => x.mkey === m.mkey), nt = notes.filter(x => x.mkey === m.mkey), j = (L.jurors || []).find(x => x.mkey === m.mkey);
+    const p = ps.find(x => x.author === m.real_name) || ps.find(x => x.live?.nick && x.live.nick === m.nick), b = p?.body || {};
+    return {m, no:studentNo(m.real_name), name:m.real_name || "", nick:m.nick || "", team:m.team, role:roleL(r, m.team),
+      msgs:my, rebut:my.filter(x => x.reply_to).length, ans:my.filter(x => x.reply_note).length,
+      good:my.filter(x => (mk.get(x.id) || 0) > 0).map(x => ({b:x.body, n:mk.get(x.id)})),
+      notes:nt, pre:m.team === "jury" && m.pre ? (m.pre === "none" ? "아직 모름" : teamL(r, m.pre)) : "", j,
+      ref:p ? lvRq(m.team === "jury").map(([k, q]) => [q, b[k] || ""]) : null, deg:p ? (DEGREES.find(d => d.k === p.change?.degree)?.l || "") : "",
+      fb:p ? repliesOf(p.id).filter(x => x.kind === "teacher").map(x => x.text) : []};
+  }).sort((a, b) => cmpNum(a.name, b.name) || koCmp(a.name, b.name) || (ord[a.team] ?? 3) - (ord[b.team] ?? 3));
+}
+function liveRecCSV(r){
+  const rows = [["번호", "이름", "닉네임", "역할", "발언 수", "반박한 발언", "판정단 질문에 답한 발언", "‘좋은 근거’로 꼽힌 발언 수", "‘좋은 근거’로 꼽힌 발언", "발언 전체", "청중 의견 수", "청중 의견", "토론 전 생각(판정단)",
+    ...LIVE_CRIT4.map(([, l]) => "판정: " + l), "판정 이유", "성찰 ①", "성찰 ②", "성찰 ③", "생각 변화 정도", "선생님 피드백"]];
+  liveRecRows(r).forEach(x => rows.push([x.no, x.name, x.nick, x.role, x.team === "jury" ? "" : x.msgs.length, x.team === "jury" ? "" : x.rebut, x.team === "jury" ? "" : x.ans, x.team === "jury" ? "" : x.good.length,
+    x.good.map(g => `· ${g.b} (${g.n})`).join("\n"), x.msgs.map(g => "· " + g.body).join("\n"), x.team === "jury" ? x.notes.length : "", x.notes.map(n => `· [${n.kind === "q" ? "질문" : "생각"}] ${n.body}`).join("\n"), x.pre,
+    ...LIVE_CRIT4.map(([k]) => x.j?.[k] ? teamL(r, x.j[k]) + "팀 우세" : ""), x.j?.reason || "", ...(x.ref ? x.ref.map(q => q[1]) : ["", "", ""]), x.deg, x.fb.join("\n")].map(v => String(v ?? ""))));
+  return "﻿" + rows.map(row => row.map(v => /[",\n]/.test(v) ? `"${v.replace(/"/g, '""')}"` : v).join(",")).join("\r\n");
+}
+async function liveRecSave(r){
+  const d = new Date(), pad = n => String(n).padStart(2, "0"), csv = liveRecCSV(r);
+  const ok = await saveFile(`생각이음_${(r.title || "토론").replace(/[\\/:*?"<>|]/g, " ").slice(0, 30)}_학생별 토론 기록_${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}.csv`, csv);
+  if(ok === true){ toast("학생별 토론 기록을 저장했어요."); return }
+  if(ok === "declined") return;
+  S.modal = {type:"text", title:"학생별 토론 기록 (CSV)", note:"이 화면에서는 파일로 바로 저장할 수 없어요. 아래 내용을 복사해 메모장에 붙여 넣고 .csv로 저장하면 엑셀에서 열려요.", text:csv.slice(1)}; render();
+}
+function liveRecHTML(r){
+  const rows = liveRecRows(r), sf = S.lvRecF || "all", list = rows.filter(x => sf === "all" || (sf === "jury" ? x.team === "jury" : x.team && x.team !== "jury"));
+  const kv = (k, v) => `<span class="lr-kv"><span>${esc(k)}</span><b>${esc(String(v))}</b></span>`;
+  return `<h3>${ic("file-text")} 학생별 토론 기록</h3>
+    <p class="small muted rp-note">${esc(r.title || "")} · ${rows.length}명. 세특·관찰 기록의 재료예요. 숫자는 참고용이고, 발언과 성찰의 내용을 함께 보세요. 실명이 들어 있으니 학생에게 보여 주지 마세요.</p>
+    <div class="row rp-bar"><span class="seg3" role="group" aria-label="보기">${[["all", "모두"], ["deb", "토론자"], ["jury", "판정단"]].map(([v, l]) => `<button type="button" data-a="lv-rec-f" data-v="${v}" aria-pressed="${sf === v}">${l}</button>`).join("")}</span>
+      <span style="flex:1"></span><button class="btn" type="button" data-a="lv-rec-csv">${ic("download", "sm")} CSV(엑셀)</button><button class="btn pri" type="button" data-a="rprint-go">${ic("printer", "sm")} 인쇄 · PDF</button></div>
+    <div class="rp-sheet lvrec"><p class="lvrec-h"><b>${esc(r.title || "토론")}</b> · 학생별 토론 기록 · ${esc(new Date().toLocaleDateString("ko-KR"))}</p>${list.length ? list.map(x => `<article class="lvrec-c">
+      <header><b>${esc(x.name)}</b><span class="lvtag ${esc(x.team || "")}">${esc(x.role)}</span><span class="small">닉네임 ${esc(x.nick)}</span></header>
+      ${x.team === "jury" ? `<p class="lr-k">${kv("청중 의견", x.notes.length + "개")}${x.pre ? kv("토론 전 생각", x.pre) : ""}</p>
+        ${x.notes.length ? `<ul>${x.notes.map(n => `<li><span class="lr-t">${n.kind === "q" ? "질문" : "생각"}</span> ${esc(n.body)}</li>`).join("")}</ul>` : ""}
+        ${x.j ? `<p class="lr-s"><b>판정</b> ${LIVE_CRIT4.map(([k, l]) => x.j[k] ? `${esc(l)}: ${esc(teamL(r, x.j[k]))}` : "").filter(Boolean).join(" · ")}</p><p class="lr-s"><b>판정 이유</b> ${esc(x.j.reason || "")}</p>` : `<p class="lr-s muted">판정을 내지 않았어요.</p>`}`
+      : `<p class="lr-k">${kv("발언", x.msgs.length + "개")}${kv("반박", x.rebut + "개")}${kv("판정단 질문에 답", x.ans + "개")}${kv("‘좋은 근거’로 꼽힘", x.good.length + "개")}</p>
+        ${x.good.length ? `<p class="lr-s"><b>판정단이 꼽은 좋은 근거</b></p><ul>${x.good.map(g => `<li>${esc(g.b)} <span class="lr-t">${g.n}명</span></li>`).join("")}</ul>` : ""}
+        ${x.msgs.length ? `<p class="lr-s"><b>발언 전체</b></p><ul>${x.msgs.map(g => `<li>${g.reply_to ? `<span class="lr-t">반박</span> ` : g.reply_note ? `<span class="lr-t">답</span> ` : ""}${esc(g.body)}</li>`).join("")}</ul>` : `<p class="lr-s muted">토론 중 쓴 발언이 없어요.</p>`}`}
+      ${x.ref ? `<div class="lr-ref"><p class="lr-s"><b>성찰</b>${x.deg ? ` <span class="lr-t">${esc(x.deg)}</span>` : ""}</p>${x.ref.map(([q, a], i) => `<p class="small"><span class="muted">${CIRC[i]} ${esc(q)}</span><br>${esc(a)}</p>`).join("")}${x.fb.map(t => `<p class="small"><span class="muted">선생님 피드백</span> ${esc(t)}</p>`).join("")}</div>` : `<p class="lr-s muted">성찰을 아직 내지 않았어요.</p>`}
+    </article>`).join("") : `<p class="muted">해당하는 학생이 없어요.</p>`}</div>`;
 }
 function liveRefList(r){
   const ps = postsOf(r.id).filter(p => submitted(p)).sort((a, b) => (b.submittedAt || 0) - (a.submittedAt || 0));
@@ -6431,7 +6492,7 @@ function teacherCard(r, p, ps, nav){
    ========================================================= */
 /* 🔄 새 버전 알림: 배포 때마다 APP_VERSION과 version.json의 v를 같은 값으로 올린다.
    GitHub Pages는 화면을 10분쯤 기억하므로, 옛 화면이면 아래쪽에 ‘새로고침’ 띠를 띄우고 주소를 바꿔 새로 받는다 */
-const APP_VERSION = "2026-11-10s";
+const APP_VERSION = "2026-11-10t";
 async function checkVersion(){
   if(!/^https?:$/.test(location.protocol)) return;
   try{
@@ -8227,6 +8288,8 @@ function renderModal(){
     h = installHelpHTML(m.os);
   }else if(m.type === "rprint"){
     h = rprintHTML();
+  }else if(m.type === "lvrec"){
+    const rr = room(); h = rr && isLive(rr) ? liveRecHTML(rr) : `<p class="muted">토론 기록을 열 수 없어요.</p>`;
   }else if(m.type === "roster"){
     h = rosterModalHTML();
   }else if(m.type === "note"){
@@ -8270,7 +8333,7 @@ function renderModal(){
       <input type="text" id="share-url" placeholder="https://claude.ai/…" aria-label="공유 링크">
       <div class="row end"><button class="btn" type="button" data-a="modal-close">취소</button><button class="btn pri" type="button" data-a="save-share">저장</button></div>`;
   }
-  const sheet = ["course", "roster", "msg", "rprint", "attend"].includes(m.type), keep = m.type === "attend" ? attKeep() : null;     // 출석부는 다시 그려도 보던 자리 그대로
+  const sheet = ["course", "roster", "msg", "rprint", "attend", "lvrec"].includes(m.type), keep = m.type === "attend" ? attKeep() : null;     // 출석부는 다시 그려도 보던 자리 그대로
   if(m.type === "welcome" && !m.fired){ m.fired = true; setTimeout(confetti, 250) }      // 휴대폰에서는 팝업 대신 따로 한 화면으로 열린다
   el.innerHTML = `<div class="modal-bg${sheet ? " sheet" : ""}" data-a="modal-bg"><div class="modal${m.type === "note" ? " lb" : m.type === "msg" || m.type === "yt" ? " wide" : m.type === "attend" ? " xwide" : ""}" role="dialog" aria-modal="true">${sheet ? `<button type="button" class="sheet-back" data-a="${m.type === "rprint" ? "rprint-back" : m.type === "attend" ? "att-close" : "modal-close"}">${ic("arrow-left")} 돌아가기</button>` : ""}${h}</div></div>`;
   attRestore(keep);
@@ -9734,6 +9797,9 @@ async function act(a, b){
     case "lv-ref-edit": S.lvEdit = true; break;
     case "lv-ref-cancel": S.lvEdit = false; if(r) dropForm("lvref:" + r.id); break;
     case "lv-state": if(r && isLive(r)) await liveSetState(r, b.dataset.v); return;
+    case "lv-rec": if(r && isLive(r)){ S.lvRecF = "all"; S.modal = {type:"lvrec"} } break;
+    case "lv-rec-f": S.lvRecF = b.dataset.v; break;
+    case "lv-rec-csv": if(r && isLive(r)) await liveRecSave(r); return;
     case "lv-team": if(r && isLive(r)) await liveAssign(r, b.dataset.k, ["con", "jury"].includes(b.dataset.v) ? b.dataset.v : "pro"); return;
     case "lv-mute": if(r && isLive(r)){ const m = lv(r).members.get(b.dataset.k); if(m){ await liveMember(r, b.dataset.k, {muted:!m.muted}); toast(m.muted ? `${m.nick}의 채팅을 잠시 막았어요.` : `${m.nick}의 채팅 제한을 풀었어요.`) } } return;
     case "lv-del": if(r && isLive(r)) await liveDelMsg(r, +b.dataset.v); return;
