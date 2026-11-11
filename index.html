@@ -2922,6 +2922,7 @@ function featuresOf(r){
   f.dialog = !!f.dialog && r.template === "inquiry" && f.deep && !!f.meet;   // 문답(질문 주고받기): 깊이 생각하기 ③에서, 새로 만든 활동만
   f.predict = !!f.predict;        // 예측하고 확인하기 (선택 기능)
   f.develop = !!f.develop;        // 질문이음: 기본 깊이에서도 질문 키우기
+  f.hav = !!f.hav && r.template === "relay";   // 질문이음 하브루타: 내 생각·궁금 칩·되묻기 (새로 만든 활동만)
   return f;
 }
 /* 실제 작성 칸: 저장된 칸 + (근거 설명 기능이 켜졌다면) 근거 설명 칸 */
@@ -2955,6 +2956,10 @@ function minOf(r){ return isEssay(r) ? 0 : (r.minChars||0) }
 
 /* ---- 세부 활동과 3단계: 활동마다 자기 flow를 갖고, 켜진 기능에 맞는 단계만 남긴다 ---- */
 const isRelay = r => r.template === "relay";
+const DEPTH_SUM = {
+  relay:{quick:"질문을 만들고 친구 질문에 답해요", normal:"내 질문에 달린 답을 보고 반응해요", deep:"답을 보고 새 질문으로 키워요"},
+  essay:{quick:"내 생각과 근거로 글을 써요", normal:"글을 쓰고 친구 글을 읽어요", deep:"친구 글을 읽고 생각을 고쳐 써요"}
+};
 /* 감상·성찰: '생각'과 '이유'를 두 화면으로 나눠 쓴다 (칸이 둘 이상일 때) */
 const isSplit = r => !!TEMPLATES[r.template]?.splitWrite && (r.fields || TOOLS[toolOf(r)].fields).length > 1;
 function stepsOf(r){
@@ -6265,6 +6270,13 @@ const RELAY_REACT = [
   {k:"changed", ic:"refresh", l:"생각이 달라졌어요"},
   {k:"newidea", ic:"sparkles", l:"새로운 생각을 얻었어요"}
 ];
+const CURIO = [
+  {k:"mean", l:"뜻이 궁금해요", st:[{show:"그 말은 ___라는 뜻인가요?", ins:"그 말은 "}]},
+  {k:"why", l:"이유가 궁금해요", st:[{show:"왜 ___라고 생각했나요?", ins:"왜 "}]},
+  {k:"ex", l:"예시가 궁금해요", st:[{show:"예를 들면 ___도 있을까요?", ins:"예를 들면 "}]},
+  {k:"opp", l:"반대 경우가 궁금해요", st:[{show:"만약 ___라면 어떻게 될까요?", ins:"만약 "}]}
+];
+const curioOf = k => CURIO.find(x => x.k === k);
 const ASK_HELP = {tip:"‘왜’, ‘만약’, ‘어떻게’로 시작하면 질문이 잘 떠올라요.",
   starters:[{show:"왜 ___였을까?", ins:"왜 "},{show:"만약 ___였다면 어떻게 되었을까?", ins:"만약 "},{show:"어떻게 ___할 수 있었을까?", ins:"어떻게 "}]};
 const fixedQtype = r => QTYPES[r.qtype] ? r.qtype : "";
@@ -6278,7 +6290,7 @@ function relayCard(r, it, ps, {action=false}={}){
   const mine = it.answers.some(a => isMe(a.author));
   return `<article class="qcard"><div class="eyebrow">${ic("search", "sm")} 질문${it.q.from ? " · 이어진 질문" : ""}</div>
     <p class="qt">“${esc(it.q.text)}”</p>
-    <div class="meta">${qtypeChip(it.q.qtype)}<span>만든 친구: ${esc(displayName(r, it.p.author, ps))}</span><span>답 ${it.answers.length}개</span></div>
+    <div class="meta">${qtypeChip(it.q.qtype)}<span>만든 친구: ${esc(displayName(r, it.p.author, ps))}</span>${it.q.to && isMe(it.q.to) ? `<span style="color:var(--accent);font-weight:600">나에게 온 질문</span>` : ""}<span>답 ${it.answers.length}개</span></div>
     ${action ? (mine ? `<p class="small" style="color:var(--accent);font-weight:600">${ic("check", "sm")} 내가 이어받은 질문</p>`
                      : `<button class="btn pri" type="button" data-a="take" data-id="${esc(it.p.id)}" data-q="${esc(it.q.id)}">이 질문 이어받기</button>`) : ""}</article>`;
 }
@@ -6296,9 +6308,10 @@ function stepAsk(r, p, open){
   }
   if(!open) return closedNote();
   if(!S.canWrite) return readonlyNote();
-  F(key, () => ({text:qs[0]?.text||"", qtype:qs[0]?.qtype||""}));
+  F(key, () => ({text:qs[0]?.text||"", qtype:qs[0]?.qtype||"", hyp:qs[0]?.hyp||""}));
   return `<div class="card">
     ${question(key,"text",{q:"어떤 질문이 떠올랐나요?", rows:2, ph:"질문을 입력하세요", ...ASK_HELP})}
+    ${featuresOf(r).hav ? `<div style="margin-top:14px">${question(key,"hyp",{q:"내 생각은 어떤가요?", opt:true, rows:2, tip:"친구에게는 보이지 않아요. 나중에 친구의 생각과 견줘 볼 수 있어요.", starters:[{show:"내 생각에는 ___인 것 같다.", ins:"내 생각에는 "}]})}</div>` : ""}
     <div style="margin-top:14px">${qtypeField(r, key)}</div>
     <div class="foot"><span class="muted small">질문을 보내면 친구들이 이어받아 답해요.</span>
       <button class="btn pri" type="button" data-a="ask-save">질문 보내기</button></div></div>`;
@@ -6311,13 +6324,13 @@ function stepTake(r, p, open){
   if(sel && open && S.canWrite){
     const key = `ans:${sel.p.id}:${sel.q.id}`;
     return relayCard(r, sel, ps) + `<div class="card">
-      ${question(key,"text",{q:"이 질문에 대한 내 생각은?", rows:2, tip:"정답을 맞히는 게 아니에요. 지금 떠오르는 생각을 적어 보세요.", starters:[{show:"나는 ___라고 생각한다.", ins:"나는 "},{show:"잘 모르겠지만 ___일 것 같다.", ins:"잘 모르겠지만 "}]})}
+      ${question(key,"text",{q:"이 질문에 대한 내 생각은?", rows:2, tip:"정답을 맞히는 게 아니에요. 지금 떠오르는 생각을 적어 보세요.", starters:[{show:featuresOf(r).hav ? "내 생각에는 ___이다." : "나는 ___라고 생각한다.", ins:featuresOf(r).hav ? "내 생각에는 " : "나는 "},{show:"잘 모르겠지만 ___일 것 같다.", ins:"잘 모르겠지만 "}]})}
       ${question(key,"evidence",{q:"왜 그렇게 생각하나요?", opt:true, rows:2, tip:"수업 내용, 자료, 내 경험 중 하나를 떠올려 보세요.", starters:[{show:"왜냐하면 ___ 때문이다.", ins:"왜냐하면 "}]})}
       <div class="foot"><button class="linkbtn" type="button" data-a="take-cancel">다른 질문 고르기</button>
         <button class="btn pri" type="button" data-a="answer-save" data-id="${esc(sel.p.id)}" data-q="${esc(sel.q.id)}">내 생각 보내기</button></div></div>`;
   }
   // 아직 내가 답하지 않은 질문, 답이 적은 질문이 앞으로
-  const rank = it => (it.answers.some(a=>isMe(a.author)) ? 1000 : 0) + it.answers.length;
+  const rank = it => (it.q.to && isMe(it.q.to) && !it.answers.some(a=>isMe(a.author)) ? -1000 : 0) + (it.answers.some(a=>isMe(a.author)) ? 1000 : 0) + it.answers.length;
   const sorted = [...pool].sort((a,b) => rank(a)-rank(b) || (a.q.at||0)-(b.q.at||0));
   let h = `<div class="card"><p><b>친구의 질문 하나를 골라 이어받아 보세요.</b></p>
     <p class="muted small" style="margin-top:4px">답이 적은 질문이 앞에 있어요.${myAns.length ? ` · 지금까지 ${myAns.length}개 이어받았어요.` : ""}</p></div>`;
@@ -6337,12 +6350,13 @@ function stepBack(r, p, open){
   let h = "";
   for(const {q, answers} of items){
     h += `<div class="card"><ol class="flow">
-      <li><span class="ic" aria-hidden="true">${ic("plant-2")}</span><div style="min-width:0"><div class="k">내가 만든 질문</div><p class="qline">“${esc(q.text)}”</p>${qtypeChip(q.qtype)}</div></li>
+      <li><span class="ic" aria-hidden="true">${ic("plant-2")}</span><div style="min-width:0"><div class="k">내가 만든 질문</div><p class="qline">“${esc(q.text)}”</p>${qtypeChip(q.qtype)}${q.hyp ? `<div class="sub"><span class="muted">처음 내 생각 · </span>${esc(q.hyp)}</div>` : ""}</div></li>
       ${answers.map(a => {
         const re = p.reactions?.[a.id], nk = "rn:" + a.id;
         return `<li><span class="ic" aria-hidden="true">${ic("user")}</span><div style="min-width:0"><div class="k">${esc(displayName(r,a.author,ps))}의 생각</div>
           <div class="v">${esc(a.text)}</div>${a.evidence ? `<div class="sub"><span class="muted">이유 · </span>${esc(a.evidence)}</div>` : ""}
           <p class="small muted" style="margin-top:8px">${ic("bulb", "sm")} 이 생각을 읽고 나는?</p><div class="react" role="group" aria-label="이 생각을 읽고 나는?">${RELAY_REACT.map(x => `<button type="button" data-a="react" data-id="${esc(a.id)}" data-v="${x.k}" aria-pressed="${re?.kind===x.k}" ${can?"":"disabled"}>${ic(x.ic, "sm")} ${x.l}</button>`).join("")}</div>
+          ${featuresOf(r).hav ? `<p class="small muted" style="margin-top:8px">${ic("search", "sm")} 더 알고 싶다면</p><div class="react" role="group" aria-label="더 알고 싶다면">${CURIO.map(x => `<button type="button" data-a="curio" data-id="${esc(a.id)}" data-v="${x.k}" aria-pressed="${re?.cq===x.k}" ${can?"":"disabled"}>${x.l}</button>`).join("")}</div>` : ""}
           ${re?.note ? `<p class="small" style="margin-top:6px"><span class="muted">나의 생각 · </span>${esc(re.note)}</p>`
             : (re && can ? `<details class="help" style="margin-top:6px"><summary>${ic("pencil", "sm")} 한 줄 덧붙이기 (선택)</summary>${ta(nk,"text",{rows:2, ph:"이 생각을 읽고 든 내 생각"})}<div class="row end" style="margin-top:6px"><button class="btn sm" type="button" data-a="react-note" data-id="${esc(a.id)}">덧붙이기</button></div></details>` : "")}
         </div></li>`;
@@ -6351,6 +6365,15 @@ function stepBack(r, p, open){
   if(Object.keys(p.reactions||{}).length) h += nextBtn(r);
   else h += `<p class="muted small" style="text-align:center">친구의 생각 하나를 읽고, 아래 세 가지 중 하나를 눌러 보세요.</p>`;
   return h;
+}
+/* 하브루타: 되물을 친구 = 궁금 칩을 누른 답 중 가장 최근, 없으면 반응한 답, 없으면 마지막 답 */
+function devTarget(r, p){
+  const q = p?.questions?.[0]; if(!q) return null;
+  const ans = answersTo(p, q); if(!ans.length) return null;
+  const rx = p.reactions || {};
+  const pick = f => ans.filter(a => rx[a.id] && f(rx[a.id])).sort((a,b) => (rx[b.id].at||0)-(rx[a.id].at||0))[0];
+  const a = pick(x => x.cq) || pick(() => true) || ans[ans.length-1];
+  return {a, cq:rx[a.id]?.cq || ""};
 }
 /* ④ 질문 키우기: 새 질문은 다시 카드 풀로 */
 function stepDevelop(r, p, open){
@@ -6363,7 +6386,15 @@ function stepDevelop(r, p, open){
   }
   if(!open) return closedNote();
   if(!S.canWrite) return readonlyNote();
-  F(key, () => ({text:"", qtype:last?.qtype||""}));
+  const tg = featuresOf(r).hav ? devTarget(r, p) : null;
+  F(key, () => ({text:"", qtype:last?.qtype||"", shift:""}));
+  if(tg) return `<div class="card">
+    <div class="q"><span class="hint">처음 질문</span><p class="quote">${esc(qs[0]?.text||"")}</p></div>
+    <div class="q"><span class="hint">${esc(displayName(r, tg.a.author, ps))}의 생각${tg.cq ? " · " + esc(curioOf(tg.cq).l) : ""}</span><p class="quote">${esc(tg.a.text)}</p></div>
+    ${question(key,"text",{q:"그 친구에게 되물을 질문은?", rows:2, ph:"되묻는 질문을 입력하세요", tip:"친구의 생각에서 더 알고 싶은 점을 물어보세요. 질문은 그 친구에게 먼저 전해져요.", starters:curioOf(tg.cq)?.st || CURIO.flatMap(x => x.st)})}
+    ${question(key,"shift",{q:"처음 질문과 달라진 점은?", opt:true, rows:2, starters:[{show:"처음에는 ___였는데 지금은 ___이다.", ins:"처음에는 "}]})}
+    <div class="foot"><button class="linkbtn" type="button" data-a="dev-skip">친구 답이 아직이면 넘어가기</button>
+      <button class="btn pri" type="button" data-a="develop-save">되묻기 보내기</button></div></div>`;
   return `<div class="card">
     <div class="q"><span class="hint">처음 질문</span><p class="quote">${esc(last?.text||"")}</p></div>
     ${question(key,"text",{q:"친구의 생각을 보고 새로 궁금해진 것은?", rows:2, ph:"새 질문을 입력하세요", tip:"처음 질문을 더 깊게, 또는 더 넓게 바꿔 보세요.",
@@ -6378,11 +6409,11 @@ function relayFlow(r, p){
   const node = (nm, k, v, final=false) => `<li class="${final?"final":""}"><span class="ic" aria-hidden="true">${ic(nm)}</span><div style="min-width:0"><div class="k">${esc(k)}</div>${v}</div></li>`;
   let h = `<ol class="flow">`;
   qs.forEach((q, i) => {
-    h += node(i ? "leaf" : "plant-2", i ? "새롭게 생긴 질문" : "내가 만든 질문", `<p class="qline">“${esc(q.text)}”</p>${qtypeChip(q.qtype)}`, i>0 && i===qs.length-1);
+    h += node(i ? "leaf" : "plant-2", i ? (q.to ? "되물은 질문" : "새롭게 생긴 질문") : "내가 만든 질문", `<p class="qline">“${esc(q.text)}”</p>${qtypeChip(q.qtype)}${!i && q.hyp ? `<div class="sub"><span class="muted">처음 내 생각 · </span>${esc(q.hyp)}</div>` : ""}${i && p.devShift ? `<div class="sub"><span class="muted">달라진 점 · </span>${esc(p.devShift)}</div>` : ""}`, i>0 && i===qs.length-1);
     const ans = answersTo(p, q);
     if(ans.length) h += node("user", "친구의 생각", ans.map(a => `<div class="sub"><b>${esc(displayName(r,a.author,ps))}</b> · ${esc(a.text)}${a.evidence?` <span class="muted">(${esc(a.evidence)})</span>`:""}</div>`).join(""));
     const re = ans.filter(a => p.reactions?.[a.id]);
-    if(re.length) h += node("bulb", "내가 발견한 점", re.map(a => { const x = p.reactions[a.id]; return `<div class="sub">${esc(RELAY_REACT.find(k=>k.k===x.kind)?.l||"")}${x.note?` · ${esc(x.note)}`:""}</div>` }).join(""));
+    if(re.length) h += node("bulb", "내가 발견한 점", re.map(a => { const x = p.reactions[a.id]; return `<div class="sub">${esc(RELAY_REACT.find(k=>k.k===x.kind)?.l||"")}${x.cq?` · ${esc(curioOf(x.cq)?.l||"")}`:""}${x.note?` · ${esc(x.note)}`:""}</div>` }).join(""));
   });
   const taken = S.replies.filter(x => x.roomId===r.id && x.kind==="answer" && x.author===p.author);
   if(taken.length) h += node("link", teacher ? "이어받아 답한 질문" : "내가 이어받은 질문", taken.map(a => {
@@ -6829,7 +6860,7 @@ function teacherCard(r, p, ps, nav){
    ========================================================= */
 /* 🔄 새 버전 알림: 배포 때마다 APP_VERSION과 version.json의 v를 같은 값으로 올린다.
    GitHub Pages는 화면을 10분쯤 기억하므로, 옛 화면이면 아래쪽에 ‘새로고침’ 띠를 띄우고 주소를 바꿔 새로 받는다 */
-const APP_VERSION = "2026-11-11b";
+const APP_VERSION = "2026-11-11c";
 async function checkVersion(){
   if(!/^https?:$/.test(location.protocol)) return;
   try{
@@ -8723,7 +8754,7 @@ function formFromRoom(r){
     stances:(r.stances||[]).join(", "), nst:(r.stances||[]).length,
     initial:f.initial, predict:f.predict, evidenceType:f.evidenceType, evidenceTypes:f.evidenceTypes, warrant:f.warrant, counter:f.counter,
     meet:f.meet, missionDeep:f.readMission.length>0, comment:f.comment, rebuttal:f.rebuttal, change:f.change, feedback:f.feedback,
-    revise:f.revise, terms:!!f.terms, develop:!!f.develop, dialog:!!f.dialog, essayRead:!!f.essayRead, counterMode:r.features?.counterMode || "opt"};
+    revise:f.revise, terms:!!f.terms, develop:!!f.develop, dialog:!!f.dialog, essayRead:!!f.essayRead, hav:!!f.hav, counterMode:r.features?.counterMode || "opt"};
   (r.stances||[]).forEach((x,i) => form["st"+i] = x);
   form.courseId = courseOf(r.courseId) ? r.courseId : ""; form.groups = asgIds(r);
   return form;
@@ -9016,6 +9047,7 @@ function applyDepth(k, f = F("create")){
     evidenceTypes: f.evidenceTypes || [...EVIDENCE_TYPES]
   });
   f.essayRead = f.template === "essay" && k !== "quick";                                                    // 논술 ②·③: 친구 글 읽기
+  f.hav = f.template === "relay";
   f.dialog = f.template === "inquiry" && k === "deep";                                                       // 깊이 생각하기 ③: 친구 생각에 ‘답하기’ 대신 문답(질문 주고받기)
   if(f.template === "reflect") Object.assign(f, {evidenceType:false, warrant:false, missionDeep:k === "deep"});   // 감상·성찰: 근거 유형·근거 설명은 논술의 도구. ③에서만 ‘비슷한/다른 느낌’ 임무
 }
@@ -9066,6 +9098,7 @@ function roomFromForm(f){
       change:!!f.change, feedback:!!f.feedback, revise:!!f.revise, terms:!!f.terms, develop:!!f.develop,
       dialog: f.template === "inquiry" && f.depth === "deep" && !!f.dialog && !!f.meet,
       essayRead: f.template === "essay" && f.depth !== "quick" && !!f.essayRead && !!f.meet,
+      hav: relay && !!f.hav,
       counterMode: ["off","req"].includes(f.counterMode) ? f.counterMode : "opt"
     }
   };
@@ -9743,7 +9776,7 @@ function viewCreate(){
     <div class="depths" role="group" aria-label="생각 깊이">${Object.entries(DEPTHS).filter(([k]) => !(NO_DEEP.includes(f.template) && k === "deep")).map(([k,d])=>{
       const est = d.stages === stg ? estMinutes(preview) : (() => { const g = {...f}; applyDepth(k, g); return estMinutes(roomFromForm(g)) })();   // 아래 ‘학생은 이렇게 활동해요’와 같은 계산
       return `<button type="button" class="depth" data-a="depth" data-v="${k}" aria-pressed="${d.stages === stg}">
-      <b><span class="dn" aria-hidden="true">${d.stages}</span>${esc(d.label)}</b><span class="fl">${esc(d.sum)}</span><span class="use">${ic("clock", "sm")} 약 ${est.join("~")}분</span></button>` }).join("")}</div>`)}
+      <b><span class="dn" aria-hidden="true">${d.stages}</span>${esc(d.label)}</b><span class="fl">${esc(DEPTH_SUM[f.template]?.[k] || d.sum)}</span><span class="use">${ic("clock", "sm")} 약 ${est.join("~")}분</span></button>` }).join("")}</div>`)}
     <div class="preview-steps"><div class="pv-h"><span class="eyebrow">${ic("eye", "sm")} 학생은 이렇게 활동해요</span><span class="estline">${stepsOf(preview).length}단계 · 약 ${estMinutes(preview).join("~")}분</span></div>
     <div class="pv-stages">${STAGE_L.map((x, i) => { const ss = stepsOf(preview).filter(st => (STAGE_OF[st] ?? 0) === i);
       return ss.length ? `<div class="pv-st"><b>${ic(["bubble","eye","refresh"][i], "sm")} ${x}</b><span>${ss.map(st => esc(stepMeta(preview, st).s)).join(" → ")}</span></div>` : "" }).join("")}${stepsOf(preview).includes("feedback") ? `<div class="pv-st"><b>${ic("chalkboard-teacher", "sm")} 선생님</b><span>${esc(stepMeta(preview, "feedback").s)}</span></div>` : ""}</div></div></details>
@@ -10991,13 +11024,14 @@ async function act(a, b){
     case "depth": { const cf = createForm(); applyDepth(NO_DEEP.includes(cf.template) && b.dataset.v === "deep" ? "normal" : b.dataset.v); saveFormsSoon(); break }
 
     /* ---- 질문이음 ---- */
-    case "ask-edit": { const k = "ask:"+r.id, q = p.questions[0]; S.form[k] = {text:q.text, qtype:q.qtype||"", _edit:true}; break }
+    case "ask-edit": { const k = "ask:"+r.id, q = p.questions[0]; S.form[k] = {text:q.text, qtype:q.qtype||"", hyp:q.hyp||"", _edit:true}; break }
     case "ask-save": {
       const f = F("ask:"+r.id), text = (f.text||"").trim();
       if(!text){ toast("궁금한 것 하나를 질문으로 적어 볼까요?"); return }
       const qtype = fixedQtype(r) || f.qtype || "";
       const qs = [...(p?.questions || [])];
-      if(qs.length) qs[0] = {...qs[0], text, qtype}; else qs.push({id:"q1", text, qtype, at:Date.now()});
+      const hyp = featuresOf(r).hav ? (f.hyp||"").trim() : "";
+      if(qs.length) qs[0] = {...qs[0], text, qtype, ...(featuresOf(r).hav ? {hyp} : {})}; else qs.push({id:"q1", text, qtype, ...(hyp ? {hyp} : {}), at:Date.now()});
       b.disabled = true;
       const ok = await savePost(r, {questions:qs, status:"submitted", submittedAt:p?.submittedAt||Date.now()});
       if(ok){ dropForm("ask:"+r.id); toast("질문을 보냈어요. 이제 친구의 질문을 이어받아 볼까요?"); goNext(r) } else b.disabled = false;
@@ -11018,6 +11052,13 @@ async function act(a, b){
       const prev = p.reactions?.[b.dataset.id];
       const ok = await savePost(r, {reactions:{...(p.reactions||{}), [b.dataset.id]:{kind:b.dataset.v, note:prev?.note||"", at:Date.now()}}});
       if(ok && !prev) toast("표시했어요.");
+      break;
+    }
+    case "curio": {
+      S.step[r.id] = "back";
+      const prev = p.reactions?.[b.dataset.id];
+      const ok = await savePost(r, {reactions:{...(p.reactions||{}), [b.dataset.id]:{kind:prev?.kind||"curious", note:prev?.note||"", cq:b.dataset.v, at:Date.now()}}});
+      if(ok && !prev?.cq) toast("표시했어요.");
       break;
     }
     case "react-note": {
@@ -11054,9 +11095,11 @@ async function act(a, b){
       const f = F("dev:"+r.id), text = (f.text||"").trim();
       if(!text){ toast("새로 궁금해진 것을 질문으로 적어 볼까요?"); return }
       const qs = [...(p.questions||[])], last = qs[qs.length-1];
-      qs.push({id:"q"+(qs.length+1), text, qtype:fixedQtype(r) || f.qtype || "", from:last?.id||"", at:Date.now()});
+      const tg = featuresOf(r).hav ? devTarget(r, p) : null;
+      qs.push({id:"q"+(qs.length+1), text, qtype:fixedQtype(r) || f.qtype || "", from:last?.id||"", ...(tg ? {to:tg.a.author, chip:tg.cq, ans:tg.a.id} : {}), at:Date.now()});
       b.disabled = true;
-      const ok = await savePost(r, {questions:qs});
+      const shift = tg ? (f.shift||"").trim() : "";
+      const ok = await savePost(r, {questions:qs, ...(shift ? {devShift:shift} : {})});
       if(ok){ dropForm("dev:"+r.id); toast("새 질문이 질문 카드 풀에 들어갔어요."); goNext(r) } else b.disabled = false;
       break;
     }
