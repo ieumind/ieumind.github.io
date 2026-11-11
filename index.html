@@ -2414,11 +2414,11 @@ const TEMPLATES = {
     flow:["ask","take","back","develop"],
     phaseDefs:[{k:"ask", l:"질문 만들기", steps:["ask"]}, {k:"take", l:"친구 질문에 답하기", steps:["take"]},
                {k:"back", l:"친구의 답 보기", steps:["back"]}, {k:"dev", l:"질문 키우기", steps:["develop"]}]},
-  essay:{icon:"file-pencil", label:"논술", desc:"자료와 근거를 바탕으로 자신의 생각을 글로 표현해요.", flowSummary:"처음 생각 → 근거 → 피드백 → 수정한 생각",
+  essay:{icon:"file-pencil", label:"논술", desc:"자료와 근거를 바탕으로 자신의 생각을 글로 표현해요.", flowSummary:"처음 생각 → 근거 → 글쓰기 → 친구 글 → 피드백 → 수정한 생각",
     stances:[], reveal:"teacher", anonymous:false, tool:"claimEvidence", depth:"deep", minChars:400,
-    flow:["think","write","counter","compose","feedback","revise"],
+    flow:["think","write","counter","compose","read","feedback","revise"],
     phaseDefs:[{k:"think", l:"처음 생각", steps:["think"]}, {k:"prep", l:"근거 정리", steps:["write","counter"]},
-               {k:"compose", l:"글쓰기", steps:["compose"]}, {k:"fb", l:"피드백", steps:["feedback"]}, {k:"rev", l:"수정", steps:["revise"]}],
+               {k:"compose", l:"글쓰기", steps:["compose"]}, {k:"meet", l:"친구 글", steps:["read"]}, {k:"fb", l:"피드백", steps:["feedback"]}, {k:"rev", l:"수정", steps:["revise"]}],
     titles:{write:"내 생각과 근거를 정리해 볼까요?"}},
   reflect:{icon:"plant-2", label:"감상·성찰", desc:"활동 후 자신의 생각과 느낌을 돌아봐요.", flowSummary:"내 생각 → 친구 생각 → 돌아보기",
     stances:[], reveal:"after", anonymous:true, tool:"feel", depth:"normal", splitWrite:true,
@@ -2918,6 +2918,7 @@ function featuresOf(r){
   if(r.reveal === "teacher"){ f.meet = false; f.readMission = [] }   // 친구 글을 못 보면 만남 단계도 없다
   if(f.feedback === undefined) f.feedback = true;
   f.deep = depthOf(r) === "deep";
+  f.essayRead = !!f.essayRead && r.template === "essay" && !!f.meet;   // 논술 ②·③: 글을 낸 뒤 친구 글 읽고 한마디 (새로 만든 활동만)
   f.dialog = !!f.dialog && r.template === "inquiry" && f.deep && !!f.meet;   // 문답(질문 주고받기): 깊이 생각하기 ③에서, 새로 만든 활동만
   f.predict = !!f.predict;        // 예측하고 확인하기 (선택 기능)
   f.develop = !!f.develop;        // 질문이음: 기본 깊이에서도 질문 키우기
@@ -2968,7 +2969,7 @@ function stepsOf(r){
     think:   f.initial || f.predict,
     write:   true,
     counter: f.counter,
-    read:    f.meet,
+    read:    f.meet && (r.template !== "essay" || f.essayRead),
     respond: f.meet && f.rebuttal && f.deep && !f.dialog,     // 일반 활동은 친구 생각 만나기 안에서 한마디로 끝난다 (문답이 켜지면 ‘답하기’ 대신 문답)
     dialog:  f.dialog,
     reflect: f.change || !!r.revisit || f.predict,
@@ -5700,11 +5701,11 @@ function readCard(r, p, mine, ps, {pickable=true}={}){
   if(!pickable){                                                     // 게시판에서 펼친 글: 하트 · 댓글
     h += wallActs(r, p, {open:true});
     if(open && (!isTeacher() || S.preview) && S.name){
-      if(p !== mine && f.deep && f.rebuttal && f.meet) h += `<div class="row" style="margin-top:8px"><button class="btn sm" type="button" data-a="go-respond" data-id="${esc(p.id)}">${f.dialog ? "이 생각에 질문해보기" : "이 생각에 답해보기"} ${ic("arrow-right")}</button></div>`;
+      if(p !== mine && f.deep && f.rebuttal && f.meet && (f.dialog || stepsOf(r).includes("respond"))) h += `<div class="row" style="margin-top:8px"><button class="btn sm" type="button" data-a="go-respond" data-id="${esc(p.id)}">${f.dialog ? "이 생각에 질문해보기" : "이 생각에 답해보기"} ${ic("arrow-right")}</button></div>`;
       h += commentBox(r, p, mine);
     }
   }else if(open && p !== mine && mine?.readAt){                       // 한마디를 남긴 뒤에는 다른 친구 글에도 자유롭게 한마디 더 (선택)
-    if(f.deep && f.rebuttal && f.meet) h += `<div class="row" style="margin-top:8px"><button class="btn sm" type="button" data-a="go-respond" data-id="${esc(p.id)}">${f.dialog ? "이 생각에 질문해보기" : "이 생각에 답해보기"} ${ic("arrow-right")}</button></div>`;
+    if(f.deep && f.rebuttal && f.meet && (f.dialog || stepsOf(r).includes("respond"))) h += `<div class="row" style="margin-top:8px"><button class="btn sm" type="button" data-a="go-respond" data-id="${esc(p.id)}">${f.dialog ? "이 생각에 질문해보기" : "이 생각에 답해보기"} ${ic("arrow-right")}</button></div>`;
     else if(f.comment) h += commentForm(r, p, "한마디 더 남기기 (선택)");
   }
   return h + `<div class="row end" style="margin-top:10px"><button class="linkbtn" type="button" data-a="close-post">접기</button></div></article>`;
@@ -5835,7 +5836,7 @@ function stepRead(r, p, open){
   const diffName = diffPost ? displayName(r, diffPost.author, ps) : "";
   const hasSt = (r.stances||[]).length > 0;
   let h = p?.readAt ? "" : `<div class="card"><p><b>${ic("message-circle")} 친구 생각을 읽고, 마음에 남는 글에 댓글로 한마디 남겨 보세요.</b></p>
-    <p class="muted small" style="margin-top:4px">${hasSt ? "나와 다른 입장의 글이면 더 좋아요. " : ""}글 아래 ‘댓글 추가’를 누르면 돼요.${f.deep && f.rebuttal ? (f.dialog ? " 댓글에는 이유를 함께 적어요. 다음 단계에서 친구와 질문을 주고받아요." : " 댓글에는 이유를 함께 적어요. 다음 단계에서 한 글을 골라 더 자세히 답해요.") : f.rebuttal ? " 댓글에 이유를 함께 적어 남기면 이 단계를 마쳐요." : " 한마디를 남기면 이 단계를 마쳐요."}</p></div>`;
+    <p class="muted small" style="margin-top:4px">${hasSt ? "나와 다른 입장의 글이면 더 좋아요. " : ""}글 아래 ‘댓글 추가’를 누르면 돼요.${f.deep && f.rebuttal ? (f.dialog ? " 댓글에는 이유를 함께 적어요. 다음 단계에서 친구와 질문을 주고받아요." : stepsOf(r).includes("respond") ? " 댓글에는 이유를 함께 적어요. 다음 단계에서 한 글을 골라 더 자세히 답해요." : " 댓글에는 이유를 함께 적어요.") : f.rebuttal ? " 댓글에 이유를 함께 적어 남기면 이 단계를 마쳐요." : " 한마디를 남기면 이 단계를 마쳐요."}</p></div>`;
   const card = x => readCard(r, x, p, ps, {pickable:false});
   if(hasSt) h += stanceMap(r, ps, card);
   else if(!others.length) h += `<div class="empty">아직 다른 친구의 글이 없어요. 잠시 뒤 다시 와 보세요.</div>`;
@@ -6107,7 +6108,7 @@ function stepRevise(r, p, open){
 const FLOW_WORDS = {
   debate2:{write:"처음 입장", read:"친구의 생각"}, debateN:{write:"처음 입장", read:"친구의 생각"},
   inquiry:{write:"내 답", read:"친구의 답", dialog:"질문 주고받기", reflect:"다시 생각"},
-  essay:{think:"처음 생각", write:"근거", revise:"수정한 생각"},
+  essay:{think:"처음 생각", write:"근거", read:"친구의 글", revise:"수정한 생각"},
   reflect:{write:"내 생각", read:"친구 생각"}, predict:{think:"예측", write:"내 생각", read:"친구 생각"},
   sketch:{write:"키워드 스케치", read:"친구 스케치"}, draw:{write:"손으로 그리기", read:"친구 그림"},
   chat:{chat:"인물과 대화", write:"대화 후 내 생각", read:"친구 생각"},
@@ -6828,7 +6829,7 @@ function teacherCard(r, p, ps, nav){
    ========================================================= */
 /* 🔄 새 버전 알림: 배포 때마다 APP_VERSION과 version.json의 v를 같은 값으로 올린다.
    GitHub Pages는 화면을 10분쯤 기억하므로, 옛 화면이면 아래쪽에 ‘새로고침’ 띠를 띄우고 주소를 바꿔 새로 받는다 */
-const APP_VERSION = "2026-11-11a";
+const APP_VERSION = "2026-11-11b";
 async function checkVersion(){
   if(!/^https?:$/.test(location.protocol)) return;
   try{
@@ -8722,7 +8723,7 @@ function formFromRoom(r){
     stances:(r.stances||[]).join(", "), nst:(r.stances||[]).length,
     initial:f.initial, predict:f.predict, evidenceType:f.evidenceType, evidenceTypes:f.evidenceTypes, warrant:f.warrant, counter:f.counter,
     meet:f.meet, missionDeep:f.readMission.length>0, comment:f.comment, rebuttal:f.rebuttal, change:f.change, feedback:f.feedback,
-    revise:f.revise, terms:!!f.terms, develop:!!f.develop, dialog:!!f.dialog, counterMode:r.features?.counterMode || "opt"};
+    revise:f.revise, terms:!!f.terms, develop:!!f.develop, dialog:!!f.dialog, essayRead:!!f.essayRead, counterMode:r.features?.counterMode || "opt"};
   (r.stances||[]).forEach((x,i) => form["st"+i] = x);
   form.courseId = courseOf(r.courseId) ? r.courseId : ""; form.groups = asgIds(r);
   return form;
@@ -9014,6 +9015,7 @@ function applyDepth(k, f = F("create")){
     minChars: String(TOOLS[t.tool]?.only ? t.minChars : t.minChars && k !== "quick" ? t.minChars : (t.tool==="free" || t.tool==="feel" ? Math.min(d.minChars, 40) : d.minChars)),
     evidenceTypes: f.evidenceTypes || [...EVIDENCE_TYPES]
   });
+  f.essayRead = f.template === "essay" && k !== "quick";                                                    // 논술 ②·③: 친구 글 읽기
   f.dialog = f.template === "inquiry" && k === "deep";                                                       // 깊이 생각하기 ③: 친구 생각에 ‘답하기’ 대신 문답(질문 주고받기)
   if(f.template === "reflect") Object.assign(f, {evidenceType:false, warrant:false, missionDeep:k === "deep"});   // 감상·성찰: 근거 유형·근거 설명은 논술의 도구. ③에서만 ‘비슷한/다른 느낌’ 임무
 }
@@ -9063,6 +9065,7 @@ function roomFromForm(f){
       readMission: f.meet && f.missionDeep ? (f.template === "reflect" ? ["same","diff"] : ["new","best","diff"]) : [],
       change:!!f.change, feedback:!!f.feedback, revise:!!f.revise, terms:!!f.terms, develop:!!f.develop,
       dialog: f.template === "inquiry" && f.depth === "deep" && !!f.dialog && !!f.meet,
+      essayRead: f.template === "essay" && f.depth !== "quick" && !!f.essayRead && !!f.meet,
       counterMode: ["off","req"].includes(f.counterMode) ? f.counterMode : "opt"
     }
   };
