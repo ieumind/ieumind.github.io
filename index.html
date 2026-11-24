@@ -5282,7 +5282,9 @@ ${memoQOf(r) ? `<p class="small" style="margin-top:10px">${ic("message-circle", 
    post.lex = {picked:[개념어], cards:{개념어:{def, src, page, own}}, updatedAt, submittedAt}
    학생: 고르기 → 카드 쓰기(개념어마다) → 점검·제출 · 교사: 학생별 사전·점검 표시·개념어별 보기·내보내기
    ========================================================= */
-const lexCfg = r => ({words:Array.isArray(r?.lexCfg?.words) ? r.lexCfg.words : [], pick:Math.max(1, Math.min(30, parseInt(r?.lexCfg?.pick) || 10)), book:String(r?.lexCfg?.book || "")});
+const LEX_Q1 = "고른 개념어 중, 가장 중요하다고 생각하는 하나를 고르고 그 이유를 역사적 맥락과 연결 지어 설명해 보세요.";
+const LEX_Q2 = "개념어 사전을 만들고 난 후, 나의 시각이나 지식에 어떤 변화가 있었는지 구체적으로 서술해 주세요.";
+const lexCfg = r => ({words:Array.isArray(r?.lexCfg?.words) ? r.lexCfg.words : [], pick:Math.max(1, Math.min(30, parseInt(r?.lexCfg?.pick) || 10)), book:String(r?.lexCfg?.book || ""), q1:String(r?.lexCfg?.q1 || LEX_Q1), q2:String(r?.lexCfg?.q2 || LEX_Q2)});
 const LEX_F = [["def", "정의"], ["src", "교과서 속 문장"], ["page", "쪽수"], ["own", "내가 만든 예문"]];
 const lexNorm = x => String(x || "").replace(/[\s·ㆍ・.,!?'"“”‘’()\[\]]/g, "").toLowerCase();
 const lexTimer = {t:0};
@@ -5294,6 +5296,11 @@ function lexVal(r, p, w, k){                                   // 입력 중인 
   const fm = S.form["lex:" + r.id];
   if(fm && (w + "~" + k) in fm) return String(fm[w + "~" + k] ?? "");
   return String(p?.lex?.cards?.[w]?.[k] ?? "");
+}
+function lexWrap(r, p, k){                                      // 마무리 칸: 입력 중인 값 우선 (k: one · why · reflect)
+  const fm = S.form["lex:" + r.id];
+  if(fm && ("@" + k) in fm) return String(fm["@" + k] ?? "");
+  return String(k === "one" ? (p?.lex?.one?.word || "") : k === "why" ? (p?.lex?.one?.why || "") : (p?.lex?.reflect || ""));
 }
 const lexCardOf = (r, p, w) => Object.fromEntries(LEX_F.map(([k]) => [k, lexVal(r, p, w, k).trim()]));
 const lexComplete = c => !!(c.def && c.src && /^\d{1,4}$/.test(String(c.page).trim()) && +c.page > 0 && c.own);
@@ -5314,6 +5321,10 @@ function lexMissing(r){
     const c = lexCardOf(r, p, w), no = LEX_F.find(([k]) => k === "page" ? !(/^\d{1,4}$/.test(String(c.page)) && +c.page > 0) : !c[k]);
     if(no) return `‘${w}’의 ${no[1]}${no[0] === "page" ? "를 숫자로" : "을"} 채워 주세요.`;
   }
+  const one = lexWrap(r, p, "one").trim();
+  if(!one || !L.picked.includes(one)) return "마무리의 ‘원픽 개념어’를 골라 주세요.";
+  if(!lexWrap(r, p, "why").trim()) return "원픽 개념어를 고른 이유를 적어 주세요.";
+  if(!lexWrap(r, p, "reflect").trim()) return "제작 소감을 적어 주세요.";
   return "";
 }
 async function lexSave(r, submit = false){
@@ -5322,7 +5333,7 @@ async function lexSave(r, submit = false){
   const p = myPost(r), L = lexSt(r);
   if(!L.picked.length && !submit) return true;
   const cards = {}; L.picked.forEach(w => { cards[w] = lexCardOf(r, p, w) });
-  const lex = {picked:[...L.picked], cards, updatedAt:Date.now(), ...(submit ? {submittedAt:Date.now()} : p?.lex?.submittedAt ? {submittedAt:p.lex.submittedAt} : {})};
+  const one = lexWrap(r, p, "one").trim(), lex = {picked:[...L.picked], cards, ...(L.picked.includes(one) ? {one:{word:one, why:lexWrap(r, p, "why").trim()}} : {}), reflect:lexWrap(r, p, "reflect").trim(), updatedAt:Date.now(), ...(submit ? {submittedAt:Date.now()} : p?.lex?.submittedAt ? {submittedAt:p.lex.submittedAt} : {})};
   S.quiet = true;
   try{ return await savePost(r, {lex, status: submit ? "submitted" : (p && submitted(p) ? p.status : "draft"), ...(submit && !p?.submittedAt ? {submittedAt:Date.now()} : {})}) } finally { S.quiet = false }
 }
@@ -5338,7 +5349,10 @@ function lexDict(r, p, {flags = false} = {}){                  // 사전 모양�
       <div><dt>정의</dt><dd>${esc(c.def || "–")}</dd></div>
       <div><dt>교과서 속 문장${c.page ? ` (p.${esc(c.page)})` : ""}</dt><dd>${esc(c.src || "–")}</dd></div>
       <div><dt>내가 만든 예문</dt><dd>${esc(c.own || "–")}</dd></div></dl>
-      ${fl.map(x => `<p class="lexflag">${ic("alert-triangle", "sm")}<span>${esc(x)}</span></p>`).join("")}</article>`; }).join("");
+      ${fl.map(x => `<p class="lexflag">${ic("alert-triangle", "sm")}<span>${esc(x)}</span></p>`).join("")}</article>`; }).join("")
+    + (lx.one?.word || lx.reflect ? `<article class="lexcard"><h4>마무리</h4><dl>
+      ${lx.one?.word ? `<div><dt>나의 원픽 핵심어 · ${esc(lx.one.word)}</dt><dd>${esc(lx.one.why || "–")}</dd></div>` : ""}
+      ${lx.reflect ? `<div><dt>개념어 사전 제작 소감</dt><dd>${esc(lx.reflect)}</dd></div>` : ""}</dl></article>` : "");
 }
 function viewLexStudent(r, p){
   const cfg = lexCfg(r), open = r.open !== false, sub = submitted(p), editing = S.lexEdit === r.id, n = cfg.pick;
@@ -5351,10 +5365,10 @@ function viewLexStudent(r, p){
   if(!open) return h + (p?.lex ? `<section class="card"><b>내가 쓴 카드</b>${lexDict(r, p)}</section>` : "") + closedNote();
   if(!S.canWrite) return h + readonlyNote();
   const L = lexSt(r), key = "lex:" + r.id;
-  F(key, () => Object.fromEntries((p?.lex?.picked || []).flatMap(w => LEX_F.map(([k]) => [w + "~" + k, p.lex.cards?.[w]?.[k] ?? ""]))));
+  F(key, () => ({...Object.fromEntries((p?.lex?.picked || []).flatMap(w => LEX_F.map(([k]) => [w + "~" + k, p.lex.cards?.[w]?.[k] ?? ""]))), "@one":p?.lex?.one?.word || "", "@why":p?.lex?.one?.why || "", "@reflect":p?.lex?.reflect || ""}));
   let mode = S.lexMode[r.id];
   if(mode === undefined) mode = L.picked.length === n ? (L.picked.findIndex(w => !lexComplete(lexCardOf(r, p, w))) + 1 || 1) - 1 : "pick";
-  if(mode !== "pick" && mode !== "check" && (typeof mode !== "number" || !L.picked[mode])) mode = L.picked.length ? 0 : "pick";
+  if(mode !== "pick" && mode !== "check" && mode !== "wrap" && (typeof mode !== "number" || !L.picked[mode])) mode = L.picked.length ? 0 : "pick";
   S.lexMode[r.id] = mode;
   const left = n - L.picked.length;
   h += `<div class="cta todo"><div><b>${ic("book-2")} 개념어 사전 만들기</b><span>${mode === "pick" ? `보기에서 개념어 ${n}개를 골라요.` : `개념어마다 정의 · 교과서 속 문장(쪽수) · 내가 만든 예문을 써요.`}${r.dueAt ? ` · ${esc(fmtDue(r.dueAt))}까지` : ""}</span></div></div>`;
@@ -5371,7 +5385,20 @@ function viewLexStudent(r, p){
   }
   const dots = `<nav class="lexdots" aria-label="개념어 카드">${L.picked.map((w, i) => { const done = lexComplete(lexCardOf(r, p, w));
       return `<button type="button" class="${done ? "done" : ""}" data-a="lex-go" data-v="${i}" ${mode === i ? 'aria-current="step"' : ""} title="${esc(w)}" aria-label="${i + 1}번 ${esc(w)}${done ? " 완성" : ""}">${done ? "✓" : i + 1}</button>` }).join("")}
+    <button type="button" class="${lexWrap(r, p, "one") && lexWrap(r, p, "why").trim() && lexWrap(r, p, "reflect").trim() ? "done" : ""}" data-a="lex-go" data-v="wrap" ${mode === "wrap" ? 'aria-current="step"' : ""}>마무리</button>
     <button type="button" data-a="lex-go" data-v="check" ${mode === "check" ? 'aria-current="step"' : ""}>점검</button></nav>`;
+  if(mode === "wrap"){
+    const one = lexWrap(r, p, "one");
+    h += dots + `<section class="card" id="stage"><h3>마무리</h3>
+      <div class="q"><b>나의 원픽(One-pick) 핵심어와 이유</b><p class="hint" style="margin:2px 0 8px">${esc(cfg.q1)}</p>
+        <div class="lexchips" role="group" aria-label="원픽 개념어">${L.picked.map(w => `<button type="button" class="lexchip" data-a="lex-one" data-w="${esc(w)}" aria-pressed="${one === w}">${esc(w)}</button>`).join("")}</div>
+        <label for="${key}-@why" class="sr">원픽을 고른 이유</label>${ta(key, "@why", {rows:6, id:`${key}-@why`, ph:"이 개념어를 고른 이유를 역사적 맥락과 연결해 설명해요."})}</div>
+      <div class="q"><label for="${key}-@reflect"><b>개념어 사전 제작 소감</b></label><p class="hint" style="margin:2px 0 6px">${esc(cfg.q2)}</p>${ta(key, "@reflect", {rows:6, id:`${key}-@reflect`, ph:"사전을 만든 뒤 달라진 점을 구체적으로 써요."})}</div>
+      <div class="foot"><span class="muted small">쓴 내용은 자동으로 저장돼요.</span><div class="row">
+        <button class="btn" type="button" data-a="lex-go" data-v="${n - 1}">${ic("chevron-left", "sm")} 이전</button>
+        <button class="btn pri" type="button" data-a="lex-go" data-v="check">점검하러 가기 ${ic("chevron-right", "sm")}</button></div></div></section>`;
+    return h;
+  }
   if(mode === "check"){
     const rows = L.picked.map(w => { const c = lexCardOf(r, p, w), ok = lexComplete(c), fl = ok ? lexFlags(w, c) : [];
       return `<li><b>${esc(w)}</b> ${ok ? (fl.length ? `<span class="muted small">${ic("alert-triangle", "sm")} 다시 볼 곳 ${fl.length}개</span>` : `<span class="muted small">${ic("circle-check", "sm")} 좋아요</span>`) : `<span class="muted small">${ic("circle-dashed", "sm")} 빈칸이 있어요</span>`}
@@ -5379,7 +5406,8 @@ function viewLexStudent(r, p){
     const miss = lexMissing(r);
     h += dots + `<section class="card" id="stage"><h3>3. 점검하고 제출하기</h3>
       <p class="muted small">알림은 참고예요. 정의가 교과서에서 쓰인 뜻과 같은지, 쪽수가 맞는지는 꼭 직접 확인해요.</p>
-      <ul class="clean" style="display:grid;gap:10px;padding:0;list-style:none">${rows}</ul>
+      <ul class="clean" style="display:grid;gap:10px;padding:0;list-style:none">${rows}
+        <li><b>마무리</b> ${lexWrap(r, p, "one") && lexWrap(r, p, "why").trim() && lexWrap(r, p, "reflect").trim() ? `<span class="muted small">${ic("circle-check", "sm")} 좋아요</span>` : `<span class="muted small">${ic("circle-dashed", "sm")} 빈칸이 있어요 <button class="linkbtn" type="button" data-a="lex-go" data-v="wrap">쓰러 가기</button></span>`}</li></ul>
       <div class="foot"><span class="muted small">${miss ? esc(miss) : "모두 채웠어요. 제출할 수 있어요."}</span>
         <div class="row"><button class="btn" type="button" data-a="lex-pick">개념어 바꾸기</button><button class="btn pri" type="button" data-a="lex-submit" ${miss ? "disabled" : ""}>${sub ? "다시 제출하기" : "제출하기"}</button></div></div></section>`;
     return h;
@@ -5393,7 +5421,7 @@ function viewLexStudent(r, p){
     ${fl.map(x => `<p class="lexflag">${ic("alert-triangle", "sm")}<span>${esc(x)}</span></p>`).join("")}
     <div class="foot"><span class="muted small">쓴 내용은 자동으로 저장돼요.</span><div class="row">
       ${mode > 0 ? `<button class="btn" type="button" data-a="lex-go" data-v="${mode - 1}">${ic("chevron-left", "sm")} 이전</button>` : `<button class="btn" type="button" data-a="lex-pick">개념어 바꾸기</button>`}
-      <button class="btn pri" type="button" data-a="lex-go" data-v="${mode + 1 < n ? mode + 1 : "check"}">${mode + 1 < n ? "다음 개념어" : "점검하러 가기"} ${ic("chevron-right", "sm")}</button></div></div></section>`;
+      <button class="btn pri" type="button" data-a="lex-go" data-v="${mode + 1 < n ? mode + 1 : "wrap"}">${mode + 1 < n ? "다음 개념어" : "마무리 쓰러 가기"} ${ic("chevron-right", "sm")}</button></div></div></section>`;
   return h;
 }
 /* 선생님 화면 */
@@ -5431,11 +5459,11 @@ function viewLexTeacher(r){
   return h + list.map(({nm, p, st, flags, n}) => `<details class="lexcard"><summary><b>${esc(nm)}</b> <span class="chip nchip ${st}">${LBL[st]}</span> <span class="muted small">${n}/${cfg.pick} 완성${flags ? ` · 다시 볼 곳 ${flags}` : ""}${p?.lex?.submittedAt ? ` · ${esc(fmt(p.lex.submittedAt))}` : ""}</span></summary>${st === "none" ? `<p class="muted small">아직 시작하지 않았어요.</p>` : lexDict(r, p, {flags:true})}</details>`).join("");
 }
 function lexExportRows(r){
-  const {rows} = lexRows(r), out = [["번호", "학생", "상태", "개념어", "정의", "교과서 속 문장", "쪽수", "내가 만든 예문", "다시 볼 곳"]];
+  const {rows} = lexRows(r), out = [["번호", "학생", "상태", "개념어", "정의", "교과서 속 문장", "쪽수", "내가 만든 예문", "다시 볼 곳", "원픽 개념어", "원픽 이유", "제작 소감"]];
   rows.forEach(x => { const st = {done:"제출", doing:"작성 중", none:"미시작"}[x.st];
-    if(x.st === "none"){ out.push([studentNo(x.nm), x.nm, st, "", "", "", "", "", ""]); return }
-    (x.p.lex.picked || []).slice().sort(koCmp).forEach(w => { const c = x.p.lex.cards?.[w] || {};
-      out.push([studentNo(x.nm), x.nm, st, w, c.def || "", c.src || "", c.page || "", c.own || "", lexComplete(c) ? lexFlags(w, c).join(" / ") : "빈칸 있음"]) }) });
+    if(x.st === "none"){ out.push([studentNo(x.nm), x.nm, st, "", "", "", "", "", "", "", "", ""]); return }
+    (x.p.lex.picked || []).slice().sort(koCmp).forEach((w, i) => { const c = x.p.lex.cards?.[w] || {};
+      out.push([studentNo(x.nm), x.nm, st, w, c.def || "", c.src || "", c.page || "", c.own || "", lexComplete(c) ? lexFlags(w, c).join(" / ") : "빈칸 있음", i ? "" : (x.p.lex.one?.word || ""), i ? "" : (x.p.lex.one?.why || ""), i ? "" : (x.p.lex.reflect || "")]) }) });
   return out;
 }
 /* ---- 📲 휴대폰 홈 화면에 앱처럼 설치 (학생) ---- */
@@ -7049,7 +7077,7 @@ function teacherCard(r, p, ps, nav){
    ========================================================= */
 /* 🔄 새 버전 알림: 배포 때마다 APP_VERSION과 version.json의 v를 같은 값으로 올린다.
    GitHub Pages는 화면을 10분쯤 기억하므로, 옛 화면이면 아래쪽에 ‘새로고침’ 띠를 띄우고 주소를 바꿔 새로 받는다 */
-const APP_VERSION = "2026-11-24a";
+const APP_VERSION = "2026-11-24b";
 async function checkVersion(){
   if(!/^https?:$/.test(location.protocol)) return;
   try{
@@ -8932,7 +8960,7 @@ function formFromRoom(r){
   const f = featuresOf(r), t = TEMPLATES[r.template] || {};
   const form = {editId:r.id, goal:(GOALS.find(g=>g.t.includes(r.template))||{}).k, template:r.template, tool:toolOf(r), depth:depthOf(r),
     prompt:r.prompt||"", title:r.title||"", context:r.context||"", ctxImgs:ctxImgsOf(r), intro:r.intro||"",
-    lexWords:(r.lexCfg?.words || []).join("\n"), lexPick:String(r.lexCfg?.pick || 10), lexBook:r.lexCfg?.book || "",
+    lexWords:(r.lexCfg?.words || []).join("\n"), lexPick:String(r.lexCfg?.pick || 10), lexBook:r.lexCfg?.book || "", lexQ1:r.lexCfg?.q1 || "", lexQ2:r.lexCfg?.q2 || "",
     maxPages:String(r.noteCfg?.maxPages||3), memoQ:r.noteCfg?.memoQ||"", noteFiles:r.noteCfg?.files ? "on" : "", memoReq:r.noteCfg?.memoReq && r.noteCfg?.memoQ ? "on" : "", nickMode:lvNickCustom(r) ? "custom" : "auto", teamN:String(lvN(r)), selfMove:lvSelfMove(r) ? "on" : "off", noteMin:String(lvNoteMin(r)), liveFiles:Array.isArray(r.liveCfg?.files) ? r.liveCfg.files : [], personaName:r.persona?.name||"", personaAbout:r.persona?.about||"", personaFacts:r.persona?.facts||"", personaStyle:r.persona?.style||"persona", maxTurns:String(r.persona?.maxTurns||8), personaGuide:r.persona?.guide||"", pgMode:r.persona?.guide && !r.persona?.gen ? "direct" : "gen",
     personaImg:r.persona?.img||"", personaUser:r.persona?.user||"", personaCall:r.persona?.call||"", personaGreeting:r.persona?.greeting||"", personaStarters:(r.persona?.starters||[]).join("\n"),
     ...(r.persona?.gen ? {pgType:pgTypeOf(r.persona.gen.type), pgSubj:r.persona.gen.subj||"", pgGrade:r.persona.gen.grade||"", pgGoal:r.persona.gen.goal||"", pgSupport:r.persona.gen.support||"step"} : {}),
@@ -9272,7 +9300,7 @@ function roomFromForm(f){
   const prompt = (f.prompt||"").trim();
   const isDebate = f.template === "debate2" || f.template === "debateN";
   const noteCfg = f.template === "notes" ? {maxPages:Math.max(1, Math.min(12, parseInt(f.maxPages)||3)), ...(String(f.memoQ || "").trim() ? {memoQ:String(f.memoQ).trim().slice(0, 120)} : {}), ...(f.noteFiles === "on" ? {files:true} : {}), ...(f.memoReq === "on" && String(f.memoQ || "").trim() ? {memoReq:true} : {})} : undefined;
-  const lexCfg = f.template === "lexicon" ? {words:[...new Set(String(f.lexWords || "").split(/[\n,]+/).map(x => x.trim().slice(0, 40)).filter(Boolean))].slice(0, 200), pick:Math.max(1, Math.min(30, parseInt(f.lexPick) || 10)), ...(String(f.lexBook || "").trim() ? {book:String(f.lexBook).trim().slice(0, 60)} : {})} : undefined;
+  const lexCfg = f.template === "lexicon" ? {words:[...new Set(String(f.lexWords || "").split(/[\n,]+/).map(x => x.trim().slice(0, 40)).filter(Boolean))].slice(0, 200), pick:Math.max(1, Math.min(30, parseInt(f.lexPick) || 10)), ...(String(f.lexBook || "").trim() ? {book:String(f.lexBook).trim().slice(0, 60)} : {}), ...(String(f.lexQ1 || "").trim() && String(f.lexQ1).trim() !== LEX_Q1 ? {q1:String(f.lexQ1).trim().slice(0, 300)} : {}), ...(String(f.lexQ2 || "").trim() && String(f.lexQ2).trim() !== LEX_Q2 ? {q2:String(f.lexQ2).trim().slice(0, 300)} : {})} : undefined;
   const liveCfg = f.template === "live" ? {nickMode:f.nickMode === "custom" ? "custom" : "auto", teamN:Math.min(10, Math.max(1, parseInt(f.teamN) || 4)), selfMove:f.selfMove !== "off", noteMin:[0, 1, 2].includes(parseInt(f.noteMin)) ? parseInt(f.noteMin) : 1, files:(Array.isArray(f.liveFiles) ? f.liveFiles : []).slice(0, 5)} : undefined;
   const persona = f.template === "chat" ? {name:(f.personaName||"").trim(), about:(f.personaAbout||"").trim(), facts:(f.personaFacts||"").trim().slice(0, 4000), style:f.personaStyle === "easy" ? "easy" : "persona", maxTurns:turnsOf(f), ...charSaved(f), ...pgSaved(f)} : undefined;
   return {
@@ -9929,6 +9957,8 @@ function viewCreate(){
         <p class="hint">${(() => { const n = new Set(String(f.lexWords || "").split(/[\n,]+/).map(x => x.trim()).filter(Boolean)).size; return n ? `지금 ${n}개예요.` : "비워 두면 학생이 직접 개념어를 적어요." })()}</p></div>
       <div class="q"><label for="c-lexp">고르는 개수</label><input type="number" id="c-lexp" data-form="create" data-k="lexPick" min="1" max="30" value="${esc(f.lexPick || "10")}"><p class="hint">1~30개 (기본 10개)</p></div>
       <div class="q"><label for="c-lexb">교과서 이름 <span class="opt">(선택)</span></label><input type="text" id="c-lexb" data-form="create" data-k="lexBook" maxlength="60" placeholder="예: 한국사2 교과서" value="${esc(f.lexBook || "")}"><p class="hint">학생 화면의 ‘교과서 속 문장’ 안내에 쓰여요.</p></div>
+      <div class="q wide"><label for="c-lexq1">마무리 질문 ① 안내 <span class="opt">(선택 · 비우면 기본 문구)</span></label><textarea id="c-lexq1" data-form="create" data-k="lexQ1" rows="2" placeholder="${esc(LEX_Q1)}">${esc(f.lexQ1 || "")}</textarea><p class="hint">‘나의 원픽 핵심어와 이유’ — 학생이 고른 개념어 중 하나를 고르고 이유를 써요.</p></div>
+      <div class="q wide"><label for="c-lexq2">마무리 질문 ② 안내 <span class="opt">(선택 · 비우면 기본 문구)</span></label><textarea id="c-lexq2" data-form="create" data-k="lexQ2" rows="2" placeholder="${esc(LEX_Q2)}">${esc(f.lexQ2 || "")}</textarea><p class="hint">‘개념어 사전 제작 소감’ — 활동 뒤 달라진 점을 써요.</p></div>
       </div></section>` : ""}
     ${isLiveT ? `<section class="wide subpanel" aria-labelledby="lv-h"><h4 id="lv-h">${ic("messages", "sm")} 실시간 토론 설정</h4>
       <p class="hint">학생이 링크나 QR로 들어오면 모두 ‘청중 판정단’으로 대기실에 모여요. 대기실에서 찬성·반대 자리로 옮기거나 선생님이 직접 정해 줄 수 있어요. 친구끼리는 닉네임만 보이고, 실제 이름은 선생님만 볼 수 있어요. 토론 시작 · 종료 · 최종 투표(판정) · 결과 공개는 활동 화면에서 진행해요.</p>
@@ -10413,7 +10443,8 @@ async function act(a, b){
       if(!w){ toast("개념어를 적어 주세요."); break } if(L.picked.includes(w)){ toast("이미 고른 개념어예요."); break } if(L.picked.length >= lexCfg(r).pick){ toast(`${lexCfg(r).pick}개까지 고를 수 있어요.`); break } L.picked.push(w); lexDirty() } break;
     case "lex-start": if(r && isLex(r)){ const L = lexSt(r), n = lexCfg(r).pick; if(L.picked.length !== n){ toast(`${n}개를 골라 주세요. 지금 ${L.picked.length}개예요.`); break } await lexSave(r); S.lexMode[r.id] = 0 } break;
     case "lex-pick": if(r && isLex(r)){ await lexSave(r); S.lexMode[r.id] = "pick" } break;
-    case "lex-go": if(r && isLex(r)){ await lexSave(r); const v = b.dataset.v; S.lexMode[r.id] = v === "check" || v === "pick" ? v : +v; scrollTo(0, 0) } break;
+    case "lex-go": if(r && isLex(r)){ await lexSave(r); const v = b.dataset.v; S.lexMode[r.id] = v === "check" || v === "pick" || v === "wrap" ? v : +v; scrollTo(0, 0) } break;
+    case "lex-one": if(r && isLex(r)){ F("lex:" + r.id)["@one"] = b.dataset.w; lexDirty() } break;
     case "lex-save": if(r && isLex(r)){ if(await lexSave(r)) toast("저장했어요.") } break;
     case "lex-submit": if(r && isLex(r)){ const bad = lexMissing(r); if(bad){ toast(bad); break } b.disabled = true; const ok = await lexSave(r, true); if(ok){ S.lexEdit = null; S.lexMode[r.id] = 0; toast("제출했어요! 선생님이 확인할 거예요.") } else b.disabled = false } break;
     case "lex-edit": if(r && isLex(r)){ S.lexEdit = r.id; S.lexMode[r.id] = 0; lexSt(r, true) } break;
